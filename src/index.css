@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #7c3aed;
+  --color-light-bg: #ffffff;
+  --color-light-surface: #ffffff;
+  --color-light-gray: #64748b;
+  --color-light-text: #1f2937;
+  --color-dark-bg: #1e293b;
+  --color-dark-surface: #334155;
+  --color-dark-gray: #9ca3af;
+  --color-dark-text: #f9fafb;
+}
+
+html {
+  @apply scroll-smooth;
+}
+
+body {
+  user-select: none;
+  @apply font-sans bg-light-bg text-light-text transition-colors duration-200;
+}
+
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.5);
+  /* slate-500/50 */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.8);
+  /* darker on hover */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+}
+
+/* Dark mode styles */
+.dark body {
+  @apply bg-dark-bg text-dark-text;
+}
+
+.dark .bg-primary {
+  @apply bg-primary-dark;
+}
+
+.dark .text-primary {
+  @apply text-primary-dark;
+}
+
+.dark .bg-light-surface {
+  @apply bg-dark-surface;
+}
+
+.dark .text-light-text {
+  @apply text-dark-text;
+}
+
+.dark .text-light-gray {
+  @apply text-dark-gray;
+}
+
+.dark .border-light-gray\/10 {
+  border-color: rgb(156 163 175 / 0.1);
+}
+
+.dark .bg-light-gray\/5 {
+  @apply bg-dark-gray bg-opacity-5;
+}
+
+.dark .bg-light-gray\/10 {
+  @apply bg-dark-gray bg-opacity-10;
+}
+
+.dark .hover\:bg-light-gray\/10:hover {
+  background-color: rgb(156 163 175 / 0.1);
+}
+
+.dark .hover\:text-primary:hover {
+  @apply text-primary-dark;
+}
+
+.dark .hover\:from-primary\/10:hover {
+  --tw-gradient-from: rgb(124 58 237 / 0.1) !important;
+  --tw-gradient-to: rgb(124 58 237 / 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.dark .hover\:to-primary\/15:hover {
+  --tw-gradient-to: rgb(124 58 237 / 0.15) !important;
+}
+
+.dark .hover\:bg-red-50:hover {
+  @apply bg-red-950 bg-opacity-30;
+}
+
+.dark .hover\:text-red-500:hover {
+  @apply text-red-400;
+}
+
+/* Recharts RTL Support */
+.direction-rtl {
+  direction: rtl;
+}
+
+.direction-rtl .recharts-cartesian-axis-tick-value {
+  text-anchor: start;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary hover:bg-primary-dark text-white focus:ring-primary;
+  }
+
+  .btn-outline {
+    @apply btn border border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary;
+  }
+
+  .btn-secondary {
+    @apply btn bg-light-gray text-white hover:bg-opacity-80 focus:ring-light-text;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-light-surface border border-light-gray rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-light-gray text-light-text;
+  }
+
+  .card {
+    @apply bg-light-surface p-6 rounded-lg shadow-sm;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-light-text mb-1;
+  }
+}
+
+.rtl-dir {
+  direction: rtl;
+}
+
+.ltr-dir {
+  direction: ltr;
+}

@@ -1,0 +1,30 @@
+{
+    "name": "ezLines by ezWebs",
+    "short_name": "ezLines",
+    "description": "Appointments scheduling system",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#8b5cf6",
+    "icons": [
+      {
+        "src": "/ez-purple.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/ez-purple.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ],
+    "keywords": ["ez-lines", "ezLines", "ניהול תורים", "מערכת הזמנות", "ניהול עסקים", "תוכנת תזמון","ניהול פגישות"],
+    "categories": ["ניהול יומן", "מערכת פגישות", "ניהול עסק"],
+    "screenshots": [
+      {
+        "src": "/ez-purple.png",
+        "sizes": "1280x720",
+        "type": "image/png"
+      }
+    ]
+  }

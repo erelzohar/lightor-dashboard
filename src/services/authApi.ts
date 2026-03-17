@@ -1,0 +1,50 @@
+import axios from 'axios';
+import { User } from '../types';
+import globals from './globals';
+
+export const loginUser = async (username: string, password: string): Promise<{ token: string; user: User }> => {
+  try {
+    const response = await axios.post(globals.authUrl + 'login', { username, password });
+    if (response.data?.success) {
+      localStorage.setItem('ezlines', response.data?.token);
+      return { token: response.data?.token, user: response.data.data }
+    }
+
+  } catch (error) {
+    throw new Error('Invalid credentials');
+  }
+};
+
+// In a real implementation, this would validate the token with the server
+// export const validateToken = async (token: string): Promise<User> => {
+//   try {
+//     const response = await axios.get(`${API_URL}/auth/validate-token`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+
+//     return response.data.user;
+//   } catch (error) {
+//     throw new Error('Invalid token');
+//   }
+// };
+
+
+export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
+  const token = localStorage.getItem('ezlines');
+  try {
+    const response = await axios.put(
+      `${globals.authUrl}change-password`,
+      { currentPassword, newPassword, confirmNewPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Failed to update password');
+  }
+};
