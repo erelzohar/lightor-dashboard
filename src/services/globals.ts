@@ -40,15 +40,25 @@ class DevelopmentGlobals extends Globals {
 //     public typesUrl = "https://ez-lines-server-84870f3974b9.herokuapp.com/api/appointment-types/";
 // }
 class ProductionGlobals extends Globals {
-    public appointmentsUrl = "https://api.ez-lines.com/api/appointments/";
-    public webConfigsUrl = "https://api.ez-lines.com/api/web-configs/";
-    public vacationsUrl = "https://api.ez-lines.com/api/vacations/";
-    public authUrl = "https://api.ez-lines.com/api/auth/";
-    public usersUrl = "https://api.ez-lines.com/api/users/";
-    public messagingUrl = "https://api.ez-lines.com/api/messaging/";
-    public imagesUrl = "https://api.ez-lines.com/api/images/";
-    public typesUrl = "https://api.ez-lines.com/api/appointment-types/";
+    public appointmentsUrl = "https://api.lightor.app/api/appointments/";
+    public webConfigsUrl = "https://api.lightor.app/api/web-configs/";
+    public vacationsUrl = "https://api.lightor.app/api/vacations/";
+    public authUrl = "https://api.lightor.app/api/auth/";
+    public usersUrl = "https://api.lightor.app.com/api/users/";
+    public messagingUrl = "https://api.lightor.app.com/api/messaging/";
+    public imagesUrl = "https://api.lightor.app/api/images/";
+    public typesUrl = "https://api.lightor.app/api/appointment-types/";
 }
+// class ProductionGlobals extends Globals {
+//     public appointmentsUrl = "https://api.ez-lines.com/api/appointments/";
+//     public webConfigsUrl = "https://api.ez-lines.com/api/web-configs/";
+//     public vacationsUrl = "https://api.ez-lines.com/api/vacations/";
+//     public authUrl = "https://api.ez-lines.com/api/auth/";
+//     public usersUrl = "https://api.ez-lines.com/api/users/";
+//     public messagingUrl = "https://api.ez-lines.com/api/messaging/";
+//     public imagesUrl = "https://api.ez-lines.com/api/images/";
+//     public typesUrl = "https://api.ez-lines.com/api/appointment-types/";
+// }
 
 const globals = process.env.NODE_ENV === "production" ? new ProductionGlobals() : new DevelopmentGlobals();
 
