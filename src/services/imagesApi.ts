@@ -8,7 +8,7 @@ const api = axios.create({
 
 // Add token to each request
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('ezlines');
+    const token = localStorage.getItem('lightor');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }

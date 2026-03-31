@@ -6,7 +6,7 @@ export const loginUser = async (username: string, password: string): Promise<{ t
   try {
     const response = await axios.post(globals.authUrl + 'login', { username, password });
     if (response.data?.success) {
-      localStorage.setItem('ezlines', response.data?.token);
+      localStorage.setItem('lightor', response.data?.token);
       return { token: response.data?.token, user: response.data.data }
     }
 
@@ -32,7 +32,7 @@ export const loginUser = async (username: string, password: string): Promise<{ t
 
 
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
-  const token = localStorage.getItem('ezlines');
+  const token = localStorage.getItem('lightor');
   try {
     const response = await axios.put(
       `${globals.authUrl}change-password`,

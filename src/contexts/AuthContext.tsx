@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem('ezlines');
+    const token = localStorage.getItem('lightor');
 
     if (token) {
       try {
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // if ((decoded.exp && decoded.exp < currentTime) || !decoded.exp) {
         if (false) {
 
-          localStorage.removeItem('ezlines');
+          localStorage.removeItem('lightor');
           setAuth({
             user: null,
             token: null,
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error) {
-        localStorage.removeItem('ezlines');
+        localStorage.removeItem('lightor');
         setAuth({
           user: null,
           token: null,
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { token, user } = await loginUser(username, password);
 
-      localStorage.setItem('ezlines', token);
+      localStorage.setItem('lightor', token);
 
       setAuth({
         user,
@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
       if (response.success && response.token) {
-        localStorage.setItem('ezlines', response.token);
+        localStorage.setItem('lightor', response.token);
         const decoded = jwtDecode<{ user: User }>(response.token);
         setAuth(prev => ({
           ...prev,
@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.removeItem('ezlines');
+    localStorage.removeItem('lightor');
     setAuth({
       user: null,
       token: null,

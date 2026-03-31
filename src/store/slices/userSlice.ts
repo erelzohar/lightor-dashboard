@@ -12,7 +12,7 @@ interface UserState {
 
 const initialState: UserState = {
   user: null,
-  token: localStorage.getItem('ezlines'),
+  token: localStorage.getItem('lightor'),
   loading: false,
   error: null,
 };
@@ -21,7 +21,7 @@ export const login = createAsyncThunk(
   'user/login',
   async ({ username, password }: { username: string; password: string }) => {
     const response = await userApi.loginUser(username, password);
-    localStorage.setItem('ezlines', response.token);
+    localStorage.setItem('lightor', response.token);
     return response;
   }
 );
@@ -41,7 +41,7 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
-      localStorage.removeItem('ezlines');
+      localStorage.removeItem('lightor');
     },
   },
   extraReducers: (builder) => {
