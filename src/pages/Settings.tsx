@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle } from 'lucide-react'; import { WebConfig } from '../types';
+import { Save, Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check } from 'lucide-react'; import { WebConfig } from '../types';
+import { checkSubdomainAvailability } from '../services/webConfigApi';
 // import { getWebConfigById, updateWebConfig } from '../services/webConfigApi';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -16,7 +17,6 @@ import { useAuth } from '../contexts/AuthContext';
 import globals from '../services/globals';
 import { uploadImage } from '../services/imagesApi';
 import FieldTooltip from '../components/settings/FieldTooltip';
-import img from '../assets/images/minsPerSlot.png'
 import Select from '../components/ui/Select';
 
 const Settings: React.FC = () => {
@@ -26,6 +26,9 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [imageToUpload, setImageToUpload] = useState<File>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>(null);
+  const [isCheckingSubdomain, setIsCheckingSubdomain] = useState(false);
+  const [subdomainError, setSubdomainError] = useState<string | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { updatePalette, language } = useTheme();
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
@@ -34,9 +37,10 @@ const Settings: React.FC = () => {
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
     const settingsChanged = JSON.stringify(localWebConfig.address) !== JSON.stringify(webConfig.address) ||
-      JSON.stringify(localWebConfig.minsPerSlot) !== JSON.stringify(webConfig.minsPerSlot) ||
+      // JSON.stringify(localWebConfig.minsPerSlot) !== JSON.stringify(webConfig.minsPerSlot) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
+      JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
       JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
       JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig.components?.introPopup) ||
@@ -99,8 +103,6 @@ const Settings: React.FC = () => {
     }
   }, [webConfig]);
 
-  const slotMinutes = [5, 10, 15, 20, 30, 40, 50, 60, 120, 180, 240];
-
   const cancelMinutes = [
     30,
     60,      // 1 hour
@@ -132,7 +134,6 @@ const Settings: React.FC = () => {
     }));
 
   const cancellationOptions = buildOptions(cancelMinutes, language, true);
-  const slotOptions = buildOptions(slotMinutes, language);
 
 
   const validationRules: Record<string, (value: any, language?: string) => string | null> = {
@@ -150,12 +151,6 @@ const Settings: React.FC = () => {
           : "Minimum cancellation time must be at least 5 minutes"
         : null,
 
-    minsPerSlot: (value, language) =>
-      value < 5
-        ? language === 'he'
-          ? "לפחות 5 דקות"
-          : "Slot duration must be at least 5 minutes"
-        : null,
     state: (value, language) =>
       !value || value.trim().length < 2
         ? language === 'he'
@@ -256,7 +251,7 @@ const Settings: React.FC = () => {
         if (!imgResponse) throw new Error("Failed to upload image");
       }
 
-      const { _id, businessName, address, minCancelTimeMS, minsPerSlot, social, contact } = localWebConfig;
+      const { _id, businessName, subDomain, address, minCancelTimeMS, social, contact } = localWebConfig;
 
       const fixedSocials = { ...social };
       fixedSocials.facebook = social.facebook === "" ? null : social.facebook;
@@ -264,7 +259,7 @@ const Settings: React.FC = () => {
       fixedSocials.tiktok = social.tiktok === "" ? null : social.tiktok;
       fixedSocials.x = social.x === "" ? null : social.x;
 
-      const payload: any = { _id, businessName, address, minCancelTimeMS, minsPerSlot, social: fixedSocials, contact };
+      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact };
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       }
@@ -424,6 +419,133 @@ const Settings: React.FC = () => {
             </div>
 
 
+            {/* Elegant Subdomain Section */}
+            <div className="mb-8 bg-gray-50/30 dark:bg-gray-800/20 rounded-2xl p-6 border border-gray-200/60 dark:border-gray-700/60 transition-all hover:border-gray-300 dark:hover:border-gray-600">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
+                <div className="flex-1">
+                  <label className="block text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+                    <span>{language === 'he' ? 'הלינק שלך (Subdomain)' : 'Your Link (Subdomain)'}</span>
+                    {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
+                      <span className="text-secondary text-xs flex items-center gap-1 md:hidden">
+                        {isCheckingSubdomain ? (
+                          <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
+                        ) : (
+                          <Check className="w-4 h-4 text-green-500" />
+                        )}
+                      </span>
+                    )}
+                  </label>
+                  <p className="text-[13px] text-gray-500 dark:text-gray-400 mb-0 md:mb-2 ms-0.5 max-w-md">
+                    {language === 'he'
+                      ? 'זהו הקישור הישיר לעמוד שלך שתוכל לשתף עם לקוחותיך.'
+                      : 'This is the direct link to your business page that you can share with your clients.'}
+                  </p>
+                </div>
+                
+                <div className="w-full md:w-1/2 flex-none relative">
+                  {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
+                    <div className="hidden md:flex absolute -top-6 end-0 text-secondary text-xs items-center gap-1">
+                      {isCheckingSubdomain ? (
+                        <>
+                          <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
+                          {language === 'he' ? 'בודק זמינות...' : 'Checking...'}
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span className="text-green-500 font-medium">{language === 'he' ? 'זמין' : 'Available'}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[3px] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
+                  <input
+                    type="text"
+                    className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-[15px] placeholder-gray-400 dark:placeholder-gray-500"
+                    value={localWebConfig.subDomain || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
+                      handleChange('root', 'subDomain', value);
+
+                      if (debounceTimeoutRef.current) {
+                        clearTimeout(debounceTimeoutRef.current);
+                      }
+
+                      if (value.length < 2 || value.length > 20) {
+                        setSubdomainError(language === 'he' ? 'הלינק חייב להכיל בין 2 ל-20 תווים' : 'Link must be between 2 and 20 characters');
+                        setIsCheckingSubdomain(false);
+                      } else if (value !== webConfig?.subDomain && value.length >= 2) {
+                        setIsCheckingSubdomain(true);
+                        setSubdomainError(null);
+
+                        debounceTimeoutRef.current = setTimeout(async () => {
+                          try {
+                            const isAvailable = await checkSubdomainAvailability(value);
+                            if (!isAvailable) {
+                              setSubdomainError(language === 'he' ? 'שם האתר אינו זמין' : 'This subdomain is not available');
+                            }
+                          } catch (error) {
+                            setSubdomainError(language === 'he' ? 'שגיאה בבדיקת זמינות' : 'Error checking availability');
+                          } finally {
+                            setIsCheckingSubdomain(false);
+                          }
+                        }, 500);
+                      } else {
+                        setIsCheckingSubdomain(false);
+                        setSubdomainError(null);
+                      }
+                    }}
+                    placeholder={language === 'he' ? 'your-site' : 'your-site'}
+                  />
+                  <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[15px] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
+                    .lightor.app
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = `https://${localWebConfig.subDomain || ''}.lightor.app`;
+                      navigator.clipboard.writeText(url);
+                      toast.success(language === 'he' ? 'הקישור הועתק!' : 'Link copied!');
+                    }}
+                    className="flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
+                    title={language === 'he' ? 'העתק קישור' : 'Copy link'}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+                <AnimatePresence mode="popLayout">
+                  {subdomainError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mt-2 text-sm font-medium text-red-500 text-start"
+                    >
+                      {subdomainError}
+                    </motion.p>
+                  )}
+                  {localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-[13px] text-orange-500 dark:text-orange-400 text-start flex items-start gap-1.5 font-medium bg-orange-50 dark:bg-orange-900/10 p-2.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>
+                          {language === 'he' 
+                            ? 'שימו לב: שינוי הקישור יגרום לכך שהקישור הקודם שלכם כבר לא יהיה זמין.'
+                            : 'Note: Changing the link means your previous link will no longer be available.'}
+                        </span>
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label={
@@ -442,19 +564,6 @@ const Settings: React.FC = () => {
                 error={errors?.businessName}
                 onChange={(e) => handleChange('root', 'businessName', e.target.value)}
               />
-
-              {/* <Input
-                label={language === 'he' ? 'לוגו (URL)' : 'Logo Image URL'}
-                value={localWebConfig.logoImageName}
-                onChange={(e) => handleChange('root', 'logoImageName', e.target.value)}
-              /> */}
-
-              {/* <Input
-                label={language === 'he' ? 'דומיין משנה' : 'Subdomain'}
-                value={localWebConfig.subDomain}
-                onChange={(e) => handleChange('root', 'subDomain', e.target.value)}
-              /> */}
-
 
               <Select
                 label={
@@ -484,36 +593,6 @@ const Settings: React.FC = () => {
                   handleChange("root", "minCancelTimeMS", Number(e.target.value))
                 }
                 error={errors?.minCancelTimeMS}
-              />
-              <Select
-                label={
-                  <>
-                    {language === "he"
-                      ? "זמן בין משבצות התורים"
-                      : "Time Between Appointment Slots"}
-
-                    <FieldTooltip
-                      title={
-                        language === "he"
-                          ? "זמן בין משבצות התורים"
-                          : "Time Between Appointment Slots"
-                      }
-                      description={
-                        language === "he"
-                          ? "בחר כמה מרווח זמן יהיה בין המשבצות בלוח התורים"
-                          : "Choose the time gap between appointment slots"
-                      }
-                      image={img}
-                    />
-                  </>
-                }
-                leftIcon={<CalendarClock className="w-4 h-4 text-gray-400" />}
-                value={localWebConfig.minsPerSlot}
-                options={slotOptions}
-                onChange={(e) =>
-                  handleChange("root", "minsPerSlot", Number(e.target.value))
-                }
-                error={errors?.minsPerSlot}
               />
             </div>
 
@@ -547,11 +626,11 @@ const Settings: React.FC = () => {
               </div>
             </div> */}
             {/* Intro Popup Message */}
-            <div className="mt-6 p-5 rounded-xl border border-light-gray bg-light-surface dark:bg-dark-surface space-y-4">
+            <div className="mt-6 p-6 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gray-50/30 dark:bg-gray-800/20 space-y-4 hover:border-gray-300 dark:hover:border-gray-600 transition-all">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-light-text text-sm">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                     {language === 'he' ? 'הודעה קופצת' : 'Popup Message'}
                   </h3>
                   <FieldTooltip
@@ -583,7 +662,7 @@ const Settings: React.FC = () => {
                 onChange={(e) => handleChange('components.introPopup', 'value', e.target.value)}
                 rows={3}
                 placeholder={language === 'he' ? 'כתוב כאן את ההודעה שתוצג ללקוחות...' : 'Write the message to display to clients...'}
-                className="w-full bg-light-surface bg-yellow-400/10 dark:bg-dark-bg rounded-lg px-3 py-2 text-base md:text-sm text-light-text dark:text-dark-text placeholder-gray-400 dark:placeholder-dark-gray/50 focus:outline-none focus:border-primary transition-colors resize-none"
+                className="w-full bg-yellow-50/50 dark:bg-yellow-900/10 rounded-xl px-4 py-3 text-[15px] border border-yellow-200/60 dark:border-yellow-700/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[3px] focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition-all duration-300 resize-none shadow-sm"
               />
             </div>
 
@@ -713,7 +792,7 @@ const Settings: React.FC = () => {
       case 'address':
         return (
           <div className="space-y-6">
-            <SectionHeader icon={MapPin} title={language === 'he' ? 'כתובת העסק' : 'Business Address'} />
+            <SectionHeader icon={MapPin} title={language === 'he' ? 'כתובת ומיקום' : 'Business Address'} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
@@ -1023,8 +1102,8 @@ const Settings: React.FC = () => {
                 <Button
                   onClick={handleSave}
                   rightIcon={<Save size={18} />}
-                  isLoading={isSaving}
-                  disabled={isSaving}
+                  isLoading={isSaving || isCheckingSubdomain}
+                  disabled={isSaving || isCheckingSubdomain || !!subdomainError}
                   size="sm"
                 >
                   {language === 'he' ? 'שמור' : 'Save'}
@@ -1058,8 +1137,8 @@ const Settings: React.FC = () => {
                   <Button
                     onClick={handleSave}
                     rightIcon={<Save size={18} />}
-                    isLoading={isSaving}
-                    disabled={isSaving}
+                    isLoading={isSaving || isCheckingSubdomain}
+                    disabled={isSaving || isCheckingSubdomain || !!subdomainError}
                     size="md"
                   >
                     {language === 'he' ? 'שמור' : 'Save'}
@@ -1082,8 +1161,8 @@ const Settings: React.FC = () => {
               <Button
                 onClick={handleSave}
                 rightIcon={<Save size={18} />}
-                isLoading={isSaving}
-                disabled={isSaving}
+                isLoading={isSaving || isCheckingSubdomain}
+                disabled={isSaving || isCheckingSubdomain || !!subdomainError}
                 size="md"
               >
                 {language === 'he' ? 'שמור' : 'Save'}

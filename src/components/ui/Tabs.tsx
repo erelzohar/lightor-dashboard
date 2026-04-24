@@ -22,34 +22,38 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
   };
 
   return (
-    <div className="border-b border-light-gray">
-      <div className="flex space-x-4 overflow-x-auto hide-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`
-              px-4 py-3 relative whitespace-nowrap flex items-center
-              focus:outline-none transition-colors
-              ${activeTab === tab.id
-                ? 'text-primary font-medium'
-                : 'text-light-text hover:text-primary border-primary dark:border-primary-dark hover:bg-primary/10'
-              }
-            `}
-            onClick={() => handleTabChange(tab.id)}
-          >
-            {tab.label}
-            {tab.icon && <span className="mr-2">{tab.icon}</span>}
-
-            {activeTab === tab.id && (
-              <motion.div
-                layoutId="tab-indicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                initial={false}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-          </button>
-        ))}
+    <div className="flex justify-center w-full">
+      <div className="flex items-center justify-center p-1.5 bg-gray-100 dark:bg-dark-bg rounded-2xl overflow-hidden hide-scrollbar gap-1 sm:gap-2 shadow-inner border border-gray-200/60 dark:border-gray-700/60">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`
+                relative flex items-center justify-center px-2.5 py-2.5 rounded-2xl whitespace-nowrap
+                transition-all duration-300 outline-none
+                ${isActive
+                  ? 'text-primary dark:text-primary-dark font-semibold'
+                  : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                }
+              `}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="elegant-tab-indicator"
+                  className="absolute inset-0 bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-gray-200/80 dark:border-gray-700/80"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center text-[15px] tracking-wide">
+                {tab.icon && <span className="m-1.5 opacity-80">{tab.icon}</span>}
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

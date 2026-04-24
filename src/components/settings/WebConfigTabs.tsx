@@ -10,11 +10,11 @@ interface WebConfigTabsProps {
 
 const WebConfigTabs: React.FC<WebConfigTabsProps> = ({ activeTab, onTabChange }) => {
   const { language } = useTheme();
-  
+
   const tabs = [
     {
       id: 'general',
-      label: language === 'he' ? 'כללי' : 'General',
+      label: language === 'he' ? 'פרופיל' : 'Profile',
       icon: <Store size={18} />
     },
     // {

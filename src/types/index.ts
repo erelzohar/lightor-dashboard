@@ -128,7 +128,6 @@ export interface WebConfig {
   appointmentTypes:AppointmentType[]
   subDomain: string;
   minCancelTimeMS: number;
-  minsPerSlot: number;
   defaultLanguage: string;
   workingDays: (string | null)[];
   address: Address;

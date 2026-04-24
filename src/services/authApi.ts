@@ -15,20 +15,22 @@ export const loginUser = async (username: string, password: string): Promise<{ t
   }
 };
 
-// In a real implementation, this would validate the token with the server
-// export const validateToken = async (token: string): Promise<User> => {
-//   try {
-//     const response = await axios.get(`${API_URL}/auth/validate-token`, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
+export const getCurrentUser = async (): Promise<User> => {
+  const token = localStorage.getItem('lightor');
+  if (!token) throw new Error('No token found');
 
-//     return response.data.user;
-//   } catch (error) {
-//     throw new Error('Invalid token');
-//   }
-// };
+  try {
+    const response = await axios.get(`${globals.authUrl}me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data.data;
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
 
 
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {

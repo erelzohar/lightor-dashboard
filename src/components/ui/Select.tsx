@@ -32,18 +32,17 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     const selectClasses =
-      "px-4 py-2 rounded-md border " +
-      "focus:outline-none focus:ring-2 focus:border-transparent " +
-      "transition-all duration-200 " +
-      "bg-light-surface text-light-text " +
+      "px-4 py-3 rounded-xl border text-[15px] appearance-none " +
+      "focus:outline-none focus:ring-[3px] " +
+      "transition-all duration-300 shadow-sm " +
+      "bg-white dark:bg-dark-surface dark:border-gray-700/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 " +
       (error
-        ? "border-red-500 focus:ring-red-500 "
-        : "border-light-gray focus:ring-primary dark:ring-primary-dark ") +
-      (leftIcon ? "pl-10 " : "") +
-      (rightIcon ? "pr-10 " : "") +
+        ? 'border-red-300 dark:border-red-500/50 focus:border-red-500 focus:ring-red-500/20 ' 
+        : 'border-gray-200 focus:border-primary focus:ring-primary/20 ') +
+      (leftIcon ? "pl-11 " : "") +
+      (rightIcon ? "pr-11 " : "pr-10 ") +
       (fullWidth ? "w-full " : "") +
-      className +
-      " ";
+      className;
 
     return (
       <div
@@ -53,15 +52,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={props.id}
-            className="block text-sm font-medium text-light-text mb-1"
+            className="block text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5"
           >
             {label}
           </label>
         )}
 
-        <div className="relative flex justify-center">
+        <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 flex items-center pl-6 pointer-events-none text-light-gray">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 dark:text-gray-500">
               {leftIcon}
             </div>
           )}
@@ -74,11 +73,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ))}
           </select>
 
-          {rightIcon && (
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-light-gray pointer-events-none">
-              {rightIcon}
-            </div>
-          )}
+          {/* Custom Chevron icon */}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400 dark:text-gray-500">
+            {rightIcon || (
+              <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            )}
+          </div>
         </div>
 
         {error && (

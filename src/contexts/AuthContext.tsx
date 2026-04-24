@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { AuthState, User } from '../types';
-import { loginUser, changePassword } from '../services/authApi';
+import { loginUser, changePassword, getCurrentUser } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -30,52 +30,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const location = useLocation();
   const dispatch = useAppDispatch();
 
+  // Initial authentication check (runs ONLY on first load)
   useEffect(() => {
-    const token = localStorage.getItem('lightor');
+    const initAuth = async () => {
+      const token = localStorage.getItem('lightor');
 
-    if (token) {
-      try {
-        // Check if token is expired
-        const decoded = jwtDecode<{ user: User, exp: number, iat: number }>(token);
-        // const currentTime = Date.now() / 1000;
-        // if ((decoded.exp && decoded.exp < currentTime) || !decoded.exp) {
-        if (false) {
-
+      if (token) {
+        try {
+          // Fetch the latest user details securely using the token
+          const user = await getCurrentUser();
+          
+          setAuth({
+            user,
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (error) {
           localStorage.removeItem('lightor');
           setAuth({
             user: null,
             token: null,
             isAuthenticated: false,
             isLoading: false,
-            error: null,
+            error: 'Invalid token',
           });
-        } else {
-          setAuth({
-            user: decoded.user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-
-          if (location.pathname === '/login' || location.pathname === '/') {
-            navigate('/dashboard');
-          }
         }
-      } catch (error) {
-        localStorage.removeItem('lightor');
-        setAuth({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: 'Invalid token',
-        });
+      } else {
+        setAuth(prev => ({ ...prev, isLoading: false }));
       }
-    } else {
-      setAuth(prev => ({ ...prev, isLoading: false }));
+    };
+
+    initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Redirect logic (runs whenever location or auth state changes)
+  useEffect(() => {
+    if (auth.isAuthenticated && (location.pathname === '/login' || location.pathname === '/')) {
+      navigate('/dashboard');
     }
-  }, [navigate, location.pathname]);
+  }, [auth.isAuthenticated, location.pathname, navigate]);
 
   const login = async (username: string, password: string) => {
     setLoading(true);

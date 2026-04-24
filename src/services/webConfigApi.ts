@@ -41,3 +41,16 @@ export const updateWebConfig = async (
     throw err;
   }
 };
+
+export const checkSubdomainAvailability = async (subdomain: string): Promise<boolean> => {
+  try {
+    const res = await api.get(`/check-subdomain/${subdomain}`);
+    return res.data.available;
+  } catch (err: any) {
+    if (err.response?.status === 409 || err.response?.status === 400) {
+      return false;
+    }
+    console.log(err);
+    throw err;
+  }
+};
