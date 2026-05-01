@@ -509,10 +509,10 @@ const ScheduleVacations: React.FC = () => {
                               value={workingHours.startTime}
                               onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
                               className="
-                                px-2 py-1 text-sm rounded-md border border-light-gray dark:border-dark-gray
+                                px-2 py-1 text-base rounded-md border border-light-gray dark:border-dark-gray
                                 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
                                 transition-all duration-200 bg-light-surface dark:bg-dark-surface 
-                                text-light-text dark:text-dark-text w-20 text-center
+                                text-light-text dark:text-dark-text w-24 text-center
                               "
                             />
                           </div>
@@ -530,10 +530,10 @@ const ScheduleVacations: React.FC = () => {
                               value={workingHours.endTime}
                               onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
                               className="
-                                px-2 py-1 text-sm rounded-md border border-light-gray dark:border-dark-gray
+                                px-2 py-1 text-base rounded-md border border-light-gray dark:border-dark-gray
                                 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
                                 transition-all duration-200 bg-light-surface dark:bg-dark-surface 
-                                text-light-text dark:text-dark-text w-20 text-center
+                                text-light-text dark:text-dark-text w-24 text-center
                               "
                             />
                           </div>
