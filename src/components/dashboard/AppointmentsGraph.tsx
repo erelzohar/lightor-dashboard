@@ -251,11 +251,11 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="min-w-[40px]"
+                className="min-w-[2.5rem]"
               >
                 <RotateCcw size={16} />
               </Button>
-              <span className="min-w-[120px] text-center">
+              <span className="min-w-[7.5rem] text-center">
                 {getCurrentPeriodLabel()}
               </span>
               <Button
@@ -282,7 +282,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
           </div>
         </div>
 
-        <div className="h-[400px] p-0 px-1">
+        <div className="h-[25rem] p-0 px-1">
           <ResponsiveContainer width={window.innerWidth < 500 ? '110%' : '100%'} height="100%">
             <BarChart
               data={data}
@@ -309,8 +309,8 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
               <Tooltip
                 contentStyle={{
                   backgroundColor: (darkMode ? '#2f2f2f' : '#fff'),
-                  border: '1px solid ' + (darkMode ? '#464646' : '#e2e8f0'),
-                  borderRadius: '8px',
+                  border: '0.0625rem solid ' + (darkMode ? '#464646' : '#e2e8f0'),
+                  borderRadius: '0.5rem',
                 }}
                 formatter={(value: number, name: string) => {
                   const label = {

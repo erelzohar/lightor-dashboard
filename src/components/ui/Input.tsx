@@ -21,8 +21,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     ...props
   }, ref) => {
     const inputClasses = 
-      "px-4 py-3 rounded-xl border text-[15px] " +
-      "focus:outline-none focus:ring-[3px] " +
+      "px-4 py-3 rounded-xl border text-[0.9375rem] " +
+      "focus:outline-none focus:ring-[0.1875rem] " +
       "transition-all duration-300 shadow-sm " +
       "bg-white dark:bg-dark-surface dark:border-gray-700/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 " +
       (error 
@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={`${fullWidth ? 'w-full' : ''} ${props.disabled ? 'opacity-60' : ''}`}>
         {label && (
-          <label htmlFor={props.id} className="block text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
+          <label htmlFor={props.id} className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
             {label}
           </label>
         )}

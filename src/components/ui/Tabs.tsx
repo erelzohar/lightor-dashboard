@@ -47,7 +47,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
                   transition={{ type: "spring", stiffness: 450, damping: 35 }}
                 />
               )}
-              <span className="relative z-10 flex items-center text-[15px] tracking-wide">
+              <span className="relative z-10 flex items-center text-[0.9375rem] tracking-wide">
                 {tab.icon && <span className="m-1.5 opacity-80">{tab.icon}</span>}
                 {tab.label}
               </span>

@@ -54,7 +54,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
         >
             {/* The Draggable Area (Image) */}
             <div
-                className="aspect-square w-full relative outline-none touch-none"
+                className="aspect-square w-full relative outline-none touch-manipulation cursor-grab active:cursor-grabbing"
                 {...attributes}
                 {...listeners}
             >
@@ -151,6 +151,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, lan
         transform,
         transition,
         isDragging,
+        isSorting,
     } = useSortable({ id: item.url });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -162,7 +163,8 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, lan
     };
 
     const style = {
-        transform: CSS.Transform.toString(transform),
+        // CSS.Translate avoids scale jumps that CSS.Transform can introduce on mobile
+        transform: CSS.Translate.toString(transform),
         transition: isDragging ? 'none' : transition,
         zIndex: isDragging ? 2 : 1,
     };
@@ -178,7 +180,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, lan
             item={item}
             imageUrl={imageUrl}
             isDragging={isDragging}
-            isSorting={isDragging}
+            isSorting={isSorting}
             isEditing={isEditing}
             editTitle={editTitle}
             language={language}

@@ -112,7 +112,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
       <motion.div
         layout
-        className="overflow-y-auto overflow-x-hidden max-h-[calc(100vh-400px)]"
+        className="overflow-y-auto overflow-x-hidden max-h-[calc(100vh-25rem)]"
       >
         <div
           className="grid gap-1 md:gap-2"
@@ -129,7 +129,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               <motion.div
                 key={day.toString()}
                 layout
-                className="min-h-[120px] px-0.5"
+                className="min-h-[7.5rem] px-0.5"
               >
                 {dayAppointments.length > 0 ? (
                   <div className="space-y-1 py-0.5">
@@ -159,16 +159,16 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               {formatTime(parseInt(appointment.timestamp))}
                             </span>
                           </div>
-                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-white/50 dark:bg-black/10 whitespace-nowrap">
+                          <span className="text-[0.625rem] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-white/50 dark:bg-black/10 whitespace-nowrap">
                             {Number(appointment.type.durationMS) / 60000} {language === 'he' ? 'דק' : 'm'}
                           </span>
                         </div>
 
-                        <p className="font-medium mb-1 sm:mb-2 line-clamp-1 text-[11px] sm:text-sm">
+                        <p className="font-medium mb-1 sm:mb-2 line-clamp-1 text-[0.6875rem] sm:text-sm">
                           {appointment.type.name}
                         </p>
 
-                        <div className="flex items-center text-[10px] sm:text-xs text-light-gray dark:text-dark-gray">
+                        <div className="flex items-center text-[0.625rem] sm:text-xs text-light-gray dark:text-dark-gray">
                           <User size={10} className="mr-1 hidden sm:block" />
                           <span className="truncate">{appointment.name}</span>
                         </div>
@@ -176,16 +176,16 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="h-full min-h-[120px] rounded-xl bg-light-gray/10 relative overflow-hidden">
+                  <div className="h-full min-h-[7.5rem] rounded-xl bg-light-gray/10 relative overflow-hidden">
                     <div
                       className="absolute inset-0"
                       style={{
                         backgroundImage: `repeating-linear-gradient(
                           45deg,
                           transparent,
-                          transparent 10px,
-                          rgba(100, 116, 139, 0.05) 10px,
-                          rgba(100, 116, 139, 0.05) 20px
+                          transparent 0.625rem,
+                          rgba(100, 116, 139, 0.05) 0.625rem,
+                          rgba(100, 116, 139, 0.05) 1.25rem
                         )`
                       }}
                     />

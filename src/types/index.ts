@@ -140,13 +140,23 @@ export interface WebConfig {
 export interface User {
   _id: string;
   username: string;
-  password: string;
-  webConfig_id: string;
+  password?: string;
+  webConfig_id?: string;
   email: string;
   phone: string;
-  subscription: string;
   name: string;
   defaultLanguage: string;
+  isVerified: boolean;
+  verificationToken?: string;
+  verificationExpire?: string | Date;
+  subscription: {
+    status: 'free' | 'active' | 'past_due' | 'canceled' | 'deleted';
+    planId?: string;
+    customerId?: string;
+    subscriptionId?: string;
+    nextBillDate?: string | Date;
+  };
+  role: 'admin' | 'client' | 'user';
 }
 
 export interface AppointmentType {

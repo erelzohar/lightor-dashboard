@@ -85,7 +85,7 @@ class ErrorBoundaryClass extends Component<
     if (hasError) {
       return (
         fallback || (
-          <div className="min-h-[400px] flex items-center justify-center p-8">
+          <div className="min-h-[25rem] flex items-center justify-center p-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

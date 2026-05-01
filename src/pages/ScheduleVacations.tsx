@@ -548,7 +548,7 @@ const ScheduleVacations: React.FC = () => {
                     </div>
 
                     {/* Desktop Layout (>= 640px) */}
-                    <div className="hidden sm:flex items-center min-h-[52px]">
+                    <div className="hidden sm:flex items-center min-h-[3.25rem]">
                       {/* Day Name - Fixed width for alignment */}
                       <div className="flex items-center w-20 lg:w-24">
                         <span className="font-medium text-light-text dark:text-dark-text text-sm lg:text-base">
@@ -607,7 +607,7 @@ const ScheduleVacations: React.FC = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center h-[52px]">
+                          <div className="flex items-center justify-center h-[3.25rem]">
                             <span className="text-sm text-light-gray dark:text-dark-gray italic">
                               {language === 'he' ? 'סגור' : 'Closed'}
                             </span>

@@ -423,7 +423,7 @@ const Settings: React.FC = () => {
             <div className="mb-8 bg-gray-50/30 dark:bg-gray-800/20 rounded-2xl p-6 border border-gray-200/60 dark:border-gray-700/60 transition-all hover:border-gray-300 dark:hover:border-gray-600">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
                 <div className="flex-1">
-                  <label className="block text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+                  <label className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
                     <span>{language === 'he' ? 'הלינק שלך (Subdomain)' : 'Your Link (Subdomain)'}</span>
                     {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
                       <span className="text-secondary text-xs flex items-center gap-1 md:hidden">
@@ -435,7 +435,7 @@ const Settings: React.FC = () => {
                       </span>
                     )}
                   </label>
-                  <p className="text-[13px] text-gray-500 dark:text-gray-400 mb-0 md:mb-2 ms-0.5 max-w-md">
+                  <p className="text-[0.8125rem] text-gray-500 dark:text-gray-400 mb-0 md:mb-2 ms-0.5 max-w-md">
                     {language === 'he'
                       ? 'זהו הקישור הישיר לעמוד שלך שתוכל לשתף עם לקוחותיך.'
                       : 'This is the direct link to your business page that you can share with your clients.'}
@@ -458,10 +458,10 @@ const Settings: React.FC = () => {
                       )}
                     </div>
                   )}
-                  <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[3px] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
+                  <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[0.1875rem] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
                   <input
                     type="text"
-                    className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-[15px] placeholder-gray-400 dark:placeholder-gray-500"
+                    className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
                     value={localWebConfig.subDomain || ''}
                     onChange={(e) => {
                       const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
@@ -497,7 +497,7 @@ const Settings: React.FC = () => {
                     }}
                     placeholder={language === 'he' ? 'your-site' : 'your-site'}
                   />
-                  <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[15px] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
+                  <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[0.9375rem] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
                     .lightor.app
                   </span>
                   <button
@@ -531,7 +531,7 @@ const Settings: React.FC = () => {
                       exit={{ opacity: 0, height: 0, marginTop: 0 }}
                       className="overflow-hidden"
                     >
-                      <p className="text-[13px] text-orange-500 dark:text-orange-400 text-start flex items-start gap-1.5 font-medium bg-orange-50 dark:bg-orange-900/10 p-2.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
+                      <p className="text-[0.8125rem] text-orange-500 dark:text-orange-400 text-start flex items-start gap-1.5 font-medium bg-orange-50 dark:bg-orange-900/10 p-2.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                         <span>
                           {language === 'he' 
@@ -648,7 +648,7 @@ const Settings: React.FC = () => {
                     checked={localWebConfig.components?.introPopup?.visible ?? false}
                     onChange={(e) => handleChange('components.introPopup', 'visible', e.target.checked)}
                   />
-                  <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
+                  <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
                   <span className="ms-2 text-sm text-light-text">
                     {localWebConfig.components?.introPopup?.visible
                       ? (language === 'he' ? 'פעיל' : 'Active')
@@ -662,7 +662,7 @@ const Settings: React.FC = () => {
                 onChange={(e) => handleChange('components.introPopup', 'value', e.target.value)}
                 rows={3}
                 placeholder={language === 'he' ? 'כתוב כאן את ההודעה שתוצג ללקוחות...' : 'Write the message to display to clients...'}
-                className="w-full bg-yellow-50/50 dark:bg-yellow-900/10 rounded-xl px-4 py-3 text-[15px] border border-yellow-200/60 dark:border-yellow-700/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[3px] focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition-all duration-300 resize-none shadow-sm"
+                className="w-full bg-yellow-50/50 dark:bg-yellow-900/10 rounded-xl px-4 py-3 text-[0.9375rem] border border-yellow-200/60 dark:border-yellow-700/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[0.1875rem] focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition-all duration-300 resize-none shadow-sm"
               />
             </div>
 

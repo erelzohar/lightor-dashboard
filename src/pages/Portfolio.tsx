@@ -81,8 +81,10 @@ const Portfolio: React.FC = () => {
         }),
         useSensor(TouchSensor, {
             activationConstraint: {
-                delay: 100, // Very fast activation
-                tolerance: 10,
+                // 250ms delay distinguishes scroll intent from drag intent on mobile
+                delay: 250,
+                // Low tolerance so any movement during delay cancels drag (lets scroll win)
+                tolerance: 5,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -321,8 +323,8 @@ const Portfolio: React.FC = () => {
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
                         autoScroll={{
-                            threshold: { x: 0, y: 0.2 },
-                            acceleration: 10,
+                            threshold: { x: 0, y: 0.15 },
+                            acceleration: 5,
                         }}
                         measuring={{
                             droppable: {

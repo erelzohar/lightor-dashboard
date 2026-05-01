@@ -25,19 +25,19 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         return {
           track: 'w-8 h-4',
           thumb: 'w-3 h-3',
-          translateX: 16 // 4 * 4px (w-4 difference)
+          translateX: '1rem' // 16px (w-4 difference)
         };
       case 'md':
         return {
           track: 'w-11 h-6',
           thumb: 'w-5 h-5',
-          translateX: 22 // 5 * 4px (w-5 difference)
+          translateX: '1.375rem' // 22px (5 * 4px + 2px offset or so)
         };
       case 'lg':
         return {
           track: 'w-14 h-7',
           thumb: 'w-6 h-6',
-          translateX: 28 // 7 * 4px (w-7 difference)
+          translateX: '1.75rem' // 28px (7 * 4px)
         };
     }
   };
@@ -48,10 +48,10 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   const getTranslateX = () => {
     if (direction === 'rtl') {
       // In RTL, when checked, move to the left (negative value)
-      return checked ? -sizeClasses.translateX : 0;
+      return checked ? `-${sizeClasses.translateX}` : '0';
     } else {
       // In LTR, when checked, move to the right (positive value)
-      return checked ? sizeClasses.translateX : 0;
+      return checked ? sizeClasses.translateX : '0';
     }
   };
 

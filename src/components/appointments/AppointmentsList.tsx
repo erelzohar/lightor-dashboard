@@ -86,7 +86,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         </h3>
       </div>
 
-      <div className="overflow-y-auto max-h-[calc(100vh-300px)] scrollbar-thin">
+      <div className="overflow-y-auto max-h-[calc(100vh-18.75rem)] scrollbar-thin">
         {sortedAppointments.length > 0 ? (
           <div className="space-y-4">
             {sortedAppointments.map((appointment, i) => (
