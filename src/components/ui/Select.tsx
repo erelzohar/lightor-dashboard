@@ -32,7 +32,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     const selectClasses =
-      "px-4 py-3 rounded-xl border text-[0.9375rem] appearance-none " +
+      "px-4 py-3 rounded-xl border text-base sm:text-[0.9375rem] appearance-none " +
       "focus:outline-none focus:ring-[0.1875rem] " +
       "transition-all duration-300 shadow-sm " +
       "bg-white dark:bg-dark-surface dark:border-gray-700/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 " +

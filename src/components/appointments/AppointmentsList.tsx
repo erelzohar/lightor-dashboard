@@ -8,6 +8,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { isToday, isTomorrow, format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
+import { useTranslation } from 'react-i18next';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -19,6 +20,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   onAppointmentClick
 }) => {
   const { language, direction } = useTheme();
+  const { t } = useTranslation();
   const locale = language === 'he' ? he : enUS;
 
   const getStatusTag = (status: string) => {
@@ -26,25 +28,25 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       case 'scheduled':
         return (
           <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs px-2.5 py-1 rounded-full font-medium">
-            {language === 'he' ? 'ממתין' : 'Scheduled'}
+            {t('appointments.scheduled')}
           </span>
         );
       case 'completed':
         return (
           <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs px-2.5 py-1 rounded-full font-medium">
-            {language === 'he' ? 'הושלם' : 'Completed'}
+            {t('appointments.completed')}
           </span>
         );
       case 'cancelled':
         return (
           <span className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 text-xs px-2.5 py-1 rounded-full font-medium">
-            {language === 'he' ? 'בוטל' : 'Cancelled'}
+            {t('appointments.cancelled')}
           </span>
         );
       case 'ongoing':
         return (
           <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-2.5 py-1 rounded-full font-medium">
-            {language === 'he' ? 'בתהליך' : 'Ongoing'}
+            {t('appointments.ongoing')}
           </span>
         );
       default:
@@ -70,10 +72,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     const time = formatTime(date);
 
     if (isToday(date)) {
-      return `${language === 'he' ? 'היום' : 'Today'}, ${time}`;
+      return `${t('appointments.today')}, ${time}`;
     }
     if (isTomorrow(date)) {
-      return `${language === 'he' ? 'מחר' : 'Tomorrow'}, ${time}`;
+      return `${t('appointments.tomorrow')}, ${time}`;
     }
     return `${format(date, 'PPP', { locale })}, ${time}`;
   };
@@ -82,7 +84,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     <Card className="h-full overflow-hidden w-full mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-semibold text-xl">
-          {language === 'he' ? 'תורים קרובים' : 'Upcoming Appointments'}
+          {t('appointments.upcoming')}
         </h3>
       </div>
 
@@ -98,7 +100,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 onClick={() => onAppointmentClick(appointment)}
                 className="group cursor-pointer"
               >
-                <div className={`bg-light-surface p-4 rounded-xl border border-light-gray/10 shadow-sm 
+                <div className={`bg-light-surface p-4 rounded-xl border border-light-gray/10 shadow-sm
                   hover:shadow-md hover:border-primary/20 transition-all duration-200 transform hover:-translate-y-1
                   dark:shadow-none dark:hover:shadow-none dark:hover:bg-dark-surface/50
                   ${direction === 'rtl' ? 'text-right' : 'text-left'}`}>
@@ -126,7 +128,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         href={`tel:${formatPhoneNumber(appointment.phone)}`}
                         onClick={(e) => e.stopPropagation()}
                         className="p-2 rounded-full bg-[#088F8F] text-white hover:bg-[#088F8F]/80 transition-colors"
-                        title={language === 'he' ? 'התקשר' : 'Call'}
+                        title={t('appointments.call')}
                       >
                         <Phone size={16} />
                       </a>
@@ -150,11 +152,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                       <div className="flex items-center text-light-gray">
                         <Clock size={14} className={direction === 'rtl' ? 'ml-1' : 'mr-1'} />
                         <span>
-                          {Number(appointment.type.durationMS) / 60000} {language === 'he' ? 'דקות' : 'minutes'}
+                          {Number(appointment.type.durationMS) / 60000} {t('appointments.minutes')}
                         </span>
                       </div>
                       <span className="font-medium text-primary">
-                        {language === 'he' ? '₪' : '$'}{appointment.type.price}
+                        {t('appointments.currencySymbol')}{appointment.type.price}
                       </span>
                     </div>
                   </div>
@@ -166,7 +168,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           <div className="py-12 text-center">
             <Calendar size={48} className="mx-auto mb-4 text-light-gray/50" />
             <p className="text-light-gray text-lg">
-              {language === 'he' ? 'אין תורים להצגה' : 'No appointments to display'}
+              {t('appointments.noAppointments')}
             </p>
           </div>
         )}

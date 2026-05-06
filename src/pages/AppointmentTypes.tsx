@@ -2,94 +2,64 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash, Timer, DollarSign, Tag } from 'lucide-react';
 import { AppointmentType } from '../types';
-//import { getAppointmentTypes, createAppointmentType, updateAppointmentType, deleteAppointmentType } from '../services/appointmentsApi';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import toast from 'react-hot-toast';
 import { formatDuration } from '../utils/dateUtils';
-import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { useDispatch } from 'react-redux';
 import { createAppointmentType, deleteAppointmentType, fetchAppointmentTypes, updateAppointmentType } from '../store/slices/appointmentsSlice';
 import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useTranslation } from 'react-i18next';
 
 const AppointmentTypes: React.FC = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentType, setCurrentType] = useState<AppointmentType | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    durationMS: ''
-  });
-  const { language } = useTheme();
+  const [formData, setFormData] = useState({ name: '', price: '', durationMS: '' });
   const { auth } = useAuth();
-  document.title = language === "he" ? "סוגי שירותים" : "Appointment Types";
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
   const dispatch = useAppDispatch();
 
+  document.title = t('appointmentTypes.title');
+
   useEffect(() => {
     if (appointmentTypes.length === 0 && auth.user) {
-      dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
-    }
-    else setIsLoading(false);
+      dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }))
+        .finally(() => setIsLoading(false));
+    } else setIsLoading(false);
   }, [appointmentTypes]);
 
   const handleAddNew = () => {
     setCurrentType(null);
-    setFormData({
-      name: '',
-      price: '',
-      durationMS: '1800000' // Default 30 minutes
-    });
+    setFormData({ name: '', price: '', durationMS: '1800000' });
     setIsEditing(true);
   };
 
   const handleEdit = (type: AppointmentType) => {
     setCurrentType(type);
-    setFormData({
-      name: type.name,
-      price: type.price,
-      durationMS: type.durationMS
-    });
+    setFormData({ name: type.name, price: type.price, durationMS: type.durationMS });
     setIsEditing(true);
   };
 
   const handleDelete = async (type: AppointmentType) => {
-    if (!confirm(language === 'he'
-      ? `האם אתה בטוח שברצונך למחוק את "${type.name}"?`
-      : `Are you sure you want to delete "${type.name}"?`)) {
-      return;
-    }
+    if (!confirm(t('appointmentTypes.deleteConfirm', { name: type.name }))) return;
 
     try {
       await dispatch(deleteAppointmentType(type._id));
-      toast.success(
-        language === 'he'
-          ? 'סוג הפגישה נמחק בהצלחה'
-          : 'Appointment type deleted successfully'
-      );
+      toast.success(t('appointmentTypes.deleteSuccess'));
     } catch (error) {
-      toast.error(
-        language === 'he'
-          ? 'אירעה שגיאה במחיקת סוג הפגישה'
-          : 'Failed to delete appointment type'
-      );
+      toast.error(t('appointmentTypes.deleteError'));
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    // Convert duration from minutes to milliseconds
     if (name === 'durationMinutes') {
       const minutes = parseInt(value) || 0;
-      setFormData(prev => ({
-        ...prev,
-        durationMS: (minutes * 60 * 1000).toString()
-      }));
+      setFormData(prev => ({ ...prev, durationMS: (minutes * 60 * 1000).toString() }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -97,38 +67,21 @@ const AppointmentTypes: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       if (currentType) {
-        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData } }))
-        toast.success(
-          language === 'he'
-            ? 'סוג הפגישה עודכן בהצלחה'
-            : 'Appointment type updated successfully'
-        );
+        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData } }));
+        toast.success(t('appointmentTypes.updateSuccess'));
       } else {
         await dispatch(createAppointmentType({ ...formData, webConfig_id: auth.user.webConfig_id }));
-        toast.success(
-          language === 'he'
-            ? 'סוג הפגישה נוסף בהצלחה'
-            : 'Appointment type added successfully'
-        );
+        toast.success(t('appointmentTypes.addSuccess'));
       }
-
       setIsEditing(false);
     } catch (error) {
-      toast.error(
-        language === 'he'
-          ? 'אירעה שגיאה בשמירת סוג הפגישה'
-          : 'Failed to save appointment type'
-      );
+      toast.error(t('appointmentTypes.saveError'));
     }
   };
 
-  const getDurationMinutes = () => {
-    const ms = parseInt(formData.durationMS);
-    return Math.floor(ms / 60000);
-  };
+  const getDurationMinutes = () => Math.floor(parseInt(formData.durationMS) / 60000);
 
   return (
     <motion.div
@@ -136,19 +89,15 @@ const AppointmentTypes: React.FC = () => {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
-      {/* Page Title */}
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <Tag className="text-primary w-5 h-5" />
           <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
-            {language === 'he' ? 'ניהול סוגי שירותים' : 'Service Types'}
+            {t('appointmentTypes.title')}
           </h1>
         </div>
         <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-          {language === 'he'
-            ? 'ניהול השירותים השונים שהעסק שלך מציע'
-            : 'Manage the different services your business offers'
-          }
+          {t('appointmentTypes.description')}
         </p>
       </div>
 
@@ -162,16 +111,13 @@ const AppointmentTypes: React.FC = () => {
           >
             <Card>
               <h3 className="font-semibold text-lg mb-4">
-                {currentType
-                  ? (language === 'he' ? 'עריכת שירות' : 'Edit Service')
-                  : (language === 'he' ? 'שירות חדש' : 'New Service')
-                }
+                {currentType ? t('appointmentTypes.editService') : t('appointmentTypes.newService')}
               </h3>
 
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <Input
-                    label={language === 'he' ? 'שם השירות' : 'Service Name'}
+                    label={t('appointmentTypes.serviceName')}
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
@@ -181,7 +127,7 @@ const AppointmentTypes: React.FC = () => {
                   />
 
                   <Input
-                    label={language === 'he' ? 'מחיר (₪)' : 'Price ($)'}
+                    label={t('appointmentTypes.price')}
                     name="price"
                     type="number"
                     min="0"
@@ -193,7 +139,7 @@ const AppointmentTypes: React.FC = () => {
                   />
 
                   <Input
-                    label={language === 'he' ? 'משך (דקות)' : 'Duration (minutes)'}
+                    label={t('appointmentTypes.duration')}
                     name="durationMinutes"
                     type="number"
                     min="5"
@@ -206,40 +152,27 @@ const AppointmentTypes: React.FC = () => {
                 </div>
 
                 <div className="flex justify-around space-x-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="danger"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    {language === 'he' ? 'ביטול' : 'Cancel'}
+                  <Button type="button" variant="danger" onClick={() => setIsEditing(false)}>
+                    {t('common.cancel')}
                   </Button>
-
-                  <Button
-                    type="submit"
-                    variant="primary"
-                  >
-                    {language === 'he' ? 'שמור' : 'Save'}
+                  <Button type="submit" variant="primary">
+                    {t('common.save')}
                   </Button>
                 </div>
               </form>
             </Card>
           </motion.div>
         )}
+
         {/* Appointment Types List */}
         <div className="md:col-span-2">
           <Card>
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-lg">
-                {language === 'he' ? 'שירותים' : 'Services'}
+                {t('appointmentTypes.services')}
               </h3>
-
-              <Button
-                onClick={handleAddNew}
-                leftIcon={<Plus size={16} />}
-                variant="primary"
-                size="sm"
-              >
-                {language === 'he' ? 'הוסף חדש' : 'Add New'}
+              <Button onClick={handleAddNew} leftIcon={<Plus size={16} />} variant="primary" size="sm">
+                {t('appointmentTypes.addNew')}
               </Button>
             </div>
 
@@ -263,15 +196,13 @@ const AppointmentTypes: React.FC = () => {
                       <div className="flex justify-between">
                         <div>
                           <h4 className="font-medium text-lg">{type.name}</h4>
-
                           <div className="flex items-center mt-2">
                             <div className="flex items-center mr-4">
                               <DollarSign size={16} className="mr-1 text-green-500" />
                               <span className="text-light-text">
-                                {language === 'he' ? '₪' : '$'}{type.price}
+                                {t('appointments.currencySymbol')}{type.price}
                               </span>
                             </div>
-
                             <div className="flex items-center">
                               <Timer size={16} className="mr-1 text-blue-500" />
                               <span className="text-light-text">
@@ -285,15 +216,14 @@ const AppointmentTypes: React.FC = () => {
                           <button
                             onClick={() => handleEdit(type)}
                             className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition"
-                            aria-label="Edit"
+                            aria-label={t('common.edit')}
                           >
                             <Edit size={18} />
                           </button>
-
                           <button
                             onClick={() => handleDelete(type)}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-full transition"
-                            aria-label="Delete"
+                            aria-label={t('common.delete')}
                           >
                             <Trash size={18} />
                           </button>
@@ -304,16 +234,10 @@ const AppointmentTypes: React.FC = () => {
                 ) : (
                   <div className="py-8 text-center">
                     <p className="text-light-gray mb-4">
-                      {language === 'he'
-                        ? 'אין סוגי שירותים להצגה'
-                        : 'No service types to display'
-                      }
+                      {t('appointmentTypes.noServices')}
                     </p>
-                    <Button
-                      onClick={handleAddNew}
-                      variant="primary"
-                    >
-                      {language === 'he' ? 'הוסף שירות חדש' : 'Add New Service'}
+                    <Button onClick={handleAddNew} variant="primary">
+                      {t('appointmentTypes.addNewService')}
                     </Button>
                   </div>
                 )}

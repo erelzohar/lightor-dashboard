@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, auth } = useAuth();
@@ -55,32 +57,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     {
       path: '/dashboard',
       Icon: LayoutDashboard,
-      name: direction === 'rtl' ? 'לוח בקרה' : 'Dashboard',
+      name: t('common.dashboard'),
     },
     {
       path: '/dashboard/appointments',
       Icon: CalendarRange,
-      name: direction === 'rtl' ? 'התורים שלך' : 'Appointments',
+      name: t('common.appointments'),
     },
     {
       path: '/dashboard/schedule-vacations',
       Icon: Calendar,
-      name: direction === 'rtl' ? 'לוח זמנים וחופשות' : 'Schedule & Vacations',
+      name: t('common.scheduleVacations'),
     },
     {
       path: '/dashboard/appointment-types',
       Icon: Tag,
-      name: direction === 'rtl' ? 'סוגי שירותים' : 'Service Types',
+      name: t('common.serviceTypes'),
     },
     {
       path: '/dashboard/portfolio',
       Icon: ImageIcon,
-      name: direction === 'rtl' ? 'גלריה' : 'Portfolio',
+      name: t('common.portfolio'),
     },
     {
       path: '/dashboard/settings',
       Icon: Settings,
-      name: direction === 'rtl' ? 'הגדרות' : 'Settings',
+      name: t('common.settings'),
     },
   ];
 
@@ -160,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <button
               onClick={toggleSidebar}
               className="p-2 rounded-lg hover:bg-light-gray/10 transition-colors"
-              aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
+              aria-label={isOpen ? t('sidebar.closeSidebar') : t('sidebar.openSidebar')}
             >
               <ChevronIcon size={20} className="text-light-text" />
             </button>
@@ -246,27 +248,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                       {auth.user?.name || 'Admin User'}
                     </p>
                     <p className="text-xs text-light-gray truncate">
-                      הגדרות חשבון
+                      {t('common.accountSettings')}
                       {/* {auth.user?.email || 'admin@example.com'} */}
                     </p>
                   </div>
                 </div>
 
-                {/* <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-xs">
                   <span className={`px-2 py-1 rounded-md ${
                     auth.user?.subscription === 'premium' 
                       ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-light- text-light-gray'
+                      : 'bg-light-surface text-light-gray'
                   }`}>
                     {auth.user?.subscription === 'premium' 
-                      ? (language === 'he' ? 'חשבון פרימיום' : 'Premium Account')
-                      : (language === 'he' ? 'חשבון בסיסי' : 'Basic Account')
+                      ? t('common.premiumAccount')
+                      : t('common.basicAccount')
                     }
                   </span>
                   <button className="text-primary hover:underline">
-                    {language === 'he' ? 'שדרוג' : 'Upgrade'}
+                    {t('common.upgrade')}
                   </button>
-                </div> */}
+                </div>
               </div>
 
               <div className="h-px bg-gradient-to-r from-transparent via-light-gray/20 to-transparent my-2" />
@@ -281,7 +283,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <LogOut size={22} className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
             {isOpen && (
               <span className={`${direction === 'rtl' ? 'mr-3' : 'ml-3'} truncate`}>
-                {language === 'he' ? 'התנתקות' : 'Logout'}
+                {t('common.logout')}
               </span>
             )}
           </button>

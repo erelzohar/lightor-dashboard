@@ -3,26 +3,28 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Moon, Sun, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface TopBarProps {
   toggleSidebar: () => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { direction, language, darkMode, toggleDarkMode } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications] = useState([
     {
       id: 1,
-      title: language === 'he' ? 'תור חדש' : 'New Appointment',
-      message: language === 'he' ? 'נקבע תור חדש ל-12:30' : 'New appointment scheduled for 12:30',
+      title: t('notifications.newAppointment'),
+      message: t('notifications.newAppointmentMsg', { time: '12:30' }),
       time: '5m'
     },
     {
       id: 2,
-      title: language === 'he' ? 'ביטול תור' : 'Appointment Cancelled',
-      message: language === 'he' ? 'התור ל-15:00 בוטל' : 'Appointment for 15:00 was cancelled',
+      title: t('notifications.appointmentCancelled'),
+      message: t('notifications.appointmentCancelledMsg', { time: '15:00' }),
       time: '1h'
     }
   ]);
@@ -31,21 +33,21 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
   const getPageTitle = () => {
     switch (location.pathname) {
       case '/dashboard':
-        return direction === 'rtl' ? 'לוח בקרה' : 'Dashboard';
+        return t('common.dashboard');
       case '/dashboard/appointments':
-        return direction === 'rtl' ? 'התורים שלך' : 'Appointments';
+        return t('common.appointments');
       case '/dashboard/schedule-vacations':
-        return direction === 'rtl' ? 'לוח זמנים וחופשות' : 'Work Hours & Vacations';
+        return t('common.scheduleVacations');
       case '/dashboard/appointment-types':
-        return direction === 'rtl' ? 'סוגי שירותים' : 'Service Types';
+        return t('common.serviceTypes');
       case '/dashboard/settings':
-        return direction === 'rtl' ? 'הגדרות' : 'Settings';
+        return t('common.settings');
       case '/dashboard/portfolio':
-        return direction === 'rtl' ? 'גלריה' : 'Portfolio';
+        return t('common.portfolio');
       case '/dashboard/account':
-        return direction === 'rtl' ? 'חשבון' : 'Account';
+        return t('common.account');
       default:
-        return direction === 'rtl' ? 'לוח בקרה' : 'Dashboard';
+        return t('common.dashboard');
     }
   };
 
@@ -82,7 +84,7 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
           <button
             onClick={toggleDarkMode}
             className="p-2 text-light-text hover:bg-light-gray/10 rounded-full transition-colors"
-            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            title={darkMode ? t('topbar.switchToLight') : t('topbar.switchToDark')}
           >
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
@@ -108,7 +110,7 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
                   <div className="p-4 border-b border-light-gray/10">
                     <div className="flex items-center justify-between" style={{ direction }}>
                       <h3 className="font-semibold text-light-text">
-                        {language === 'he' ? 'התראות' : 'Notifications'}
+                        {t('common.notifications')}
                       </h3>
                       <button
                         onClick={() => setShowNotifications(false)}
@@ -137,7 +139,7 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
 
                   <div className="p-3 text-center border-t border-light-gray/10">
                     <button className="text-sm text-primary hover:underline">
-                      {language === 'he' ? 'צפה בכל ההתראות' : 'View all notifications'}
+                      {t('common.viewAllNotifications')}
                     </button>
                   </div>
                 </motion.div>

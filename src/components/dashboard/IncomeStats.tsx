@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { Appointment } from '../../types';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import Card from '../ui/Card';
 
@@ -11,7 +11,7 @@ interface IncomeStatsProps {
 }
 
 const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
-  const { language } = useTheme();
+  const { t } = useTranslation();
 
   const calculateIncome = (appointments: Appointment[], startDate: Date, endDate: Date) => {
     return appointments
@@ -47,7 +47,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
 
   const stats = [
     {
-      title: language === 'he' ? 'הכנסות היום' : "Today's Income",
+      title: t('incomeStats.today'),
       value: todayIncome,
       appointments: todayAppointments,
       icon: <Calendar className="text-blue-500" />,
@@ -55,7 +55,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       delay: 0.1,
     },
     {
-      title: language === 'he' ? 'הכנסות השבוע' : 'Weekly Income',
+      title: t('incomeStats.weekly'),
       value: weekIncome,
       appointments: weekAppointments,
       icon: <TrendingUp className="text-green-500" />,
@@ -63,7 +63,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       delay: 0.2,
     },
     {
-      title: language === 'he' ? 'הכנסות החודש' : 'Monthly Income',
+      title: t('incomeStats.monthly'),
       value: monthIncome,
       appointments: monthAppointments,
       icon: <DollarSign className="text-violet-500" />,
@@ -83,16 +83,15 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
           className="relative overflow-hidden shadow-md rounded-lg"
         >
           <Card className="h-full">
-
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-light-gray text-sm">{stat.title}</p>
                 <div className="flex items-baseline mt-1">
                   <h4 className="text-2xl font-bold">
-                    {language === 'he' ? '₪' : '$'}{stat.value.toLocaleString()}
+                    {t('appointments.currencySymbol')}{stat.value.toLocaleString()}
                   </h4>
                   <span className="text-light-gray text-sm italic mx-2">
-                    / {stat.appointments} {language === 'he' ? 'תורים' : 'appointments'}
+                    / {stat.appointments} {t('incomeStats.appointments')}
                   </span>
                 </div>
               </div>

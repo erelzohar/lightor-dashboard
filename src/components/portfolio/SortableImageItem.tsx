@@ -4,12 +4,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { Trash2, Edit2, Check, X as XIcon } from 'lucide-react';
 import { PortfolioItem } from '../../types';
 import globals from '../../services/globals';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     item: PortfolioItem;
     onRemove: (url: string) => void;
     onUpdateTitle: (url: string, newTitle: string) => void;
-    language: string;
 }
 
 export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
@@ -19,7 +19,6 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting?: boolean;
     isEditing?: boolean;
     editTitle?: string;
-    language: string;
     onEditClick?: () => void;
     onRemoveClick?: () => void;
     onSaveTitle?: (title: string) => void;
@@ -35,7 +34,6 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting,
     isEditing,
     editTitle,
-    language,
     onEditClick,
     onRemoveClick,
     onSaveTitle,
@@ -45,6 +43,8 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     attributes,
     listeners
 }, ref) => {
+    const { t } = useTranslation();
+
     return (
         <div
             ref={ref}
@@ -80,7 +80,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                 value={editTitle}
                                 onChange={e => onTitleChange?.(e.target.value)}
                                 className="w-full bg-white/20 text-white placeholder-white/60 border border-white/20 rounded-md px-2 py-1.5 text-base md:text-sm focus:outline-none focus:border-primary transition-colors pointer-events-auto"
-                                placeholder={language === 'he' ? 'הכנס כותרת...' : 'Enter title...'}
+                                placeholder={t('portfolio.enterTitle')}
                                 autoFocus
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') onSaveTitle?.(editTitle || '');
@@ -91,14 +91,14 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onCancelEdit?.(); }}
                                     className="p-1.5 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer touch-manipulation"
-                                    aria-label={language === 'he' ? 'ביטול' : 'Cancel'}
+                                    aria-label={t('common.cancel')}
                                 >
                                     <XIcon size={16} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onSaveTitle?.(editTitle || ''); }}
                                     className="p-1.5 rounded-md bg-primary hover:bg-primary-dark text-white transition-colors shadow-md cursor-pointer touch-manipulation"
-                                    aria-label={language === 'he' ? 'שמירה' : 'Save'}
+                                    aria-label={t('common.save')}
                                 >
                                     <Check size={16} />
                                 </button>
@@ -109,7 +109,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                             <div className="text-white text-sm font-medium drop-shadow-md truncate max-w-[55%] flex-1">
                                 {item.title ? item.title : (
                                     <span className="opacity-70 italic font-normal text-xs">
-                                        {language === 'he' ? 'הוסף כותרת...' : 'Add title...'}
+                                        {t('portfolio.addTitle')}
                                     </span>
                                 )}
                             </div>
@@ -120,7 +120,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                         onEditClick?.();
                                     }}
                                     className="p-2 bg-white/30 md:bg-white/20 hover:bg-white/40 rounded-lg text-white backdrop-blur-sm transition-colors cursor-pointer touch-manipulation"
-                                    aria-label={language === 'he' ? 'ערוך כותרת' : 'Edit title'}
+                                    aria-label={t('portfolio.editTitle')}
                                 >
                                     <Edit2 size={16} />
                                 </button>
@@ -130,7 +130,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                         onRemoveClick?.();
                                     }}
                                     className="p-2 bg-red-500/90 md:bg-red-500/80 hover:bg-red-600 rounded-lg text-white backdrop-blur-sm transition-colors cursor-pointer touch-manipulation"
-                                    aria-label={language === 'he' ? 'מחק תמונה' : 'Delete image'}
+                                    aria-label={t('portfolio.deleteImage')}
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -143,7 +143,8 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     );
 });
 
-const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, language }) => {
+const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) => {
+    const { t } = useTranslation();
     const {
         attributes,
         listeners,
@@ -163,13 +164,11 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, lan
     };
 
     const style = {
-        // CSS.Translate avoids scale jumps that CSS.Transform can introduce on mobile
         transform: CSS.Translate.toString(transform),
         transition: isDragging ? 'none' : transition,
         zIndex: isDragging ? 2 : 1,
     };
 
-    // Determine the full image URL
     const imageUrl = item.url.startsWith('http')
         ? item.url
         : `${globals.imagesUrl}${item.url}`;
@@ -183,13 +182,12 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle, lan
             isSorting={isSorting}
             isEditing={isEditing}
             editTitle={editTitle}
-            language={language}
             onEditClick={() => {
                 setIsEditing(true);
                 setEditTitle(item.title || '');
             }}
             onRemoveClick={() => {
-                if (window.confirm(language === 'he' ? 'האם אתה בטוח שברצונך למחוק תמונה זו?' : 'Are you sure you want to delete this image?')) {
+                if (window.confirm(t('portfolio.deleteImageConfirm'))) {
                     onRemove(item.url);
                 }
             }}

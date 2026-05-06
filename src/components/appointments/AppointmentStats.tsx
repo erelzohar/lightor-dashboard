@@ -1,9 +1,9 @@
 import React from 'react';
-import { CalendarCheck, Users, Hourglass, XCircle } from 'lucide-react';
+import { Hourglass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Card from '../ui/Card';
 import { Appointment } from '../../types';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface StatCardProps {
   title: string;
@@ -43,53 +43,22 @@ interface AppointmentStatsProps {
 }
 
 const AppointmentStats: React.FC<AppointmentStatsProps> = ({ appointments }) => {
-  const { language } = useTheme();
+  const { t } = useTranslation();
 
-  const totalAppointments = appointments.length;
-  
-  const completedAppointments = appointments.filter(
-    (appointment) => appointment.status === 'completed'
-  ).length;
-  
   const upcomingAppointments = appointments.filter(
-    (appointment) => 
-      appointment.status === 'scheduled' && 
+    (appointment) =>
+      appointment.status === 'scheduled' &&
       parseInt(appointment.timestamp) > Date.now()
-  ).length;
-  
-  const cancelledAppointments = appointments.filter(
-    (appointment) => appointment.status === 'cancelled'
   ).length;
 
   const stats = [
-    // {
-    //   title: language === 'he' ? 'סך התורים' : 'Total Appointments',
-    //   value: totalAppointments,
-    //   icon: <CalendarCheck className="text-blue-500" size={24} />,
-    //   color: 'bg-blue-100',
-    //   delay: 0.1,
-    // },
     {
-      title: language === 'he' ? 'תורים לביצוע' : 'Upcoming',
+      title: t('appointmentStats.upcoming'),
       value: upcomingAppointments,
       icon: <Hourglass className="text-violet-500" size={24} />,
       color: 'bg-violet-100',
       delay: 0.2,
     },
-    // {
-    //   title: language === 'he' ? 'הושלמו' : 'Completed',
-    //   value: completedAppointments,
-    //   icon: <CalendarCheck className="text-green-500" size={24} />,
-    //   color: 'bg-green-100',
-    //   delay: 0.3,
-    // },
-    // {
-    //   title: language === 'he' ? 'בוטלו' : 'Cancelled',
-    //   value: cancelledAppointments,
-    //   icon: <XCircle className="text-red-500" size={24} />,
-    //   color: 'bg-red-100',
-    //   delay: 0.4,
-    // },
   ];
 
   return (

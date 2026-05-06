@@ -22,7 +22,6 @@ import {
     rectSortingStrategy,
 } from '@dnd-kit/sortable';
 
-import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -30,9 +29,10 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import { uploadImage } from '../services/imagesApi';
 import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const Portfolio: React.FC = () => {
-    const { language } = useTheme();
+    const { t } = useTranslation();
     const { auth } = useAuth();
     const dispatch = useAppDispatch();
 
@@ -41,11 +41,9 @@ const Portfolio: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-
-    // Local state for instant UI updates during drag & drop before saving 
     const [items, setItems] = useState(webConfig?.components?.portfolio?.items || []);
 
-    document.title = language === 'he' ? 'גלריה' : 'Portfolio';
+    document.title = t('portfolio.title');
 
     const fetchWebConfigData = async () => {
         try {
@@ -53,18 +51,12 @@ const Portfolio: React.FC = () => {
                 await dispatch(fetchWebConfig(auth.user.webConfig_id));
             }
         } catch (error) {
-            toast.error(
-                language === 'he'
-                    ? 'אירעה שגיאה בטעינת ההגדרות'
-                    : 'Failed to load settings'
-            );
+            toast.error(t('portfolio.loadFailed'));
         }
     };
 
     useEffect(() => {
-        if (!webConfig) {
-            fetchWebConfigData();
-        }
+        if (!webConfig) fetchWebConfigData();
     }, [webConfig]);
 
     useEffect(() => {
@@ -74,58 +66,29 @@ const Portfolio: React.FC = () => {
     }, [webConfig]);
 
     const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: 5,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                // 250ms delay distinguishes scroll intent from drag intent on mobile
-                delay: 250,
-                // Low tolerance so any movement during delay cancels drag (lets scroll win)
-                tolerance: 5,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
+        useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
     const saveUpdatedItems = async (newItems: PortfolioItem[]) => {
         if (!webConfig) return;
         setIsSaving(true);
-
         try {
             const payload: any = {
                 _id: webConfig._id,
                 components: {
                     ...webConfig.components,
-                    portfolio: {
-                        ...webConfig.components.portfolio,
-                        items: newItems,
-                    },
+                    portfolio: { ...webConfig.components.portfolio, items: newItems },
                 },
             };
 
             const res = await dispatch(updateWebConfig(payload));
+            if (updateWebConfig.rejected.match(res)) throw new Error('Update rejected');
 
-            if (updateWebConfig.rejected.match(res)) {
-                throw new Error('Update rejected');
-            }
-
-            toast.success(
-                language === 'he'
-                    ? 'הגלריה עודכנה בהצלחה'
-                    : 'Portfolio updated successfully'
-            );
+            toast.success(t('portfolio.updateSuccess'));
         } catch (error) {
-            toast.error(
-                language === 'he'
-                    ? 'שגיאה בשמירת הגלריה'
-                    : 'Error saving portfolio'
-            );
-            // Revert UI to DB state on fail
+            toast.error(t('portfolio.updateError'));
             setItems(webConfig.components.portfolio.items || []);
         } finally {
             setIsSaving(false);
@@ -134,37 +97,21 @@ const Portfolio: React.FC = () => {
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
-
         if (active.id !== over?.id && over) {
             const oldIndex = items.findIndex((item) => item.url === active.id);
             const newIndex = items.findIndex((item) => item.url === over.id);
-
             const newItems = arrayMove(items, oldIndex, newIndex);
             setItems(newItems);
-
-            // Persist changes
             await saveUpdatedItems(newItems);
         }
     };
 
     const handleRemoveImage = async (url: string) => {
-        // Optimistic UI update
         const newItems = items.filter(item => item.url !== url);
         setItems(newItems);
-
         try {
-            // 1. Send call to actually delete it
-            // if it's external full URL or internally hosted? 
-            // Assuming imagesApi.deleteImage expects the string identifier
-            // try {
-            //   await deleteImage(url);
-            // } catch(e) { console.log('Delete image silently failed', e); }
-
-            // 2. update DB configuration
             await saveUpdatedItems(newItems);
-
         } catch (e) {
-            // Revert if failed
             setItems(items);
         }
     };
@@ -177,18 +124,13 @@ const Portfolio: React.FC = () => {
         try {
             await saveUpdatedItems(newItems);
         } catch (e) {
-            setItems(items); // Revert on fail
+            setItems(items);
         }
     };
 
-
     const handleUploadNewImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (items.length >= 12) {
-            toast.error(
-                language === 'he'
-                    ? 'הגעת למקסימום התמונות האפשרי (12)'
-                    : 'You have reached the maximum number of images (12)'
-            );
+            toast.error(t('portfolio.maxImages'));
             return;
         }
 
@@ -197,34 +139,21 @@ const Portfolio: React.FC = () => {
 
         setIsLoading(true);
         try {
-            // Compress and fix EXIF orientation
-            const options = {
-                maxSizeMB: 2,
-                maxWidthOrHeight: 1920,
-                useWebWorker: true,
-                alwaysKeepResolution: true
-            };
+            const options = { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true, alwaysKeepResolution: true };
             const compressedFile = await imageCompression(file, options);
 
             const imgResponse = await uploadImage(compressedFile);
             if (!imgResponse) throw new Error("Failed to upload image");
 
-            const newItem: PortfolioItem = {
-                url: imgResponse.imageName,
-                title: '',
-                description: '',
-            };
-
+            const newItem: PortfolioItem = { url: imgResponse.imageName, title: '', description: '' };
             const newItems = [...items, newItem];
             setItems(newItems);
             await saveUpdatedItems(newItems);
-
         } catch (error) {
             console.log(error);
-            toast.error(language === 'he' ? 'שגיאה בהעלאת התמונה' : 'Error uploading image');
+            toast.error(t('portfolio.uploadError'));
         } finally {
             setIsLoading(false);
-            // reset file input
             e.target.value = '';
         }
     };
@@ -252,12 +181,9 @@ const Portfolio: React.FC = () => {
         >
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <SectionHeader
-                        icon={ImageIcon}
-                        title={language === 'he' ? 'ניהול גלריית תמונות' : 'Manage Portfolio'}
-                    />
+                    <SectionHeader icon={ImageIcon} title={t('portfolio.title')} />
                     <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-                        {language === 'he' ? 'גרור תמונות כדי לשנות את סדר התצוגה שלהן' : 'Drag and drop images to reorder them'}
+                        {t('portfolio.description')}
                     </p>
                     <p className="text-sm font-medium mt-2">
                         <span className={items.length >= 12 ? 'text-red-500' : 'text-primary'}>
@@ -267,7 +193,6 @@ const Portfolio: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Upload Button */}
                 <div>
                     <label
                         htmlFor={items.length >= 12 ? undefined : "portfolio-image-upload"}
@@ -278,11 +203,7 @@ const Portfolio: React.FC = () => {
                         onClick={(e) => {
                             if (items.length >= 12) {
                                 e.preventDefault();
-                                toast.error(
-                                    language === 'he'
-                                        ? 'ניתן להוסיף עד 12 תמונות לגלריה'
-                                        : 'You can add up to 12 images to the portfolio'
-                                );
+                                toast.error(t('portfolio.maxImagesLabel'));
                             }
                         }}
                     >
@@ -291,7 +212,7 @@ const Portfolio: React.FC = () => {
                         ) : (
                             <Plus className="w-4 h-4" />
                         )}
-                        {language === 'he' ? 'תמונה חדשה' : 'New Image'}
+                        {t('portfolio.newImage')}
                     </label>
                     <input
                         id="portfolio-image-upload"
@@ -309,12 +230,10 @@ const Portfolio: React.FC = () => {
                     <div className="flex flex-col items-center justify-center py-16 text-light-text text-center">
                         <ImageIcon className="w-16 h-16 text-light-gray mb-4" />
                         <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
-                            {language === 'he' ? 'הגלריה ריקה' : 'Portfolio is empty'}
+                            {t('portfolio.empty')}
                         </h4>
                         <p className="text-sm max-w-sm">
-                            {language === 'he'
-                                ? 'לא נמצאו תמונות בגלריה שלך. אנא לחץ על כפתור ״הוסף תמונה חדשה״ במעלה העמוד כדי להוסיף את התמונה הראשונה.'
-                                : 'No images found in your portfolio. Click "Add New Image" at the top to add your first photo.'}
+                            {t('portfolio.emptyDesc')}
                         </p>
                     </div>
                 ) : (
@@ -322,15 +241,8 @@ const Portfolio: React.FC = () => {
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
-                        autoScroll={{
-                            threshold: { x: 0, y: 0.15 },
-                            acceleration: 5,
-                        }}
-                        measuring={{
-                            droppable: {
-                                strategy: MeasuringStrategy.Always,
-                            },
-                        }}
+                        autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 5 }}
+                        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
                     >
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <SortableContext items={items.map((i: any) => i.url)} strategy={rectSortingStrategy}>
@@ -340,7 +252,6 @@ const Portfolio: React.FC = () => {
                                         item={item}
                                         onRemove={handleRemoveImage}
                                         onUpdateTitle={handleUpdateTitle}
-                                        language={language}
                                     />
                                 ))}
                             </SortableContext>
@@ -348,7 +259,6 @@ const Portfolio: React.FC = () => {
                     </DndContext>
                 )}
             </div>
-
         </motion.div>
     );
 };

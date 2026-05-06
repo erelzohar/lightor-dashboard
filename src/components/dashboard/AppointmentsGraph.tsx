@@ -9,6 +9,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
+import { useTranslation } from 'react-i18next';
 
 interface AppointmentsGraphProps {
   appointments: Appointment[];
@@ -18,6 +19,7 @@ type TimeRange = 'week' | 'month' | 'year' | 'all';
 
 const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) => {
   const { language, direction, darkMode } = useTheme();
+  const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1300);
@@ -35,40 +37,25 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
     const now = currentDate;
     switch (timeRange) {
       case 'week':
-        return {
-          start: startOfWeek(now),
-          end: endOfWeek(now)
-        };
+        return { start: startOfWeek(now), end: endOfWeek(now) };
       case 'month':
-        return {
-          start: startOfMonth(now),
-          end: endOfMonth(now)
-        };
+        return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'year':
-        return {
-          start: startOfYear(now),
-          end: endOfYear(now)
-        };
+        return { start: startOfYear(now), end: endOfYear(now) };
       case 'all':
-        return {
-          start: subYears(now, 2),
-          end: addYears(now, 2)
-        };
+        return { start: subYears(now, 2), end: addYears(now, 2) };
     }
   };
 
   const { start, end } = getDateRange();
 
-  // Filter appointments based on the current date range
   const filteredAppointments = appointments.filter(appointment => {
     const appointmentDate = new Date(parseInt(appointment.timestamp));
     return appointmentDate >= start && appointmentDate <= end;
   });
 
-  // Generate data based on time range
   const data = (() => {
     if (timeRange === 'year' || timeRange === 'all') {
-      // Monthly data for year and all views
       return eachMonthOfInterval({ start, end })
         .map(monthStart => {
           const monthEnd = endOfMonth(monthStart);
@@ -93,9 +80,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
             expectedIncome
           };
         });
-
     } else {
-      // Daily data for week and month views
       return eachDayOfInterval({ start, end })
         .map(date => {
           const dayAppointments = filteredAppointments.filter(appointment => {
@@ -126,74 +111,43 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
   })();
 
   const timeRangeOptions: { value: TimeRange; label: string }[] = [
-    { value: 'week', label: language === 'he' ? 'שבוע' : 'Week' },
-    { value: 'month', label: language === 'he' ? 'חודש' : 'Month' },
-    { value: 'year', label: language === 'he' ? 'שנה' : 'Year' },
-    { value: 'all', label: language === 'he' ? 'הכל' : 'All' }
+    { value: 'week', label: t('appointmentsGraph.week') },
+    { value: 'month', label: t('appointmentsGraph.month') },
+    { value: 'year', label: t('appointmentsGraph.year') },
+    { value: 'all', label: t('appointmentsGraph.all') }
   ];
 
   const getRangeTitle = () => {
     switch (timeRange) {
-      case 'week':
-        return language === 'he' ? 'שבועי' : 'Weekly';
-      case 'month':
-        return language === 'he' ? 'חודשי' : 'Monthly';
-      case 'year':
-        return language === 'he' ? 'שנתי' : 'Yearly';
-      case 'all':
-        return language === 'he' ? 'כל התורים' : 'All';
+      case 'week': return t('appointmentsGraph.weekly');
+      case 'month': return t('appointmentsGraph.monthly');
+      case 'year': return t('appointmentsGraph.yearly');
+      case 'all': return t('appointmentsGraph.allLabel');
     }
   };
 
   const handlePrevious = () => {
     switch (timeRange) {
-      case 'week':
-        setCurrentDate(prev => subWeeks(prev, 1));
-        break;
-      case 'month':
-        setCurrentDate(prev => {
-          const newDate = subMonths(prev, 1);
-          return startOfMonth(newDate);
-        });
-        break;
-      case 'year':
-        setCurrentDate(prev => subYears(prev, 1));
-        break;
-      case 'all':
-        setCurrentDate(prev => subYears(prev, 1));
-        break;
+      case 'week': setCurrentDate(prev => subWeeks(prev, 1)); break;
+      case 'month': setCurrentDate(prev => startOfMonth(subMonths(prev, 1))); break;
+      case 'year': setCurrentDate(prev => subYears(prev, 1)); break;
+      case 'all': setCurrentDate(prev => subYears(prev, 1)); break;
     }
   };
 
   const handleNext = () => {
     switch (timeRange) {
-      case 'week':
-        setCurrentDate(prev => addWeeks(prev, 1));
-        break;
-      case 'month':
-        setCurrentDate(prev => {
-          const newDate = addMonths(prev, 1);
-          return startOfMonth(newDate);
-        });
-        break;
-      case 'year':
-        setCurrentDate(prev => addYears(prev, 1));
-        break;
-      case 'all':
-        setCurrentDate(prev => addYears(prev, 1));
-        break;
+      case 'week': setCurrentDate(prev => addWeeks(prev, 1)); break;
+      case 'month': setCurrentDate(prev => startOfMonth(addMonths(prev, 1))); break;
+      case 'year': setCurrentDate(prev => addYears(prev, 1)); break;
+      case 'all': setCurrentDate(prev => addYears(prev, 1)); break;
     }
   };
 
   const handleReset = () => {
     const today = new Date();
-    switch (timeRange) {
-      case 'month':
-        setCurrentDate(startOfMonth(today));
-        break;
-      default:
-        setCurrentDate(today);
-    }
+    if (timeRange === 'month') setCurrentDate(startOfMonth(today));
+    else setCurrentDate(today);
   };
 
   const getCurrentPeriodLabel = () => {
@@ -212,7 +166,6 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
     }
   };
 
-  // Check if we've reached the navigation limits (2 years in either direction)
   const isAtPastLimit = () => {
     const twoYearsAgo = subYears(new Date(), 2);
     return currentDate <= twoYearsAgo;
@@ -303,7 +256,6 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                 tick={{ fill: '#64748b', fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
-                // tickFormatter={(value) => Math.round(value).toString()}
                 allowDecimals={false}
               />
               <Tooltip
@@ -314,9 +266,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                 }}
                 formatter={(value: number, name: string) => {
                   const label = {
-                    scheduled: language === 'he' ? 'ממתינים' : 'Scheduled',
-                    completed: language === 'he' ? 'הושלמו' : 'Completed',
-                    cancelled: language === 'he' ? 'בוטלו' : 'Cancelled'
+                    scheduled: t('appointmentsGraph.scheduled'),
+                    completed: t('appointmentsGraph.completed'),
+                    cancelled: t('appointmentsGraph.cancelled')
                   }[name] || name;
                   return [value, label];
                 }}
@@ -327,35 +279,17 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                       <span>{label}</span>
                       <br />
                       <span className="text-primary font-medium mt-1">
-                        {language === 'he' ? 'צפי הכנסות : ' : 'Expected Income: '}
-                        {language === 'he' ? '₪' : '$'}
+                        {t('appointmentsGraph.expectedIncome')}
+                        {t('appointments.currencySymbol')}
                         {dayData?.expectedIncome || 0}
                       </span>
                     </>
                   );
                 }}
               />
-              <Bar
-                dataKey="scheduled"
-                stackId="a"
-                fill="#3b82f6"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={50}
-              />
-              <Bar
-                dataKey="completed"
-                stackId="a"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={50}
-              />
-              <Bar
-                dataKey="cancelled"
-                stackId="a"
-                fill="#ef4444"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={50}
-              />
+              <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+              <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />
+              <Bar dataKey="cancelled" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
             </BarChart>
           </ResponsiveContainer>
         </div>

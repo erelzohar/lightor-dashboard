@@ -7,18 +7,20 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 const Login: React.FC = () => {
   const { auth, login, loading } = useAuth();
-  const { toggleDirection, direction, language, darkMode } = useTheme();
+  const { direction } = useTheme();
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   if (auth.isAuthenticated) {
     return <Navigate to="/dashboard" />;
   }
-  document.title = language === "he" ? "התחברות" : "Login";
+  document.title = t('login.title');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,21 +49,21 @@ const Login: React.FC = () => {
             <Shield size={32} color="#fff"/>
           </motion.div>
           <h1 className="text-2xl font-bold text-light-text dark:text-dark-text mb-1">
-            {language === 'he' ? 'ברוכים הבאים' : 'Welcome Back'}
+            {t('login.welcome')}
           </h1>
           <p className="text-light-gray dark:text-dark-gray">
-            {language === 'he' ? 'התחבר כדי לנהל את העסק שלך' : 'Sign in to manage your business'}
+            {t('login.subtitle')}
           </p>
         </div>
 
         <Card>
           {auth.error && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 p-3 rounded-md mb-4 text-sm"
             >
-              {language === 'he' ? 'שם משתמש או סיסמה שגויים' : 'Invalid username or password'}
+              {t('login.invalidCredentials')}
             </motion.div>
           )}
 
@@ -70,12 +72,12 @@ const Login: React.FC = () => {
               <Input
                 id="username"
                 type="text"
-                label={language === 'he' ? 'שם משתמש' : 'Username'}
+                label={t('login.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 leftIcon={<User size={18} className="text-light-gray dark:text-dark-gray" />}
                 required
-                placeholder={language === 'he' ? 'הזן שם משתמש' : 'Enter username'}
+                placeholder={t('login.enterUsername')}
               />
             </div>
 
@@ -83,7 +85,7 @@ const Login: React.FC = () => {
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                label={language === 'he' ? 'סיסמה' : 'Password'}
+                label={t('login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 leftIcon={<Key size={18} className="text-light-gray dark:text-dark-gray" />}
@@ -92,13 +94,13 @@ const Login: React.FC = () => {
                     type="button"
                     onClick={togglePasswordVisibility}
                     className="focus:outline-none text-light-gray dark:text-dark-gray hover:text-primary dark:hover:text-primary transition-colors"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 }
                 required
-                placeholder={language === 'he' ? 'הזן סיסמה' : 'Enter password'}
+                placeholder={t('login.enterPassword')}
               />
             </div>
 
@@ -107,18 +109,9 @@ const Login: React.FC = () => {
               isLoading={loading}
               fullWidth
             >
-              {language === 'he' ? 'התחברות' : 'Sign In'}
+              {t('login.signIn')}
             </Button>
           </form>
-          
-          {/* <div className="mt-4 flex justify-center">
-            <button
-              onClick={toggleDirection}
-              className="text-sm text-primary transition-colors hover:underline"
-            >
-              {language === 'he' ? 'Switch to English' : 'החלף לעברית'}
-            </button>
-          </div> */}
         </Card>
       </motion.div>
     </div>

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { Calendar, CalendarRange, List } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Appointment } from '../types';
-import { getAppointments } from '../services/appointmentsApi';
 import AppointmentCalendar from '../components/appointments/AppointmentCalendar';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import { useTheme } from '../contexts/ThemeContext';
@@ -14,14 +12,14 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchAppointments } from '../store/slices/appointmentsSlice';
 import { useAuth } from '../contexts/AuthContext';
-
-
+import { useTranslation } from 'react-i18next';
 
 const Appointments: React.FC = () => {
   const { auth } = useAuth();
+  const { t } = useTranslation();
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
-  const { language, direction } = useTheme();
+  const { direction } = useTheme();
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>(() => {
     return (localStorage.getItem('appointments_view_mode') as 'calendar' | 'list') || 'list';
   });
@@ -32,7 +30,7 @@ const Appointments: React.FC = () => {
     localStorage.setItem('appointments_view_mode', newMode);
   };
 
-  document.title = language === "he" ? "התורים שלך" : "Appointments";
+  document.title = t('appointments.title');
 
   const dispatch = useAppDispatch();
   const appointments = useAppSelector(state => state.appointments.appointments);
@@ -42,13 +40,11 @@ const Appointments: React.FC = () => {
     if (appointments.length === 0 && auth.user) {
       dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
     }
-    //update every 4 mins
     const interval = setInterval(() => {
       if (appointments.length && auth.user) {
         dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
       }
-    }, 240000)
-
+    }, 240000);
     return () => clearInterval(interval);
   }, [dispatch, auth]);
 
@@ -70,22 +66,22 @@ const Appointments: React.FC = () => {
       </div>
     );
   }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-4 max-w-7xl mx-auto px-2 sm:px-4"
     >
-      {/* Page Title */}
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <CalendarRange className="text-primary w-5 h-5" />
           <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
-            {language === 'he' ? 'ניהול התורים שלך' : 'Appointments'}
+            {t('appointments.title')}
           </h1>
         </div>
         <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-          {language === 'he' ? 'צפייה וניהול' : 'View and manage'}
+          {t('appointments.description')}
         </p>
       </div>
 
@@ -94,7 +90,7 @@ const Appointments: React.FC = () => {
           <button
             onClick={toggleViewMode}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition
-        ${viewMode === 'calendar'
+              ${viewMode === 'calendar'
                 ? 'bg-white dark:bg-gray-900 text-black dark:text-white shadow'
                 : 'text-gray-600 dark:text-gray-300'}`}
           >
@@ -103,7 +99,7 @@ const Appointments: React.FC = () => {
           <button
             onClick={toggleViewMode}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition
-        ${viewMode === 'list'
+              ${viewMode === 'list'
                 ? 'bg-white dark:bg-gray-900 text-black dark:text-white shadow'
                 : 'text-gray-600 dark:text-gray-300'}`}
           >
@@ -112,38 +108,21 @@ const Appointments: React.FC = () => {
         </div>
       </div>
 
-      {viewMode === 'calendar' ?
+      {viewMode === 'calendar' ? (
         <Card className="mb-4">
-
           <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant={filter === 'all' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('all')}
-              >
-                {language === 'he' ? 'הכל' : 'All'}
+              <Button variant={filter === 'all' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('all')}>
+                {t('appointments.all')}
               </Button>
-              <Button
-                variant={filter === 'scheduled' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('scheduled')}
-              >
-                {language === 'he' ? 'ממתינים' : 'Scheduled'}
+              <Button variant={filter === 'scheduled' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('scheduled')}>
+                {t('appointments.scheduled')}
               </Button>
-              <Button
-                variant={filter === 'completed' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('completed')}
-              >
-                {language === 'he' ? 'הושלמו' : 'Completed'}
+              <Button variant={filter === 'completed' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('completed')}>
+                {t('appointments.completed')}
               </Button>
-              <Button
-                variant={filter === 'cancelled' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('cancelled')}
-              >
-                {language === 'he' ? 'בוטלו' : 'Cancelled'}
+              <Button variant={filter === 'cancelled' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('cancelled')}>
+                {t('appointments.cancelled')}
               </Button>
             </div>
           </div>
@@ -154,7 +133,7 @@ const Appointments: React.FC = () => {
             />
           </div>
         </Card>
-        :
+      ) : (
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -166,7 +145,8 @@ const Appointments: React.FC = () => {
             onAppointmentClick={setSelectedAppointment}
           />
         </motion.div>
-      }
+      )}
+
       {selectedAppointment && (
         <AppointmentDetails
           appointment={selectedAppointment}

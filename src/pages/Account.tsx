@@ -5,12 +5,12 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const Account: React.FC = () => {
   const { auth, updateUser, updatePassword } = useAuth();
-  const { language } = useTheme();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -39,7 +39,7 @@ const Account: React.FC = () => {
     }
   }, [auth.user]);
 
-  document.title = language === "he" ? "חשבון" : "Account";
+  document.title = t('account.title');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,18 +55,10 @@ const Account: React.FC = () => {
     e.preventDefault();
     try {
       await updateUser(formData);
-      toast.success(
-        language === 'he'
-          ? 'הפרטים עודכנו בהצלחה'
-          : 'Account updated successfully'
-      );
+      toast.success(t('account.updateSuccess'));
       setIsEditing(false);
     } catch (error) {
-      toast.error(
-        language === 'he'
-          ? 'אירעה שגיאה בעדכון הפרטים'
-          : 'Failed to update account'
-      );
+      toast.error(t('account.updateError'));
     }
   };
 
@@ -74,43 +66,27 @@ const Account: React.FC = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error(
-        language === 'he'
-          ? 'הסיסמאות אינן תואמות'
-          : 'Passwords do not match'
-      );
+      toast.error(t('account.passwordMismatch'));
       return;
     }
 
     try {
       await updatePassword(passwordData.currentPassword, passwordData.newPassword, passwordData.confirmPassword);
-      toast.success(
-        language === 'he'
-          ? 'הסיסמה עודכנה בהצלחה'
-          : 'Password updated successfully'
-      );
+      toast.success(t('account.passwordUpdateSuccess'));
       setIsChangingPassword(false);
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-    } catch (error: any) {      
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
       let errorMessage = error.message;
-      if (language === 'he') {
-        if (errorMessage === 'Current password is incorrect') {
-          errorMessage = 'הסיסמה הנוכחית שגויה';
-        } else if (errorMessage === 'New password cannot be the same as the current password') {
-          errorMessage = 'הסיסמה החדשה אינה יכולה להיות זהה לסיסמה הנוכחית';
-        } else {
-          errorMessage = 'אירעה שגיאה בעדכון הסיסמה';
-        }
+      if (errorMessage === 'Current password is incorrect') {
+        errorMessage = t('account.passwordCurrentIncorrect');
+      } else if (errorMessage === 'New password cannot be the same as the current password') {
+        errorMessage = t('account.passwordSameAsOld');
+      } else {
+        errorMessage = t('account.passwordUpdateError');
       }
-
-      toast.error(errorMessage || (language === 'he' ? 'אירעה שגיאה בעדכון הסיסמה' : 'Failed to update password'));
+      toast.error(errorMessage || t('account.passwordUpdateError'));
     }
   };
-
 
   return (
     <motion.div
@@ -118,24 +94,19 @@ const Account: React.FC = () => {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
-      {/* Page Title */}
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <User className="text-primary w-5 h-5" />
           <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
-            {language === 'he' ? 'הגדרות חשבון' : 'Account Settings'}
+            {t('account.title')}
           </h1>
         </div>
         <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-          {language === 'he'
-            ? 'נהל את פרטי המשתמש שלך'
-            : 'Manage your user details and subscription'
-          }
+          {t('account.description')}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User Info Card */}
         <div className="lg:col-span-2">
           <Card>
             <div className="flex justify-between items-start mb-6">
@@ -145,24 +116,20 @@ const Account: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">{auth.user?.name}</h2>
-                  {/* <p className="text-light-gray dark:text-dark-gray">{auth.user?.email}</p> */}
                 </div>
               </div>
               <Button
                 variant={isEditing ? 'secondary' : 'primary'}
                 onClick={() => setIsEditing(!isEditing)}
               >
-                {isEditing
-                  ? (language === 'he' ? 'ביטול' : 'Cancel')
-                  : (language === 'he' ? 'ערוך פרטים' : 'Edit Details')
-                }
+                {isEditing ? t('common.cancel') : t('account.editDetails')}
               </Button>
             </div>
 
             {isEditing ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
-                  label={language === 'he' ? 'שם' : 'Name'}
+                  label={t('account.name')}
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -170,18 +137,8 @@ const Account: React.FC = () => {
                   required
                 />
 
-                {/* <Input
-                  label={language === 'he' ? 'אימייל' : 'Email'}
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  leftIcon={<Mail size={18} />}
-                  required
-                /> */}
-
                 <Input
-                  label={language === 'he' ? 'טלפון' : 'Phone'}
+                  label={t('account.phone')}
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
@@ -189,69 +146,18 @@ const Account: React.FC = () => {
                   required
                 />
 
-                {/* <div>
-                  <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
-                    {language === 'he' ? 'שפת ממשק' : 'Interface Language'}
-                  </label>
-                  <div className="flex space-x-4">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        name="defaultLanguage"
-                        value="he"
-                        checked={formData.defaultLanguage === 'he'}
-                        onChange={handleChange}
-                        className="form-radio text-primary"
-                      />
-                      <span className="ml-2 text-light-text dark:text-dark-text">
-                        {language === 'he' ? 'עברית' : 'Hebrew'}
-                      </span>
-                    </label>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        name="defaultLanguage"
-                        value="en"
-                        checked={formData.defaultLanguage === 'en'}
-                        onChange={handleChange}
-                        className="form-radio text-primary"
-                      />
-                      <span className="ml-2 text-light-text dark:text-dark-text">
-                        {language === 'he' ? 'אנגלית' : 'English'}
-                      </span>
-                    </label>
-                  </div>
-                </div> */}
-
                 <div className="flex justify-end">
                   <Button type="submit">
-                    {language === 'he' ? 'שמור שינויים' : 'Save Changes'}
+                    {t('account.saveChanges')}
                   </Button>
                 </div>
               </form>
             ) : (
               <div className="space-y-4">
-                {/* <div className="flex items-center gap-3">
-                  <User size={18} className="text-light-gray dark:text-dark-gray" />
-                  <span className="text-light-text dark:text-dark-text">{auth.user?.name}</span>
-                </div> */}
-                {/* <div className="flex items-center gap-3">
-                  <Mail size={18} className="text-light-gray dark:text-dark-gray" />
-                  <span className="text-light-text dark:text-dark-text">{auth.user?.email}</span>
-                </div> */}
                 <div className="flex items-center gap-3">
                   <Phone size={18} className="text-light-gray dark:text-dark-gray" />
                   <span className="text-light-text dark:text-dark-text">{auth.user?.phone}</span>
                 </div>
-                {/* <div className="flex items-center gap-3">
-                  <Globe size={18} className="text-light-gray dark:text-dark-gray" />
-                  <span className="text-light-text dark:text-dark-text">
-                    {auth.user?.defaultLanguage === 'he'
-                      ? 'עברית'
-                      : 'English'
-                    }
-                  </span>
-                </div> */}
               </div>
             )}
 
@@ -261,7 +167,7 @@ const Account: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <KeyRound size={20} className="text-primary" />
                   <h3 className="font-semibold text-lg text-light-text dark:text-dark-text">
-                    {language === 'he' ? 'שינוי סיסמה' : 'Change Password'}
+                    {t('account.changePassword')}
                   </h3>
                 </div>
                 <Button
@@ -269,28 +175,21 @@ const Account: React.FC = () => {
                   size="sm"
                   onClick={() => setIsChangingPassword(!isChangingPassword)}
                 >
-                  {isChangingPassword
-                    ? (language === 'he' ? 'ביטול' : 'Cancel')
-                    : (language === 'he' ? 'שנה סיסמה' : 'Change Password')
-                  }
+                  {isChangingPassword ? t('common.cancel') : t('account.changePassword')}
                 </Button>
               </div>
 
               {isChangingPassword && (
                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                   <Input
-                    label={language === 'he' ? 'סיסמה נוכחית' : 'Current Password'}
+                    label={t('account.currentPassword')}
                     name="currentPassword"
                     type={showCurrentPassword ? 'text' : 'password'}
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                     leftIcon={<KeyRound size={18} />}
                     rightIcon={
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="focus:outline-none"
-                      >
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="focus:outline-none">
                         {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     }
@@ -298,18 +197,14 @@ const Account: React.FC = () => {
                   />
 
                   <Input
-                    label={language === 'he' ? 'סיסמה חדשה' : 'New Password'}
+                    label={t('account.newPassword')}
                     name="newPassword"
                     type={showNewPassword ? 'text' : 'password'}
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                     leftIcon={<KeyRound size={18} />}
                     rightIcon={
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="focus:outline-none"
-                      >
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="focus:outline-none">
                         {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     }
@@ -317,7 +212,7 @@ const Account: React.FC = () => {
                   />
 
                   <Input
-                    label={language === 'he' ? 'אימות סיסמה חדשה' : 'Confirm New Password'}
+                    label={t('account.confirmPassword')}
                     name="confirmPassword"
                     type={showNewPassword ? 'text' : 'password'}
                     value={passwordData.confirmPassword}
@@ -328,7 +223,7 @@ const Account: React.FC = () => {
 
                   <div className="flex justify-end">
                     <Button type="submit" variant="primary">
-                      {language === 'he' ? 'עדכן סיסמה' : 'Update Password'}
+                      {t('account.updatePassword')}
                     </Button>
                   </div>
                 </form>
@@ -336,54 +231,6 @@ const Account: React.FC = () => {
             </div>
           </Card>
         </div>
-
-        {/* Subscription Info */}
-        {/* <div className="lg:col-span-1">
-          <Card>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-lg text-light-text dark:text-dark-text">
-                {language === 'he' ? 'פרטי מנוי' : 'Subscription'}
-              </h3>
-              {subscriptionBadge()}
-            </div>
-
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-light-gray/5 dark:bg-dark-bg">
-                <div className="flex items-center mb-2">
-                  <Shield size={18} className="text-primary mr-2" />
-                  <span className="font-medium text-light-text dark:text-dark-text">
-                    {language === 'he' ? 'הגנת מנוי' : 'Subscription Protection'}
-                  </span>
-                </div>
-                <p className="text-sm text-light-gray dark:text-dark-gray">
-                  {language === 'he'
-                    ? 'המנוי שלך מוגן ומאובטח. תאריך החידוש הבא: 1.4.2024'
-                    : 'Your subscription is protected and secure. Next renewal: 1.4.2024'
-                  }
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-light-gray/5 dark:bg-dark-bg">
-                <div className="flex items-center mb-2">
-                  <CreditCard size={18} className="text-primary mr-2" />
-                  <span className="font-medium text-light-text dark:text-dark-text">
-                    {language === 'he' ? 'פרטי תשלום' : 'Payment Details'}
-                  </span>
-                </div>
-                <p className="text-sm text-light-gray dark:text-dark-gray">
-                  {language === 'he'
-                    ? 'כרטיס אשראי מסתיים ב-4242'
-                    : 'Credit card ending in 4242'
-                  }
-                </p>
-              </div>
-
-              <Button variant="outline" fullWidth>
-                {language === 'he' ? 'שדרג מנוי' : 'Upgrade Subscription'}
-              </Button>
-            </div>
-          </Card>
-        </div> */}
       </div>
     </motion.div>
   );

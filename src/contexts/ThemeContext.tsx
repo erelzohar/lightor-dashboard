@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Palette } from '../types';
 import { MOCK_WEB_CONFIG } from '../utils/mockData';
+import i18n from '../i18n/config';
 
 interface ThemeContextProps {
   palette: Palette;
   updatePalette: (newPalette: Palette) => void;
   direction: 'rtl' | 'ltr';
-  language: 'he' | 'en';
+  language: string;
   darkMode: boolean;
   toggleDirection: () => void;
   toggleDarkMode: () => void;
+  changeLanguage: (lang: 'he' | 'en') => void;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -17,15 +19,26 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [palette, setPalette] = useState<Palette>(MOCK_WEB_CONFIG.pallete);
   const [direction, setDirection] = useState<'rtl' | 'ltr'>(
-    MOCK_WEB_CONFIG.defaultLanguage === 'he' ? 'rtl' : 'ltr'
+    i18n.language === 'he' ? 'rtl' : 'ltr'
   );
-  const [language, setLanguage] = useState<'he' | 'en'>(
-    MOCK_WEB_CONFIG.defaultLanguage === 'he' ? 'he' : 'en'
-  );
+  const [language, setLanguage] = useState(i18n.language);
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
     return savedMode ? JSON.parse(savedMode) : false;
   });
+
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setLanguage(lng);
+      const newDir = lng === 'he' ? 'rtl' : 'ltr';
+      setDirection(newDir);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, []);
 
   useEffect(() => {
     // Apply theme to CSS variables
@@ -48,12 +61,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPalette(newPalette);
   };
 
+  const changeLanguage = (lang: 'he' | 'en') => {
+    i18n.changeLanguage(lang);
+  };
+
   const toggleDirection = () => {
-    const newDirection = direction === 'rtl' ? 'ltr' : 'rtl';
-    const newLanguage = newDirection === 'rtl' ? 'he' : 'en';
-    
-    setDirection(newDirection);
-    setLanguage(newLanguage);
+    const newLang = i18n.language === 'he' ? 'en' : 'he';
+    changeLanguage(newLang);
   };
 
   const toggleDarkMode = () => {
@@ -65,14 +79,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <ThemeContext.Provider value={{ 
-      palette, 
-      updatePalette, 
-      direction, 
+    <ThemeContext.Provider value={{
+      palette,
+      updatePalette,
+      direction,
       language,
       darkMode,
       toggleDirection,
-      toggleDarkMode
+      toggleDarkMode,
+      changeLanguage
     }}>
       {children}
     </ThemeContext.Provider>

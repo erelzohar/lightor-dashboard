@@ -14,30 +14,15 @@ import { fetchAppointments } from '../store/slices/appointmentsSlice';
 import { useAuth } from '../contexts/AuthContext';
 import ErrorBoundaryWithLanguage from '../components/ui/ErrorBoundary';
 import DashboardFallback from '../components/dashboard/DashboardFallback';
+import { useTranslation } from 'react-i18next';
 
-const greetingsMap = {
-  en: {
-    morning: 'Good morning',
-    afternoon: 'Good afternoon',
-    evening: 'Good evening',
-    night: 'Good night',
-  },
-  he: {
-    morning: 'בוקר טוב',
-    afternoon: 'צהריים טובים',
-    evening: 'ערב טוב',
-    night: 'לילה טוב'
-  }
-};
-
-const getGreeting = (language: 'en' | 'he'): string => {
+const getGreeting = (t: any): string => {
   const hour = new Date().getHours();
-  const langGreetings = greetingsMap[language];
 
-  if (hour < 12 && hour > 4) return langGreetings.morning;
-  if (hour < 12 && hour < 4) return langGreetings.night;
-  if (hour < 18) return langGreetings.afternoon;
-  return langGreetings.evening;
+  if (hour < 12 && hour > 4) return t('greetings.morning');
+  if (hour < 12 && hour < 4) return t('greetings.night');
+  if (hour < 18) return t('greetings.afternoon');
+  return t('greetings.evening');
 };
 
 const getGreetingIcon = () => {
@@ -49,6 +34,7 @@ const getGreetingIcon = () => {
 };
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { auth } = useAuth();
   // const [error, setError] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -60,7 +46,7 @@ const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const appointments = useAppSelector(state => state.appointments.appointments);
   const isLoading = useAppSelector(state => state.appointments.loading);
-  document.title = language === "he" ? "לוח בקרה" : "Dashboard";
+  document.title = t('common.dashboard');
 
   useEffect(() => {
     if (appointments.length === 0 && auth.user) {
@@ -128,9 +114,7 @@ const Dashboard: React.FC = () => {
             <GreetingIcon className="w-7 h-7" />
           </motion.div>
           <h1 className="font-semibold text-2xl text-gray-800 dark:text-white">
-            {language === 'he'
-              ? `${getGreeting('he')} , ${auth.user.name}`
-              : `${getGreeting('en')} , ${auth.user.name}`}
+            {t('common.greetingWithName', { greeting: getGreeting(t), name: auth.user.name })}
           </h1>
         </div>
       </div>
@@ -143,7 +127,7 @@ const Dashboard: React.FC = () => {
         className="mb-4"
       >
         <ErrorBoundaryWithLanguage
-          fallback={<DashboardFallback language={language} title={language === 'he' ? 'שגיאה בטעינת נתוני הכנסות' : 'Error loading income stats'} />}
+          fallback={<DashboardFallback language={language} title={t('common.errorLoadingIncome')} />}
         >
           <IncomeStats
             appointments={appointments}
@@ -153,7 +137,7 @@ const Dashboard: React.FC = () => {
 
       {/* Appointments Graph */}
       <ErrorBoundaryWithLanguage
-        fallback={<DashboardFallback language={language} title={language === 'he' ? 'שגיאה בטעינת גרף תורים' : 'Error loading appointments graph'} />}
+        fallback={<DashboardFallback language={language} title={t('common.errorLoadingGraph')} />}
       >
         <AppointmentsGraph
           appointments={appointments}
@@ -167,7 +151,7 @@ const Dashboard: React.FC = () => {
         transition={{ delay: 0.3 }}
       >
         <ErrorBoundaryWithLanguage
-          fallback={<DashboardFallback language={language} title={language === 'he' ? 'שגיאה בטעינת סטטיסטיקות' : 'Error loading stats'} />}
+          fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
         >
           <AppointmentStats appointments={appointments} />
         </ErrorBoundaryWithLanguage>
@@ -181,7 +165,7 @@ const Dashboard: React.FC = () => {
         className="mb-4"
       >
         <ErrorBoundaryWithLanguage
-          fallback={<DashboardFallback language={language} title={language === 'he' ? 'שגיאה בטעינת רשימת תורים' : 'Error loading appointments list'} />}
+          fallback={<DashboardFallback language={language} title={t('common.errorLoadingAppointments')} />}
         >
           <AppointmentsList
             appointments={upcomingAppointments}

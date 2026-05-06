@@ -4,12 +4,13 @@ import { X, Calendar, Clock, User, Phone, Check, X as XIcon, DollarSign } from '
 import { Appointment } from '../../types';
 import Button from '../ui/Button';
 import { formatDateTime, formatDuration } from '../../utils/dateUtils';
-// import { updateAppointmentStatus } from '../../services/appointmentsApi';
 import toast from 'react-hot-toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
-import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice'
+import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
+import { useTranslation } from 'react-i18next';
+
 interface AppointmentDetailsProps {
   appointment: Appointment | null;
   onClose: () => void;
@@ -23,6 +24,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 }) => {
   const [loading, setLoading] = React.useState(false);
   const { language, direction } = useTheme();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   if (!appointment) return null;
@@ -31,31 +33,18 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
     if (!appointment) return;
 
     if (status === 'cancelled') {
-      const isConfirmed = window.confirm(
-        language === 'he'
-          ? 'האם אתה בטוח שברצונך לבטל תור זה?'
-          : 'Are you sure you want to cancel this appointment?'
-      );
+      const isConfirmed = window.confirm(t('appointments.cancelConfirm'));
       if (!isConfirmed) return;
     }
 
     setLoading(true);
     try {
-      dispatch(updateAppointmentStatus({ id: appointment._id, status }))
-      // console.log(res);
-
-      toast.success(language === 'he'
-        ? ' התור עודכן בהצלחה'
-        : 'Appointment updated successfully'
-      );
-
+      dispatch(updateAppointmentStatus({ id: appointment._id, status }));
+      toast.success(t('appointments.updateSuccess'));
       onUpdate();
       onClose();
     } catch (error) {
-      toast.error(language === 'he'
-        ? 'אירעה שגיאה בעדכון  התור'
-        : 'Failed to update appointment'
-      );
+      toast.error(t('appointments.updateError'));
     } finally {
       setLoading(false);
     }
@@ -63,16 +52,11 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return language === 'he' ? 'ממתין' : 'Scheduled';
-      case 'completed':
-        return language === 'he' ? 'הושלם' : 'Completed';
-      case 'cancelled':
-        return language === 'he' ? 'בוטל' : 'Cancelled';
-      case 'ongoing':
-        return language === 'he' ? 'בתהליך' : 'Ongoing';
-      default:
-        return status;
+      case 'scheduled': return t('appointments.scheduled');
+      case 'completed': return t('appointments.completed');
+      case 'cancelled': return t('appointments.cancelled');
+      case 'ongoing': return t('appointments.ongoing');
+      default: return status;
     }
   };
 
@@ -146,7 +130,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
             <div className="bg-light-gray/5 dark:bg-dark-bg rounded-xl p-4 mb-4">
               <h4 className="font-medium text-lg mb-4">
-                {language === 'he' ? 'פרטי לקוח' : 'Customer Details'}
+                {t('appointments.customerDetails')}
               </h4>
 
               <div className="grid grid-cols-1 gap-4">
@@ -185,10 +169,10 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-light-text dark:text-dark-text">
                   <DollarSign size={18} className={`text-primary ${direction === 'rtl' ? 'ml-2' : 'mr-2'}`} />
-                  <span>{language === 'he' ? 'מחיר' : 'Price'}</span>
+                  <span>{t('appointments.price')}</span>
                 </div>
                 <span className="text-xl font-semibold text-primary">
-                  {language === 'he' ? '₪' : '$'}{appointment.type.price}
+                  {t('appointments.currencySymbol')}{appointment.type.price}
                 </span>
               </div>
             </div>
@@ -202,7 +186,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                   onClick={() => handleStatusChange('completed')}
                   className="flex-1"
                 >
-                  {language === 'he' ? 'סמן כהושלם' : 'Mark Completed'}
+                  {t('appointments.markCompleted')}
                 </Button>
 
                 <Button
@@ -212,7 +196,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                   onClick={() => handleStatusChange('cancelled')}
                   className="flex-1"
                 >
-                  {language === 'he' ? 'ביטול תור' : 'Cancel'}
+                  {t('appointments.cancelAppointment')}
                 </Button>
               </div>
             )}
