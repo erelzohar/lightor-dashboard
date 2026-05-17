@@ -15,6 +15,32 @@ export const loginUser = async (username: string, password: string): Promise<{ t
   }
 };
 
+export const googleLogin = async (token: string): Promise<{ token: string; user: User }> => {
+  try {
+    const response = await axios.post(globals.authUrl + 'google', { token });
+    if (response.data?.success) {
+      localStorage.setItem('lightor', response.data?.token);
+      return { token: response.data?.token, user: response.data.data }
+    }
+    throw new Error('Invalid credentials');
+  } catch (error) {
+    throw new Error('Google login failed');
+  }
+};
+
+export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
+  try {
+    const response = await axios.post(globals.authUrl + 'facebook', { accessToken });
+    if (response.data?.success) {
+      localStorage.setItem('lightor', response.data?.token);
+      return { token: response.data?.token, user: response.data.data }
+    }
+    throw new Error('Invalid credentials');
+  } catch (error) {
+    throw new Error('Facebook login failed');
+  }
+};
+
 export const getCurrentUser = async (): Promise<User> => {
   const token = localStorage.getItem('lightor');
   if (!token) throw new Error('No token found');
@@ -32,6 +58,17 @@ export const getCurrentUser = async (): Promise<User> => {
   }
 };
 
+
+export const verifyEmail = async (token: string): Promise<void> => {
+  const response = await axios.get(`${globals.authUrl}verify/${token}`);
+  if (!response.data?.success) {
+    throw new Error('Verification failed');
+  }
+};
+
+export const resendVerification = async (email: string): Promise<void> => {
+  await axios.post(`${globals.authUrl}resend-verification`, { email });
+};
 
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
   const token = localStorage.getItem('lightor');

@@ -25,7 +25,25 @@
     "errorLoadingStats": "Error loading stats",
     "errorLoadingAppointments": "Error loading appointments list",
     "greetingWithName": "{{greeting}}, {{name}}",
-    "unsavedChanges": "You have unsaved changes"
+    "unsavedChanges": "You have unsaved changes",
+    "notVerifiedAlert": "Your website is not live until you verify your email.",
+    "resendVerification": "Resend email",
+    "resendVerificationSent": "Verification email sent!",
+    "resendVerificationError": "Failed to resend. Please try again.",
+    "notVerifiedTitle": "Action Required: Verify your email",
+    "onboardingCardTitle": "Config your website",
+    "onboardingCardDesc": "Complete the setup of your website. With features like setting your working hours, services, and profile, you'll have everything you need to make smart decisions.",
+    "exploreAppBtn": "Config Website",
+    "inviteTeamTitle": "Invite team members",
+    "inviteTeamDesc": "Collaborate on content and build great digital products together.",
+    "addTeamMemberBtn": "Add team member",
+    "aiBuilder": "AI Assistant",
+    "upgradePlanTitle": "Upgrade your plan",
+    "upgradePlanDesc": "Your trial is expiring soon.",
+    "upgradePlanDescDays": "{{days}} days left in your trial",
+    "upgradePlanBtn": "Upgrade your plan",
+    "completeSetupFirst": "Complete your website setup first",
+    "search": "Search"
   },
   "greetings": {
     "morning": "Good morning",
@@ -36,6 +54,8 @@
   "sidebar": {
     "openSidebar": "Open sidebar",
     "closeSidebar": "Close sidebar",
+    "navigation": "Navigation",
+    "manage": "Manage",
     "newAppointment": "New Appointment",
     "newAppointmentMsg": "New appointment scheduled for {{time}}",
     "appointmentCancelled": "Appointment Cancelled",
@@ -73,7 +93,10 @@
     "generalSettings": "General Settings",
     "logo": "Logo",
     "noLogo": "No Logo",
-    "uploadLogo": "Upload Logo",
+    "uploadLogo": "Upload File",
+    "logoUrlMode": "Image URL",
+    "logoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUrlInvalid": "URL must start with http",
     "yourLink": "Your Link (Subdomain)",
     "linkDescription": "This is the direct link to your business page that you can share with your clients.",
     "checking": "Checking...",
@@ -153,7 +176,9 @@
     "cancelAppointment": "Cancel",
     "cancelConfirm": "Are you sure you want to cancel this appointment?",
     "updateSuccess": "Appointment updated successfully",
-    "updateError": "Failed to update appointment"
+    "updateError": "Failed to update appointment",
+    "calendarView": "Calendar",
+    "listView": "List"
   },
   "login": {
     "title": "Login",
@@ -166,7 +191,65 @@
     "enterPassword": "Enter password",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "or": "or",
+    "rememberMe": "Remember me",
+    "noAccount": "Don't have an account?",
+    "registerHere": "Register here"
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome, {{name}}!",
+    "welcomeSubtitle": "Let's get your business set up",
+    "welcomeDescription": "Before you start taking appointments, complete a quick setup to make your profile ready for customers.",
+    "reviewGeneratedDetails": "Lighty has generated your website details. Please review and complete any missing information to make sure everything looks right.",
+    "setupSteps": "What we'll set up",
+    "step_phone": "Business phone number",
+    "step_address": "Business address",
+    "step_businessName": "Business name",
+    "step_workingHours": "Working hours",
+    "step_serviceTypes": "Service types",
+    "step_logo": "Logo",
+    "getStarted": "Get Started",
+    "allStepsComplete": "All set! Your profile is complete.",
+    "setupProgress": "Setup progress ({{done}}/{{total}} completed)",
+    "completeSetup": "Complete setup",
+    "showDetails": "Show setup details",
+    "hideDetails": "Hide details",
+    "allDoneBtn": "All set! Close panel",
+    "lightyWelcomeTitle": "Welcome, {{name}}!",
+    "lightyWelcomeSubtitle": "Let's build your website with Lighty",
+    "lightyWelcomeDescription": "Lighty is your AI assistant that builds your professional website in seconds — just describe your business.",
+    "lightyAssistantName": "Lighty — your AI assistant",
+    "lightyAssistantDesc": "Tell Lighty about your business and it will generate a complete website for you, ready to go live.",
+    "lightyGetStarted": "Build with Lighty"
+  },
+  "aiBuilder": {
+    "title": "Lighty — AI Assistant",
+    "chatTab": "Chat",
+    "previewTab": "Preview",
+    "lightyWelcome": "Hi! I'm Lighty, your AI website assistant. Describe your business and I'll build your website in seconds. You can also attach a logo for better results.",
+    "welcomeMessage": "Hi! I'm Lighty, your AI website assistant. Describe your business and I'll build your website in seconds. You can also attach a logo for better results.",
+    "firstPromptPlaceholder": "Describe your business (e.g. hair salon in Tel Aviv for women)...",
+    "refinePlaceholder": "What would you like Lighty to change?",
+    "generatedMessage": "Your {{name}} website is ready! You can keep refining it with Lighty or save it to apply the changes.",
+    "errorMessage": "Something went wrong. Please try again.",
+    "uploadLogo": "Upload logo",
+    "preview": "Live Preview",
+    "refresh": "Refresh preview",
+    "save": "Save & Apply",
+    "saving": "Saving...",
+    "saved": "Saved!",
+    "skip": "Skip for now",
+    "previewEmpty": "Preview will appear here",
+    "previewEmptyDesc": "Describe your business to Lighty and your live website preview will show up here"
+  },
+  "verify": {
+    "loading": "Verifying your email...",
+    "successTitle": "Email Verified!",
+    "successMessage": "Your email has been verified successfully. You can now sign in to your account.",
+    "errorTitle": "Verification Failed",
+    "errorMessage": "The verification link is invalid or has expired. Please register again or contact support.",
+    "goToLogin": "Go to Login"
   },
   "portfolio": {
     "title": "Manage Portfolio",
@@ -243,7 +326,22 @@
     "today": "Today's Income",
     "weekly": "Weekly Income",
     "monthly": "Monthly Income",
-    "appointments": "appointments"
+    "appointments": "appointments",
+    "vsYesterday": "vs yesterday",
+    "vsLastWeek": "vs last week",
+    "vsLastMonth": "vs last month"
+  },
+  "donutChart": {
+    "title": "By Service Type",
+    "total": "Total"
+  },
+  "dashboardList": {
+    "total": "appointments",
+    "service": "Service",
+    "dateTime": "Date / Time",
+    "duration": "Duration",
+    "status": "Status",
+    "price": "Price"
   },
   "appointmentsGraph": {
     "week": "Week",
@@ -261,5 +359,9 @@
   },
   "appointmentStats": {
     "upcoming": "Upcoming"
+  },
+  "floatingAssistant": {
+    "label": "AI Assistant",
+    "placeholder": "What would you like to edit?"
   }
 }

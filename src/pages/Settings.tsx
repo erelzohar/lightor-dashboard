@@ -27,6 +27,10 @@ const Settings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [imageToUpload, setImageToUpload] = useState<File>(null);
+  const [logoInputMode, setLogoInputMode] = useState<'upload' | 'url'>('upload');
+  const [logoUrlValue, setLogoUrlValue] = useState('');
+  const [logoUrlError, setLogoUrlError] = useState<string | null>(null);
+  const [logoPreviewError, setLogoPreviewError] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | null>>(null);
   const [isCheckingSubdomain, setIsCheckingSubdomain] = useState(false);
   const [subdomainError, setSubdomainError] = useState<string | null>(null);
@@ -38,6 +42,7 @@ const Settings: React.FC = () => {
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
+    const originalLogoUrl = webConfig.logoImageName ? globals.imagesUrl + webConfig.logoImageName : '';
     const settingsChanged = JSON.stringify(localWebConfig.address) !== JSON.stringify(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
@@ -45,7 +50,8 @@ const Settings: React.FC = () => {
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
       JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
       JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig.components?.introPopup) ||
-      imageToUpload;
+      imageToUpload ||
+      (logoInputMode === 'url' && logoUrlValue && localWebConfig.logoImageName !== originalLogoUrl);
 
     return settingsChanged;
   };
@@ -76,6 +82,12 @@ const Settings: React.FC = () => {
     document.title = t('settings.title');
   }, [t]);
 
+  const resolveLogoUrl = (imgName: string): string => {
+    if (!imgName) return '';
+    if (imgName.startsWith('http') || imgName.startsWith('data:') || imgName.startsWith('blob:')) return imgName;
+    return globals.imagesUrl + imgName;
+  };
+
   const fetchWebConfigData = async () => {
     setIsLoading(true);
     try {
@@ -91,7 +103,10 @@ const Settings: React.FC = () => {
     if (!webConfig) fetchWebConfigData();
     else setIsLoading(false);
     if (!localWebConfig && webConfig) {
-      setLocalWebConfig({ ...webConfig, logoImageName: globals.imagesUrl + webConfig.logoImageName });
+      setLocalWebConfig({
+        ...webConfig,
+        logoImageName: resolveLogoUrl(webConfig.logoImageName),
+      });
     }
   }, [webConfig]);
 
@@ -176,6 +191,8 @@ const Settings: React.FC = () => {
       const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact };
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
+      } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
+        payload.logoImageName = logoUrlValue;
       }
 
       if (JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig?.components?.introPopup)) {
@@ -191,6 +208,7 @@ const Settings: React.FC = () => {
         return;
       }
       setImageToUpload(null);
+      setLogoUrlValue('');
       toast.success(t('settings.saveSuccess'));
     } catch (error) {
       console.log(error);
@@ -288,11 +306,14 @@ const Settings: React.FC = () => {
             <SectionHeader icon={SettingsIcon} title={t('settings.generalSettings')} />
             <div className="flex flex-col items-center gap-3">
               <h3>{t('settings.logo')}</h3>
-              {localWebConfig.logoImageName ? (
+
+              {/* Logo preview */}
+              {localWebConfig.logoImageName && !logoPreviewError ? (
                 <img
                   src={localWebConfig.logoImageName}
                   alt="Logo"
                   className="h-20 w-20 rounded-full object-contain border border-light-gray shadow-sm"
+                  onError={() => setLogoPreviewError(true)}
                 />
               ) : (
                 <div className="h-20 w-20 rounded-full bg-light-surface border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-sm">
@@ -300,32 +321,82 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
-              <label
-                htmlFor="logo-upload"
-                className="cursor-pointer bg-primary text-white px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition text-sm font-medium flex"
-              >
-                {t('settings.uploadLogo')}
-                &nbsp;
-                <ImageIcon width={15} />
-              </label>
+              {/* Mode toggle */}
+              <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-fit text-sm">
+                <button
+                  type="button"
+                  onClick={() => { setLogoInputMode('upload'); setLogoUrlError(null); }}
+                  className={`px-3 py-1.5 font-medium transition-colors flex items-center gap-1.5 ${logoInputMode === 'upload' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                >
+                  <ImageIcon width={13} />
+                  {t('settings.uploadLogo')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLogoInputMode('url'); setImageToUpload(null); }}
+                  className={`px-3 py-1.5 font-medium transition-colors ${logoInputMode === 'url' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                >
+                  {t('settings.logoUrlMode')}
+                </button>
+              </div>
 
-              <input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setImageToUpload(file);
-                      handleChange('root', 'logoImageName', reader.result);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-              />
+              {/* Upload input */}
+              {logoInputMode === 'upload' && (
+                <>
+                  <label
+                    htmlFor="logo-upload"
+                    className="cursor-pointer bg-primary text-white px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition text-sm font-medium flex items-center gap-1.5"
+                  >
+                    {t('settings.uploadLogo')}
+                    <ImageIcon width={15} />
+                  </label>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setLogoPreviewError(false);
+                          setImageToUpload(file);
+                          handleChange('root', 'logoImageName', reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </>
+              )}
+
+              {/* URL input */}
+              {logoInputMode === 'url' && (
+                <div className="w-full max-w-sm space-y-1">
+                  <input
+                    type="url"
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white dark:bg-dark-surface text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[0.1875rem] transition-all duration-300 ${logoUrlError ? 'border-red-300 dark:border-red-500/50 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 dark:border-gray-700/80 focus:ring-primary/20 focus:border-primary'}`}
+                    placeholder={t('settings.logoUrlPlaceholder')}
+                    value={logoUrlValue}
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      setLogoUrlValue(url);
+                      setLogoPreviewError(false);
+                      if (url && !url.startsWith('http')) {
+                        setLogoUrlError(t('settings.logoUrlInvalid'));
+                        handleChange('root', 'logoImageName', '');
+                      } else {
+                        setLogoUrlError(null);
+                        handleChange('root', 'logoImageName', url);
+                      }
+                    }}
+                  />
+                  {logoUrlError && (
+                    <p className="text-red-500 text-xs font-medium">{logoUrlError}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Subdomain Section */}

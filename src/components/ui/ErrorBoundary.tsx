@@ -46,7 +46,8 @@ class ErrorBoundaryClass extends Component<
 
     // Report error to backend
     const { user } = this.props;
-    reportError({
+
+    if (process.env.NODE_ENV === "production") reportError({
       error: error.toString(),
       stack: error.stack,
       componentStack: errorInfo.componentStack,

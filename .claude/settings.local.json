@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(cd \"C:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-register\" && find . -type f -name \"*.ts*\" -o -name \"*.jsx\" -o -name \"*.json\" | head -50)",
+      "Read(//c/Users/Dudi/Documents/lightor-register/**)",
+      "Bash(npm list *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-dashboard\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)"
     ]
   }
 }

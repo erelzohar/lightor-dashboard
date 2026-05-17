@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Appointment, AppointmentType } from '../../types';
 import * as appointmentsApi from '../../services/appointmentsApi';
+import { MOCK_APPOINTMENTS, MOCK_APPOINTMENT_TYPES } from '../../utils/mockData';
 
 interface AppointmentsState {
   appointments: Appointment[];
@@ -10,8 +11,8 @@ interface AppointmentsState {
 }
 
 const initialState: AppointmentsState = {
-  appointments: [],
-  appointmentTypes: [],
+  appointments: MOCK_APPOINTMENTS,
+  appointmentTypes: MOCK_APPOINTMENT_TYPES,
   loading: false,
   error: null,
 };

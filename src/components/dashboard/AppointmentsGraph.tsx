@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, subYears, startOfYear, endOfYear, addMonths, addYears, addWeeks, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Appointment } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import Card from '../ui/Card';
@@ -11,24 +11,29 @@ import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 
+export type TimeRange = 'week' | 'month' | 'year' | 'all';
+
 interface AppointmentsGraphProps {
   appointments: Appointment[];
+  timeRange: TimeRange;
+  currentDate: Date;
+  onTimeRangeChange: (range: TimeRange) => void;
+  onCurrentDateChange: (date: Date) => void;
 }
 
-type TimeRange = 'week' | 'month' | 'year' | 'all';
-
-const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) => {
+const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
+  appointments,
+  timeRange,
+  currentDate,
+  onTimeRangeChange,
+  onCurrentDateChange,
+}) => {
   const { language, direction, darkMode } = useTheme();
   const { t } = useTranslation();
-  const [timeRange, setTimeRange] = useState<TimeRange>('month');
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1300);
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1300);
 
   React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1300);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth < 1300);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -96,7 +101,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
             .reduce((total, app) => total + parseInt(app.type.price), 0);
 
           return {
-            date: format(date, (timeRange === 'month' ? (isMobile ? 'd' : "d MMM") : 'E'), { locale: language === 'he' ? he : undefined }),
+            date: format(date, (timeRange === 'month' ? 'd' : 'E'), { locale: language === 'he' ? he : undefined }),
             appointments: dayAppointments.length,
             scheduled: dayAppointments.filter(app => {
               const s = getDisplayStatus(app);
@@ -128,26 +133,26 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
 
   const handlePrevious = () => {
     switch (timeRange) {
-      case 'week': setCurrentDate(prev => subWeeks(prev, 1)); break;
-      case 'month': setCurrentDate(prev => startOfMonth(subMonths(prev, 1))); break;
-      case 'year': setCurrentDate(prev => subYears(prev, 1)); break;
-      case 'all': setCurrentDate(prev => subYears(prev, 1)); break;
+      case 'week': onCurrentDateChange(subWeeks(currentDate, 1)); break;
+      case 'month': onCurrentDateChange(startOfMonth(subMonths(currentDate, 1))); break;
+      case 'year': onCurrentDateChange(subYears(currentDate, 1)); break;
+      case 'all': onCurrentDateChange(subYears(currentDate, 1)); break;
     }
   };
 
   const handleNext = () => {
     switch (timeRange) {
-      case 'week': setCurrentDate(prev => addWeeks(prev, 1)); break;
-      case 'month': setCurrentDate(prev => startOfMonth(addMonths(prev, 1))); break;
-      case 'year': setCurrentDate(prev => addYears(prev, 1)); break;
-      case 'all': setCurrentDate(prev => addYears(prev, 1)); break;
+      case 'week': onCurrentDateChange(addWeeks(currentDate, 1)); break;
+      case 'month': onCurrentDateChange(startOfMonth(addMonths(currentDate, 1))); break;
+      case 'year': onCurrentDateChange(addYears(currentDate, 1)); break;
+      case 'all': onCurrentDateChange(addYears(currentDate, 1)); break;
     }
   };
 
   const handleReset = () => {
     const today = new Date();
-    if (timeRange === 'month') setCurrentDate(startOfMonth(today));
-    else setCurrentDate(today);
+    if (timeRange === 'month') onCurrentDateChange(startOfMonth(today));
+    else onCurrentDateChange(today);
   };
 
   const getCurrentPeriodLabel = () => {
@@ -184,8 +189,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
+      className="h-full"
     >
-      <Card className="-mx-4.5 px-1">
+      <Card className="-mx-4.5 px-1 h-full flex flex-col">
         <div className="flex flex-col sm:flex-row justify-around items-center gap-4 mb-6">
           <h3 className="font-semibold text-lg flex items-center gap-2">
             {getRangeTitle()}
@@ -208,7 +214,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
               >
                 <RotateCcw size={16} />
               </Button>
-              <span className="min-w-[7.5rem] text-center">
+              <span className="min-w-[7.5rem] text-center text-sm">
                 {getCurrentPeriodLabel()}
               </span>
               <Button
@@ -227,7 +233,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                 key={option.value}
                 variant={timeRange === option.value ? 'primary' : 'outline'}
                 size="sm"
-                onClick={() => setTimeRange(option.value)}
+                onClick={() => onTimeRangeChange(option.value)}
               >
                 {option.label}
               </Button>
@@ -235,7 +241,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
           </div>
         </div>
 
-        <div className="h-[25rem] p-0 px-1">
+        <div className="h-[22rem] p-0 px-1 flex-1">
           <ResponsiveContainer width={window.innerWidth < 500 ? '110%' : '100%'} height="100%">
             <BarChart
               data={data}
@@ -286,6 +292,14 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({ appointments }) =
                     </>
                   );
                 }}
+              />
+              <Legend
+                formatter={(value) => ({
+                  scheduled: t('appointmentsGraph.scheduled'),
+                  completed: t('appointmentsGraph.completed'),
+                  cancelled: t('appointmentsGraph.cancelled'),
+                }[value] || value)}
+                wrapperStyle={{ paddingTop: '8px', fontSize: '12px' }}
               />
               <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
               <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />

@@ -157,6 +157,7 @@ export interface User {
     nextBillDate?: string | Date;
   };
   role: 'admin' | 'client' | 'user';
+  boardingStatus: 'new' | 'onboarded' | 'active';
 }
 
 export interface AppointmentType {

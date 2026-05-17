@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, CalendarRange, List } from 'lucide-react';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import { Appointment } from '../types';
 import AppointmentCalendar from '../components/appointments/AppointmentCalendar';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
@@ -18,10 +16,9 @@ const Appointments: React.FC = () => {
   const { auth } = useAuth();
   const { t } = useTranslation();
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
   const { direction } = useTheme();
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>(() => {
-    return (localStorage.getItem('appointments_view_mode') as 'calendar' | 'list') || 'list';
+    return (localStorage.getItem('appointments_view_mode') as 'calendar' | 'list') || 'calendar';
   });
 
   const toggleViewMode = () => {
@@ -55,10 +52,6 @@ const Appointments: React.FC = () => {
     )
     .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
 
-  const filteredAppointments = filter === 'all'
-    ? appointments
-    : appointments.filter(appointment => appointment.status === filter);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -71,73 +64,67 @@ const Appointments: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-4 max-w-7xl mx-auto px-2 sm:px-4"
+      className="flex flex-col gap-4 h-full"
     >
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <CalendarRange className="text-primary w-5 h-5" />
-          <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
-            {t('appointments.title')}
-          </h1>
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <CalendarRange className="text-primary w-5 h-5" />
+            <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
+              {t('appointments.title')}
+            </h1>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+            {t('appointments.description')}
+          </p>
         </div>
-        <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-          {t('appointments.description')}
-        </p>
-      </div>
 
-      <div className={`flex ${direction === 'rtl' ? 'justify-start' : 'justify-end'} mt-4`}>
-        <div className="inline-flex items-center bg-gray-200 dark:bg-gray-700 rounded-full p-1">
+        {/* View toggle */}
+        <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shrink-0">
           <button
-            onClick={toggleViewMode}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition
+            onClick={() => { setViewMode('calendar'); localStorage.setItem('appointments_view_mode', 'calendar'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
               ${viewMode === 'calendar'
-                ? 'bg-white dark:bg-gray-900 text-black dark:text-white shadow'
-                : 'text-gray-600 dark:text-gray-300'}`}
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
           >
-            <Calendar size={16} />
+            <Calendar size={15} />
+            <span className="hidden sm:inline">{t('appointments.calendarView') || 'Calendar'}</span>
           </button>
           <button
-            onClick={toggleViewMode}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition
+            onClick={() => { setViewMode('list'); localStorage.setItem('appointments_view_mode', 'list'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
               ${viewMode === 'list'
-                ? 'bg-white dark:bg-gray-900 text-black dark:text-white shadow'
-                : 'text-gray-600 dark:text-gray-300'}`}
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
           >
-            <List size={16} />
+            <List size={15} />
+            <span className="hidden sm:inline">{t('appointments.listView') || 'List'}</span>
           </button>
         </div>
       </div>
 
+      {/* Content */}
       {viewMode === 'calendar' ? (
-        <Card className="mb-4">
-          <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-2">
-              <Button variant={filter === 'all' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('all')}>
-                {t('appointments.all')}
-              </Button>
-              <Button variant={filter === 'scheduled' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('scheduled')}>
-                {t('appointments.scheduled')}
-              </Button>
-              <Button variant={filter === 'completed' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('completed')}>
-                {t('appointments.completed')}
-              </Button>
-              <Button variant={filter === 'cancelled' ? 'primary' : 'outline'} size="sm" onClick={() => setFilter('cancelled')}>
-                {t('appointments.cancelled')}
-              </Button>
-            </div>
-          </div>
-          <div className="mt-6">
-            <AppointmentCalendar
-              appointments={filteredAppointments}
-              onAppointmentClick={setSelectedAppointment}
-            />
-          </div>
-        </Card>
+        <motion.div
+          key="calendar"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-2xl overflow-hidden shadow-sm flex-1 min-h-0"
+        >
+          <AppointmentCalendar
+            appointments={appointments}
+            onAppointmentClick={setSelectedAppointment}
+          />
+        </motion.div>
       ) : (
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
+          key="list"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
           className="mb-4"
         >
           <AppointmentsList
@@ -147,6 +134,7 @@ const Appointments: React.FC = () => {
         </motion.div>
       )}
 
+      {/* Details modal — triggered only from sidebar "next appointment" card */}
       {selectedAppointment && (
         <AppointmentDetails
           appointment={selectedAppointment}

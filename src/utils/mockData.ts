@@ -1,13 +1,121 @@
 import { WebConfig, User, AppointmentType, Appointment } from '../types';
 
+// ── Helper: compute epoch timestamp for day offset + time ──────────────────
+const ts = (daysOffset: number, hour: number, minute = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  d.setHours(hour, minute, 0, 0);
+  return String(d.getTime());
+};
+
+// ── Appointment types ──────────────────────────────────────────────────────
+export const MOCK_APPOINTMENT_TYPES: AppointmentType[] = [
+  { _id: 'type_001', name: 'מניקור קלאסי',        webConfig_id: 'cfg_001', price: '80',  durationMS: '1800000' }, // 30 min
+  { _id: 'type_002', name: 'פדיקור רפואי',         webConfig_id: 'cfg_001', price: '120', durationMS: '3600000' }, // 60 min
+  { _id: 'type_003', name: 'לק ג\'ל',              webConfig_id: 'cfg_001', price: '180', durationMS: '2700000' }, // 45 min
+  { _id: 'type_004', name: 'מניקור יפני',           webConfig_id: 'cfg_001', price: '200', durationMS: '3600000' }, // 60 min
+  { _id: 'type_005', name: 'ציפורניים אקרילי',     webConfig_id: 'cfg_001', price: '250', durationMS: '5400000' }, // 90 min
+  { _id: 'type_006', name: 'טיפול ספא רגליים',     webConfig_id: 'cfg_001', price: '160', durationMS: '4500000' }, // 75 min
+];
+
+const [T1, T2, T3, T4, T5, T6] = MOCK_APPOINTMENT_TYPES;
+
+// ── Mock appointments: ~45 entries spread across 3 weeks ──────────────────
+export const MOCK_APPOINTMENTS: Appointment[] = [
+  // ── 7 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a001', name: 'מיכל לוי',      type: T1, phone: '+972501234567', status: 'completed', user_id: 'u001', timestamp: ts(-7, 10, 0)  },
+  { _id: 'a002', name: 'דנה כהן',       type: T3, phone: '+972521234568', status: 'completed', user_id: 'u001', timestamp: ts(-7, 11, 30) },
+  { _id: 'a003', name: 'שירה אברהם',    type: T2, phone: '+972541234569', status: 'completed', user_id: 'u001', timestamp: ts(-7, 14, 0)  },
+
+  // ── 6 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a004', name: 'רות מזרחי',     type: T4, phone: '+972531234570', status: 'completed', user_id: 'u001', timestamp: ts(-6, 10, 30) },
+  { _id: 'a005', name: 'נועה ביטון',    type: T1, phone: '+972511234571', status: 'cancelled', user_id: 'u001', timestamp: ts(-6, 12, 0)  },
+  { _id: 'a006', name: 'יעל שפירא',     type: T5, phone: '+972561234572', status: 'completed', user_id: 'u001', timestamp: ts(-6, 15, 0)  },
+
+  // ── 5 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a007', name: 'אורית גולן',    type: T6, phone: '+972571234573', status: 'completed', user_id: 'u001', timestamp: ts(-5, 9, 0)   },
+  { _id: 'a008', name: 'תמר פרץ',       type: T3, phone: '+972581234574', status: 'completed', user_id: 'u001', timestamp: ts(-5, 11, 0)  },
+  { _id: 'a009', name: 'ליאת בן-דוד',  type: T2, phone: '+972591234575', status: 'completed', user_id: 'u001', timestamp: ts(-5, 13, 30) },
+
+  // ── 4 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a010', name: 'חגית מור',      type: T1, phone: '+972501234576', status: 'completed', user_id: 'u001', timestamp: ts(-4, 10, 0)  },
+  { _id: 'a011', name: 'רחל גרוס',      type: T4, phone: '+972521234577', status: 'cancelled', user_id: 'u001', timestamp: ts(-4, 11, 30) },
+  { _id: 'a012', name: 'מרים ניסים',    type: T3, phone: '+972541234578', status: 'completed', user_id: 'u001', timestamp: ts(-4, 14, 0)  },
+  { _id: 'a013', name: 'הדס שלום',      type: T6, phone: '+972531234579', status: 'completed', user_id: 'u001', timestamp: ts(-4, 16, 0)  },
+
+  // ── 3 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a014', name: 'ענת קפלן',      type: T2, phone: '+972511234580', status: 'completed', user_id: 'u001', timestamp: ts(-3, 9, 30)  },
+  { _id: 'a015', name: 'שרית חיים',     type: T5, phone: '+972561234581', status: 'completed', user_id: 'u001', timestamp: ts(-3, 12, 0)  },
+  { _id: 'a016', name: 'גלית עמר',      type: T1, phone: '+972571234582', status: 'cancelled', user_id: 'u001', timestamp: ts(-3, 15, 0)  },
+
+  // ── 2 days ago ──────────────────────────────────────────────────────────
+  { _id: 'a017', name: 'כרמלה מנשה',   type: T3, phone: '+972581234583', status: 'completed', user_id: 'u001', timestamp: ts(-2, 10, 0)  },
+  { _id: 'a018', name: 'אביבה שוחט',   type: T6, phone: '+972591234584', status: 'completed', user_id: 'u001', timestamp: ts(-2, 11, 30) },
+  { _id: 'a019', name: 'מיכל לוי',     type: T4, phone: '+972501234567', status: 'completed', user_id: 'u001', timestamp: ts(-2, 14, 0)  },
+  { _id: 'a020', name: 'דנה כהן',      type: T2, phone: '+972521234568', status: 'completed', user_id: 'u001', timestamp: ts(-2, 16, 30) },
+
+  // ── Yesterday ───────────────────────────────────────────────────────────
+  { _id: 'a021', name: 'נועה ביטון',   type: T1, phone: '+972511234571', status: 'completed', user_id: 'u001', timestamp: ts(-1, 10, 0)  },
+  { _id: 'a022', name: 'שירה אברהם',   type: T5, phone: '+972541234569', status: 'completed', user_id: 'u001', timestamp: ts(-1, 11, 30) },
+  { _id: 'a023', name: 'יעל שפירא',    type: T3, phone: '+972561234572', status: 'completed', user_id: 'u001', timestamp: ts(-1, 13, 0)  },
+  { _id: 'a024', name: 'רות מזרחי',    type: T6, phone: '+972531234570', status: 'cancelled', user_id: 'u001', timestamp: ts(-1, 15, 0)  },
+  { _id: 'a025', name: 'חגית מור',     type: T2, phone: '+972501234576', status: 'completed', user_id: 'u001', timestamp: ts(-1, 16, 0)  },
+
+  // ── Today ───────────────────────────────────────────────────────────────
+  { _id: 'a026', name: 'ליאת בן-דוד',  type: T1, phone: '+972591234575', status: 'completed', user_id: 'u001', timestamp: ts(0, 9, 0)   },
+  { _id: 'a027', name: 'תמר פרץ',      type: T4, phone: '+972581234574', status: 'completed', user_id: 'u001', timestamp: ts(0, 10, 30) },
+  { _id: 'a028', name: 'אורית גולן',   type: T6, phone: '+972571234573', status: 'scheduled', user_id: 'u001', timestamp: ts(0, 12, 0)  },
+  { _id: 'a029', name: 'שרית חיים',    type: T3, phone: '+972561234581', status: 'scheduled', user_id: 'u001', timestamp: ts(0, 14, 0)  },
+  { _id: 'a030', name: 'מרים ניסים',   type: T5, phone: '+972541234578', status: 'scheduled', user_id: 'u001', timestamp: ts(0, 15, 30) },
+  { _id: 'a031', name: 'ענת קפלן',     type: T2, phone: '+972511234580', status: 'scheduled', user_id: 'u001', timestamp: ts(0, 17, 0)  },
+
+  // ── Tomorrow ────────────────────────────────────────────────────────────
+  { _id: 'a032', name: 'גלית עמר',     type: T1, phone: '+972571234582', status: 'scheduled', user_id: 'u001', timestamp: ts(1, 10, 0)  },
+  { _id: 'a033', name: 'כרמלה מנשה',   type: T3, phone: '+972581234583', status: 'scheduled', user_id: 'u001', timestamp: ts(1, 11, 30) },
+  { _id: 'a034', name: 'אביבה שוחט',   type: T4, phone: '+972591234584', status: 'scheduled', user_id: 'u001', timestamp: ts(1, 13, 0)  },
+  { _id: 'a035', name: 'רחל גרוס',     type: T2, phone: '+972521234577', status: 'scheduled', user_id: 'u001', timestamp: ts(1, 15, 0)  },
+
+  // ── Day +2 ──────────────────────────────────────────────────────────────
+  { _id: 'a036', name: 'מיכל לוי',     type: T5, phone: '+972501234567', status: 'scheduled', user_id: 'u001', timestamp: ts(2, 9, 30)  },
+  { _id: 'a037', name: 'הדס שלום',     type: T1, phone: '+972531234579', status: 'scheduled', user_id: 'u001', timestamp: ts(2, 11, 0)  },
+  { _id: 'a038', name: 'יעל שפירא',    type: T6, phone: '+972561234572', status: 'scheduled', user_id: 'u001', timestamp: ts(2, 14, 30) },
+
+  // ── Day +3 ──────────────────────────────────────────────────────────────
+  { _id: 'a039', name: 'דנה כהן',      type: T3, phone: '+972521234568', status: 'scheduled', user_id: 'u001', timestamp: ts(3, 10, 0)  },
+  { _id: 'a040', name: 'נועה ביטון',   type: T4, phone: '+972511234571', status: 'scheduled', user_id: 'u001', timestamp: ts(3, 12, 0)  },
+  { _id: 'a041', name: 'ליאת בן-דוד',  type: T2, phone: '+972591234575', status: 'cancelled', user_id: 'u001', timestamp: ts(3, 13, 30) },
+  { _id: 'a042', name: 'שירה אברהם',   type: T1, phone: '+972541234569', status: 'scheduled', user_id: 'u001', timestamp: ts(3, 15, 0)  },
+
+  // ── Day +4 ──────────────────────────────────────────────────────────────
+  { _id: 'a043', name: 'תמר פרץ',      type: T6, phone: '+972581234574', status: 'scheduled', user_id: 'u001', timestamp: ts(4, 11, 0)  },
+  { _id: 'a044', name: 'חגית מור',     type: T5, phone: '+972501234576', status: 'scheduled', user_id: 'u001', timestamp: ts(4, 14, 0)  },
+
+  // ── Day +5 ──────────────────────────────────────────────────────────────
+  { _id: 'a045', name: 'אורית גולן',   type: T3, phone: '+972571234573', status: 'scheduled', user_id: 'u001', timestamp: ts(5, 10, 0)  },
+  { _id: 'a046', name: 'רות מזרחי',    type: T1, phone: '+972531234570', status: 'scheduled', user_id: 'u001', timestamp: ts(5, 12, 30) },
+  { _id: 'a047', name: 'כרמלה מנשה',   type: T4, phone: '+972581234583', status: 'scheduled', user_id: 'u001', timestamp: ts(5, 15, 0)  },
+
+  // ── Day +6 ──────────────────────────────────────────────────────────────
+  { _id: 'a048', name: 'גלית עמר',     type: T2, phone: '+972571234582', status: 'scheduled', user_id: 'u001', timestamp: ts(6, 11, 0)  },
+  { _id: 'a049', name: 'שרית חיים',    type: T6, phone: '+972561234581', status: 'scheduled', user_id: 'u001', timestamp: ts(6, 13, 0)  },
+
+  // ── Day +7 ──────────────────────────────────────────────────────────────
+  { _id: 'a050', name: 'ענת קפלן',     type: T5, phone: '+972511234580', status: 'scheduled', user_id: 'u001', timestamp: ts(7, 10, 0)  },
+  { _id: 'a051', name: 'מרים ניסים',   type: T3, phone: '+972541234578', status: 'scheduled', user_id: 'u001', timestamp: ts(7, 12, 0)  },
+  { _id: 'a052', name: 'אביבה שוחט',   type: T1, phone: '+972591234584', status: 'scheduled', user_id: 'u001', timestamp: ts(7, 14, 30) },
+];
+
+// ── Web Config ─────────────────────────────────────────────────────────────
 export const MOCK_WEB_CONFIG: WebConfig = {
-  "_id": "6820e09d93a3878d15328b70",
-  "user_id": "6820e53e93a3878d15328b7f",
+  "_id": "cfg_001",
+  "user_id": "u001",
   "businessName": "אנה קוסמטיקס - מניקור ופדיקור",
   "logoImageName": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800",
   "subDomain": "anna-nails",
   "minCancelTimeMS": 3600000,
   "defaultLanguage": "he",
+  "vacations": [],
+  "appointmentTypes": MOCK_APPOINTMENT_TYPES,
   "workingDays": [
     null,
     "10:00-18:00",
@@ -15,27 +123,27 @@ export const MOCK_WEB_CONFIG: WebConfig = {
     "10:00-18:00",
     "10:00-18:00",
     "09:00-14:00",
-    null
+    null,
   ],
   "address": {
     "state": "ישראל",
     "city": "תל אביב",
     "street": "דיזנגוף 120",
-    "other": "קומה 2, חדר 205"
+    "other": "קומה 2, חדר 205",
   },
   "contact": {
     "phone": "+972541234567",
-    "mail": "anna@beautyhub.com"
+    "mail": "anna@beautyhub.com",
   },
   "social": {
     "instagram": "https://www.instagram.com/anna_nails_beauty",
     "facebook": "https://www.facebook.com/annanailsbeauty",
     "x": "https://twitter.com/annanails",
-    "tiktok": "https://www.tiktok.com/@annanails"
+    "tiktok": "https://www.tiktok.com/@annanails",
   },
   "pallete": {
     "colorPrimary": "#8b5cf6",
-    "colorPrimaryDark": "#06b6d4",
+    "colorPrimaryDark": "#7c3aed",
     "colorLightBg": "#ffffff",
     "colorLightSurface": "#ffffff",
     "colorLightGray": "#64748b",
@@ -43,176 +151,59 @@ export const MOCK_WEB_CONFIG: WebConfig = {
     "colorDarkBg": "#1e293b",
     "colorDarkSurface": "#334155",
     "colorDarkGray": "#9ca3af",
-    "colorDarkText": "#f9fafb"
+    "colorDarkText": "#f9fafb",
   },
   "components": {
-    "navbar": {
-      "visible": true,
-      "darkMode": true,
-      "languageSwitcher": true
-    },
+    "navbar":  { "visible": true,  "darkMode": true, "languageSwitcher": true },
     "hero": {
       "visible": true,
       "title": "יופי בקצות האצבעות",
       "subtitle": "טיפוח ציפורניים ברמה הגבוהה ביותר",
-      "description": "גילוי מחדש של מניקור ופדיקור מקצועיים באווירה נעימה ואלגנטית. הידיים והרגליים שלך ראויות לטוב ביותר.",
-      "heroImageSrc": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800"
+      "description": "גילוי מחדש של מניקור ופדיקור מקצועיים באווירה נעימה ואלגנטית.",
+      "heroImageSrc": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800",
     },
     "about": {
       "visible": true,
       "title": "אודות אנה קוסמטיקס",
       "description": "טיפוח יוקרתי ונעים שמתאים לכל סגנון ולכל אירוע.",
       "paragraphs": {
-        "intro": "ברוכים הבאים לאנה קוסמטיקס – סטודיו בוטיק לטיפוח הציפורניים בלב תל אביב. מאז 2019 אנחנו מציעות חוויה מקצועית, מוקפדת ואישית לכל לקוחה.",
-        "mission": "המשימה שלנו היא לשלב בין אסתטיקה, נוחות ובריאות. עם טכנאיות מוסמכות, חומרים איכותיים ושירות מכל הלב – תרגישי בבית מהרגע הראשון."
+        "intro": "ברוכים הבאים לאנה קוסמטיקס.",
+        "mission": "המשימה שלנו: אסתטיקה, נוחות ובריאות.",
       },
       "features": [
-        {
-          "icon": "Sparkles",
-          "title": "סטריליות ובטיחות",
-          "description": "כל הכלים עוברים חיטוי קפדני, ואנחנו משתמשות במוצרים מהמותגים המובילים בלבד."
-        },
-        {
-          "icon": "Hand",
-          "title": "עיצובים אישיים",
-          "description": "מהמראה הקלאסי ועד לאמנות ציפורניים מקורית – אצלנו כל אחת מוצאת את הסגנון שלה."
-        },
-        {
-          "icon": "Smile",
-          "title": "לקוחות מרוצות",
-          "description": "מאות לקוחות חוזרות בכל חודש. השביעות רצון שלכן היא ההשראה שלנו!"
-        }
-      ]
+        { "icon": "Sparkles", "title": "סטריליות ובטיחות", "description": "כלים מחוטאים ומוצרים מובילים." },
+        { "icon": "Hand",     "title": "עיצובים אישיים",   "description": "מהקלאסי ועד אמנות ציפורניים." },
+        { "icon": "Smile",    "title": "לקוחות מרוצות",    "description": "מאות לקוחות חוזרות כל חודש." },
+      ],
     },
     "portfolio": {
       "visible": true,
       "isGrid": true,
       "title": "העבודות שלנו",
-      "description": "הציצי בגלריית העבודות שלנו ותראי איך אנחנו הופכות כל זוג ידיים ליצירת אמנות.",
+      "description": "גלריית עבודות.",
       "items": [
-        {
-          "url": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800",
-          "title": "פרנץ' קלאסי",
-          "description": "המראה האלגנטי שתמיד באופנה"
-        },
-        {
-          "url": "https://images.unsplash.com/photo-1626360884020-75ef0421aaff?auto=format&fit=crop&q=80&w=800",
-          "title": "צבעים עזים",
-          "description": "לנשים שלא מפחדות לבלוט"
-        },
-        {
-          "url": "https://images.unsplash.com/photo-1611930021560-7e76ce219a65?auto=format&fit=crop&q=80&w=800",
-          "title": "ניוד מושלם",
-          "description": "גוונים עדינים וקלאסיים ליומיום"
-        },
-        {
-          "url": "https://images.unsplash.com/photo-1600180758890-6a3b9df9c41e?auto=format&fit=crop&q=80&w=800",
-          "title": "נצנוץ לחגים",
-          "description": "סטייל מיוחד לערב או לאירוע"
-        },
-        {
-          "url": "https://images.unsplash.com/photo-1580130376552-0e7b0fd07d55?auto=format&fit=crop&q=80&w=800",
-          "title": "שיק מינימליסטי",
-          "description": "פשטות אלגנטית ונקייה"
-        },
-        {
-          "url": "https://images.unsplash.com/photo-1599942634394-2d6a5d73317b?auto=format&fit=crop&q=80&w=800",
-          "title": "אמנות בציפורניים",
-          "description": "עיצובים מיוחדים בהתאמה אישית"
-        }
-      ]
-    },
-    "schedule": {
-      "title": "קביעת תור",
-      "description": "בחרי את השירות שמתאים לך, מתי שנוח – ונשמח לראות אותך בסטודיו!",
-      "vacations": [
-        "1755553-17852554"
+        { "url": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800", "title": "פרנץ' קלאסי", "description": "המראה האלגנטי שתמיד באופנה" },
+        { "url": "https://images.unsplash.com/photo-1626360884020-75ef0421aaff?auto=format&fit=crop&q=80&w=800", "title": "צבעים עזים",   "description": "לנשים שלא מפחדות לבלוט" },
       ],
-      "minsPerAppo": 30,
-      "appointmentTypes": [
-        "68237f9a44d5a7b474ddcba0",
-        "68237fb644d5a7b474ddcba1",
-        "68237fc844d5a7b474ddcba2"
-      ]
     },
-    "contact": {
-      "visible": true,
-      "title": "צרי קשר",
-      "description": "רוצה לשאול שאלה או לבדוק זמינות? שלחי לנו הודעה ונחזור אליך בהקדם!"
-    },
-    "footer": {
-      "visible": true,
-      "description": "טיפוח ציפורניים מקצועי עם אהבה, סטריליות וסטייל. איתנו תרגישי מושלמת – מהקצה ועד הקצה."
-    },
-    "introPopup": {
-      "visible": true,
-      "value": "לקוחות יקרות, הסטודיו יהיה סגור בין התאריכים 10.8–15.8 עקב חופשה. תודה על ההבנה!"
-    },
-    "contactButton": {
-      "visible": true
-    }
-  }
+    "schedule":      { "title": "קביעת תור", "description": "בחרי שירות ומועד נוח." },
+    "contact":       { "visible": true, "title": "צרי קשר", "description": "שלחי לנו הודעה." },
+    "footer":        { "visible": true, "description": "טיפוח ציפורניים מקצועי עם אהבה." },
+    "introPopup":    { "visible": false, "value": "" },
+    "contactButton": { "visible": true },
+  },
 };
 
 export const MOCK_USER: User = {
-  "_id": "6820e53e93a3878d15328b7f",
+  "_id": "u001",
   "username": "anna_admin",
-  "password": "סיסמא456!",
-  "webConfig_id": "6820e09d93a3878d15328b70",
+  "webConfig_id": "cfg_001",
   "email": "admin@annacosmetics.co.il",
   "phone": "+972501112223",
-  "subscription": "premium",
   "name": "אנה קוסמטיקס",
-  "defaultLanguage": "he"
+  "defaultLanguage": "he",
+  "isVerified": true,
+  "role": "user",
+  "boardingStatus": "active",
+  "subscription": { "status": "active" },
 };
-
-export const MOCK_APPOINTMENT_TYPES: AppointmentType[] = [
-  {
-    "_id": "68237f9a44d5a7b474ddcba0",
-    "name": "מניקור קלאסי",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "price": "80",
-    "durationMS": "1800000"
-  },
-  {
-    "_id": "68237fb644d5a7b474ddcba1",
-    "name": "פדיקור רפואי",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "price": "120",
-    "durationMS": "3600000"
-  },
-  {
-    "_id": "68237fc844d5a7b474ddcba2",
-    "name": "לק ג'ל",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "price": "180",
-    "durationMS": "2700000"
-  }
-];
-
-export const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    "_id": "6823a010c0f993b61b7ab819",
-    "name": "מיכל לוי",
-    "type_id": "68237f9a44d5a7b474ddcba0",
-    "phone": "+972501234567",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "timestamp": String(new Date().setHours(10, 0, 0, 0))
-  },
-  {
-    "_id": "6823a010c0f993b61b7ab820",
-    "name": "דנה כהן",
-    "type_id": "68237fb644d5a7b474ddcba1",
-    "phone": "+972529876543",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "timestamp": String(new Date().setHours(11, 0, 0, 0))
-  },
-  {
-    "_id": "6823a010c0f993b61b7ab821",
-    "name": "שירה אברהם",
-    "type_id": "68237fc844d5a7b474ddcba2",
-    "phone": "+972541234567",
-    "user_id": "6820e53e93a3878d15328b7f",
-    "timestamp": String(new Date().setHours(14, 0, 0, 0))
-  }
-];

@@ -25,7 +25,25 @@
     "errorLoadingStats": "שגיאה בטעינת סטטיסטיקות",
     "errorLoadingAppointments": "שגיאה בטעינת רשימת תורים",
     "greetingWithName": "{{greeting}}, {{name}}",
-    "unsavedChanges": "יש לך שינויים שלא נשמרו"
+    "unsavedChanges": "יש לך שינויים שלא נשמרו",
+    "notVerifiedAlert": "האתר שלך לא יהיה זמין עד שתוודא את כתובת האימייל שלך.",
+    "resendVerification": "שלח מחדש",
+    "resendVerificationSent": "אימייל אימות נשלח!",
+    "resendVerificationError": "שליחה נכשלה. נסה שוב.",
+    "notVerifiedTitle": "נדרשת פעולה: אמת את האימייל שלך",
+    "onboardingCardTitle": "הגדר את האתר שלך",
+    "onboardingCardDesc": "השלם את הגדרת האתר שלך. עם תכונות כמו קביעת שעות עבודה, שירותים ופרופיל, יהיה לך כל מה שאתה צריך כדי לקבל החלטות חכמות.",
+    "exploreAppBtn": "הגדר את האתר",
+    "inviteTeamTitle": "הזמן חברי צוות",
+    "inviteTeamDesc": "שתפו פעולה בתוכן ובנו יחד מוצרים דיגיטליים נהדרים.",
+    "addTeamMemberBtn": "הוסף חבר צוות",
+    "aiBuilder": "עוזר AI",
+    "upgradePlanTitle": "שדרג את התוכנית שלך",
+    "upgradePlanDesc": "תקופת הניסיון שלך עומדת לפוג.",
+    "upgradePlanDescDays": "{{days}} ימים נותרו בתקופת הניסיון שלך",
+    "upgradePlanBtn": "שדרג תוכנית",
+    "completeSetupFirst": "השלם את הגדרת האתר שלך תחילה",
+    "search": "חיפוש"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -36,6 +54,8 @@
   "sidebar": {
     "openSidebar": "פתח תפריט צד",
     "closeSidebar": "סגור תפריט צד",
+    "navigation": "ניווט",
+    "manage": "ניהול",
     "newAppointment": "תור חדש",
     "newAppointmentMsg": "נקבע תור חדש ל-{{time}}",
     "appointmentCancelled": "ביטול תור",
@@ -73,7 +93,10 @@
     "generalSettings": "הגדרות כלליות",
     "logo": "לוגו",
     "noLogo": "אין לוגו",
-    "uploadLogo": "בחר תמונת לוגו",
+    "uploadLogo": "העלה קובץ",
+    "logoUrlMode": "כתובת תמונה",
+    "logoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUrlInvalid": "הכתובת חייבת להתחיל ב-http",
     "yourLink": "הלינק שלך (Subdomain)",
     "linkDescription": "זהו הקישור הישיר לעמוד שלך שתוכל לשתף עם לקוחותיך.",
     "checking": "בודק זמינות...",
@@ -153,7 +176,9 @@
     "cancelAppointment": "ביטול תור",
     "cancelConfirm": "האם אתה בטוח שברצונך לבטל תור זה?",
     "updateSuccess": "התור עודכן בהצלחה",
-    "updateError": "אירעה שגיאה בעדכון התור"
+    "updateError": "אירעה שגיאה בעדכון התור",
+    "calendarView": "לוח שנה",
+    "listView": "רשימה"
   },
   "login": {
     "title": "התחברות",
@@ -166,7 +191,65 @@
     "enterPassword": "הזן סיסמה",
     "showPassword": "הצג סיסמה",
     "hidePassword": "הסתר סיסמה",
-    "signIn": "התחברות"
+    "signIn": "התחברות",
+    "or": "או",
+    "rememberMe": "זכור אותי",
+    "noAccount": "אין לך חשבון?",
+    "registerHere": "הירשם כאן"
+  },
+  "onboarding": {
+    "welcomeTitle": "ברוך הבא, {{name}}!",
+    "welcomeSubtitle": "בואו נגדיר את העסק שלך",
+    "welcomeDescription": "לפני שתתחיל לקבל תורים, השלם הגדרה קצרה כדי שהפרופיל שלך יהיה מוכן ללקוחות.",
+    "reviewGeneratedDetails": "Lighty יצר עבורך את פרטי האתר. אנא בדוק שהפרטים נכונים והשלם כל מידע חסר.",
+    "setupSteps": "מה נגדיר",
+    "step_phone": "טלפון עסקי",
+    "step_address": "כתובת העסק",
+    "step_businessName": "שם העסק",
+    "step_workingHours": "שעות פעילות",
+    "step_serviceTypes": "סוגי שירות",
+    "step_logo": "לוגו",
+    "getStarted": "בואו נתחיל",
+    "allStepsComplete": "הכל מוכן! הפרופיל שלך שלם.",
+    "setupProgress": "התקדמות ההגדרה ({{done}}/{{total}} הושלמו)",
+    "completeSetup": "השלם הגדרה",
+    "showDetails": "הצג פרטי ההגדרה",
+    "hideDetails": "הסתר פרטים",
+    "allDoneBtn": "סיימתי! סגור לוח",
+    "lightyWelcomeTitle": "ברוך הבא, {{name}}!",
+    "lightyWelcomeSubtitle": "בואו נבנה את האתר שלך עם Lighty",
+    "lightyWelcomeDescription": "Lighty הוא העוזר ה-AI שלך שבונה אתר מקצועי בשניות — רק תאר את העסק שלך.",
+    "lightyAssistantName": "Lighty — העוזר ה-AI שלך",
+    "lightyAssistantDesc": "ספר ל-Lighty על העסק שלך והוא יייצר לך אתר מושלם, מוכן לפרסום.",
+    "lightyGetStarted": "בנה עם Lighty"
+  },
+  "aiBuilder": {
+    "title": "Lighty — עוזר AI",
+    "chatTab": "צ'אט",
+    "previewTab": "תצוגה מקדימה",
+    "lightyWelcome": "היי! אני Lighty, עוזר האתר ה-AI שלך. תאר את העסק שלך ואבנה לך אתר בתוך שניות. אפשר גם לצרף לוגו לתוצאות טובות יותר.",
+    "welcomeMessage": "היי! אני Lighty, עוזר האתר ה-AI שלך. תאר את העסק שלך ואבנה לך אתר בתוך שניות. אפשר גם לצרף לוגו לתוצאות טובות יותר.",
+    "firstPromptPlaceholder": "תאר את העסק שלך (למשל: מספרה לנשים בתל אביב)...",
+    "refinePlaceholder": "מה תרצה ש-Lighty ישנה?",
+    "generatedMessage": "האתר של {{name}} מוכן! אפשר להמשיך לעדכן עם Lighty או לשמור ולהחיל את השינויים.",
+    "errorMessage": "משהו השתבש. אנא נסה שוב.",
+    "uploadLogo": "העלה לוגו",
+    "preview": "תצוגה חיה",
+    "refresh": "רענן תצוגה מקדימה",
+    "save": "שמור והחל",
+    "saving": "שומר...",
+    "saved": "נשמר!",
+    "skip": "דלג לעת עתה",
+    "previewEmpty": "תצוגה מקדימה תופיע כאן",
+    "previewEmptyDesc": "תאר את העסק שלך ל-Lighty והתצוגה המקדימה החיה של האתר שלך תופיע כאן"
+  },
+  "verify": {
+    "loading": "מאמת את כתובת האימייל שלך...",
+    "successTitle": "האימייל אומת בהצלחה!",
+    "successMessage": "כתובת האימייל שלך אומתה בהצלחה. כעת תוכל להתחבר לחשבונך.",
+    "errorTitle": "האימות נכשל",
+    "errorMessage": "קישור האימות אינו תקף או שפג תוקפו. אנא הירשם שוב או פנה לתמיכה.",
+    "goToLogin": "עבור להתחברות"
   },
   "portfolio": {
     "title": "ניהול גלריית תמונות",
@@ -243,7 +326,22 @@
     "today": "הכנסות היום",
     "weekly": "הכנסות השבוע",
     "monthly": "הכנסות החודש",
-    "appointments": "תורים"
+    "appointments": "תורים",
+    "vsYesterday": "לעומת אתמול",
+    "vsLastWeek": "לעומת שבוע שעבר",
+    "vsLastMonth": "לעומת חודש שעבר"
+  },
+  "donutChart": {
+    "title": "לפי סוג שירות",
+    "total": "סה\"כ"
+  },
+  "dashboardList": {
+    "total": "תורים",
+    "service": "שירות",
+    "dateTime": "תאריך / שעה",
+    "duration": "משך",
+    "status": "סטטוס",
+    "price": "מחיר"
   },
   "appointmentsGraph": {
     "week": "שבוע",
@@ -261,5 +359,9 @@
   },
   "appointmentStats": {
     "upcoming": "תורים לביצוע"
+  },
+  "floatingAssistant": {
+    "label": "עוזר AI",
+    "placeholder": "מה תרצה לערוך?"
   }
 }

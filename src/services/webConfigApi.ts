@@ -21,7 +21,9 @@ api.interceptors.request.use((config) => {
 export const getWebConfigById = async (id: string): Promise<WebConfig> => {
   if (!id) return;
   try {
+
     const res = await api.get(id);
+    console.log(res);
     return res.data.data;
   } catch (err) {
     console.log(err);
@@ -29,6 +31,18 @@ export const getWebConfigById = async (id: string): Promise<WebConfig> => {
   }
 };
 
+
+export const createWebConfig = async (
+  webConfig: Partial<WebConfig>
+): Promise<WebConfig> => {
+  try {
+    const res = await api.post('', webConfig);
+    return res.data.data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 
 export const updateWebConfig = async (
   webConfig: Partial<WebConfig> & { _id: string }

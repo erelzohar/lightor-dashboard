@@ -22,10 +22,18 @@ export const fetchWebConfig = createAsyncThunk(
   }
 );
 
+export const createWebConfig = createAsyncThunk(
+  'webConfig/create',
+  async (config: Partial<WebConfig>) => {
+    const response = await webConfigApi.createWebConfig(config);
+    return response;
+  }
+);
+
 export const updateWebConfig = createAsyncThunk(
   'webConfig/update',
-  async (config: Partial<WebConfig> & { _id: string }) => {    
-    const response = await webConfigApi.updateWebConfig(config);    
+  async (config: Partial<WebConfig> & { _id: string }) => {
+    const response = await webConfigApi.updateWebConfig(config);
     return response;
   }
 );
@@ -47,6 +55,9 @@ const webConfigSlice = createSlice({
       .addCase(fetchWebConfig.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch web config';
+      })
+      .addCase(createWebConfig.fulfilled, (state, action) => {
+        state.data = action.payload;
       })
       .addCase(updateWebConfig.fulfilled, (state, action) => {
         state.data = action.payload;

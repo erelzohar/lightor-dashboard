@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { AuthState, User } from '../types';
-import { loginUser, changePassword, getCurrentUser } from '../services/authApi';
+import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout as storeLogout } from '../store/slices/userSlice';
 interface AuthContextType {
   auth: AuthState;
   login: (username: string, password: string) => Promise<void>;
+  loginWithGoogle: (token: string) => Promise<void>;
+  loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
   updateUser: (userData: Partial<User>) => Promise<void>;
@@ -27,7 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
 
   // Initial authentication check (runs ONLY on first load)
@@ -37,9 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (token) {
         try {
-          // Fetch the latest user details securely using the token
           const user = await getCurrentUser();
-          
           setAuth({
             user,
             token,
@@ -66,19 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Redirect logic (runs whenever location or auth state changes)
-  useEffect(() => {
-    if (auth.isAuthenticated && (location.pathname === '/login' || location.pathname === '/')) {
-      navigate('/dashboard');
-    }
-  }, [auth.isAuthenticated, location.pathname, navigate]);
-
   const login = async (username: string, password: string) => {
     setLoading(true);
     try {
-      const { token, user } = await loginUser(username, password);
-
+      const { token } = await loginUser(username, password);
       localStorage.setItem('lightor', token);
+      const user = await getCurrentUser();
 
       setAuth({
         user,
@@ -93,6 +85,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuth(prev => ({
         ...prev,
         error: 'Invalid credentials',
+        isLoading: false,
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (credential: string) => {
+    setLoading(true);
+    try {
+      const { token } = await googleLogin(credential);
+      localStorage.setItem('lightor', token);
+      const user = await getCurrentUser();
+
+      setAuth({
+        user,
+        token,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      setAuth(prev => ({
+        ...prev,
+        error: 'Google login failed',
+        isLoading: false,
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithFacebook = async (accessToken: string) => {
+    setLoading(true);
+    try {
+      const { token } = await facebookLogin(accessToken);
+      localStorage.setItem('lightor', token);
+      const user = await getCurrentUser();
+
+      setAuth({
+        user,
+        token,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      setAuth(prev => ({
+        ...prev,
+        error: 'Facebook login failed',
         isLoading: false,
       }));
     } finally {
@@ -145,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout, loading, updateUser, updatePassword }}>
+    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithFacebook, logout, loading, updateUser, updatePassword }}>
       {children}
     </AuthContext.Provider>
   );

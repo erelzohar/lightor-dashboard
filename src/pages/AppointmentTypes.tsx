@@ -236,9 +236,6 @@ const AppointmentTypes: React.FC = () => {
                     <p className="text-light-gray mb-4">
                       {t('appointmentTypes.noServices')}
                     </p>
-                    <Button onClick={handleAddNew} variant="primary">
-                      {t('appointmentTypes.addNewService')}
-                    </Button>
                   </div>
                 )}
               </div>
