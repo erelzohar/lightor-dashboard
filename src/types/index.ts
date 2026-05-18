@@ -146,6 +146,7 @@ export interface User {
   phone: string;
   name: string;
   defaultLanguage: string;
+  channelType?: 'sms' | 'whatsapp';
   isVerified: boolean;
   verificationToken?: string;
   verificationExpire?: string | Date;

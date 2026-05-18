@@ -40,9 +40,15 @@ const Settings: React.FC = () => {
   const { auth } = useAuth();
   const webConfig = useAppSelector(state => state.webConfig.data);
 
+  const resolveLogoUrl = (imgName: string): string => {
+    if (!imgName) return '';
+    if (imgName.startsWith('http') || imgName.startsWith('data:') || imgName.startsWith('blob:')) return imgName;
+    return globals.imagesUrl + imgName;
+  };
+
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
-    const originalLogoUrl = webConfig.logoImageName ? globals.imagesUrl + webConfig.logoImageName : '';
+    const originalLogoUrl = resolveLogoUrl(webConfig.logoImageName);
     const settingsChanged = JSON.stringify(localWebConfig.address) !== JSON.stringify(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
@@ -51,7 +57,7 @@ const Settings: React.FC = () => {
       JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
       JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig.components?.introPopup) ||
       imageToUpload ||
-      (logoInputMode === 'url' && logoUrlValue && localWebConfig.logoImageName !== originalLogoUrl);
+      (logoInputMode === 'url' && localWebConfig.logoImageName !== originalLogoUrl);
 
     return settingsChanged;
   };
@@ -82,12 +88,6 @@ const Settings: React.FC = () => {
     document.title = t('settings.title');
   }, [t]);
 
-  const resolveLogoUrl = (imgName: string): string => {
-    if (!imgName) return '';
-    if (imgName.startsWith('http') || imgName.startsWith('data:') || imgName.startsWith('blob:')) return imgName;
-    return globals.imagesUrl + imgName;
-  };
-
   const fetchWebConfigData = async () => {
     setIsLoading(true);
     try {
@@ -107,6 +107,10 @@ const Settings: React.FC = () => {
         ...webConfig,
         logoImageName: resolveLogoUrl(webConfig.logoImageName),
       });
+      if (webConfig.logoImageName?.startsWith('http')) {
+        setLogoInputMode('url');
+        setLogoUrlValue(webConfig.logoImageName);
+      }
     }
   }, [webConfig]);
 
@@ -292,6 +296,7 @@ const Settings: React.FC = () => {
         isLoading={isSaving || isCheckingSubdomain}
         disabled={isSaving || isCheckingSubdomain || !!subdomainError}
         size="sm"
+        className="ms-4"
       >
         {t('common.save')}
       </Button>
@@ -593,6 +598,7 @@ const Settings: React.FC = () => {
                 className="w-full bg-yellow-50/50 dark:bg-yellow-900/10 rounded-xl px-4 py-3 text-base sm:text-[0.9375rem] border border-yellow-200/60 dark:border-yellow-700/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[0.1875rem] focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition-all duration-300 resize-none shadow-sm"
               />
             </div>
+
           </motion.div>
         );
 

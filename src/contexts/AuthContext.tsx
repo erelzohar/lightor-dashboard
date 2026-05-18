@@ -6,6 +6,7 @@ import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout as storeLogout } from '../store/slices/userSlice';
+import i18n from '../i18n/config';
 interface AuthContextType {
   auth: AuthState;
   login: (username: string, password: string) => Promise<void>;
@@ -46,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             isLoading: false,
             error: null,
           });
+          if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
         } catch (error) {
           localStorage.removeItem('lightor');
           setAuth({
@@ -79,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading: false,
         error: null,
       });
+      if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
@@ -106,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading: false,
         error: null,
       });
+      if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
@@ -133,6 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading: false,
         error: null,
       });
+      if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
       navigate('/dashboard', { replace: true });
     } catch (error) {

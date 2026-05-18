@@ -1,5 +1,8 @@
 import { WebConfig, User, AppointmentType, Appointment } from '../types';
 
+// Set to true to pre-load mock appointments & appointment types on app start
+export const USE_MOCK_DATA = true;
+
 // ── Helper: compute epoch timestamp for day offset + time ──────────────────
 const ts = (daysOffset: number, hour: number, minute = 0): string => {
   const d = new Date();

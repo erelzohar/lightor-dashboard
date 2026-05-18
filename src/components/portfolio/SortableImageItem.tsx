@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Trash2, Edit2, Check, X as XIcon } from 'lucide-react';
+import { Trash2, Edit2, Check, X as XIcon, GripVertical } from 'lucide-react';
 import { PortfolioItem } from '../../types';
 import globals from '../../services/globals';
 import { useTranslation } from 'react-i18next';
@@ -48,13 +48,23 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     return (
         <div
             ref={ref}
-            style={style}
-            className={`relative group bg-light-surface dark:bg-dark-surface rounded-xl overflow-hidden shadow-sm border ${isDragging ? 'opacity-50' : ''} ${isSorting ? 'border-primary shadow-lg scale-105 z-10' : 'border-light-gray/20 dark:border-dark-gray/20 transition-all duration-200'
-                }`}
+            style={{
+                ...style,
+                background: 'rgba(255,255,255,0.03)',
+                backdropFilter: 'blur(12px)',
+            }}
+            className={`relative group aspect-square overflow-hidden transition-all duration-300 cursor-grab active:cursor-grabbing
+                rounded-[24px]
+                ${isSorting || isDragging
+                    ? 'scale-105 z-10 shadow-[0_0_25px_rgba(139,92,246,0.35)] border border-primary/50'
+                    : 'border border-white/[0.08] hover:border-primary/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]'
+                }
+                ${isDragging ? 'opacity-50' : ''}
+            `}
         >
-            {/* The Draggable Area (Image) */}
+            {/* Draggable image area */}
             <div
-                className="aspect-square w-full relative outline-none touch-manipulation cursor-grab active:cursor-grabbing"
+                className="w-full h-full outline-none touch-manipulation"
                 {...attributes}
                 {...listeners}
             >
@@ -62,24 +72,49 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                     src={imageUrl}
                     alt={item.title || 'Portfolio Image'}
                     draggable={false}
-                    className="w-full h-full object-cover cursor-grab active:cursor-grabbing select-none pointer-events-none"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none pointer-events-none"
                 />
             </div>
 
-            {/* The Action Overlay (Separated from DnD listeners) */}
-            <div className="absolute inset-0 flex flex-col justify-end p-3 pointer-events-none">
-                {/* Background Dim - only visible on hover or mobile */}
-                <div className="absolute inset-0 bg-black/20 md:bg-black/40 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200" />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 pointer-events-none">
+                {/* Top: action buttons */}
+                <div className={`flex justify-end gap-2 ${isSorting || isDragging ? 'pointer-events-none' : 'pointer-events-auto'}`}>
+                    {!isEditing && (
+                        <>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onEditClick?.(); }}
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 touch-manipulation"
+                                style={{ background: 'rgba(11,19,38,0.8)', backdropFilter: 'blur(8px)' }}
+                                aria-label={t('portfolio.editTitle')}
+                            >
+                                <Edit2 size={15} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onRemoveClick?.(); }}
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-red-400 shadow-lg transition-all duration-200 hover:scale-110 hover:bg-red-500 hover:text-white touch-manipulation"
+                                style={{ background: 'rgba(11,19,38,0.8)', backdropFilter: 'blur(8px)' }}
+                                aria-label={t('portfolio.deleteImage')}
+                            >
+                                <Trash2 size={15} />
+                            </button>
+                        </>
+                    )}
+                </div>
 
-                <div className={`relative w-full z-10 ${isSorting || isDragging ? 'pointer-events-none' : 'pointer-events-auto'}`}>
+                {/* Bottom: title / edit form */}
+                <div className={`${isSorting || isDragging ? 'pointer-events-none' : 'pointer-events-auto'}`}>
                     {isEditing ? (
-                        <div className="flex flex-col gap-2 w-full bg-black/60 p-2 rounded-lg backdrop-blur-md"
-                            onClick={(e) => e.stopPropagation()}>
+                        <div
+                            className="flex flex-col gap-2 w-full p-2 rounded-xl"
+                            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <input
                                 type="text"
                                 value={editTitle}
                                 onChange={e => onTitleChange?.(e.target.value)}
-                                className="w-full bg-white/20 text-white placeholder-white/60 border border-white/20 rounded-md px-2 py-1.5 text-base md:text-sm focus:outline-none focus:border-primary transition-colors pointer-events-auto"
+                                className="w-full bg-white/20 text-white placeholder-white/50 border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary transition-colors pointer-events-auto"
                                 placeholder={t('portfolio.enterTitle')}
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -90,51 +125,30 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                             <div className="flex justify-end gap-2">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onCancelEdit?.(); }}
-                                    className="p-1.5 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer touch-manipulation"
+                                    className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer touch-manipulation"
                                     aria-label={t('common.cancel')}
                                 >
-                                    <XIcon size={16} />
+                                    <XIcon size={14} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onSaveTitle?.(editTitle || ''); }}
-                                    className="p-1.5 rounded-md bg-primary hover:bg-primary-dark text-white transition-colors shadow-md cursor-pointer touch-manipulation"
+                                    className="p-1.5 rounded-lg bg-primary hover:brightness-110 text-white transition-colors shadow-md cursor-pointer touch-manipulation"
                                     aria-label={t('common.save')}
                                 >
-                                    <Check size={16} />
+                                    <Check size={14} />
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex justify-between items-end gap-2 w-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
-                            <div className="text-white text-sm font-medium drop-shadow-md truncate max-w-[55%] flex-1">
-                                {item.title ? item.title : (
-                                    <span className="opacity-70 italic font-normal text-xs">
+                        <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
+                            <GripVertical size={16} className="opacity-70 shrink-0" />
+                            <span className="truncate drop-shadow-md">
+                                {item.title || (
+                                    <span className="opacity-60 italic font-normal">
                                         {t('portfolio.addTitle')}
                                     </span>
                                 )}
-                            </div>
-                            <div className="flex gap-1.5 shrink-0">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEditClick?.();
-                                    }}
-                                    className="p-2 bg-white/30 md:bg-white/20 hover:bg-white/40 rounded-lg text-white backdrop-blur-sm transition-colors cursor-pointer touch-manipulation"
-                                    aria-label={t('portfolio.editTitle')}
-                                >
-                                    <Edit2 size={16} />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemoveClick?.();
-                                    }}
-                                    className="p-2 bg-red-500/90 md:bg-red-500/80 hover:bg-red-600 rounded-lg text-white backdrop-blur-sm transition-colors cursor-pointer touch-manipulation"
-                                    aria-label={t('portfolio.deleteImage')}
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
+                            </span>
                         </div>
                     )}
                 </div>

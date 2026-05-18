@@ -3,7 +3,7 @@ import { AlertCircle } from 'lucide-react';
 import Card from '../ui/Card';
 
 interface DashboardFallbackProps {
-    language: 'en' | 'he';
+    language: string;
     title?: string;
 }
 
@@ -19,7 +19,7 @@ const DashboardFallback: React.FC<DashboardFallbackProps> = ({ language, title }
         }
     };
 
-    const t = translations[language];
+    const t = translations[language as 'en' | 'he'] ?? translations.en;
 
     return (
         <Card className="h-full flex flex-col items-center justify-center py-8 opacity-80">

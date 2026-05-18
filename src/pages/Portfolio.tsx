@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCcw, Image as ImageIcon, Plus } from 'lucide-react';
+import { RefreshCcw, Image as ImageIcon, Plus, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 
@@ -31,6 +31,13 @@ import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
 
+const GLASS: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.03)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '24px',
+};
+
 const Portfolio: React.FC = () => {
     const { t } = useTranslation();
     const { auth } = useAuth();
@@ -41,7 +48,9 @@ const Portfolio: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingVisibility, setIsSavingVisibility] = useState(false);
     const [items, setItems] = useState(webConfig?.components?.portfolio?.items || []);
+    const [isVisible, setIsVisible] = useState(webConfig?.components?.portfolio?.visible ?? true);
 
     document.title = t('portfolio.title');
 
@@ -60,8 +69,9 @@ const Portfolio: React.FC = () => {
     }, [webConfig]);
 
     useEffect(() => {
-        if (webConfig?.components?.portfolio?.items) {
-            setItems(webConfig.components.portfolio.items);
+        if (webConfig?.components?.portfolio) {
+            setItems(webConfig.components.portfolio.items ?? []);
+            setIsVisible(webConfig.components.portfolio.visible ?? true);
         }
     }, [webConfig]);
 
@@ -92,6 +102,30 @@ const Portfolio: React.FC = () => {
             setItems(webConfig.components.portfolio.items || []);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleToggleVisibility = async () => {
+        if (!webConfig) return;
+        const newVisible = !isVisible;
+        setIsVisible(newVisible);
+        setIsSavingVisibility(true);
+        try {
+            const payload: any = {
+                _id: webConfig._id,
+                components: {
+                    ...webConfig.components,
+                    portfolio: { ...webConfig.components.portfolio, visible: newVisible },
+                },
+            };
+            const res = await dispatch(updateWebConfig(payload));
+            if (updateWebConfig.rejected.match(res)) throw new Error();
+            toast.success(t('portfolio.visibilityUpdateSuccess'));
+        } catch {
+            setIsVisible(!newVisible);
+            toast.error(t('portfolio.updateError'));
+        } finally {
+            setIsSavingVisibility(false);
         }
     };
 
@@ -166,98 +200,154 @@ const Portfolio: React.FC = () => {
         );
     }
 
-    const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
-        <div className="flex items-center gap-2">
-            <Icon className="text-primary w-5 h-5" />
-            <h1 className="font-semibold text-xl text-gray-800 dark:text-white">{title}</h1>
-        </div>
-    );
+    const canAddMore = items.length < 12;
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 max-w-7xl mx-auto"
+            className="p-6 md:p-8 max-w-7xl mx-auto"
         >
-            <div className="flex justify-between items-start mb-6">
-                <div>
-                    <SectionHeader icon={ImageIcon} title={t('portfolio.title')} />
-                    <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-                        {t('portfolio.description')}
-                    </p>
-                    <p className="text-sm font-medium mt-2">
-                        <span className={items.length >= 12 ? 'text-red-500' : 'text-primary'}>
-                            {items.length}
-                        </span>
-                        <span className="text-light-gray dark:text-dark-gray"> / 12</span>
-                    </p>
+            {/* Header */}
+            <div className="mb-10">
+                <div className="flex items-center gap-3 mb-1">
+                    <ImageIcon className="text-primary w-7 h-7" />
+                    <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
+                        {t('portfolio.title')}
+                    </h1>
                 </div>
-
-                <div>
-                    <label
-                        htmlFor={items.length >= 12 ? undefined : "portfolio-image-upload"}
-                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-md transition text-sm font-medium ${items.length >= 12 || isLoading || isSaving
-                            ? 'bg-light-gray text-white opacity-50 cursor-not-allowed'
-                            : 'bg-primary text-white hover:bg-primary-dark active:scale-95 cursor-pointer'
-                            }`}
-                        onClick={(e) => {
-                            if (items.length >= 12) {
-                                e.preventDefault();
-                                toast.error(t('portfolio.maxImagesLabel'));
-                            }
-                        }}
-                    >
-                        {isLoading ? (
-                            <RefreshCcw className="animate-spin w-4 h-4" />
-                        ) : (
-                            <Plus className="w-4 h-4" />
-                        )}
-                        {t('portfolio.newImage')}
-                    </label>
-                    <input
-                        id="portfolio-image-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleUploadNewImage}
-                        disabled={isLoading || isSaving}
-                    />
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                    {t('portfolio.description')}
+                </p>
+                <div
+                    className="mt-3 inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(149,142,160,0.2)' }}
+                >
+                    <span className={`font-bold mr-1 ${items.length >= 12 ? 'text-red-400' : 'text-primary'}`}>
+                        {items.length}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">/ 12 {t('portfolio.imagesUsed')}</span>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-light-gray/20 dark:border-dark-gray/20 p-6">
-                {items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-light-text text-center">
-                        <ImageIcon className="w-16 h-16 text-light-gray mb-4" />
-                        <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
-                            {t('portfolio.empty')}
-                        </h4>
-                        <p className="text-sm max-w-sm">
-                            {t('portfolio.emptyDesc')}
+            {/* Grid Container */}
+            <div style={GLASS} className="p-6">
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                    autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 5 }}
+                    measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+                >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <SortableContext items={items.map((i: any) => i.url)} strategy={rectSortingStrategy}>
+                            {items.map((item: any) => (
+                                <SortableImageItem
+                                    key={item.url}
+                                    item={item}
+                                    onRemove={handleRemoveImage}
+                                    onUpdateTitle={handleUpdateTitle}
+                                />
+                            ))}
+                        </SortableContext>
+
+                        {/* Add Image Placeholder */}
+                        {canAddMore && (
+                            <label
+                                htmlFor="portfolio-image-upload"
+                                className="aspect-square flex flex-col items-center justify-center group cursor-pointer transition-all duration-300 hover:bg-primary/5"
+                                style={{
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '2px dashed rgba(149,142,160,0.3)',
+                                    borderRadius: '24px',
+                                }}
+                                onMouseEnter={e => {
+                                    (e.currentTarget as HTMLLabelElement).style.borderColor = 'rgba(139,92,246,0.4)';
+                                }}
+                                onMouseLeave={e => {
+                                    (e.currentTarget as HTMLLabelElement).style.borderColor = 'rgba(149,142,160,0.3)';
+                                }}
+                            >
+                                {isLoading || isSaving ? (
+                                    <RefreshCcw className="animate-spin text-primary w-8 h-8 mb-3" />
+                                ) : (
+                                    <div
+                                        className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                                        style={{ background: 'rgba(255,255,255,0.05)' }}
+                                    >
+                                        <Plus className="text-primary w-7 h-7" />
+                                    </div>
+                                )}
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+                                    {t('portfolio.newImage')}
+                                </span>
+                            </label>
+                        )}
+                    </div>
+                </DndContext>
+
+                {items.length === 0 && (
+                    <p className="text-center text-xs text-gray-500 dark:text-gray-500 italic mt-6">
+                        {t('portfolio.emptyDesc')}
+                    </p>
+                )}
+            </div>
+
+            <input
+                id="portfolio-image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUploadNewImage}
+                disabled={isLoading || isSaving || !canAddMore}
+            />
+
+            {/* Bento bottom section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div className="md:col-span-2 flex items-center gap-6 p-6" style={GLASS}>
+                    <div
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'rgba(52,211,153,0.1)' }}
+                    >
+                        <Sparkles className="text-emerald-400 w-7 h-7" />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                            {t('portfolio.optimizationTitle')}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t('portfolio.optimizationTip')}
                         </p>
                     </div>
-                ) : (
-                    <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                        autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 5 }}
-                        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+                </div>
+                <div className="flex flex-col items-center justify-center text-center p-6" style={GLASS}>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        {t('portfolio.visibilityStatus')}
+                    </span>
+                    <span className={`text-3xl font-bold transition-colors duration-300 ${isVisible ? 'text-primary' : 'text-gray-500 dark:text-gray-500'}`}>
+                        {t(isVisible ? 'portfolio.visibilityLive' : 'portfolio.visibilityHidden')}
+                    </span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {t(isVisible ? 'portfolio.visibilityDesc' : 'portfolio.visibilityHiddenDesc')}
+                    </p>
+                    <button
+                        onClick={handleToggleVisibility}
+                        disabled={isSavingVisibility}
+                        aria-label={t('portfolio.showOnWebsite')}
+                        className={`mt-4 relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                            isSavingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                        } ${isVisible ? 'bg-primary' : 'bg-gray-600 dark:bg-gray-700'}`}
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <SortableContext items={items.map((i: any) => i.url)} strategy={rectSortingStrategy}>
-                                {items.map((item: any) => (
-                                    <SortableImageItem
-                                        key={item.url}
-                                        item={item}
-                                        onRemove={handleRemoveImage}
-                                        onUpdateTitle={handleUpdateTitle}
-                                    />
-                                ))}
-                            </SortableContext>
-                        </div>
-                    </DndContext>
-                )}
+                        <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${
+                                isVisible ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                    </button>
+                    <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        {t('portfolio.showOnWebsite')}
+                    </span>
+                </div>
             </div>
         </motion.div>
     );

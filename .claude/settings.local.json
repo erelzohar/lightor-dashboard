@@ -8,7 +8,9 @@
       "Bash(npm list *)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-dashboard\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-dashboard\\\\src\" -Recurse -Include \"*.ts\", \"*.tsx\", \"*.js\", \"*.jsx\")",
+      "Bash(Copy-Item \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-dashboard\\\\dist\\\\lighty-welcome.png\" \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-dashboard\\\\public\\\\lighty-welcome.png\")"
     ]
   }
 }

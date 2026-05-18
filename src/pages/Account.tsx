@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { User, Phone, KeyRound, Eye, EyeOff, MessageSquare } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -21,6 +21,8 @@ const Account: React.FC = () => {
     phone: auth.user?.phone || '',
     defaultLanguage: auth.user?.defaultLanguage || 'he'
   });
+  const [channelType, setChannelType] = useState<'sms' | 'whatsapp'>(auth.user?.channelType ?? 'sms');
+  const [isSavingChannel, setIsSavingChannel] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -36,6 +38,7 @@ const Account: React.FC = () => {
         phone: auth.user.phone || '',
         defaultLanguage: auth.user.defaultLanguage || 'he'
       });
+      setChannelType(auth.user.channelType ?? 'sms');
     }
   }, [auth.user]);
 
@@ -49,6 +52,20 @@ const Account: React.FC = () => {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleChannelTypeChange = async (value: 'sms' | 'whatsapp') => {
+    setChannelType(value);
+    setIsSavingChannel(true);
+    try {
+      await updateUser({ channelType: value });
+      toast.success(t('account.channelUpdateSuccess'));
+    } catch {
+      toast.error(t('account.channelUpdateError'));
+      setChannelType(auth.user?.channelType ?? 'sms');
+    } finally {
+      setIsSavingChannel(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,6 +122,40 @@ const Account: React.FC = () => {
           {t('account.description')}
         </p>
       </div>
+
+      {/* Notification Channel Card */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                {t('account.channelType')}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {t('account.channelTypeDesc')}
+              </p>
+            </div>
+          </div>
+
+          <div className={`flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-fit text-sm shrink-0 ${isSavingChannel ? 'opacity-60 pointer-events-none' : ''}`}>
+            <button
+              type="button"
+              onClick={() => handleChannelTypeChange('sms')}
+              className={`px-4 py-2 font-medium transition-colors ${channelType === 'sms' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            >
+              {t('account.channelSms')}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChannelTypeChange('whatsapp')}
+              className={`px-4 py-2 font-medium transition-colors ${channelType === 'whatsapp' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            >
+              {t('account.channelWhatsapp')}
+            </button>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

@@ -23,7 +23,6 @@ export const getWebConfigById = async (id: string): Promise<WebConfig> => {
   try {
 
     const res = await api.get(id);
-    console.log(res);
     return res.data.data;
   } catch (err) {
     console.log(err);

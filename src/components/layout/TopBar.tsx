@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Menu, Moon, Sun } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,7 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { direction, darkMode, toggleDarkMode } = useTheme();
+  const { direction } = useTheme();
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -37,18 +37,10 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
         <Menu size={20} />
       </button>
 
-      <h1 className="text-sm font-semibold text-gray-800 dark:text-dark-text">
+      <h1 className="text-base font-semibold text-gray-800 dark:text-dark-text">
         {getPageTitle()}
       </h1>
 
-      <div className={direction === 'rtl' ? 'mr-auto' : 'ml-auto'}>
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-      </div>
     </header>
   );
 };

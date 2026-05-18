@@ -258,11 +258,10 @@ const Dashboard: React.FC = () => {
                     return (
                       <motion.button
                         key={step.key}
-                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(step.tab)}
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-colors ${
-                          step.done ? 'bg-white/10 opacity-60 cursor-default' : 'bg-white/15 hover:bg-white/25 cursor-pointer'
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-all duration-150 ${
+                          step.done ? 'bg-white/10 opacity-60 cursor-default' : 'bg-white/15 hover:bg-white/25 hover:-translate-y-px cursor-pointer'
                         }`}
                         disabled={step.done}
                       >
@@ -333,44 +332,73 @@ const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* ── Row 1: Income Stats ── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <ErrorBoundaryWithLanguage
-          fallback={<DashboardFallback language={language} title={t('common.errorLoadingIncome')} />}
+      {appointments.length === 0 ? (
+        /* ── Empty state: no appointments yet ── */
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col items-center justify-center py-16 gap-6 text-center"
         >
-          <IncomeStats appointments={appointments} />
-        </ErrorBoundaryWithLanguage>
-      </motion.div>
+          <img
+            src="/lighty-welcome.png"
+            alt="Welcome"
+            className="w-56 h-56 object-contain drop-shadow-lg"
+          />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              {t('dashboard.emptyTitle')}
+            </h2>
+            <p className="text-lg font-medium text-primary">
+              {t('dashboard.emptySubtitle')}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              {t('dashboard.emptyDesc')}
+            </p>
+          </div>
+        </motion.div>
+      ) : (
+        <>
+          {/* ── Row 1: Income Stats ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <ErrorBoundaryWithLanguage
+              fallback={<DashboardFallback language={language} title={t('common.errorLoadingIncome')} />}
+            >
+              <IncomeStats appointments={appointments} />
+            </ErrorBoundaryWithLanguage>
+          </motion.div>
 
-      {/* ── Row 2: Bar Graph (2/3) + Donut Chart (1/3) — same date range ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
-        <div className="lg:col-span-2">
-          <ErrorBoundaryWithLanguage
-            fallback={<DashboardFallback language={language} title={t('common.errorLoadingGraph')} />}
-          >
-            <AppointmentsGraph
-              appointments={appointments}
-              timeRange={timeRange}
-              currentDate={currentDate}
-              onTimeRangeChange={setTimeRange}
-              onCurrentDateChange={setCurrentDate}
-            />
-          </ErrorBoundaryWithLanguage>
-        </div>
-        <div className="lg:col-span-1">
-          <ErrorBoundaryWithLanguage
-            fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
-          >
-            <DashboardDonutChart
-              appointments={appointments}
-              timeRange={timeRange}
-              currentDate={currentDate}
-            />
-          </ErrorBoundaryWithLanguage>
-        </div>
-      </div>
+          {/* ── Row 2: Bar Graph (2/3) + Donut Chart (1/3) — same date range ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+            <div className="lg:col-span-2">
+              <ErrorBoundaryWithLanguage
+                fallback={<DashboardFallback language={language} title={t('common.errorLoadingGraph')} />}
+              >
+                <AppointmentsGraph
+                  appointments={appointments}
+                  timeRange={timeRange}
+                  currentDate={currentDate}
+                  onTimeRangeChange={setTimeRange}
+                  onCurrentDateChange={setCurrentDate}
+                />
+              </ErrorBoundaryWithLanguage>
+            </div>
+            <div className="lg:col-span-1">
+              <ErrorBoundaryWithLanguage
+                fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
+              >
+                <DashboardDonutChart
+                  appointments={appointments}
+                  timeRange={timeRange}
+                  currentDate={currentDate}
+                />
+              </ErrorBoundaryWithLanguage>
+            </div>
+          </div>
+        </>
+      )}
 
-      {/* ── Row 3: Appointments List ── */}
+      {/* ── Appointments List (always visible) ── */}
       <ErrorBoundaryWithLanguage
         fallback={<DashboardFallback language={language} title={t('common.errorLoadingAppointments')} />}
       >

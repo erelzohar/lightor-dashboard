@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, RefreshCcw, Calendar, Clock, Plus, Trash2, Edit3, AlertCircle, X, CalendarClock } from 'lucide-react';
+import {
+  Save, RefreshCcw, Calendar, Clock, Plus, Trash2, Edit3,
+  CalendarClock, Info,
+} from 'lucide-react';
 import { WebConfig } from '../types';
-import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
@@ -24,6 +25,13 @@ interface WorkingHours {
   endTime: string;
 }
 
+const getActiveDayStyle = (darkMode: boolean) => ({
+  background: darkMode
+    ? 'linear-gradient(#1e293b, #1e293b) padding-box, linear-gradient(45deg, rgba(139, 92, 246, 0.8), rgba(60, 221, 199, 0.4)) border-box'
+    : 'linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(45deg, rgba(139, 92, 246, 0.8), rgba(60, 221, 199, 0.4)) border-box',
+  border: '1px solid transparent',
+});
+
 const ScheduleVacations: React.FC = () => {
   const { t } = useTranslation();
   const [webConfigLocalState, setWebConfigLocalState] = useState<WebConfig | null>(null);
@@ -38,17 +46,14 @@ const ScheduleVacations: React.FC = () => {
     title: '',
     startDate: new Date().toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
     endDate: new Date().toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
-    webConfig_id: ''
+    webConfig_id: '',
   });
 
-  const { language, direction } = useTheme();
+  const { language, direction, darkMode } = useTheme();
   const locale = language === 'he' ? he : enUS;
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector(state => state.webConfig);
   const isLoading = useAppSelector(state => state.webConfig.loading);
-
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const [isStuck, setIsStuck] = useState(false);
 
   document.title = t('scheduleVacations.title');
 
@@ -81,17 +86,6 @@ const ScheduleVacations: React.FC = () => {
 
   const changesDetected = hasChanges();
 
-  useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (!mainElement) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsStuck(!entry.isIntersecting),
-      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
-    );
-    if (sentinelRef.current) observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [changesDetected]);
-
   const handleSave = async () => {
     if (!webConfigLocalState) return;
     setIsSaving(true);
@@ -103,6 +97,12 @@ const ScheduleVacations: React.FC = () => {
       toast.error(t('scheduleVacations.saveError'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    if (originalConfig) {
+      setWebConfigLocalState(JSON.parse(JSON.stringify(originalConfig)));
     }
   };
 
@@ -144,7 +144,6 @@ const ScheduleVacations: React.FC = () => {
     newVacation.startDate = start;
     newVacation.endDate = end;
     newVacation.webConfig_id = webConfig.data._id;
-
     if (+start > +end) {
       toast.error(t('scheduleVacations.dateError'));
       return;
@@ -221,262 +220,305 @@ const ScheduleVacations: React.FC = () => {
   if (isLoading || !webConfig || !webConfigLocalState) {
     return (
       <div className="flex justify-center items-center h-96">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
           <RefreshCcw className="text-primary h-8 w-8" />
         </motion.div>
       </div>
     );
   }
 
-  const UnsavedBar = () => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <AlertCircle size={16} className="text-orange-600 dark:text-orange-400" />
-        <span className="text-sm text-orange-700 dark:text-orange-300 font-medium">
-          {t('common.unsavedChanges')}
-        </span>
-      </div>
-      <Button onClick={handleSave} rightIcon={<Save size={18} />} isLoading={isSaving} disabled={isSaving} size="md">
-        {t('common.save')}
-      </Button>
-    </div>
-  );
+  const isRtl = direction === 'rtl';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-8"
+      className="relative"
     >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2">
+      {/* Ambient background glows */}
+      <div className="fixed top-0 left-0 w-[35%] h-[35%] bg-primary/5 blur-[140px] rounded-full pointer-events-none -z-10" />
+      <div className="fixed bottom-0 right-0 w-[30%] h-[40%] bg-violet-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+      {/* Page header */}
+      <header className="mb-10 pb-8 border-b border-black/10 dark:border-white/5">
+        <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center flex-shrink-0">
             <CalendarClock className="text-primary w-5 h-5" />
-            <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
-              {t('scheduleVacations.title')}
-            </h1>
           </div>
-          <p className="text-light-text dark:text-gray-400 text-sm mt-1 mb-2">
-            {t('scheduleVacations.description')}
-          </p>
+          <h1 className="text-3xl font-bold text-light-text dark:text-dark-text tracking-tight">
+            {t('scheduleVacations.title')}
+          </h1>
         </div>
-      </div>
+        <p className={`text-light-gray dark:text-dark-gray text-sm mt-1 ${isRtl ? 'mr-[52px]' : 'ml-[52px]'}`}>
+          {t('scheduleVacations.description')}
+        </p>
+      </header>
 
-      {/* Mobile Sticky Save Bar */}
-      <div className="md:hidden relative z-[40]">
-        <div ref={sentinelRef} className="absolute w-full h-px invisible" />
-        <AnimatePresence>
-          {changesDetected && !isStuck && (
-            <motion.div
-              layout
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="relative z-50 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 rounded-xl p-3">
-                <UnsavedBar />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
 
-        {changesDetected && isStuck && typeof document !== 'undefined' && createPortal(
-          <div className="md:hidden fixed top-0 left-0 right-0 z-[40] bg-white/95 dark:bg-dark-bg backdrop-blur-md shadow-md border-b border-orange-200 dark:border-orange-900/50 px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <UnsavedBar />
-          </div>,
-          document.body
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Working Hours */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="h-full">
-            <div className="flex items-center mb-6">
-              <div className={`p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 ${direction === 'rtl' ? 'ml-4' : 'mr-4'}`}>
-                <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-xl text-light-text dark:text-dark-text">
-                  {t('scheduleVacations.workingHours')}
-                </h3>
-                <p className="text-sm text-light-gray dark:text-dark-gray">
-                  {t('scheduleVacations.workingHoursDesc')}
-                </p>
-              </div>
+        {/* ── Working Hours Panel ── */}
+        <div className="xl:col-span-7 glass-panel rounded-3xl p-8 lg:p-10 flex flex-col gap-8">
+          <div className={`flex items-center gap-4 border-b border-black/10 dark:border-white/5 pb-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div>
+              <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
+                {t('scheduleVacations.workingHours')}
+              </h2>
+              <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
+                {t('scheduleVacations.workingHoursDesc')}
+              </p>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              {dayNames.map((day, index) => {
-                const isWorking = webConfigLocalState.workingDays[index] !== null;
-                const workingHours = parseWorkingHours(webConfigLocalState.workingDays[index]);
+          <div className="space-y-3">
+            {dayNames.map((day, index) => {
+              const isWorking = webConfigLocalState.workingDays[index] !== null;
+              const workingHours = parseWorkingHours(webConfigLocalState.workingDays[index]);
 
+              if (!isWorking) {
                 return (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + index * 0.05 }}
-                    className="p-4 rounded-xl bg-black/5 dark:bg-dark-bg transition-colors"
+                    transition={{ delay: 0.04 * index }}
+                    className="flex items-center justify-between p-5 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5 group hover:bg-black/[0.07] dark:hover:bg-white/[0.04] transition-colors"
                   >
-                    {/* Mobile Layout */}
-                    <div className="sm:hidden">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-medium text-light-text dark:text-dark-text">{day}</span>
-                        <ToggleSwitch checked={isWorking} onChange={(checked) => handleWorkingDayToggle(index, checked)} size="sm" />
-                      </div>
-                      {isWorking && workingHours ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <label className="text-xs text-light-gray dark:text-dark-gray mb-1">{t('scheduleVacations.start')}</label>
-                            <input type="time" value={workingHours.startTime} onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
-                              className="px-2 py-1 text-base rounded-md border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text w-24 text-center" />
-                          </div>
-                          <div className="flex items-center justify-center mt-5"><span className="text-light-gray dark:text-dark-gray">-</span></div>
-                          <div className="flex flex-col items-center">
-                            <label className="text-xs text-light-gray dark:text-dark-gray mb-1">{t('scheduleVacations.end')}</label>
-                            <input type="time" value={workingHours.endTime} onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
-                              className="px-2 py-1 text-base rounded-md border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text w-24 text-center" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center py-2">
-                          <span className="text-sm text-light-gray dark:text-dark-gray italic">{t('scheduleVacations.closed')}</span>
-                        </div>
-                      )}
+                    <div className={`flex items-center gap-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-medium w-24 text-light-gray dark:text-dark-gray group-hover:text-light-text dark:group-hover:text-dark-text transition-colors text-sm">
+                        {day}
+                      </span>
+                      <ToggleSwitch
+                        checked={false}
+                        onChange={(checked) => handleWorkingDayToggle(index, checked)}
+                      />
                     </div>
-
-                    {/* Desktop Layout */}
-                    <div className="hidden sm:flex items-center min-h-[3.25rem]">
-                      <div className="flex items-center w-20 lg:w-24">
-                        <span className="font-medium text-light-text dark:text-dark-text text-sm lg:text-base">{day}</span>
-                      </div>
-                      <div className="flex-1 flex justify-center px-4">
-                        <ToggleSwitch checked={isWorking} onChange={(checked) => handleWorkingDayToggle(index, checked)} />
-                      </div>
-                      <div className="w-56 lg:w-64 flex items-center justify-end">
-                        {isWorking && workingHours ? (
-                          <div className="flex items-center gap-2">
-                            <div className="flex flex-col items-center">
-                              <label className="text-xs text-light-gray dark:text-dark-gray mb-1">{t('scheduleVacations.start')}</label>
-                              <input type="time" value={workingHours.startTime} onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
-                                className="px-2 lg:px-3 py-1.5 text-sm rounded-md border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text w-24 lg:w-28 text-center" />
-                            </div>
-                            <div className="flex items-center justify-center mt-5"><span className="text-light-gray dark:text-dark-gray">-</span></div>
-                            <div className="flex flex-col items-center">
-                              <label className="text-xs text-light-gray dark:text-dark-gray mb-1">{t('scheduleVacations.end')}</label>
-                              <input type="time" value={workingHours.endTime} onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
-                                className="px-2 lg:px-3 py-1.5 text-sm rounded-md border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text w-24 lg:w-28 text-center" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center h-[3.25rem]">
-                            <span className="text-sm text-light-gray dark:text-dark-gray italic">{t('scheduleVacations.closed')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <span className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
+                      {t('scheduleVacations.closed')}
+                    </span>
                   </motion.div>
                 );
-              })}
-            </div>
-          </Card>
-        </motion.div>
+              }
 
-        {/* Vacation Management */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="h-full">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <div className={`p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 ${direction === 'rtl' ? 'ml-4' : 'mr-4'}`}>
-                  <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-xl text-light-text dark:text-dark-text">
-                    {t('scheduleVacations.vacationManagement')}
-                  </h3>
-                  <p className="text-sm text-light-gray dark:text-dark-gray">
-                    {t('scheduleVacations.vacationManagementDesc')}
-                  </p>
-                </div>
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.04 * index }}
+                  className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl gap-5"
+                  style={getActiveDayStyle(darkMode)}
+                >
+                  <div className={`flex items-center gap-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <span className="font-bold w-24 text-primary text-sm">
+                      {day}
+                    </span>
+                    <ToggleSwitch
+                      checked={true}
+                      onChange={(checked) => handleWorkingDayToggle(index, checked)}
+                    />
+                  </div>
+
+                  <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className="flex flex-col gap-1">
+                      <span className={`text-[9px] text-primary/70 uppercase font-bold tracking-widest ${isRtl ? 'text-right' : ''}`}>
+                        {t('scheduleVacations.start')}
+                      </span>
+                      <div className="flex items-center gap-2 bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
+                        <Clock size={13} className="text-primary/60 flex-shrink-0" />
+                        <input
+                          type="time"
+                          value={workingHours?.startTime || ''}
+                          onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
+                          className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="h-px w-3 bg-black/20 dark:bg-white/20 mt-4 flex-shrink-0" />
+
+                    <div className="flex flex-col gap-1">
+                      <span className={`text-[9px] text-primary/70 uppercase font-bold tracking-widest ${isRtl ? 'text-right' : ''}`}>
+                        {t('scheduleVacations.end')}
+                      </span>
+                      <div className="flex items-center gap-2 bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
+                        <Clock size={13} className="text-primary/60 flex-shrink-0" />
+                        <input
+                          type="time"
+                          value={workingHours?.endTime || ''}
+                          onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
+                          className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Save / Discard footer */}
+          <div className={`pt-6 border-t border-black/10 dark:border-white/5 flex gap-3 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}>
+            <button
+              onClick={handleDiscard}
+              disabled={!changesDetected}
+              className="px-6 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving || !changesDetected}
+              className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSaving
+                ? <RefreshCcw size={14} className="animate-spin" />
+                : <Save size={14} />
+              }
+              {t('common.save')}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Vacations Panel ── */}
+        <div className="xl:col-span-5 flex flex-col gap-6">
+          <div className="glass-panel rounded-3xl p-8 lg:p-10 flex flex-col group">
+
+            {/* Panel header */}
+            <div className={`flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div>
+                <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
+                  {t('scheduleVacations.vacationManagement')}
+                </h2>
+                <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
+                  {t('scheduleVacations.vacationManagementDesc')}
+                </p>
               </div>
-
-              <Button onClick={() => setIsAddingVacation(true)} leftIcon={<Plus size={16} />} dir='ltr' variant="primary" size="sm">
-                {t('scheduleVacations.addVacation')}
-              </Button>
+              <button
+                onClick={() => setIsAddingVacation(prev => !prev)}
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
+                  isAddingVacation
+                    ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
+                    : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
+                }`}
+              >
+                <motion.div
+                  animate={{ rotate: isAddingVacation ? 45 : 0 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                >
+                  <Plus size={20} />
+                </motion.div>
+              </button>
             </div>
 
-            {/* Add Vacation Form */}
-            {isAddingVacation && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 p-4 border border-primary/20 rounded-xl bg-primary/5"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-medium m-auto text-light-text dark:text-dark-text">
-                    {t('scheduleVacations.newVacation')}
-                  </h4>
-                  <button onClick={() => setIsAddingVacation(false)} className="p-1 hover:bg-light-gray/10 rounded-full transition-colors">
-                    <X size={16} className="text-light-gray dark:text-dark-gray" />
-                  </button>
-                </div>
+            {/* Add vacation form */}
+            <AnimatePresence>
+              {isAddingVacation && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                  exit={{ opacity: 0, height: 0, scale: 0.97 }}
+                  transition={{
+                    height: { type: 'spring', stiffness: 320, damping: 30 },
+                    opacity: { duration: 0.22 },
+                    scale: { type: 'spring', stiffness: 380, damping: 26 },
+                  }}
+                  className="mb-6 overflow-hidden"
+                >
+                  <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
+                    <motion.h4
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.08, duration: 0.2 }}
+                      className={`font-semibold text-sm text-light-text dark:text-dark-text mb-5 ${isRtl ? 'text-right' : ''}`}
+                    >
+                      {t('scheduleVacations.newVacation')}
+                    </motion.h4>
 
-                <div className="space-y-4">
-                  <Input
-                    label={t('scheduleVacations.titleLabel')}
-                    value={newVacation.title}
-                    onChange={(e) => setNewVacation(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder={t('scheduleVacations.vacationPlaceholder')}
-                  />
+                    <div className="space-y-4">
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.12, type: 'spring', stiffness: 400, damping: 28 }}
+                      >
+                        <Input
+                          label={t('scheduleVacations.titleLabel')}
+                          value={newVacation.title}
+                          onChange={(e) => setNewVacation(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder={t('scheduleVacations.vacationPlaceholder')}
+                        />
+                      </motion.div>
 
-                  <div className="grid grid-cols-1 gap-4">
-                    <Input
-                      label={t('scheduleVacations.startDateTime')}
-                      type="datetime-local"
-                      fullWidth={false}
-                      className='w-5/6 self-auto'
-                      value={newVacation.startDate}
-                      min={new Date().toISOString().slice(0, 16)}
-                      onChange={(e) => setNewVacation(prev => ({ ...prev, startDate: e.target.value }))}
-                    />
-                    <Input
-                      fullWidth={false}
-                      className='w-5/6 self-auto'
-                      label={t('scheduleVacations.endDateTime')}
-                      type="datetime-local"
-                      value={newVacation.endDate}
-                      min={new Date().toISOString().slice(0, 16)}
-                      onChange={(e) => setNewVacation(prev => ({ ...prev, endDate: e.target.value }))}
-                    />
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.18, type: 'spring', stiffness: 400, damping: 28 }}
+                        className="grid grid-cols-1 gap-4"
+                      >
+                        <Input
+                          label={t('scheduleVacations.startDateTime')}
+                          type="datetime-local"
+                          fullWidth={false}
+                          className="w-5/6 self-auto"
+                          value={newVacation.startDate}
+                          min={new Date().toISOString().slice(0, 16)}
+                          onChange={(e) => setNewVacation(prev => ({ ...prev, startDate: e.target.value }))}
+                        />
+                        <Input
+                          fullWidth={false}
+                          className="w-5/6 self-auto"
+                          label={t('scheduleVacations.endDateTime')}
+                          type="datetime-local"
+                          value={newVacation.endDate}
+                          min={new Date().toISOString().slice(0, 16)}
+                          onChange={(e) => setNewVacation(prev => ({ ...prev, endDate: e.target.value }))}
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.24, type: 'spring', stiffness: 400, damping: 28 }}
+                        className={`flex gap-2 pt-1 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}
+                      >
+                        <Button variant="secondary" size="sm" onClick={() => setIsAddingVacation(false)}>
+                          {t('common.cancel')}
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleAddVacation}>
+                          {t('common.add')}
+                        </Button>
+                      </motion.div>
+                    </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  <div className="flex justify-end gap-2">
-                    <Button variant="secondary" size="sm" onClick={() => setIsAddingVacation(false)}>
-                      {t('common.cancel')}
-                    </Button>
-                    <Button variant="primary" size="sm" onClick={handleAddVacation}>
-                      {t('common.add')}
-                    </Button>
+            {/* Empty state */}
+            {vacations.length === 0 && !isAddingVacation ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-primary/10 blur-[30px] rounded-full transform scale-150" />
+                  <div className="w-20 h-20 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center relative z-10 shadow-lg rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                    <Calendar size={36} className="text-primary/70" />
                   </div>
                 </div>
-              </motion.div>
-            )}
-
-            {/* Vacation List */}
-            <div className="space-y-3 overflow-y-auto">
-              {vacations.length > 0 ? (
-                vacations.map((vacation, index) => (
+                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-2">
+                  {t('scheduleVacations.noVacations')}
+                </h3>
+                <p className="text-light-gray dark:text-dark-gray text-sm max-w-[240px] leading-relaxed">
+                  {t('scheduleVacations.noVacationsDesc')}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-y-auto">
+                {vacations.map((vacation, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="p-4 rounded-xl bg-black/5 dark:bg-dark-bg hover:bg-black/10 dark:hover:bg-black/10 transition-colors"
+                    className="p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.03] border border-black/10 dark:border-white/5 hover:bg-black/[0.07] dark:hover:bg-white/5 transition-colors"
                   >
                     {editingVacation === vacation._id ? (
                       <VacationEditForm
@@ -486,52 +528,60 @@ const ScheduleVacations: React.FC = () => {
                         isSaving={isEditingVacation}
                       />
                     ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-light-text dark:text-dark-text mb-1">{vacation.title}</h4>
-                          <p className="text-sm text-light-gray dark:text-dark-gray">
+                      <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className={`flex items-center gap-2 mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                            <h4 className="font-semibold text-light-text dark:text-dark-text truncate text-sm">
+                              {vacation.title}
+                            </h4>
+                          </div>
+                          <p className="text-xs text-light-gray dark:text-dark-gray">
                             {t('scheduleVacations.from')}{formatVacationDateTime(vacation.startDate)}
                           </p>
-                          <p className="text-sm text-light-gray dark:text-dark-gray">
+                          <p className="text-xs text-light-gray dark:text-dark-gray">
                             {t('scheduleVacations.to')}{formatVacationDateTime(vacation.endDate)}
                           </p>
-                          <p className="text-xs text-light-gray dark:text-dark-gray mt-1">
+                          <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
                             {calculateVacationDuration(vacation.startDate, vacation.endDate)} {t('scheduleVacations.days')}
-                          </p>
+                          </span>
                         </div>
-
-                        <div className="flex items-center gap-2">
+                        <div className={`flex items-center gap-1 ${isRtl ? 'mr-2' : 'ml-2'}`}>
                           <button
                             onClick={() => setEditingVacation(vacation._id)}
                             disabled={editingVacation !== null}
-                            className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+                            className="p-2 text-light-gray dark:text-dark-gray hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-40"
                             title={t('common.edit')}
                           >
-                            <Edit3 size={16} />
+                            <Edit3 size={15} />
                           </button>
                           <button
                             onClick={() => handleDeleteVacation(vacation._id)}
-                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                            className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                             title={t('common.delete')}
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </div>
                     )}
                   </motion.div>
-                ))
-              ) : (
-                <div className="py-8 text-center">
-                  <Calendar size={48} className="mx-auto mb-4 text-light-gray/50 dark:text-dark-gray/50" />
-                  <p className="text-light-gray dark:text-dark-gray">
-                    {t('scheduleVacations.noVacations')}
-                  </p>
-                </div>
-              )}
+                ))}
+              </div>
+            )}
+
+            {/* Info box */}
+            <div className="mt-6 p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5">
+              <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <Info size={15} className="text-primary/70 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-light-gray dark:text-dark-gray leading-relaxed">
+                  {t('scheduleVacations.vacationInfoBox')}
+                </p>
+              </div>
             </div>
-          </Card>
-        </motion.div>
+          </div>
+        </div>
+
       </div>
     </motion.div>
   );
@@ -546,6 +596,9 @@ interface VacationEditFormProps {
 
 const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, onCancel, isSaving }) => {
   const { t } = useTranslation();
+  const { direction } = useTheme();
+  const isRtl = direction === 'rtl';
+
   const [editData, setEditData] = useState<Omit<Vacation, '_id'>>(() => {
     const start = new Date(+vacation.startDate);
     const end = new Date(+vacation.endDate);
@@ -553,7 +606,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
       title: vacation.title,
       startDate: start.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
       endDate: end.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
-      webConfig_id: vacation.webConfig_id
+      webConfig_id: vacation.webConfig_id,
     };
   });
 
@@ -564,11 +617,10 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
         value={editData.title}
         onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
       />
-
       <div className="grid grid-cols-1 gap-4">
         <Input
           fullWidth={false}
-          className='w-5/6 self-auto'
+          className="w-5/6 self-auto"
           label={t('scheduleVacations.startDateTime')}
           type="datetime-local"
           value={editData.startDate}
@@ -577,7 +629,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
         />
         <Input
           fullWidth={false}
-          className='w-5/6 self-auto'
+          className="w-5/6 self-auto"
           label={t('scheduleVacations.endDateTime')}
           type="datetime-local"
           value={editData.endDate}
@@ -585,8 +637,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
           min={new Date().toISOString().slice(0, 16)}
         />
       </div>
-
-      <div className="flex justify-end gap-2">
+      <div className={`flex gap-2 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}>
         <Button variant="danger" size="sm" onClick={onCancel}>
           {t('common.cancel')}
         </Button>

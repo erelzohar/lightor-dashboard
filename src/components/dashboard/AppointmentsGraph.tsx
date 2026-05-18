@@ -299,7 +299,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                   completed: t('appointmentsGraph.completed'),
                   cancelled: t('appointmentsGraph.cancelled'),
                 }[value] || value)}
-                wrapperStyle={{ paddingTop: '8px', fontSize: '12px' }}
+                wrapperStyle={{ paddingTop: '8px', fontSize: '1rem' }}
               />
               <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
               <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />

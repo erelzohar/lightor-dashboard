@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Appointment, AppointmentType } from '../../types';
 import * as appointmentsApi from '../../services/appointmentsApi';
-import { MOCK_APPOINTMENTS, MOCK_APPOINTMENT_TYPES } from '../../utils/mockData';
+import { MOCK_APPOINTMENTS, MOCK_APPOINTMENT_TYPES, USE_MOCK_DATA } from '../../utils/mockData';
 
 interface AppointmentsState {
   appointments: Appointment[];
@@ -11,8 +11,8 @@ interface AppointmentsState {
 }
 
 const initialState: AppointmentsState = {
-  appointments: MOCK_APPOINTMENTS,
-  appointmentTypes: MOCK_APPOINTMENT_TYPES,
+  appointments: USE_MOCK_DATA ? MOCK_APPOINTMENTS : [],
+  appointmentTypes: USE_MOCK_DATA ? MOCK_APPOINTMENT_TYPES : [],
   loading: false,
   error: null,
 };
@@ -103,7 +103,12 @@ export const deleteAppointmentType = createAsyncThunk(
 const appointmentsSlice = createSlice({
   name: 'appointments',
   initialState,
-  reducers: {},
+  reducers: {
+    loadMockData: (state) => {
+      state.appointments = MOCK_APPOINTMENTS;
+      state.appointmentTypes = MOCK_APPOINTMENT_TYPES;
+    },
+  },
   extraReducers: (builder) => {
     builder
       /* ---- Existing Appointment Fetch / Update ---- */
@@ -143,4 +148,5 @@ const appointmentsSlice = createSlice({
   },
 });
 
+export const { loadMockData } = appointmentsSlice.actions;
 export default appointmentsSlice.reducer;

@@ -97,7 +97,7 @@
     "logoUrlMode": "Image URL",
     "logoUrlPlaceholder": "https://example.com/logo.png",
     "logoUrlInvalid": "URL must start with http",
-    "yourLink": "Your Link (Subdomain)",
+    "yourLink": "Your Link",
     "linkDescription": "This is the direct link to your business page that you can share with your clients.",
     "checking": "Checking...",
     "available": "Available",
@@ -241,7 +241,16 @@
     "saved": "Saved!",
     "skip": "Skip for now",
     "previewEmpty": "Preview will appear here",
-    "previewEmptyDesc": "Describe your business to Lighty and your live website preview will show up here"
+    "previewEmptyDesc": "Describe your business to Lighty and your live website preview will show up here",
+    "editWelcome": "Welcome back! Your {{name}} website is live. What would you like to update or improve today?",
+    "suggestion_new_1": "Build a booking site for my photography studio",
+    "suggestion_new_2": "Create a website for my hair salon",
+    "suggestion_edit_1": "Update my color scheme and branding",
+    "suggestion_edit_2": "Revamp my services section and pricing",
+    "suggestion_edit_3": "Rewrite the homepage with a stronger message",
+    "togglePreview": "Preview",
+    "hidePreview": "Hide Preview",
+    "aiDisclaimer": "AI can make mistakes. Review the generated site."
   },
   "verify": {
     "loading": "Verifying your email...",
@@ -267,7 +276,17 @@
     "addTitle": "Add title...",
     "editTitle": "Edit title",
     "deleteImage": "Delete image",
-    "deleteImageConfirm": "Are you sure you want to delete this image?"
+    "deleteImageConfirm": "Are you sure you want to delete this image?",
+    "imagesUsed": "images used",
+    "optimizationTitle": "Portfolio Optimization",
+    "optimizationTip": "High-resolution shots receive significantly more engagement. Make sure your images are sharp and well-lit for the best client experience.",
+    "visibilityStatus": "Visibility Status",
+    "visibilityLive": "LIVE",
+    "visibilityDesc": "Publicly visible to all clients",
+    "visibilityHidden": "HIDDEN",
+    "visibilityHiddenDesc": "Not visible to clients",
+    "showOnWebsite": "Show on website",
+    "visibilityUpdateSuccess": "Visibility updated successfully"
   },
   "scheduleVacations": {
     "title": "Schedule & Vacations",
@@ -300,7 +319,9 @@
     "maxVacations": "Maximum 5 vacations",
     "fillRequired": "Please fill in all required fields",
     "dateError": "Start date must be before end date",
-    "daysOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    "daysOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "noVacationsDesc": "Your business will operate on the standard schedule defined in Working Hours.",
+    "vacationInfoBox": "Adding a vacation period overrides standard hours. Clients will see availability updated immediately across all booking channels."
   },
   "account": {
     "title": "Account Settings",
@@ -320,7 +341,13 @@
     "passwordUpdateSuccess": "Password updated successfully",
     "passwordCurrentIncorrect": "Current password is incorrect",
     "passwordSameAsOld": "New password cannot be the same as the current password",
-    "passwordUpdateError": "Failed to update password"
+    "passwordUpdateError": "Failed to update password",
+    "channelType": "Notification Channel",
+    "channelTypeDesc": "Choose how appointment notifications are sent to your clients",
+    "channelSms": "SMS",
+    "channelWhatsapp": "WhatsApp",
+    "channelUpdateSuccess": "Notification channel updated",
+    "channelUpdateError": "Failed to update notification channel"
   },
   "incomeStats": {
     "today": "Today's Income",
@@ -363,5 +390,10 @@
   "floatingAssistant": {
     "label": "AI Assistant",
     "placeholder": "What would you like to edit?"
+  },
+  "dashboard": {
+    "emptyTitle": "Welcome to Lightor!",
+    "emptySubtitle": "Start using Lightor to see your statistics",
+    "emptyDesc": "Once you receive your first appointment, your stats, graphs, and insights will appear right here."
   }
 }

@@ -46,8 +46,8 @@ class ProductionGlobals extends Globals {
     public webConfigsUrl = "https://api.lightor.app/api/web-configs/";
     public vacationsUrl = "https://api.lightor.app/api/vacations/";
     public authUrl = "https://api.lightor.app/api/auth/";
-    public usersUrl = "https://api.lightor.app.com/api/users/";
-    public messagingUrl = "https://api.lightor.app.com/api/messaging/";
+    public usersUrl = "https://api.lightor.app/api/users/";
+    public messagingUrl = "https://api.lightor.app/api/messaging/";
     public imagesUrl = "https://api.lightor.app/api/images/";
     public typesUrl = "https://api.lightor.app/api/appointment-types/";
     public aiUrl = "https://api.lightor.app/api/ai/";

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Paperclip, X, Monitor,
-  Smartphone, Loader2, RotateCcw, CheckCircle2, Save,
+  Smartphone, Loader2, RotateCcw, CheckCircle2, Save, Eye, EyeOff, Maximize2, Minimize2,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -25,11 +25,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
-
-const SUGGESTIONS = [
-  'Build a booking site for my photography studio',
-  'Create a website for my hair salon',
-];
 
 const TypingIndicator: React.FC = () => (
   <div className="flex gap-3 max-w-[90%]">
@@ -61,9 +56,15 @@ const AiBuilder: React.FC = () => {
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector((state) => state.webConfig.data);
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: t('aiBuilder.lightyWelcome') },
-  ]);
+  const isEditMode = !!(auth.user?.webConfig_id || webConfig?.businessName);
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (webConfig?.businessName) {
+      return [{ role: 'assistant', content: t('aiBuilder.editWelcome', { name: webConfig.businessName }) }];
+    }
+    return [{ role: 'assistant', content: t('aiBuilder.lightyWelcome') }];
+  });
+
   const [input, setInput] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [draftConfig, setDraftConfig] = useState<AiSiteConfig | null>(
@@ -72,7 +73,10 @@ const AiBuilder: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [generatedThisSession, setGeneratedThisSession] = useState(false);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(() => window.innerWidth >= 768);
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('chat');
   const [isLargeScreen, setIsLargeScreen] = useState(() => window.innerWidth >= 768);
 
@@ -80,6 +84,19 @@ const AiBuilder: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update welcome message when webConfig loads with the business name
+  useEffect(() => {
+    if (webConfig?.businessName) {
+      setMessages((prev) => {
+        if (prev.length === 1 && prev[0].role === 'assistant') {
+          return [{ role: 'assistant', content: t('aiBuilder.editWelcome', { name: webConfig.businessName }) }];
+        }
+        return prev;
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webConfig?.businessName]);
 
   useEffect(() => {
     const floatingMessage = (location.state as { floatingMessage?: string } | null)?.floatingMessage;
@@ -153,6 +170,7 @@ const AiBuilder: React.FC = () => {
       }
 
       setDraftConfig(newConfig);
+      setGeneratedThisSession(true);
       setLogoFile(null);
       setMessages((prev) => [
         ...prev,
@@ -226,6 +244,19 @@ const AiBuilder: React.FC = () => {
   const showPhoneShell = isMobilePreview && isLargeScreen;
   const hasUserMessage = messages.some((m) => m.role === 'user');
 
+  const suggestions = isEditMode
+    ? [
+        t('aiBuilder.suggestion_edit_1'),
+        t('aiBuilder.suggestion_edit_2'),
+        t('aiBuilder.suggestion_edit_3'),
+      ]
+    : [
+        t('aiBuilder.suggestion_new_1'),
+        t('aiBuilder.suggestion_new_2'),
+      ];
+
+  const saveDisabled = !generatedThisSession || isSaving || saved;
+
   return (
     <div className="flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-gradient-to-br from-violet-50 via-slate-50 to-indigo-50/70 dark:from-slate-950 dark:via-violet-950/10 dark:to-slate-950">
 
@@ -266,14 +297,27 @@ const AiBuilder: React.FC = () => {
             </button>
           </div>
 
-          {/* Save button — always visible once there's a draft */}
-          {draftConfig && (
+          {/* Desktop preview toggle */}
+          <button
+            onClick={() => setShowPreview((v) => !v)}
+            className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+              showPreview
+                ? 'bg-primary/10 border-primary/30 text-primary dark:bg-primary/20 dark:border-primary/40 dark:text-violet-300'
+                : 'bg-white/70 dark:bg-slate-800/70 border-gray-200/60 dark:border-slate-700/50 text-gray-500 dark:text-slate-400 hover:border-primary/30 hover:text-primary dark:hover:text-violet-300'
+            }`}
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showPreview ? t('aiBuilder.hidePreview') : t('aiBuilder.togglePreview')}
+          </button>
+
+          {/* Save button */}
+          {(draftConfig || isEditMode) && (
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={handleSave}
-              disabled={isSaving || saved}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 ${
+              disabled={saveDisabled}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-md ${
                 saved
                   ? 'bg-emerald-500 text-white'
                   : 'bg-gradient-to-r from-primary to-violet-500 text-white'
@@ -294,11 +338,13 @@ const AiBuilder: React.FC = () => {
       {/* ── Workspace ── */}
       <main className="flex-1 flex overflow-hidden px-5 pb-5 gap-4">
 
-        {/* ── Left: Live Preview ── */}
+        {/* ── Live Preview (desktop toggle / mobile tab) ── */}
         <section
-          className={`flex-1 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl flex-col overflow-hidden shadow-sm ${
-            activeTab === 'preview' ? 'flex' : 'hidden'
-          } md:flex`}
+          className={`bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl flex-col overflow-hidden shadow-sm ${
+            isPreviewFullscreen
+              ? 'fixed inset-0 z-50 flex rounded-none border-0'
+              : `flex-1 ${activeTab === 'preview' ? 'flex' : 'hidden'} ${showPreview ? 'md:flex' : 'md:hidden'}`
+          }`}
         >
           {/* Toolbar */}
           <div className="flex items-center justify-between mx-4 mt-4 mb-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md py-2 px-4 rounded-full shadow-sm border border-gray-200/50 dark:border-slate-700/50 shrink-0">
@@ -310,10 +356,10 @@ const AiBuilder: React.FC = () => {
               >
                 <RotateCcw size={16} />
               </button>
-              <div className="w-px h-5 bg-gray-200 dark:bg-slate-600 mx-1" />
+              <div className="hidden md:block w-px h-5 bg-gray-200 dark:bg-slate-600 mx-1" />
               <button
                 onClick={() => setIsMobilePreview(false)}
-                className={`p-2 rounded-full transition-colors ${
+                className={`hidden md:flex p-2 rounded-full transition-colors ${
                   !isMobilePreview
                     ? 'text-primary bg-violet-50 dark:bg-violet-900/20'
                     : 'text-gray-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20'
@@ -324,7 +370,7 @@ const AiBuilder: React.FC = () => {
               </button>
               <button
                 onClick={() => setIsMobilePreview(true)}
-                className={`p-2 rounded-full transition-colors ${
+                className={`hidden md:flex p-2 rounded-full transition-colors ${
                   isMobilePreview
                     ? 'text-primary bg-violet-50 dark:bg-violet-900/20'
                     : 'text-gray-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20'
@@ -339,6 +385,12 @@ const AiBuilder: React.FC = () => {
               <span className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                 {t('aiBuilder.preview')}
               </span>
+              <button
+                onClick={() => setIsPreviewFullscreen((v) => !v)}
+                className="p-1.5 text-gray-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-full transition-colors ml-1"
+              >
+                {isPreviewFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
             </div>
           </div>
 
@@ -386,9 +438,7 @@ const AiBuilder: React.FC = () => {
               </div>
             </div>
           ) : (
-            /* Empty state canvas */
             <div className="flex-1 mx-4 mb-4 border border-dashed border-gray-300/60 dark:border-slate-600/50 rounded-xl bg-white/40 dark:bg-slate-800/20 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-              {/* Dot grid */}
               <div
                 className="absolute inset-0 opacity-[0.035]"
                 style={{
@@ -410,136 +460,138 @@ const AiBuilder: React.FC = () => {
           )}
         </section>
 
-        {/* ── Right: Chat ── */}
+        {/* ── Chat panel (full width, content centered) ── */}
         <aside
-          className={`w-full md:w-[460px] lg:w-[500px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl shrink-0 shadow-lg overflow-hidden flex-col ${
+          className={`flex-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl shrink-0 shadow-lg overflow-hidden flex-col ${
             activeTab === 'chat' ? 'flex' : 'hidden'
           } md:flex`}
         >
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-7 scrollbar-thin">
-            <AnimatePresence initial={false}>
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22 }}
-                  className={msg.role === 'user' ? 'flex justify-end' : 'flex gap-3 max-w-[92%]'}
-                >
-                  {msg.role === 'assistant' ? (
-                    <>
-                      {/* AI avatar */}
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-violet-500/30 flex items-center justify-center shrink-0 shadow-sm border border-violet-200/50 dark:border-violet-700/30 mt-5">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-medium text-gray-400 dark:text-slate-500 ml-1.5">
-                          Lighty AI
-                        </span>
-                        <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-4 rounded-3xl rounded-tl-sm text-gray-700 dark:text-slate-200 text-sm shadow-sm border border-gray-100 dark:border-slate-600/50 leading-relaxed">
-                          {msg.content}
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col scrollbar-thin">
+            <div className="max-w-2xl mx-auto w-full flex flex-col gap-7">
+              <AnimatePresence initial={false}>
+                {messages.map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className={msg.role === 'user' ? 'flex justify-end' : 'flex gap-3 max-w-[92%]'}
+                  >
+                    {msg.role === 'assistant' ? (
+                      <>
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-violet-500/30 flex items-center justify-center shrink-0 shadow-sm border border-violet-200/50 dark:border-violet-700/30 mt-5">
+                          <Sparkles className="w-4 h-4 text-primary" />
                         </div>
-                        {/* Suggestion pills — only on first message before any user input */}
-                        {i === 0 && !hasUserMessage && (
-                          <div className="flex flex-col gap-2 mt-1 ml-1">
-                            {SUGGESTIONS.map((suggestion) => (
-                              <button
-                                key={suggestion}
-                                onClick={() => handleSubmit(undefined, suggestion)}
-                                disabled={isGenerating}
-                                className="text-left px-5 py-2.5 text-sm bg-white/50 dark:bg-slate-800/50 border border-gray-200/60 dark:border-slate-600/50 rounded-full text-gray-500 dark:text-slate-400 hover:border-primary hover:text-primary dark:hover:border-violet-400 dark:hover:text-violet-300 hover:bg-white dark:hover:bg-slate-700 transition-all self-start backdrop-blur-sm shadow-sm disabled:opacity-50"
-                              >
-                                "{suggestion}"
-                              </button>
-                            ))}
+                        <div className="flex flex-col gap-2">
+                          <span className="text-xs font-medium text-gray-400 dark:text-slate-500 ml-1.5">
+                            Lighty AI
+                          </span>
+                          <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-4 rounded-3xl rounded-tl-sm text-gray-700 dark:text-slate-200 text-sm shadow-sm border border-gray-100 dark:border-slate-600/50 leading-relaxed">
+                            {msg.content}
                           </div>
-                        )}
+                          {/* Suggestion pills — first message only, before any user input */}
+                          {i === 0 && !hasUserMessage && (
+                            <div className="flex flex-col gap-2 mt-1 ml-1">
+                              {suggestions.map((suggestion) => (
+                                <button
+                                  key={suggestion}
+                                  onClick={() => handleSubmit(undefined, suggestion)}
+                                  disabled={isGenerating}
+                                  className="text-left px-5 py-2.5 text-sm bg-white/50 dark:bg-slate-800/50 border border-gray-200/60 dark:border-slate-600/50 rounded-full text-gray-500 dark:text-slate-400 hover:border-primary hover:text-primary dark:hover:border-violet-400 dark:hover:text-violet-300 hover:bg-white dark:hover:bg-slate-700 transition-all self-start backdrop-blur-sm shadow-sm disabled:opacity-50"
+                                >
+                                  "{suggestion}"
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="max-w-[80%] bg-gradient-to-br from-primary to-violet-500 text-white px-5 py-4 rounded-3xl rounded-br-sm text-sm shadow-md leading-relaxed">
+                        {msg.content}
                       </div>
-                    </>
-                  ) : (
-                    /* User bubble */
-                    <div className="max-w-[80%] bg-gradient-to-br from-primary to-violet-500 text-white px-5 py-4 rounded-3xl rounded-br-sm text-sm shadow-md leading-relaxed">
-                      {msg.content}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
-            {isGenerating && <TypingIndicator />}
-            <div ref={messagesEndRef} />
+              {isGenerating && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
           {/* Input area */}
           <div className="p-5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-t border-gray-100/50 dark:border-slate-700/50 shrink-0">
-            {/* Attached logo preview */}
-            {logoFile && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-3 flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700/60 rounded-full px-4 py-2"
-              >
-                <Paperclip className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate flex-1">{logoFile.name}</span>
-                <button
-                  type="button"
-                  onClick={() => setLogoFile(null)}
-                  className="hover:text-red-500 transition-colors ml-1"
+            <div className="max-w-2xl mx-auto w-full">
+              {/* Attached logo preview */}
+              {logoFile && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-3 flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700/60 rounded-full px-4 py-2"
                 >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </motion.div>
-            )}
+                  <Paperclip className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate flex-1">{logoFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setLogoFile(null)}
+                    className="hover:text-red-500 transition-colors ml-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </motion.div>
+              )}
 
-            <form onSubmit={handleSubmit}>
-              <div className="flex items-end gap-2 bg-gray-50/80 dark:bg-slate-700/50 border border-gray-200/60 dark:border-slate-600/50 rounded-[2rem] p-2 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 focus-within:bg-white dark:focus-within:bg-slate-700/80 transition-all">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-3 text-gray-400 dark:text-slate-500 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-full transition-colors shrink-0 mb-0.5"
-                  title={t('aiBuilder.uploadLogo')}
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
+              <form onSubmit={handleSubmit}>
+                <div className="flex items-end gap-2 bg-gray-50/80 dark:bg-slate-700/50 border border-gray-200/60 dark:border-slate-600/50 rounded-[2rem] p-2 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 focus-within:bg-white dark:focus-within:bg-slate-700/80 transition-all">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 text-gray-400 dark:text-slate-500 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-full transition-colors shrink-0 mb-0.5"
+                    title={t('aiBuilder.uploadLogo')}
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </button>
 
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => { setInput(e.target.value); autoResizeTextarea(); }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
-                  }}
-                  placeholder={t(draftConfig ? 'aiBuilder.refinePlaceholder' : 'aiBuilder.firstPromptPlaceholder')}
-                  disabled={isGenerating}
-                  rows={1}
-                  className="flex-1 bg-transparent border-none focus:ring-0 outline-none resize-none py-3.5 px-2 text-sm text-gray-700 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 min-h-[52px] max-h-[140px]"
-                />
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => { setInput(e.target.value); autoResizeTextarea(); }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+                    }}
+                    placeholder={t(draftConfig ? 'aiBuilder.refinePlaceholder' : 'aiBuilder.firstPromptPlaceholder')}
+                    disabled={isGenerating}
+                    rows={1}
+                    className="flex-1 bg-transparent border-none focus:ring-0 outline-none resize-none py-3.5 px-2 text-sm text-gray-700 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 min-h-[52px] max-h-[140px]"
+                  />
 
-                <button
-                  type="submit"
-                  disabled={!input.trim() || isGenerating}
-                  className="p-3.5 bg-gradient-to-r from-primary to-violet-500 text-white rounded-full disabled:opacity-40 hover:shadow-md hover:-translate-y-0.5 transition-all shrink-0 mb-0.5"
-                >
-                  {isGenerating
-                    ? <Loader2 className="w-5 h-5 animate-spin" />
-                    : <Send className="w-5 h-5" />
-                  }
-                </button>
-              </div>
-            </form>
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || isGenerating}
+                    className="p-3.5 bg-gradient-to-r from-primary to-violet-500 text-white rounded-full disabled:opacity-40 hover:shadow-md hover:-translate-y-0.5 transition-all shrink-0 mb-0.5"
+                  >
+                    {isGenerating
+                      ? <Loader2 className="w-5 h-5 animate-spin" />
+                      : <Send className="w-5 h-5" />
+                    }
+                  </button>
+                </div>
+              </form>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
-            />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+              />
 
-            <p className="mt-3 text-center text-[11px] text-gray-400 dark:text-slate-500 tracking-wide">
-              AI can make mistakes. Review the generated site.
-            </p>
+              <p className="mt-3 text-center text-[11px] text-gray-400 dark:text-slate-500 tracking-wide">
+                {t('aiBuilder.aiDisclaimer')}
+              </p>
+            </div>
           </div>
         </aside>
       </main>

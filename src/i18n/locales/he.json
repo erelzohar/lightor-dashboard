@@ -97,7 +97,7 @@
     "logoUrlMode": "כתובת תמונה",
     "logoUrlPlaceholder": "https://example.com/logo.png",
     "logoUrlInvalid": "הכתובת חייבת להתחיל ב-http",
-    "yourLink": "הלינק שלך (Subdomain)",
+    "yourLink": "הלינק שלך",
     "linkDescription": "זהו הקישור הישיר לעמוד שלך שתוכל לשתף עם לקוחותיך.",
     "checking": "בודק זמינות...",
     "available": "זמין",
@@ -241,7 +241,16 @@
     "saved": "נשמר!",
     "skip": "דלג לעת עתה",
     "previewEmpty": "תצוגה מקדימה תופיע כאן",
-    "previewEmptyDesc": "תאר את העסק שלך ל-Lighty והתצוגה המקדימה החיה של האתר שלך תופיע כאן"
+    "previewEmptyDesc": "תאר את העסק שלך ל-Lighty והתצוגה המקדימה החיה של האתר שלך תופיע כאן",
+    "editWelcome": "ברוך שובך! האתר של {{name}} פעיל. מה תרצה לעדכן או לשפר היום?",
+    "suggestion_new_1": "בנה אתר הזמנות לסטודיו הצילום שלי",
+    "suggestion_new_2": "צור אתר לסלון השיער שלי",
+    "suggestion_edit_1": "עדכן את הצבעים והמיתוג שלי",
+    "suggestion_edit_2": "שפר את קטע השירותים והמחירים שלי",
+    "suggestion_edit_3": "כתוב מחדש את הדף הראשי עם מסר חזק יותר",
+    "togglePreview": "תצוגה מקדימה",
+    "hidePreview": "הסתר תצוגה",
+    "aiDisclaimer": "AI יכול לטעות. בדוק את האתר שנוצר."
   },
   "verify": {
     "loading": "מאמת את כתובת האימייל שלך...",
@@ -267,7 +276,17 @@
     "addTitle": "הוסף כותרת...",
     "editTitle": "ערוך כותרת",
     "deleteImage": "מחק תמונה",
-    "deleteImageConfirm": "האם אתה בטוח שברצונך למחוק תמונה זו?"
+    "deleteImageConfirm": "האם אתה בטוח שברצונך למחוק תמונה זו?",
+    "imagesUsed": "תמונות בשימוש",
+    "optimizationTitle": "אופטימיזציית גלריה",
+    "optimizationTip": "תמונות ברזולוציה גבוהה מקבלות מעורבות גבוהה יותר באופן משמעותי. וודאו שהתמונות שלכם חדות ומוארות היטב לחוויית לקוח מיטבית.",
+    "visibilityStatus": "סטטוס נראות",
+    "visibilityLive": "פעיל",
+    "visibilityDesc": "גלוי לכל הלקוחות",
+    "visibilityHidden": "מוסתר",
+    "visibilityHiddenDesc": "לא גלוי ללקוחות",
+    "showOnWebsite": "הצג באתר",
+    "visibilityUpdateSuccess": "הנראות עודכנה בהצלחה"
   },
   "scheduleVacations": {
     "title": "ניהול זמנים וחופשות",
@@ -300,7 +319,9 @@
     "maxVacations": "מקסימום 5 חופשות",
     "fillRequired": "אנא מלא את כל השדות הנדרשים",
     "dateError": "תאריך התחלה חייב להיות לפני תאריך הסיום",
-    "daysOfWeek": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+    "daysOfWeek": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
+    "noVacationsDesc": "העסק שלך יפעל לפי לוח הזמנים הרגיל המוגדר בשעות העבודה.",
+    "vacationInfoBox": "הוספת תקופת חופשה מבטלת את שעות העבודה הרגילות. הלקוחות יראו את הזמינות המעודכנת מיד בכל ערוצי ההזמנה."
   },
   "account": {
     "title": "הגדרות חשבון",
@@ -320,7 +341,13 @@
     "passwordUpdateSuccess": "הסיסמה עודכנה בהצלחה",
     "passwordCurrentIncorrect": "הסיסמה הנוכחית שגויה",
     "passwordSameAsOld": "הסיסמה החדשה אינה יכולה להיות זהה לסיסמה הנוכחית",
-    "passwordUpdateError": "אירעה שגיאה בעדכון הסיסמה"
+    "passwordUpdateError": "אירעה שגיאה בעדכון הסיסמה",
+    "channelType": "ערוץ התראות",
+    "channelTypeDesc": "בחר כיצד התראות על תורים נשלחות ללקוחותיך",
+    "channelSms": "SMS",
+    "channelWhatsapp": "WhatsApp",
+    "channelUpdateSuccess": "ערוץ ההתראות עודכן",
+    "channelUpdateError": "אירעה שגיאה בעדכון ערוץ ההתראות"
   },
   "incomeStats": {
     "today": "הכנסות היום",
@@ -363,5 +390,10 @@
   "floatingAssistant": {
     "label": "עוזר AI",
     "placeholder": "מה תרצה לערוך?"
+  },
+  "dashboard": {
+    "emptyTitle": "ברוכים הבאים ל-Lightor!",
+    "emptySubtitle": "התחל להשתמש ב-Lightor כדי לראות סטטיסטיקות",
+    "emptyDesc": "ברגע שתקבל את התור הראשון שלך, הנתונים, הגרפים והתובנות יופיעו כאן."
   }
 }
