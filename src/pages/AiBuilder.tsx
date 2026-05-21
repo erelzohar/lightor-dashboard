@@ -79,6 +79,9 @@ const AiBuilder: React.FC = () => {
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('chat');
   const [isLargeScreen, setIsLargeScreen] = useState(() => window.innerWidth >= 768);
+  // Track whether the iframe has fully loaded and React inside it has had
+  // time to mount + register its message listener (same pattern as Hero.tsx).
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -129,13 +132,22 @@ const AiBuilder: React.FC = () => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'PREVIEW_DATA', config }, '*');
   };
 
+  // Mirror the Hero.tsx pattern: wait 500 ms after the iframe onLoad fires so
+  // that the React app inside the iframe has time to mount and register its
+  // window.addEventListener('message', …) before we send PREVIEW_DATA.
+  // Without this delay the message arrives before the listener is registered
+  // and is silently dropped — leaving the iframe stuck on the loading spinner.
   const handleIframeLoad = () => {
-    if (draftConfig) sendConfigToIframe(draftConfig);
+    setIframeLoaded(false);
+    setTimeout(() => setIframeLoaded(true), 500);
   };
 
+  // Send config whenever draftConfig OR iframeLoaded change, but only once
+  // both are truthy (iframe is ready AND we have something to show).
   useEffect(() => {
-    if (draftConfig) sendConfigToIframe(draftConfig);
-  }, [draftConfig]);
+    if (!draftConfig || !iframeLoaded) return;
+    sendConfigToIframe(draftConfig);
+  }, [draftConfig, iframeLoaded]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
