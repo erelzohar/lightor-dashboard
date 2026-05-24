@@ -52,7 +52,7 @@ export function FloatingAiAssistant({ onSend, direction = 'ltr' }: FloatingAiAss
       {isChatOpen && (
         <div
           ref={chatRef}
-          className={`absolute bottom-20 w-[340px] transition-all duration-300 ${
+          className={`absolute bottom-20 w-[340px] max-w-[calc(100vw-3rem)] transition-all duration-300 ${
             isRtl ? 'left-0 origin-bottom-left' : 'right-0 origin-bottom-right'
           }`}
           style={{ animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
@@ -87,8 +87,8 @@ export function FloatingAiAssistant({ onSend, direction = 'ltr' }: FloatingAiAss
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={4}
-                className="w-full px-5 py-3 bg-transparent border-none outline-none resize-none text-sm leading-relaxed text-zinc-100 placeholder-zinc-500"
-                style={{ scrollbarWidth: 'none' }}
+                className="w-full px-5 py-3 bg-transparent border-none outline-none resize-none text-sm leading-relaxed text-zinc-100 placeholder-zinc-500 break-words overflow-wrap-anywhere"
+                style={{ scrollbarWidth: 'none', overflowWrap: 'anywhere' }}
                 placeholder="Ask me anything about your site..."
               />
             </div>

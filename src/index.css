@@ -8,6 +8,15 @@
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+@keyframes thinking-wave {
+  0%, 60%, 100% { transform: translateY(0);    opacity: 0.5; }
+  30%           { transform: translateY(-6px); opacity: 1;   }
+}
+
+.dot-wave {
+  animation: thinking-wave 1.2s ease-in-out infinite;
+}
+
 .floating-ai-button:hover {
   transform: scale(1.1) rotate(5deg);
   box-shadow: 0 0 30px rgba(139, 92, 246, 0.9), 0 0 50px rgba(124, 58, 237, 0.7), 0 0 70px rgba(109, 40, 217, 0.5) !important;

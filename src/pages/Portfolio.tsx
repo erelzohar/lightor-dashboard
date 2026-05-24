@@ -211,8 +211,8 @@ const Portfolio: React.FC = () => {
             {/* Header */}
             <div className="mb-10">
                 <div className="flex items-center gap-3 mb-1">
-                    <ImageIcon className="text-primary w-7 h-7" />
-                    <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">
+                    <ImageIcon className="text-primary w-6 h-6 shrink-0" />
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                         {t('portfolio.title')}
                     </h1>
                 </div>
@@ -333,13 +333,14 @@ const Portfolio: React.FC = () => {
                     <button
                         onClick={handleToggleVisibility}
                         disabled={isSavingVisibility}
+                        dir="ltr"
                         aria-label={t('portfolio.showOnWebsite')}
-                        className={`mt-4 relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                        className={`mt-4 relative inline-flex h-6 w-11 shrink-0 items-center rounded-full overflow-hidden transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                             isSavingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                         } ${isVisible ? 'bg-primary' : 'bg-gray-600 dark:bg-gray-700'}`}
                     >
                         <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${
+                            className={`absolute h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ${
                                 isVisible ? 'translate-x-6' : 'translate-x-1'
                             }`}
                         />

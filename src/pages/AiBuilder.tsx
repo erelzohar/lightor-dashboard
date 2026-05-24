@@ -7,6 +7,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { updateWebConfig, createWebConfig, fetchWebConfig } from '../store/slices/webConfigSlice';
@@ -26,19 +27,19 @@ interface Message {
   content: string;
 }
 
-const TypingIndicator: React.FC = () => (
-  <div className="flex gap-3 max-w-[90%]">
+const TypingIndicator: React.FC<{ isRtl?: boolean }> = ({ isRtl }) => (
+  <div className={`flex gap-3 max-w-[90%] ${isRtl ? 'flex-row-reverse self-end' : ''}`}>
     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-violet-500/30 flex items-center justify-center shrink-0 shadow-sm border border-violet-200/50 dark:border-violet-700/30">
       <Sparkles className="w-4 h-4 text-primary animate-pulse" />
     </div>
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-gray-400 dark:text-slate-500 ml-1.5">Lighty AI</span>
-      <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-3.5 rounded-3xl rounded-tl-sm shadow-sm border border-gray-100 dark:border-slate-600/50">
-        <div className="flex gap-1.5 items-center">
+      <span className={`text-xs font-medium text-gray-400 dark:text-slate-500 ${isRtl ? 'me-1.5' : 'ms-1.5'}`}>Lighty AI</span>
+      <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-3.5 shadow-sm border border-gray-100 dark:border-slate-600/50 rounded-3xl rounded-tl-sm">
+        <div className="flex gap-1.5 items-center h-5">
           {[0, 150, 300].map((delay) => (
             <span
               key={delay}
-              className="w-2 h-2 bg-primary/40 rounded-full animate-bounce"
+              className="w-2 h-2 bg-slate-400 dark:bg-slate-300 rounded-full dot-wave"
               style={{ animationDelay: `${delay}ms` }}
             />
           ))}
@@ -53,6 +54,8 @@ const AiBuilder: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { auth, updateUser } = useAuth();
+  const { direction } = useTheme();
+  const isRtl = direction === 'rtl';
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector((state) => state.webConfig.data);
 
@@ -488,7 +491,10 @@ const AiBuilder: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.22 }}
-                    className={msg.role === 'user' ? 'flex justify-end' : 'flex gap-3 max-w-[92%]'}
+                    className={msg.role === 'user'
+                      ? `flex ${isRtl ? 'justify-start' : 'justify-end'}`
+                      : `flex gap-3 max-w-[92%] ${isRtl ? 'flex-row-reverse self-end' : ''}`
+                    }
                   >
                     {msg.role === 'assistant' ? (
                       <>
@@ -496,21 +502,21 @@ const AiBuilder: React.FC = () => {
                           <Sparkles className="w-4 h-4 text-primary" />
                         </div>
                         <div className="flex flex-col gap-2">
-                          <span className="text-xs font-medium text-gray-400 dark:text-slate-500 ml-1.5">
+                          <span className={`text-xs font-medium text-gray-400 dark:text-slate-500 ${isRtl ? 'me-1.5' : 'ms-1.5'}`}>
                             Lighty AI
                           </span>
-                          <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-4 rounded-3xl rounded-tl-sm text-gray-700 dark:text-slate-200 text-sm shadow-sm border border-gray-100 dark:border-slate-600/50 leading-relaxed">
+                          <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-4 text-gray-700 dark:text-slate-200 text-sm shadow-sm border border-gray-100 dark:border-slate-600/50 leading-relaxed rounded-3xl rounded-tl-sm">
                             {msg.content}
                           </div>
                           {/* Suggestion pills — first message only, before any user input */}
                           {i === 0 && !hasUserMessage && (
-                            <div className="flex flex-col gap-2 mt-1 ml-1">
+                            <div className={`flex flex-col gap-2 mt-1 ${isRtl ? 'items-end me-1' : 'items-start ms-1'}`}>
                               {suggestions.map((suggestion) => (
                                 <button
                                   key={suggestion}
                                   onClick={() => handleSubmit(undefined, suggestion)}
                                   disabled={isGenerating}
-                                  className="text-left px-5 py-2.5 text-sm bg-white/50 dark:bg-slate-800/50 border border-gray-200/60 dark:border-slate-600/50 rounded-full text-gray-500 dark:text-slate-400 hover:border-primary hover:text-primary dark:hover:border-violet-400 dark:hover:text-violet-300 hover:bg-white dark:hover:bg-slate-700 transition-all self-start backdrop-blur-sm shadow-sm disabled:opacity-50"
+                                  className={`px-5 py-2.5 text-sm bg-white/50 dark:bg-slate-800/50 border border-gray-200/60 dark:border-slate-600/50 rounded-full text-gray-500 dark:text-slate-400 hover:border-primary hover:text-primary dark:hover:border-violet-400 dark:hover:text-violet-300 hover:bg-white dark:hover:bg-slate-700 transition-all backdrop-blur-sm shadow-sm disabled:opacity-50 ${isRtl ? 'text-right' : 'text-left'}`}
                                 >
                                   "{suggestion}"
                                 </button>
@@ -520,7 +526,7 @@ const AiBuilder: React.FC = () => {
                         </div>
                       </>
                     ) : (
-                      <div className="max-w-[80%] bg-gradient-to-br from-primary to-violet-500 text-white px-5 py-4 rounded-3xl rounded-br-sm text-sm shadow-md leading-relaxed">
+                      <div className="max-w-[80%] bg-gradient-to-br from-primary to-violet-500 text-white px-5 py-4 text-sm shadow-md leading-relaxed rounded-3xl rounded-br-sm">
                         {msg.content}
                       </div>
                     )}
@@ -528,7 +534,7 @@ const AiBuilder: React.FC = () => {
                 ))}
               </AnimatePresence>
 
-              {isGenerating && <TypingIndicator />}
+              {isGenerating && <TypingIndicator isRtl={isRtl} />}
               <div ref={messagesEndRef} />
             </div>
           </div>

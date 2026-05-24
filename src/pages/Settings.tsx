@@ -733,13 +733,13 @@ const Settings: React.FC = () => {
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <SettingsIcon className="text-primary w-5 h-5" />
-            <h1 className="font-semibold text-xl text-gray-800 dark:text-white">
+          <div className="flex items-center gap-3">
+            <SettingsIcon className="text-primary w-6 h-6 shrink-0" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
               {t('settings.title')}
             </h1>
           </div>
-          <p className="text-light-text dark:text-gray-400 text-sm mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {t('settings.description')}
           </p>
         </div>

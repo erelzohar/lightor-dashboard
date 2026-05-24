@@ -145,7 +145,7 @@ const AppointmentTypes: React.FC = () => {
 
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
           {t('appointmentTypes.title')}
         </h1>
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">

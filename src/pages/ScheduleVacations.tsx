@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Save, RefreshCcw, Calendar, Clock, Plus, Trash2, Edit3,
+  Save, RefreshCcw, Calendar, Plus, Trash2, Edit3,
   CalendarClock, Info,
 } from 'lucide-react';
 import { WebConfig } from '../types';
@@ -242,15 +242,13 @@ const ScheduleVacations: React.FC = () => {
 
       {/* Page header */}
       <header className="mb-10 pb-8 border-b border-black/10 dark:border-white/5">
-        <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-          <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center flex-shrink-0">
-            <CalendarClock className="text-primary w-5 h-5" />
-          </div>
-          <h1 className="text-3xl font-bold text-light-text dark:text-dark-text tracking-tight">
+        <div className="flex items-center gap-3 mb-2">
+          <CalendarClock className="text-primary w-6 h-6 shrink-0" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             {t('scheduleVacations.title')}
           </h1>
         </div>
-        <p className={`text-light-gray dark:text-dark-gray text-sm mt-1 ${isRtl ? 'mr-[52px]' : 'ml-[52px]'}`}>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {t('scheduleVacations.description')}
         </p>
       </header>
@@ -259,7 +257,7 @@ const ScheduleVacations: React.FC = () => {
 
         {/* ── Working Hours Panel ── */}
         <div className="xl:col-span-7 glass-panel rounded-3xl p-8 lg:p-10 flex flex-col gap-8">
-          <div className={`flex items-center gap-4 border-b border-black/10 dark:border-white/5 pb-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <div className="flex items-center gap-4 border-b border-black/10 dark:border-white/5 pb-6">
             <div>
               <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
                 {t('scheduleVacations.workingHours')}
@@ -284,7 +282,7 @@ const ScheduleVacations: React.FC = () => {
                     transition={{ delay: 0.04 * index }}
                     className="flex items-center justify-between p-5 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5 group hover:bg-black/[0.07] dark:hover:bg-white/[0.04] transition-colors"
                   >
-                    <div className={`flex items-center gap-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <div className="flex items-center gap-6">
                       <span className="font-medium w-24 text-light-gray dark:text-dark-gray group-hover:text-light-text dark:group-hover:text-dark-text transition-colors text-sm">
                         {day}
                       </span>
@@ -306,11 +304,11 @@ const ScheduleVacations: React.FC = () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.04 * index }}
-                  className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl gap-5"
+                  className="flex flex-col items-center md:flex-row md:items-center md:justify-between p-5 rounded-2xl gap-4"
                   style={getActiveDayStyle(darkMode)}
                 >
-                  <div className={`flex items-center gap-6 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <span className="font-bold w-24 text-primary text-sm">
+                  <div className="flex items-center gap-6">
+                    <span className="font-bold w-24 text-primary text-sm text-center md:text-start">
                       {day}
                     </span>
                     <ToggleSwitch
@@ -319,15 +317,17 @@ const ScheduleVacations: React.FC = () => {
                     />
                   </div>
 
-                  <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                  {/* time inputs — container follows page direction (RTL: start right, end left)
+                      each pill is forced LTR so the clock icon and HH:MM value stay readable */}
+                  <div className="flex items-center gap-3">
                     <div className="flex flex-col gap-1">
-                      <span className={`text-[9px] text-primary/70 uppercase font-bold tracking-widest ${isRtl ? 'text-right' : ''}`}>
+                      <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
                         {t('scheduleVacations.start')}
                       </span>
-                      <div className="flex items-center gap-2 bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
-                        <Clock size={13} className="text-primary/60 flex-shrink-0" />
+                      <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
                         <input
                           type="time"
+                          dir="ltr"
                           value={workingHours?.startTime || ''}
                           onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
                           className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
@@ -338,13 +338,13 @@ const ScheduleVacations: React.FC = () => {
                     <div className="h-px w-3 bg-black/20 dark:bg-white/20 mt-4 flex-shrink-0" />
 
                     <div className="flex flex-col gap-1">
-                      <span className={`text-[9px] text-primary/70 uppercase font-bold tracking-widest ${isRtl ? 'text-right' : ''}`}>
+                      <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
                         {t('scheduleVacations.end')}
                       </span>
-                      <div className="flex items-center gap-2 bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
-                        <Clock size={13} className="text-primary/60 flex-shrink-0" />
+                      <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
                         <input
                           type="time"
+                          dir="ltr"
                           value={workingHours?.endTime || ''}
                           onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
                           className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
@@ -358,7 +358,7 @@ const ScheduleVacations: React.FC = () => {
           </div>
 
           {/* Save / Discard footer */}
-          <div className={`pt-6 border-t border-black/10 dark:border-white/5 flex gap-3 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}>
+          <div className={`pt-6 border-t border-black/10 dark:border-white/5 flex gap-3 ${isRtl ? 'justify-start' : 'justify-end'}`}>
             <button
               onClick={handleDiscard}
               disabled={!changesDetected}
@@ -385,7 +385,7 @@ const ScheduleVacations: React.FC = () => {
           <div className="glass-panel rounded-3xl p-8 lg:p-10 flex flex-col group">
 
             {/* Panel header */}
-            <div className={`flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5 ${isRtl ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5">
               <div>
                 <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
                   {t('scheduleVacations.vacationManagement')}
@@ -430,7 +430,7 @@ const ScheduleVacations: React.FC = () => {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.08, duration: 0.2 }}
-                      className={`font-semibold text-sm text-light-text dark:text-dark-text mb-5 ${isRtl ? 'text-right' : ''}`}
+                      className="font-semibold text-sm text-light-text dark:text-dark-text mb-5"
                     >
                       {t('scheduleVacations.newVacation')}
                     </motion.h4>
@@ -479,7 +479,7 @@ const ScheduleVacations: React.FC = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.24, type: 'spring', stiffness: 400, damping: 28 }}
-                        className={`flex gap-2 pt-1 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}
+                        className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}
                       >
                         <Button variant="secondary" size="sm" onClick={() => setIsAddingVacation(false)}>
                           {t('common.cancel')}
@@ -528,9 +528,9 @@ const ScheduleVacations: React.FC = () => {
                         isSaving={isEditingVacation}
                       />
                     ) : (
-                      <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <div className={`flex items-center gap-2 mb-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                          <div className="flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                             <h4 className="font-semibold text-light-text dark:text-dark-text truncate text-sm">
                               {vacation.title}
@@ -572,7 +572,7 @@ const ScheduleVacations: React.FC = () => {
 
             {/* Info box */}
             <div className="mt-6 p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5">
-              <div className={`flex items-start gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <div className="flex items-start gap-3">
                 <Info size={15} className="text-primary/70 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-light-gray dark:text-dark-gray leading-relaxed">
                   {t('scheduleVacations.vacationInfoBox')}
@@ -637,7 +637,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
           min={new Date().toISOString().slice(0, 16)}
         />
       </div>
-      <div className={`flex gap-2 ${isRtl ? 'flex-row-reverse' : 'justify-end'}`}>
+      <div className={`flex gap-2 ${isRtl ? 'justify-start' : 'justify-end'}`}>
         <Button variant="danger" size="sm" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
