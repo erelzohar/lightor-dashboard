@@ -10,7 +10,8 @@ set -euo pipefail
 
 # Override with: KEY=/path/to/key ./deploy.sh
 KEY="${KEY:-$HOME/Documents/lightor-key.pem}"
-HOST=ubuntu@51.16.211.227
+# Override with: HOST=user@ip ./deploy.sh   (CI passes it from a secret)
+HOST="${HOST:-ubuntu@51.16.211.227}"
 TARGET=/var/www/dashboard.lightor/dist
 STAGING=temp_dashboard_dist
 
