@@ -1,8 +1,12 @@
+/**
+ * Optional throughout, and the whole address may be absent: a business can have
+ * no premises, and the API stores an address only when it carries real values.
+ */
 export interface Address {
-  state: string;
-  city: string;
-  street: string;
-  other: string;
+  state?: string;
+  city?: string;
+  street?: string;
+  other?: string;
 }
 
 export interface Contact {
@@ -130,7 +134,7 @@ export interface WebConfig {
   minCancelTimeMS: number;
   defaultLanguage: string;
   workingDays: (string | null)[];
-  address: Address;
+  address?: Address;
   contact: Contact;
   social: Social;
   pallete: Palette;

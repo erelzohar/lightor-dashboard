@@ -1,7 +1,37 @@
 import { WebConfig, User, AppointmentType, Appointment } from '../types';
 
-// Set to true to pre-load mock appointments & appointment types on app start
-export const USE_MOCK_DATA = true;
+/* ════════════════════════════════════════════════════════════════════════════
+ *  ⚠️  DUMMY DATA — NOT REAL. REMOVE BEFORE PRODUCTION.  (mission LT-021)
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ *  Everything exported from this file is fabricated. Three consumers:
+ *
+ *   1. store/slices/appointmentsSlice.ts — DISABLED via USE_MOCK_DATA = false.
+ *      Previously seeded the Redux initial state, so the calendar, appointment
+ *      list and revenue/statistics widgets rendered fake rows until a real
+ *      fetch replaced them — and kept them if the fetch failed.
+ *   2. contexts/ThemeContext.tsx — STILL ACTIVE. MOCK_WEB_CONFIG.pallete is the
+ *      initial palette, so first paint uses mock brand colours, not the
+ *      owner's. Needs a neutral default palette chosen before it can go.
+ *   3. services/userApi.ts — STILL PRESENT, but dead. MOCK_USER backs a fake
+ *      login (hardcoded credentials + canned JWT) that nothing dispatches.
+ *      Delete it together with the `login` thunk in store/slices/userSlice.ts.
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+// Set to true to pre-load mock appointments & appointment types on app start.
+// OFF: the appointment state now starts empty and only ever shows what the API
+// actually returned, so a failed fetch reads as empty rather than as somebody
+// else's invented bookings.
+export const USE_MOCK_DATA = false;
+
+if (USE_MOCK_DATA && typeof console !== 'undefined') {
+  console.warn(
+    '%c⚠️ DUMMY DATA ACTIVE',
+    'background:#b45309;color:#fff;padding:2px 6px;border-radius:3px;font-weight:bold',
+    '\nAppointments and appointment types are seeded from src/utils/mockData.ts.' +
+    '\nAnything shown before a real API fetch resolves is fabricated. (LT-021)'
+  );
+}
 
 // ── Helper: compute epoch timestamp for day offset + time ──────────────────
 const ts = (daysOffset: number, hour: number, minute = 0): string => {

@@ -17,6 +17,8 @@ interface ThemeContextProps {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // ⚠️ DUMMY DATA (LT-021) — first paint uses the mock brand palette, not the
+  // owner's, until the real webConfig loads and calls updatePalette.
   const [palette, setPalette] = useState<Palette>(MOCK_WEB_CONFIG.pallete);
   const [direction, setDirection] = useState<'rtl' | 'ltr'>(
     i18n.language === 'he' ? 'rtl' : 'ltr'

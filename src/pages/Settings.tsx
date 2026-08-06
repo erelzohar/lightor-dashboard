@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check } from 'lucide-react';
-import { WebConfig } from '../types';
+import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -49,7 +49,19 @@ const Settings: React.FC = () => {
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
     const originalLogoUrl = resolveLogoUrl(webConfig.logoImageName);
-    const settingsChanged = JSON.stringify(localWebConfig.address) !== JSON.stringify(webConfig.address) ||
+    // The local copy always carries a full address shape (see hydration above),
+    // while the server may have sent none at all. Compare only the meaningful
+    // values, or an untouched form would report unsaved changes forever.
+    const meaningfulAddress = (a?: Address) =>
+      JSON.stringify(
+        Object.fromEntries(
+          (['state', 'city', 'street', 'other'] as const)
+            .map((k) => [k, a?.[k]?.trim() ?? ''])
+            .filter(([, v]) => v)
+        )
+      );
+
+    const settingsChanged = meaningfulAddress(localWebConfig.address) !== meaningfulAddress(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -105,6 +117,10 @@ const Settings: React.FC = () => {
     if (!localWebConfig && webConfig) {
       setLocalWebConfig({
         ...webConfig,
+        // The API omits `address` entirely for a business with no premises, but
+        // this form needs all four inputs to stay controlled. Give it an empty
+        // shape to edit rather than reading `.state` off undefined.
+        address: { state: '', city: '', street: '', other: '', ...(webConfig.address ?? {}) },
         logoImageName: resolveLogoUrl(webConfig.logoImageName),
       });
       if (webConfig.logoImageName?.startsWith('http')) {
@@ -137,14 +153,18 @@ const Settings: React.FC = () => {
     minCancelTimeMS: (value) =>
       value && value < 300000 ? t('validation.minCancelTimeMin') : null,
 
+    // Address is optional end-to-end — a business may have no premises, and the
+    // API stores only the parts that carry a value. So an empty field is valid;
+    // these only guard against something too short to be a real answer. Without
+    // this, clearing an address field left the form permanently unsaveable.
     state: (value) =>
-      !value || value.trim().length < 2 ? t('validation.stateMin') : null,
+      value?.trim() && value.trim().length < 2 ? t('validation.stateMin') : null,
 
     city: (value) =>
-      !value || value.trim().length < 2 ? t('validation.cityMin') : null,
+      value?.trim() && value.trim().length < 2 ? t('validation.cityMin') : null,
 
     street: (value) =>
-      !value || value.trim().length < 3 ? t('validation.streetMin') : null,
+      value?.trim() && value.trim().length < 3 ? t('validation.streetMin') : null,
 
     phone: (value) => {
       if (!value) return t('validation.phoneRequired');
@@ -610,7 +630,7 @@ const Settings: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label={t('settings.state')}
-                value={localWebConfig.address.state}
+                value={localWebConfig.address?.state || ''}
                 error={errors?.state}
                 onChange={(e) => handleChange('address', 'state', e.target.value)}
               />
@@ -618,20 +638,20 @@ const Settings: React.FC = () => {
               <Input
                 label={t('settings.city')}
                 error={errors?.city}
-                value={localWebConfig.address.city}
+                value={localWebConfig.address?.city || ''}
                 onChange={(e) => handleChange('address', 'city', e.target.value)}
               />
 
               <Input
                 label={t('settings.street')}
                 error={errors?.street}
-                value={localWebConfig.address.street}
+                value={localWebConfig.address?.street || ''}
                 onChange={(e) => handleChange('address', 'street', e.target.value)}
               />
 
               <Input
                 label={t('settings.additionalDetails')}
-                value={localWebConfig.address.other || ''}
+                value={localWebConfig.address?.other || ''}
                 onChange={(e) => handleChange('address', 'other', e.target.value)}
               />
             </div>

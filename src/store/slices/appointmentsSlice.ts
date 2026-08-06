@@ -11,6 +11,10 @@ interface AppointmentsState {
 }
 
 const initialState: AppointmentsState = {
+  // ⚠️ DUMMY DATA (LT-021) — the appointment list, calendar and stats widgets
+  // start populated with fabricated rows and keep showing them until a real
+  // fetch replaces them (and indefinitely if that fetch fails). Set
+  // USE_MOCK_DATA to false in utils/mockData.ts to start empty instead.
   appointments: USE_MOCK_DATA ? MOCK_APPOINTMENTS : [],
   appointmentTypes: USE_MOCK_DATA ? MOCK_APPOINTMENT_TYPES : [],
   loading: false,

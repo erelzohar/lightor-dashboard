@@ -56,7 +56,19 @@ const Dashboard: React.FC = () => {
     { key: 'phone', label: t('onboarding.step_phone'), done: !!(webConfig?.contact?.phone?.trim()), icon: Phone, tab: '/dashboard/settings' },
     { key: 'address', label: t('onboarding.step_address'), done: !!(webConfig?.address?.city?.trim() && webConfig?.address?.street?.trim()), icon: MapPin, tab: '/dashboard/settings' },
     { key: 'workingHours', label: t('onboarding.step_workingHours'), done: !!(webConfig?.workingDays?.some(d => d !== null)), icon: Clock, tab: '/dashboard/schedule-vacations' },
-    { key: 'serviceTypes', label: t('onboarding.step_serviceTypes'), done: appointmentTypes.length > 0, icon: Tag, tab: '/dashboard/appointment-types' },
+    // Services seeded from the AI wizard arrive without a price on purpose
+    // (LT-026), so merely having services is not "done" — the owner has to go
+    // in and price them. Otherwise the checklist would tick itself and the
+    // booking page would offer services with no price.
+    {
+      key: 'serviceTypes',
+      label: appointmentTypes.length > 0 && appointmentTypes.some(type => !type.price?.toString().trim())
+        ? t('onboarding.step_serviceTypesPricing')
+        : t('onboarding.step_serviceTypes'),
+      done: appointmentTypes.length > 0 && appointmentTypes.every(type => !!type.price?.toString().trim()),
+      icon: Tag,
+      tab: '/dashboard/appointment-types',
+    },
     { key: 'logo', label: t('onboarding.step_logo'), done: !!(webConfig?.logoImageName?.trim()), icon: Image, tab: '/dashboard/settings' },
   ];
   const doneCount = setupSteps.filter(s => s.done).length;

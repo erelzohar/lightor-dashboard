@@ -19,6 +19,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * ⚠️ DUMMY DATA / FAKE LOGIN — DELETE ME (mission LT-021)
+ *
+ * This is not a real login. It accepts one hardcoded username and password and
+ * resolves with a hardcoded, long-expired JWT plus MOCK_USER. It never contacts
+ * the API.
+ *
+ * Currently DEAD: the only caller is the `login` thunk in
+ * store/slices/userSlice.ts, which nothing dispatches — AuthContext uses the
+ * real services/authApi.ts `loginUser`. It still ships in the bundle, and a
+ * hardcoded-credentials code path is the kind of thing that gets wired up by
+ * accident later. Remove this and the userSlice thunk together.
+ */
 export const loginUser = async (username: string, password: string): Promise<{ token: string; user: User }> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {

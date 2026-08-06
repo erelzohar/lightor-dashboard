@@ -208,6 +208,7 @@
     "step_businessName": "Business name",
     "step_workingHours": "Working hours",
     "step_serviceTypes": "Service types",
+    "step_serviceTypesPricing": "Set prices for your services",
     "step_logo": "Logo",
     "getStarted": "Get Started",
     "allStepsComplete": "All set! Your profile is complete.",

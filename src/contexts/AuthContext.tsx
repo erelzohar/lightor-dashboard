@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
 import { AuthState, User } from '../types';
 import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
@@ -170,10 +169,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
       if (response.success && response.token) {
         localStorage.setItem('lightor', response.token);
-        const decoded = jwtDecode<{ user: User }>(response.token);
+        // Read the user from /auth/me rather than unpacking the token. Tokens
+        // now carry only { id, role } — putting the user document in the
+        // payload is what leaked the password hash to every client (LT-002).
+        const user = await getCurrentUser();
         setAuth(prev => ({
           ...prev,
-          user: decoded.user,
+          user,
           token: response.token!
         }));
       }

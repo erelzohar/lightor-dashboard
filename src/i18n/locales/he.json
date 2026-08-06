@@ -208,6 +208,7 @@
     "step_businessName": "שם העסק",
     "step_workingHours": "שעות פעילות",
     "step_serviceTypes": "סוגי שירות",
+    "step_serviceTypesPricing": "קבע מחירים לשירותים שלך",
     "step_logo": "לוגו",
     "getStarted": "בואו נתחיל",
     "allStepsComplete": "הכל מוכן! הפרופיל שלך שלם.",
