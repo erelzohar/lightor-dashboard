@@ -9,6 +9,8 @@ lerna-debug.log*
 
 *.pem
 *.sh
+# the deploy script belongs with the app it deploys
+!deploy.sh
 node_modules
 dist
 dist-ssr
