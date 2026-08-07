@@ -32,11 +32,32 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
+          set -euo pipefail
+          host="${DEPLOY_HOST#*@}"
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf "%s\n" "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+
+          # A private key is multi-line. It arrived here as a single line once,
+          # because the newlines were lost pasting it into the secret, and ssh
+          # answered with a bare "Permission denied (publickey)" that named the
+          # server rather than the key. Check the shape before blaming the box.
+          lines=$(wc -l < ~/.ssh/deploy_key)
+          if [ "$lines" -lt 3 ]; then
+            echo "✗ DEPLOY_SSH_KEY is $lines line(s) — its newlines were lost."
+            echo "  Re-set it from the file, never by pasting:"
+            echo "  gh secret set DEPLOY_SSH_KEY -R <repo> < ~/.ssh/lightor-deploy-ci"
+            exit 1
+          fi
+
           # Pin the host key so a hijacked DNS/IP cannot silently receive a deploy.
-          ssh-keyscan -H "${DEPLOY_HOST#*@}" >> ~/.ssh/known_hosts 2>/dev/null
+          # Deliberately not silenced: a timeout here means the AWS security group
+          # is not admitting the runner, and that is worth saying out loud.
+          if ! ssh-keyscan -T 10 -H "$host" >> ~/.ssh/known_hosts; then
+            echo "✗ cannot reach $host:22 from this runner."
+            echo "  The server firewall is open, so this is the security group."
+            exit 1
+          fi
 
       - name: Deploy
         env:
