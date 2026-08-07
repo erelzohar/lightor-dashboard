@@ -320,7 +320,15 @@
     "maxVacations": "Maximum 5 vacations",
     "fillRequired": "Please fill in all required fields",
     "dateError": "Start date must be before end date",
-    "daysOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "daysOfWeek": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
     "noVacationsDesc": "Your business will operate on the standard schedule defined in Working Hours.",
     "vacationInfoBox": "Adding a vacation period overrides standard hours. Clients will see availability updated immediately across all booking channels."
   },
@@ -396,5 +404,25 @@
     "emptyTitle": "Welcome to Lightor!",
     "emptySubtitle": "Start using Lightor to see your statistics",
     "emptyDesc": "Once you receive your first appointment, your stats, graphs, and insights will appear right here."
+  },
+  "billing": {
+    "title": "Subscription",
+    "statusFree": "Free plan",
+    "statusActive": "Active",
+    "statusPastDue": "Payment issue",
+    "statusCanceled": "Canceled",
+    "activeDesc": "Your subscription is active — unlimited appointments.",
+    "nextBill": "Next billing date:",
+    "freeDesc": "You are on the free plan, limited to a monthly number of appointments. Upgrade for unlimited bookings.",
+    "loadingPlans": "Loading plans...",
+    "plansUnavailable": "Plans are unavailable right now. Please try again later.",
+    "upgrade": "Upgrade",
+    "opening": "Opening...",
+    "per_month": "month",
+    "per_year": "year",
+    "per_week": "week",
+    "per_day": "day",
+    "processingHint": "Payment is being processed — your plan will update within a minute.",
+    "checkoutUnavailable": "Checkout is unavailable right now. Please try again later."
   }
 }

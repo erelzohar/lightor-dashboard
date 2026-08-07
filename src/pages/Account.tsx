@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
+import BillingSection from '../components/account/BillingSection';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -156,6 +157,8 @@ const Account: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      <BillingSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
