@@ -424,5 +424,10 @@
     "per_day": "day",
     "processingHint": "Payment is being processed — your plan will update within a minute.",
     "checkoutUnavailable": "Checkout is unavailable right now. Please try again later."
+  },
+  "handoff": {
+    "connecting": "Signing you in to your account...",
+    "failed": "The sign-in link has expired",
+    "goToLogin": "Sign in"
   }
 }

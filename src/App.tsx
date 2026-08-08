@@ -23,6 +23,7 @@ import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
+import Handoff from './pages/Handoff';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Login />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/handoff" element={<Handoff />} />
                   <Route path="/verify" element={<VerifyEmail />} />
                   <Route path="/verify/:token" element={<VerifyEmail />} />
                   <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>

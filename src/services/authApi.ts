@@ -2,6 +2,18 @@ import axios from 'axios';
 import { User } from '../types';
 import globals from './globals';
 
+/**
+ * Trade the short-lived handoff token minted at signup for a real session.
+ * Overwrites any session already in localStorage on purpose: the whole point
+ * is that the freshly registered account wins over a stale one. (LT-030)
+ */
+export const handoffLogin = async (handoffToken: string): Promise<{ token: string; user: User }> => {
+  const response = await axios.post(globals.authUrl + 'handoff', { token: handoffToken });
+  if (!response.data?.success) throw new Error('Handoff failed');
+  localStorage.setItem('lightor', response.data.token);
+  return { token: response.data.token, user: response.data.data };
+};
+
 export const loginUser = async (username: string, password: string): Promise<{ token: string; user: User }> => {
   try {
     const response = await axios.post(globals.authUrl + 'login', { username, password });
