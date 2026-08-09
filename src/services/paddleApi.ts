@@ -121,3 +121,18 @@ export async function cancelSubscription(): Promise<{ activeUntil: string | null
   if (!response.data?.success) throw new Error('Cancellation failed');
   return { activeUntil: response.data.data?.activeUntil ?? null };
 }
+
+/**
+ * Undo a scheduled cancellation while the plan is still active. A 409 means
+ * the subscription already ended — the caller should send the user to a
+ * fresh checkout instead.
+ */
+export async function resumeSubscription(): Promise<void> {
+  const token = localStorage.getItem('lightor');
+  const response = await axios.post(
+    `${globals.paddleUrl}subscription/resume`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!response.data?.success) throw new Error('Resume failed');
+}

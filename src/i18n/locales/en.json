@@ -437,7 +437,12 @@
     "cancelScheduledToastNoDate": "Subscription cancelled — your plan stays active until the end of the paid period.",
     "cancelScheduledDesc": "Your subscription will not renew. The plan stays active until {{date}}, then moves to the free plan.",
     "cancelScheduledDescNoDate": "Your subscription will not renew. The plan stays active until the end of the paid period, then moves to the free plan.",
-    "cancelFailed": "Could not cancel the subscription. Please try again, or contact support."
+    "cancelFailed": "Could not cancel the subscription. Please try again, or contact support.",
+    "resumeCta": "Resume subscription",
+    "resuming": "Resuming...",
+    "resumed": "Subscription resumed — your plan will renew as usual 🎉",
+    "resumeTooLate": "The subscription has already ended — you can subscribe again right here.",
+    "resumeFailed": "Could not resume the subscription. Please try again, or contact support."
   },
   "danger": {
     "title": "Danger zone",

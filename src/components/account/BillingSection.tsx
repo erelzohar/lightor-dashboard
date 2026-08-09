@@ -3,7 +3,7 @@ import { CreditCard, Check, Loader2, CalendarX } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, UpgradePlan } from '../../services/paddleApi';
+import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, resumeSubscription, UpgradePlan } from '../../services/paddleApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -32,6 +32,7 @@ const BillingSection: React.FC = () => {
   const [awaitingWebhook, setAwaitingWebhook] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [resuming, setResuming] = useState(false);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const status = auth.user?.subscription?.status ?? 'free';
@@ -84,6 +85,43 @@ const BillingSection: React.FC = () => {
       }
       if (tries + 1 < POLL_MAX_TRIES) pollUntilCancelScheduled(tries + 1);
     }, POLL_INTERVAL_MS);
+  };
+
+  // The mirror image of cancelling: Paddle drops the scheduled change, the
+  // webhook clears cancelAtPeriodEnd, and the poll below picks that up. A 409
+  // means the plan already ended — refreshUser flips the card to the upgrade
+  // state, which is the correct path back for a fully-ended subscription.
+  const pollUntilResumed = (tries: number) => {
+    pollTimer.current = setTimeout(async () => {
+      const user = await refreshUser();
+      if (user && !user.subscription?.cancelAtPeriodEnd) {
+        setResuming(false);
+        toast.success(t('billing.resumed'), { duration: 6000 });
+        return;
+      }
+      if (tries + 1 >= POLL_MAX_TRIES) {
+        setResuming(false);
+        toast(t('billing.stillProcessing'), { icon: '⏳', duration: 8000 });
+        return;
+      }
+      pollUntilResumed(tries + 1);
+    }, POLL_INTERVAL_MS);
+  };
+
+  const handleResumeSubscription = async () => {
+    setResuming(true);
+    try {
+      await resumeSubscription();
+      pollUntilResumed(0);
+    } catch (error: any) {
+      setResuming(false);
+      if (error?.response?.status === 409) {
+        toast.error(t('billing.resumeTooLate'));
+        await refreshUser();
+      } else {
+        toast.error(t('billing.resumeFailed'));
+      }
+    }
   };
 
   const handleCancelSubscription = async () => {
@@ -160,14 +198,25 @@ const BillingSection: React.FC = () => {
         {isPaid ? (
           <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3">
             {cancelScheduled ? (
-              <p className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-                <CalendarX size={16} className="shrink-0" />
-                {nextBillDate
-                  ? t('billing.cancelScheduledDesc', {
-                      date: new Date(nextBillDate).toLocaleDateString(),
-                    })
-                  : t('billing.cancelScheduledDescNoDate')}
-              </p>
+              <div className="space-y-3">
+                <p className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                  <CalendarX size={16} className="shrink-0" />
+                  {nextBillDate
+                    ? t('billing.cancelScheduledDesc', {
+                        date: new Date(nextBillDate).toLocaleDateString(),
+                      })
+                    : t('billing.cancelScheduledDescNoDate')}
+                </p>
+                <div>
+                  <Button
+                    variant="primary"
+                    onClick={handleResumeSubscription}
+                    disabled={resuming}
+                  >
+                    {resuming ? t('billing.resuming') : t('billing.resumeCta')}
+                  </Button>
+                </div>
+              </div>
             ) : (
               <>
                 <div className="space-y-1">
