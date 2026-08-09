@@ -11,6 +11,10 @@ import { initializePaddle, type Paddle } from '@paddle/paddle-js';
 
 let paddleInstance: Paddle | undefined;
 
+// Paddle only accepts an eventCallback at initialisation, so completion is
+// routed through this module-level slot — set per checkout, cleared on fire.
+let pendingCompletedCallback: (() => void) | null = null;
+
 export async function getPaddle(): Promise<Paddle | undefined> {
   if (paddleInstance) return paddleInstance;
 
@@ -22,6 +26,12 @@ export async function getPaddle(): Promise<Paddle | undefined> {
   paddleInstance = await initializePaddle({
     environment: env === 'production' ? 'production' : 'sandbox',
     token,
+    eventCallback(event) {
+      if (event.name === 'checkout.completed' && pendingCompletedCallback) {
+        pendingCompletedCallback();
+        pendingCompletedCallback = null;
+      }
+    },
   });
 
   return paddleInstance;
@@ -73,10 +83,17 @@ export async function openUpgradeCheckout(opts: {
   priceId: string;
   userId: string;
   email?: string;
+  /**
+   * Fires when the buyer finishes Paddle's form — the earliest honest moment
+   * for any "payment is processing" messaging. Opening the overlay proves
+   * nothing; most opens are window-shopping.
+   */
+  onCompleted?: () => void;
 }): Promise<boolean> {
   const paddle = await getPaddle();
   if (!paddle) return false;
 
+  pendingCompletedCallback = opts.onCompleted ?? null;
   paddle.Checkout.open({
     items: [{ priceId: opts.priceId, quantity: 1 }],
     ...(opts.email ? { customer: { email: opts.email } } : {}),

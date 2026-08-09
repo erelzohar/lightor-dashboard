@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, Check, Loader2 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -6,6 +6,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fetchUpgradePlans, openUpgradeCheckout, UpgradePlan } from '../../services/paddleApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+
+// Activation is webhook-driven, so after a completed checkout the server is
+// re-read on this cadence until the subscription flips. Sandbox webhooks
+// usually land within seconds; a lost webhook gives up after the full window
+// rather than spinning forever.
+const POLL_INTERVAL_MS = 2500;
+const POLL_MAX_TRIES = 24;
 
 /**
  * Subscription state + upgrade checkout (LT-004).
@@ -17,11 +24,13 @@ import toast from 'react-hot-toast';
  * locally — the badge changes when the server's user record does.
  */
 const BillingSection: React.FC = () => {
-  const { auth } = useAuth();
+  const { auth, refreshUser } = useAuth();
   const { t } = useTranslation();
   const [plans, setPlans] = useState<UpgradePlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
+  const [awaitingWebhook, setAwaitingWebhook] = useState(false);
+  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const status = auth.user?.subscription?.status ?? 'free';
   const isPaid = status === 'active';
@@ -36,8 +45,29 @@ const BillingSection: React.FC = () => {
     });
     return () => {
       cancelled = true;
+      if (pollTimer.current) clearTimeout(pollTimer.current);
     };
   }, []);
+
+  // Payment confirmed on Paddle's side; now chase the webhook. Each round
+  // re-reads /auth/me — the badge flips through context state the moment the
+  // server record does, no manual refresh needed.
+  const pollUntilActive = (tries: number) => {
+    pollTimer.current = setTimeout(async () => {
+      const user = await refreshUser();
+      if (user?.subscription?.status === 'active') {
+        setAwaitingWebhook(false);
+        toast.success(t('billing.activated'), { duration: 6000 });
+        return;
+      }
+      if (tries + 1 >= POLL_MAX_TRIES) {
+        setAwaitingWebhook(false);
+        toast(t('billing.stillProcessing'), { icon: '⏳', duration: 8000 });
+        return;
+      }
+      pollUntilActive(tries + 1);
+    }, POLL_INTERVAL_MS);
+  };
 
   const handleUpgrade = async (priceId: string) => {
     if (!auth.user?._id) return;
@@ -46,11 +76,17 @@ const BillingSection: React.FC = () => {
       priceId,
       userId: auth.user._id,
       email: auth.user.email,
+      // Only a *completed* checkout means anything is processing. Opening the
+      // overlay used to fire the toast, which told window-shoppers their
+      // payment was underway before any form existed to fill.
+      onCompleted: () => {
+        toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
+        setAwaitingWebhook(true);
+        pollUntilActive(0);
+      },
     });
     setOpening(null);
-    if (opened) {
-      toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
-    } else {
+    if (!opened) {
       toast.error(t('billing.checkoutUnavailable'));
     }
   };
@@ -103,7 +139,12 @@ const BillingSection: React.FC = () => {
               {t('billing.freeDesc')}
             </p>
 
-            {loadingPlans ? (
+            {awaitingWebhook ? (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <Loader2 size={16} className="animate-spin shrink-0" />
+                {t('billing.processingHint')}
+              </div>
+            ) : loadingPlans ? (
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.loadingPlans')}

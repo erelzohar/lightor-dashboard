@@ -423,7 +423,9 @@
     "per_week": "week",
     "per_day": "day",
     "processingHint": "Payment is being processed — your plan will update within a minute.",
-    "checkoutUnavailable": "Checkout is unavailable right now. Please try again later."
+    "checkoutUnavailable": "Checkout is unavailable right now. Please try again later.",
+    "activated": "Subscription activated! 🎉",
+    "stillProcessing": "Payment is still processing — your plan will update in the next few minutes. You can refresh later."
   },
   "handoff": {
     "connecting": "Signing you in to your account...",

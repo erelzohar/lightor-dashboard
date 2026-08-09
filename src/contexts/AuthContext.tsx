@@ -15,6 +15,12 @@ interface AuthContextType {
   loading: boolean;
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string, confirmNewPassword: string) => Promise<void>;
+  /**
+   * Re-read the user from /auth/me. For state that changes server-side without
+   * the dashboard's involvement — the Paddle webhook flipping a subscription is
+   * the canonical case (LT-004).
+   */
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -164,6 +170,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshUser = async (): Promise<User | null> => {
+    if (!auth.isAuthenticated) return null;
+    try {
+      const user = await getCurrentUser();
+      setAuth(prev => ({ ...prev, user }));
+      return user;
+    } catch {
+      // A transient /me failure should not eject the session; the caller
+      // polls, so the next attempt covers it.
+      return null;
+    }
+  };
+
   const updatePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
     try {
       const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
@@ -198,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithFacebook, logout, loading, updateUser, updatePassword }}>
+    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
