@@ -153,7 +153,8 @@
     "deleteError": "Failed to delete appointment type",
     "updateSuccess": "Appointment type updated successfully",
     "addSuccess": "Appointment type added successfully",
-    "saveError": "Failed to save appointment type"
+    "saveError": "Failed to save appointment type",
+    "serviceLimit": "The free plan is limited to 3 services. Upgrade to Lightor+ for unlimited services — Account → Subscription."
   },
   "appointments": {
     "title": "Appointments",
@@ -442,7 +443,10 @@
     "resuming": "Resuming...",
     "resumed": "Subscription resumed — your plan will renew as usual 🎉",
     "resumeTooLate": "The subscription has already ended — you can subscribe again right here.",
-    "resumeFailed": "Could not resume the subscription. Please try again, or contact support."
+    "resumeFailed": "Could not resume the subscription. Please try again, or contact support.",
+    "usageMeter": "{{used}}/{{cap}} appointments this month",
+    "usageNearCap": "Approaching the limit",
+    "usageFull": "Limit reached — new bookings are blocked this month"
   },
   "danger": {
     "title": "Danger zone",

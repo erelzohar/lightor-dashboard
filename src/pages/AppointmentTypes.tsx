@@ -125,16 +125,23 @@ const AppointmentTypes: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // unwrap() matters: a bare dispatch(thunk) resolves even when the API
+      // rejected, so failures used to toast "saved" while saving nothing.
       if (currentType) {
-        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData } }));
+        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData } })).unwrap();
         toast.success(t('appointmentTypes.updateSuccess'));
       } else {
-        await dispatch(createAppointmentType({ ...formData, webConfig_id: auth.user.webConfig_id }));
+        await dispatch(createAppointmentType({ ...formData, webConfig_id: auth.user.webConfig_id })).unwrap();
         toast.success(t('appointmentTypes.addSuccess'));
       }
       closeForm();
-    } catch {
-      toast.error(t('appointmentTypes.saveError'));
+    } catch (error: any) {
+      // The free plan allows 3 services (LT-032); the server answers 403.
+      if (String(error?.message ?? '').includes('403')) {
+        toast.error(t('appointmentTypes.serviceLimit'), { duration: 8000 });
+      } else {
+        toast.error(t('appointmentTypes.saveError'));
+      }
     }
   };
 

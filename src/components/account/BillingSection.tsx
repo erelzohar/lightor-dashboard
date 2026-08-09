@@ -4,6 +4,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, resumeSubscription, UpgradePlan } from '../../services/paddleApi';
+import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -33,6 +34,7 @@ const BillingSection: React.FC = () => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [resuming, setResuming] = useState(false);
+  const [entitlements, setEntitlements] = useState<MyEntitlements | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const status = auth.user?.subscription?.status ?? 'free';
@@ -48,11 +50,18 @@ const BillingSection: React.FC = () => {
         setLoadingPlans(false);
       }
     });
+    fetchMyEntitlements().then((data) => {
+      if (!cancelled) setEntitlements(data);
+    });
     return () => {
       cancelled = true;
       if (pollTimer.current) clearTimeout(pollTimer.current);
     };
   }, []);
+
+  const appointmentCap = entitlements?.limits.monthlyAppointments ?? null;
+  const appointmentsUsed = entitlements?.usage.appointmentsThisMonth ?? 0;
+  const capRatio = appointmentCap ? Math.min(appointmentsUsed / appointmentCap, 1) : 0;
 
   // Payment confirmed on Paddle's side; now chase the webhook. Each round
   // re-reads /auth/me — the badge flips through context state the moment the
@@ -246,6 +255,33 @@ const BillingSection: React.FC = () => {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               {t('billing.freeDesc')}
             </p>
+
+            {appointmentCap !== null && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    {t('billing.usageMeter', { used: appointmentsUsed, cap: appointmentCap })}
+                  </span>
+                  {capRatio >= 0.8 && (
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      {capRatio >= 1 ? t('billing.usageFull') : t('billing.usageNearCap')}
+                    </span>
+                  )}
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      capRatio >= 1
+                        ? 'bg-red-500'
+                        : capRatio >= 0.8
+                          ? 'bg-amber-500'
+                          : 'bg-primary'
+                    }`}
+                    style={{ width: `${Math.round(capRatio * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
