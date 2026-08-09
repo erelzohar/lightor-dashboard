@@ -1,4 +1,6 @@
+import axios from 'axios';
 import { initializePaddle, type Paddle } from '@paddle/paddle-js';
+import globals from './globals';
 
 /**
  * Paddle checkout for upgrading off the free tier (LT-004).
@@ -100,4 +102,22 @@ export async function openUpgradeCheckout(opts: {
     customData: { userId: opts.userId },
   });
   return true;
+}
+
+/**
+ * Ask the backend to cancel the subscription at the end of the paid period
+ * (LT-031). Same one-directional shape as the checkout: the server talks to
+ * Paddle, Paddle answers through the webhook, and this client learns the new
+ * state by re-reading /auth/me. The returned `activeUntil` is display data
+ * for the confirmation toast only.
+ */
+export async function cancelSubscription(): Promise<{ activeUntil: string | null }> {
+  const token = localStorage.getItem('lightor');
+  const response = await axios.post(
+    `${globals.paddleUrl}subscription/cancel`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!response.data?.success) throw new Error('Cancellation failed');
+  return { activeUntil: response.data.data?.activeUntil ?? null };
 }

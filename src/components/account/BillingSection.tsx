@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CreditCard, Check, Loader2 } from 'lucide-react';
+import { CreditCard, Check, Loader2, CalendarX } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchUpgradePlans, openUpgradeCheckout, UpgradePlan } from '../../services/paddleApi';
+import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, UpgradePlan } from '../../services/paddleApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -30,10 +30,14 @@ const BillingSection: React.FC = () => {
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
   const [awaitingWebhook, setAwaitingWebhook] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const status = auth.user?.subscription?.status ?? 'free';
   const isPaid = status === 'active';
+  const cancelScheduled = auth.user?.subscription?.cancelAtPeriodEnd === true;
+  const nextBillDate = auth.user?.subscription?.nextBillDate;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,6 +71,39 @@ const BillingSection: React.FC = () => {
       }
       pollUntilActive(tries + 1);
     }, POLL_INTERVAL_MS);
+  };
+
+  // Cancellation is confirmed the same way an upgrade is: Paddle answers the
+  // server through the webhook, which sets cancelAtPeriodEnd; re-read until
+  // it lands. Timing out is harmless — the flag appears on the next refresh.
+  const pollUntilCancelScheduled = (tries: number) => {
+    pollTimer.current = setTimeout(async () => {
+      const user = await refreshUser();
+      if (user?.subscription?.cancelAtPeriodEnd || user?.subscription?.status === 'canceled') {
+        return;
+      }
+      if (tries + 1 < POLL_MAX_TRIES) pollUntilCancelScheduled(tries + 1);
+    }, POLL_INTERVAL_MS);
+  };
+
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      const { activeUntil } = await cancelSubscription();
+      setCancelModalOpen(false);
+      const until = activeUntil ?? nextBillDate;
+      toast.success(
+        until
+          ? t('billing.cancelScheduledToast', { date: new Date(until).toLocaleDateString() })
+          : t('billing.cancelScheduledToastNoDate'),
+        { duration: 8000 }
+      );
+      pollUntilCancelScheduled(0);
+    } catch {
+      toast.error(t('billing.cancelFailed'));
+    } finally {
+      setCancelling(false);
+    }
   };
 
   const handleUpgrade = async (priceId: string) => {
@@ -121,16 +158,38 @@ const BillingSection: React.FC = () => {
         </div>
 
         {isPaid ? (
-          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-            <p className="flex items-center gap-2">
-              <Check size={16} className="text-green-600 shrink-0" />
-              {t('billing.activeDesc')}
-            </p>
-            {auth.user?.subscription?.nextBillDate && (
-              <p>
-                {t('billing.nextBill')}{' '}
-                {new Date(auth.user.subscription.nextBillDate).toLocaleDateString()}
+          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3">
+            {cancelScheduled ? (
+              <p className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                <CalendarX size={16} className="shrink-0" />
+                {nextBillDate
+                  ? t('billing.cancelScheduledDesc', {
+                      date: new Date(nextBillDate).toLocaleDateString(),
+                    })
+                  : t('billing.cancelScheduledDescNoDate')}
               </p>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <p className="flex items-center gap-2">
+                    <Check size={16} className="text-green-600 shrink-0" />
+                    {t('billing.activeDesc')}
+                  </p>
+                  {nextBillDate && (
+                    <p>
+                      {t('billing.nextBill')}{' '}
+                      {new Date(nextBillDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCancelModalOpen(true)}
+                  className="text-xs text-gray-400 dark:text-gray-500 underline hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                >
+                  {t('billing.cancelCta')}
+                </button>
+              </>
             )}
           </div>
         ) : (
@@ -184,6 +243,45 @@ const BillingSection: React.FC = () => {
           </>
         )}
       </div>
+
+      {cancelModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => !cancelling && setCancelModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-dark-surface p-6 shadow-xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('billing.cancelModalTitle')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {nextBillDate
+                ? t('billing.cancelModalBody', {
+                    date: new Date(nextBillDate).toLocaleDateString(),
+                  })
+                : t('billing.cancelModalBodyNoDate')}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => setCancelModalOpen(false)}
+                disabled={cancelling}
+              >
+                {t('billing.cancelModalKeep')}
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleCancelSubscription}
+                disabled={cancelling}
+              >
+                {cancelling ? t('billing.cancelling') : t('billing.cancelModalConfirm')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

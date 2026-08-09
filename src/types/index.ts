@@ -154,12 +154,17 @@ export interface User {
   isVerified: boolean;
   verificationToken?: string;
   verificationExpire?: string | Date;
+  /** Present on accounts created via social login — no password exists. */
+  googleId?: string;
+  facebookId?: string;
   subscription: {
     status: 'free' | 'active' | 'past_due' | 'canceled' | 'deleted';
     planId?: string;
     customerId?: string;
     subscriptionId?: string;
     nextBillDate?: string | Date;
+    /** Cancellation scheduled — plan stays active until nextBillDate, then ends. */
+    cancelAtPeriodEnd?: boolean;
   };
   role: 'admin' | 'client' | 'user';
   boardingStatus: 'new' | 'onboarded' | 'active';

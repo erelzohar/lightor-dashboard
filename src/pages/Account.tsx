@@ -6,6 +6,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import BillingSection from '../components/account/BillingSection';
+import DangerZoneSection from '../components/account/DangerZoneSection';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -286,6 +287,8 @@ const Account: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      <DangerZoneSection />
     </motion.div>
   );
 };

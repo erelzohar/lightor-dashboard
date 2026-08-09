@@ -82,6 +82,26 @@ export const resendVerification = async (email: string): Promise<void> => {
   await axios.post(`${globals.authUrl}resend-verification`, { email });
 };
 
+/**
+ * Delete the caller's account (LT-031). Password accounts prove intent with
+ * their password; social accounts (no password exists) type the account email.
+ * The backend cancels any live Paddle subscription immediately before
+ * deleting, and aborts if it cannot — so a failure here can mean "nothing was
+ * deleted, try again", which the thrown message reflects.
+ */
+export const deleteAccount = async (proof: { password?: string; confirmEmail?: string }): Promise<void> => {
+  const token = localStorage.getItem('lightor');
+  try {
+    const response = await axios.delete(`${globals.authUrl}me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: proof,
+    });
+    if (!response.data?.success) throw new Error('Account deletion failed');
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Account deletion failed');
+  }
+};
+
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
   const token = localStorage.getItem('lightor');
   try {

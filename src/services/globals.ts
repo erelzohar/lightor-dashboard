@@ -7,6 +7,7 @@ abstract class Globals {
     public typesUrl:string;
     public authUrl:string;
     public aiUrl:string;
+    public paddleUrl:string;
 }
 
 class DevelopmentGlobals extends Globals {
@@ -19,6 +20,7 @@ class DevelopmentGlobals extends Globals {
     public authUrl = "http://localhost:3000/api/auth/";
     public imagesUrl = "http://localhost:3000/api/images/";
     public aiUrl = "http://localhost:3000/api/ai/";
+    public paddleUrl = "http://localhost:3000/api/paddle/";
 }
 
 // class ProductionGlobals extends Globals {
@@ -51,6 +53,7 @@ class ProductionGlobals extends Globals {
     public imagesUrl = "https://api.lightor.app/api/images/";
     public typesUrl = "https://api.lightor.app/api/appointment-types/";
     public aiUrl = "https://api.lightor.app/api/ai/";
+    public paddleUrl = "https://api.lightor.app/api/paddle/";
 }
 // class ProductionGlobals extends Globals {
 //     public appointmentsUrl = "https://api.ez-lines.com/api/appointments/";
