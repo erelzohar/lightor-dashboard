@@ -3,9 +3,14 @@ import globals from './globals';
 
 const api = axios.create({
     baseURL: globals.messagingUrl,
+    withCredentials: true,
 });
 
-// Add request interceptor to include the token with each request
+// LT-009: the session now rides an HttpOnly cookie (withCredentials). This
+// Bearer interceptor is a transition shim for sessions that predate the
+// cookie — AuthContext migrates them at startup and clears localStorage, so
+// this finds nothing on any session created after LT-009. Delete it (and the
+// other copies of it) once pre-cookie tokens have aged out: 2027-02.
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('lightor');
 
