@@ -45,7 +45,11 @@ export interface UpgradePlan {
   formatted: string;
   productName: string;
   interval?: string;
+  /** Only set when Paddle actually grants a trial on this price. */
+  trialDays?: number;
 }
+
+const DAYS_PER_INTERVAL: Record<string, number> = { day: 1, week: 7, month: 30, year: 365 };
 
 /** Live prices for the configured plans; empty when Paddle is unreachable. */
 export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
@@ -62,12 +66,17 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
       items: priceIds.map((priceId) => ({ priceId, quantity: 1 })),
     });
 
-    return response.data.details.lineItems.map((li) => ({
-      priceId: li.price.id,
-      formatted: li.formattedUnitTotals.total,
-      productName: li.product.name,
-      interval: li.price.billingCycle?.interval,
-    }));
+    return response.data.details.lineItems.map((li) => {
+      const trial = li.price.trialPeriod;
+      return {
+        priceId: li.price.id,
+        formatted: li.formattedUnitTotals.total,
+        productName: li.product.name,
+        interval: li.price.billingCycle?.interval,
+        // Undefined when Paddle has no trial on this price — never invent one.
+        trialDays: trial ? trial.frequency * (DAYS_PER_INTERVAL[trial.interval] ?? 1) : undefined,
+      };
+    });
   } catch {
     // "Price unknown" renders as unavailable; never substitute a number
     // Paddle would not actually charge.

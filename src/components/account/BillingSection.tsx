@@ -319,8 +319,17 @@ const BillingSection: React.FC = () => {
                       onClick={() => handleUpgrade(plan.priceId)}
                       disabled={opening !== null}
                     >
-                      {opening === plan.priceId ? t('billing.opening') : t('billing.upgrade')}
+                      {opening === plan.priceId
+                        ? t('billing.opening')
+                        : plan.trialDays
+                          ? t('billing.upgradeTrial', { days: plan.trialDays })
+                          : t('billing.upgrade')}
                     </Button>
+                    {plan.trialDays && (
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500 text-center">
+                        {t('billing.trialNote', { days: plan.trialDays })}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
