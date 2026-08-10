@@ -480,5 +480,18 @@
     "resend": "Resend verification link",
     "signOut": "Sign out",
     "stillUnverified": "Still unverified — check your inbox"
+  },
+  "fbImport": {
+    "button": "Import from Facebook",
+    "pickAlbum": "Pick an album",
+    "back": "Back",
+    "close": "Close",
+    "noAlbums": "No albums found on this account",
+    "loadFailed": "Loading photos from Facebook failed",
+    "loadMore": "Load more",
+    "selectedCount": "{{count}} of {{max}} selected",
+    "importSelected": "Import selected",
+    "importing": "Importing...",
+    "authFailed": "Facebook sign-in was cancelled or failed"
   }
 }

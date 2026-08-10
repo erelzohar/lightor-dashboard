@@ -65,3 +65,13 @@ export const deleteImage = async (id: string): Promise<void> => {
         throw err;
     }
 };
+
+/**
+ * Import a photo the browser cannot fetch itself — Meta's CDN sends no CORS
+ * headers, so the server pulls it, runs it through the same resize/webp
+ * pipeline as manual uploads, and answers with the stored name. (LT-010)
+ */
+export const importImageFromUrl = async (url: string): Promise<{ imageName: string }> => {
+    const res = await api.post('/import-from-url', { url });
+    return res.data.data;
+};

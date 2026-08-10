@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCcw, Image as ImageIcon, Plus, Sparkles } from 'lucide-react';
+import { RefreshCcw, Image as ImageIcon, Plus, Sparkles, Facebook } from 'lucide-react';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 
@@ -26,7 +26,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
-import { uploadImage } from '../services/imagesApi';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import { uploadImage, importImageFromUrl } from '../services/imagesApi';
+import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
 import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
@@ -201,6 +203,33 @@ const Portfolio: React.FC = () => {
     }
 
     const canAddMore = items.length < 12;
+    const remainingSlots = 12 - items.length;
+    const [fbToken, setFbToken] = useState<string | null>(null);
+
+    /**
+     * Import from Facebook (LT-010). The Graph token lives only in this
+     * page's state for the lifetime of the picker; what goes to our server
+     * is the CDN URL of each picked photo, which it fetches and pushes
+     * through the same pipeline as a manual upload.
+     */
+    const handleFacebookImport = async (urls: string[]) => {
+        setIsLoading(true);
+        try {
+            const imported: PortfolioItem[] = [];
+            for (const url of urls) {
+                const { imageName } = await importImageFromUrl(url);
+                imported.push({ url: imageName, title: '', description: '' });
+            }
+            const newItems = [...items, ...imported].slice(0, 12);
+            setItems(newItems);
+            await saveUpdatedItems(newItems);
+        } catch (error) {
+            console.log(error);
+            toast.error(t('portfolio.uploadError'));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <motion.div
@@ -283,8 +312,48 @@ const Portfolio: React.FC = () => {
                                 </span>
                             </label>
                         )}
+
+                        {canAddMore && (
+                            <FacebookLogin
+                                appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
+                                autoLoad={false}
+                                scope="user_photos"
+                                callback={(response: unknown) => {
+                                    const token = (response as { accessToken?: string }).accessToken;
+                                    if (token) setFbToken(token);
+                                    else toast.error(t('fbImport.authFailed'));
+                                }}
+                                render={(renderProps: { onClick: () => void }) => (
+                                    <button
+                                        type="button"
+                                        onClick={renderProps.onClick}
+                                        disabled={isLoading || isSaving}
+                                        className="group flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-[#1877F2]/40 hover:border-[#1877F2] transition-colors disabled:opacity-50"
+                                    >
+                                        <div
+                                            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                                            style={{ background: 'rgba(24,119,242,0.08)' }}
+                                        >
+                                            <Facebook className="text-[#1877F2] w-7 h-7" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-[#1877F2] transition-colors">
+                                            {t('fbImport.button')}
+                                        </span>
+                                    </button>
+                                )}
+                            />
+                        )}
                     </div>
                 </DndContext>
+
+                {fbToken && (
+                    <FacebookPhotoPicker
+                        accessToken={fbToken}
+                        remainingSlots={remainingSlots}
+                        onClose={() => setFbToken(null)}
+                        onImport={handleFacebookImport}
+                    />
+                )}
 
                 {items.length === 0 && (
                     <p className="text-center text-xs text-gray-500 dark:text-gray-500 italic mt-6">
