@@ -10,12 +10,12 @@ import { WebConfig, User, AppointmentType, Appointment } from '../types';
  *      Previously seeded the Redux initial state, so the calendar, appointment
  *      list and revenue/statistics widgets rendered fake rows until a real
  *      fetch replaced them — and kept them if the fetch failed.
- *   2. contexts/ThemeContext.tsx — STILL ACTIVE. MOCK_WEB_CONFIG.pallete is the
- *      initial palette, so first paint uses mock brand colours, not the
- *      owner's. Needs a neutral default palette chosen before it can go.
- *   3. services/userApi.ts — STILL PRESENT, but dead. MOCK_USER backs a fake
- *      login (hardcoded credentials + canned JWT) that nothing dispatches.
- *      Delete it together with the `login` thunk in store/slices/userSlice.ts.
+ *   2. contexts/ThemeContext.tsx — GONE (LT-021). It now owns a DEFAULT_PALETTE
+ *      constant (value-identical, Lightor brand colours) instead of reading
+ *      them off a fabricated business record.
+ *   3. services/userApi.ts — GONE (LT-021). The fake login (hardcoded
+ *      credentials + canned JWT) and the dead userSlice thunks that referenced
+ *      it were deleted outright.
  * ════════════════════════════════════════════════════════════════════════════ */
 
 // Set to true to pre-load mock appointments & appointment types on app start.

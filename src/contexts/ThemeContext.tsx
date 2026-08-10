@@ -1,7 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Palette } from '../types';
-import { MOCK_WEB_CONFIG } from '../utils/mockData';
 import i18n from '../i18n/config';
+
+/**
+ * What the dashboard looks like before (or without) a webConfig — Lightor's
+ * own brand colours, the same violet the register app uses. Value-identical
+ * to what first paint always showed; what changed (LT-021) is the source:
+ * these used to be read off MOCK_WEB_CONFIG, a fabricated business record,
+ * which made the dashboard's default chrome depend on dummy data.
+ */
+const DEFAULT_PALETTE: Palette = {
+  colorPrimary: '#8b5cf6',
+  colorPrimaryDark: '#7c3aed',
+  colorLightBg: '#ffffff',
+  colorLightSurface: '#ffffff',
+  colorLightGray: '#64748b',
+  colorLightText: '#1f2937',
+  colorDarkBg: '#1e293b',
+  colorDarkSurface: '#334155',
+  colorDarkGray: '#9ca3af',
+  colorDarkText: '#f9fafb',
+};
 
 interface ThemeContextProps {
   palette: Palette;
@@ -17,9 +36,7 @@ interface ThemeContextProps {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // ⚠️ DUMMY DATA (LT-021) — first paint uses the mock brand palette, not the
-  // owner's, until the real webConfig loads and calls updatePalette.
-  const [palette, setPalette] = useState<Palette>(MOCK_WEB_CONFIG.pallete);
+  const [palette, setPalette] = useState<Palette>(DEFAULT_PALETTE);
   const [direction, setDirection] = useState<'rtl' | 'ltr'>(
     i18n.language === 'he' ? 'rtl' : 'ltr'
   );
