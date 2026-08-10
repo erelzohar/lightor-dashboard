@@ -42,6 +42,8 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+// LT-009 transition shim: sessions ride the HttpOnly cookie now; this only
+// finds a token on sessions that predate the cookie. Delete by 2027-02.
 function getAuthHeaders() {
   const token = localStorage.getItem('lightor');
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -67,6 +69,7 @@ export const aiService = {
               'Content-Type': 'multipart/form-data',
               ...getAuthHeaders(),
             },
+            withCredentials: true,
           }
         );
 
@@ -122,6 +125,7 @@ export const aiService = {
               'Content-Type': 'multipart/form-data',
               ...getAuthHeaders(),
             },
+            withCredentials: true,
           }
         );
 

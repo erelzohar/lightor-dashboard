@@ -121,11 +121,12 @@ export async function openUpgradeCheckout(opts: {
  * for the confirmation toast only.
  */
 export async function cancelSubscription(): Promise<{ activeUntil: string | null }> {
+  // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
   const response = await axios.post(
     `${globals.paddleUrl}subscription/cancel`,
     {},
-    { headers: { Authorization: `Bearer ${token}` } }
+    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
   );
   if (!response.data?.success) throw new Error('Cancellation failed');
   return { activeUntil: response.data.data?.activeUntil ?? null };
@@ -137,11 +138,12 @@ export async function cancelSubscription(): Promise<{ activeUntil: string | null
  * fresh checkout instead.
  */
 export async function resumeSubscription(): Promise<void> {
+  // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
   const response = await axios.post(
     `${globals.paddleUrl}subscription/resume`,
     {},
-    { headers: { Authorization: `Bearer ${token}` } }
+    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
   );
   if (!response.data?.success) throw new Error('Resume failed');
 }

@@ -36,9 +36,9 @@ const Handoff: React.FC = () => {
 
     handoffLogin(match[1])
       .then(() => {
-        // Full navigation, not client-side routing: AuthContext initialises
-        // from localStorage on load, so this is what makes the new session
-        // take everywhere at once.
+        // Full navigation, not client-side routing: the exchange set the
+        // HttpOnly session cookie (LT-009), and a fresh load makes
+        // AuthContext initialise from it everywhere at once.
         window.location.replace('/dashboard');
       })
       .catch(() => setFailed(true));

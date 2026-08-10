@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthState, User } from '../types';
-import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser } from '../services/authApi';
+import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -40,31 +40,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Initial authentication check (runs ONLY on first load)
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('lightor');
-
-      if (token) {
+      // LT-009 migration: a token in localStorage is a session from before the
+      // HttpOnly cookie existed. Trade it for the cookie once and delete it —
+      // after this block, no session material is readable from JavaScript.
+      // (Shim; remove once pre-cookie tokens have aged out: 2027-02.)
+      const legacy = localStorage.getItem('lightor');
+      if (legacy) {
         try {
-          const user = await getCurrentUser();
-          setAuth({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-          if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
-        } catch (error) {
-          localStorage.removeItem('lightor');
-          setAuth({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: 'Invalid token',
-          });
+          await cookieSync(legacy);
+        } catch {
+          // Expired or forged — either way it has no business persisting.
         }
-      } else {
-        setAuth(prev => ({ ...prev, isLoading: false }));
+        localStorage.removeItem('lightor');
+      }
+
+      try {
+        // The cookie (if any) rides along; no token handling in client code.
+        const user = await getCurrentUser();
+        setAuth({
+          user,
+          token: null,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
+      } catch (error) {
+        setAuth({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
       }
     };
 
@@ -75,13 +83,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (username: string, password: string) => {
     setLoading(true);
     try {
-      const { token } = await loginUser(username, password);
-      localStorage.setItem('lightor', token);
+      // The response set the HttpOnly session cookie; nothing to store here.
+      await loginUser(username, password);
       const user = await getCurrentUser();
 
       setAuth({
         user,
-        token,
+        token: null,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -103,13 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async (credential: string) => {
     setLoading(true);
     try {
-      const { token } = await googleLogin(credential);
-      localStorage.setItem('lightor', token);
+      // The response set the HttpOnly session cookie; nothing to store here.
+      await googleLogin(credential);
       const user = await getCurrentUser();
 
       setAuth({
         user,
-        token,
+        token: null,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -131,13 +139,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithFacebook = async (accessToken: string) => {
     setLoading(true);
     try {
-      const { token } = await facebookLogin(accessToken);
-      localStorage.setItem('lightor', token);
+      // The response set the HttpOnly session cookie; nothing to store here.
+      await facebookLogin(accessToken);
       const user = await getCurrentUser();
 
       setAuth({
         user,
-        token,
+        token: null,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -186,16 +194,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updatePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
     try {
       const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
-      if (response.success && response.token) {
-        localStorage.setItem('lightor', response.token);
-        // Read the user from /auth/me rather than unpacking the token. Tokens
-        // now carry only { id, role } — putting the user document in the
-        // payload is what leaked the password hash to every client (LT-002).
+      if (response.success) {
+        // The response rotated the session cookie server-side. Read the user
+        // from /auth/me rather than unpacking the token — payloads carry only
+        // { id, role } since LT-002.
         const user = await getCurrentUser();
         setAuth(prev => ({
           ...prev,
           user,
-          token: response.token!
+          token: null
         }));
       }
     } catch (error: any) {
@@ -204,6 +211,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    // Only the server can clear an HttpOnly cookie. Fire-and-forget: local
+    // state resets regardless, and the JWT dies at its own expiry anyway.
+    void serverLogout();
     localStorage.removeItem('lightor');
     setAuth({
       user: null,

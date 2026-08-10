@@ -168,6 +168,8 @@ export interface User {
   };
   role: 'admin' | 'client' | 'user';
   boardingStatus: 'new' | 'onboarded' | 'active';
+  /** Mongoose timestamp; the verified-email gate's grace window keys off it. */
+  createdAt?: string | Date;
 }
 
 export interface AppointmentType {

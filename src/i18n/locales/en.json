@@ -472,5 +472,13 @@
     "connecting": "Signing you in to your account...",
     "failed": "The sign-in link has expired",
     "goToLogin": "Sign in"
+  },
+  "verifyGate": {
+    "title": "Email verification required",
+    "desc": "We sent a verification link to {{email}}. Verify your address to keep using the dashboard.",
+    "iVerified": "I've verified — check again",
+    "resend": "Resend verification link",
+    "signOut": "Sign out",
+    "stillUnverified": "Still unverified — check your inbox"
   }
 }

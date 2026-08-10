@@ -27,10 +27,12 @@ export interface MyEntitlements {
 }
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {
+  // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
   try {
     const response = await axios.get(`${globals.entitlementsUrl}me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+      ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     });
     return response.data?.success ? (response.data.data as MyEntitlements) : null;
   } catch {
