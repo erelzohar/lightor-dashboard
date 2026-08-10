@@ -1,10 +1,10 @@
-import { WebConfig, User, AppointmentType, Appointment } from '../types';
+import { AppointmentType, Appointment } from '../types';
 
 /* ════════════════════════════════════════════════════════════════════════════
  *  ⚠️  DUMMY DATA — NOT REAL. REMOVE BEFORE PRODUCTION.  (mission LT-021)
  * ════════════════════════════════════════════════════════════════════════════
  *
- *  Everything exported from this file is fabricated. Three consumers:
+ *  Everything exported from this file is fabricated. One consumer remains:
  *
  *   1. store/slices/appointmentsSlice.ts — DISABLED via USE_MOCK_DATA = false.
  *      Previously seeded the Redux initial state, so the calendar, appointment
@@ -139,104 +139,6 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
 ];
 
 // ── Web Config ─────────────────────────────────────────────────────────────
-export const MOCK_WEB_CONFIG: WebConfig = {
-  "_id": "cfg_001",
-  "user_id": "u001",
-  "businessName": "אנה קוסמטיקס - מניקור ופדיקור",
-  "logoImageName": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800",
-  "subDomain": "anna-nails",
-  "minCancelTimeMS": 3600000,
-  "defaultLanguage": "he",
-  "vacations": [],
-  "appointmentTypes": MOCK_APPOINTMENT_TYPES,
-  "workingDays": [
-    null,
-    "10:00-18:00",
-    "10:00-18:00",
-    "10:00-18:00",
-    "10:00-18:00",
-    "09:00-14:00",
-    null,
-  ],
-  "address": {
-    "state": "ישראל",
-    "city": "תל אביב",
-    "street": "דיזנגוף 120",
-    "other": "קומה 2, חדר 205",
-  },
-  "contact": {
-    "phone": "+972541234567",
-    "mail": "anna@beautyhub.com",
-  },
-  "social": {
-    "instagram": "https://www.instagram.com/anna_nails_beauty",
-    "facebook": "https://www.facebook.com/annanailsbeauty",
-    "x": "https://twitter.com/annanails",
-    "tiktok": "https://www.tiktok.com/@annanails",
-  },
-  "pallete": {
-    "colorPrimary": "#8b5cf6",
-    "colorPrimaryDark": "#7c3aed",
-    "colorLightBg": "#ffffff",
-    "colorLightSurface": "#ffffff",
-    "colorLightGray": "#64748b",
-    "colorLightText": "#1f2937",
-    "colorDarkBg": "#1e293b",
-    "colorDarkSurface": "#334155",
-    "colorDarkGray": "#9ca3af",
-    "colorDarkText": "#f9fafb",
-  },
-  "components": {
-    "navbar":  { "visible": true,  "darkMode": true, "languageSwitcher": true },
-    "hero": {
-      "visible": true,
-      "title": "יופי בקצות האצבעות",
-      "subtitle": "טיפוח ציפורניים ברמה הגבוהה ביותר",
-      "description": "גילוי מחדש של מניקור ופדיקור מקצועיים באווירה נעימה ואלגנטית.",
-      "heroImageSrc": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800",
-    },
-    "about": {
-      "visible": true,
-      "title": "אודות אנה קוסמטיקס",
-      "description": "טיפוח יוקרתי ונעים שמתאים לכל סגנון ולכל אירוע.",
-      "paragraphs": {
-        "intro": "ברוכים הבאים לאנה קוסמטיקס.",
-        "mission": "המשימה שלנו: אסתטיקה, נוחות ובריאות.",
-      },
-      "features": [
-        { "icon": "Sparkles", "title": "סטריליות ובטיחות", "description": "כלים מחוטאים ומוצרים מובילים." },
-        { "icon": "Hand",     "title": "עיצובים אישיים",   "description": "מהקלאסי ועד אמנות ציפורניים." },
-        { "icon": "Smile",    "title": "לקוחות מרוצות",    "description": "מאות לקוחות חוזרות כל חודש." },
-      ],
-    },
-    "portfolio": {
-      "visible": true,
-      "isGrid": true,
-      "title": "העבודות שלנו",
-      "description": "גלריית עבודות.",
-      "items": [
-        { "url": "https://images.unsplash.com/photo-1588776814546-ec7e8c54f05a?auto=format&fit=crop&q=80&w=800", "title": "פרנץ' קלאסי", "description": "המראה האלגנטי שתמיד באופנה" },
-        { "url": "https://images.unsplash.com/photo-1626360884020-75ef0421aaff?auto=format&fit=crop&q=80&w=800", "title": "צבעים עזים",   "description": "לנשים שלא מפחדות לבלוט" },
-      ],
-    },
-    "schedule":      { "title": "קביעת תור", "description": "בחרי שירות ומועד נוח." },
-    "contact":       { "visible": true, "title": "צרי קשר", "description": "שלחי לנו הודעה." },
-    "footer":        { "visible": true, "description": "טיפוח ציפורניים מקצועי עם אהבה." },
-    "introPopup":    { "visible": false, "value": "" },
-    "contactButton": { "visible": true },
-  },
-};
-
-export const MOCK_USER: User = {
-  "_id": "u001",
-  "username": "anna_admin",
-  "webConfig_id": "cfg_001",
-  "email": "admin@annacosmetics.co.il",
-  "phone": "+972501112223",
-  "name": "אנה קוסמטיקס",
-  "defaultLanguage": "he",
-  "isVerified": true,
-  "role": "user",
-  "boardingStatus": "active",
-  "subscription": { "status": "active" },
-};
+// MOCK_WEB_CONFIG and MOCK_USER used to live here. Their last consumers died
+// in LT-021 (ThemeContext grew its own DEFAULT_PALETTE; the fake login was
+// deleted), so the fabricated business record and its owner are gone too.

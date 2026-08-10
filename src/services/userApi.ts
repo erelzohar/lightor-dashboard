@@ -24,20 +24,6 @@ api.interceptors.request.use((config) => {
 });
 
 
-export const validateToken = async (token: string): Promise<User> => {
-  try {
-    const response = await api.get('/auth/validate-token', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return response.data.user;
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
-};
-
 export const updateUserInfo = async (id: string, userData: Partial<User>): Promise<User> => {
   try {
     const response = await api.put<any>(`/${id}`, userData);
