@@ -39,8 +39,7 @@
     "addTeamMemberBtn": "Add team member",
     "aiBuilder": "AI Assistant",
     "upgradePlanTitle": "Upgrade your plan",
-    "upgradePlanDesc": "Your trial is expiring soon.",
-    "upgradePlanDescDays": "{{days}} days left in your trial",
+    "upgradePlanDesc": "You're on the free plan. Upgrading lifts the monthly booking cap and removes the Lightor credit from your site.",
     "upgradePlanBtn": "Upgrade your plan",
     "completeSetupFirst": "Complete your website setup first",
     "search": "Search"

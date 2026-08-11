@@ -76,9 +76,6 @@ const Dashboard: React.FC = () => {
 
   const showOnboarding = auth.user?.boardingStatus === 'onboarded';
 
-  const trialDaysLeft = auth.user?.subscription?.nextBillDate
-    ? Math.max(0, Math.ceil((new Date(auth.user.subscription.nextBillDate as string).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : null;
 
   const GreetingIcon = getGreetingIcon();
 
@@ -333,11 +330,14 @@ const Dashboard: React.FC = () => {
               <div>
                 <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">{t('common.upgradePlanTitle')}</h3>
                 <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
-                  {trialDaysLeft !== null ? t('common.upgradePlanDescDays', { days: trialDaysLeft }) : t('common.upgradePlanDesc')}
+                  {t('common.upgradePlanDesc')}
                 </p>
               </div>
             </div>
-            <button className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap">
+            <button
+              onClick={() => navigate('/dashboard/account')}
+              className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+            >
               {t('common.upgradePlanBtn')}
             </button>
           </div>

@@ -39,8 +39,7 @@
     "addTeamMemberBtn": "הוסף חבר צוות",
     "aiBuilder": "עוזר AI",
     "upgradePlanTitle": "שדרג את התוכנית שלך",
-    "upgradePlanDesc": "תקופת הניסיון שלך עומדת לפוג.",
-    "upgradePlanDescDays": "{{days}} ימים נותרו בתקופת הניסיון שלך",
+    "upgradePlanDesc": "אתה בתוכנית החינמית. שדרוג פותח תורים ללא הגבלה ומסיר את הקרדיט של Lightor מהאתר.",
     "upgradePlanBtn": "שדרג תוכנית",
     "completeSetupFirst": "השלם את הגדרת האתר שלך תחילה",
     "search": "חיפוש"
