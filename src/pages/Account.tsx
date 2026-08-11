@@ -289,6 +289,25 @@ const Account: React.FC = () => {
       </div>
 
       <DangerZoneSection />
+
+      <div className="flex justify-center gap-6 pt-2 pb-6">
+        <a
+          href="https://register.lightor.app/terms.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
+        >
+          {t('legal.terms')}
+        </a>
+        <a
+          href="https://register.lightor.app/privacy.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
+        >
+          {t('legal.privacy')}
+        </a>
+      </div>
     </motion.div>
   );
 };

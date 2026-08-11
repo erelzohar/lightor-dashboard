@@ -111,13 +111,33 @@ const Login: React.FC = () => {
               transition-colors duration-200
             "
           >
-            <SignInCard
-              onSubmit={login}
-              onGoogleLogin={() => googleLogin()}
-              onFacebookLogin={renderProps.onClick}
-              isLoading={loading}
-              error={auth.error}
-            />
+            <div className="w-full flex flex-col items-center gap-6">
+              <SignInCard
+                onSubmit={login}
+                onGoogleLogin={() => googleLogin()}
+                onFacebookLogin={renderProps.onClick}
+                isLoading={loading}
+                error={auth.error}
+              />
+              <div className="flex gap-6">
+                <a
+                  href="https://register.lightor.app/terms.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
+                >
+                  {t('legal.terms')}
+                </a>
+                <a
+                  href="https://register.lightor.app/privacy.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
+                >
+                  {t('legal.privacy')}
+                </a>
+              </div>
+            </div>
           </div>
 
         </div>

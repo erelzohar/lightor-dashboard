@@ -493,5 +493,9 @@
     "importSelected": "Import selected",
     "importing": "Importing...",
     "authFailed": "Facebook sign-in was cancelled or failed"
+  },
+  "legal": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   }
 }
