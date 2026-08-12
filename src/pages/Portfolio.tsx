@@ -53,6 +53,7 @@ const Portfolio: React.FC = () => {
     const [isSavingVisibility, setIsSavingVisibility] = useState(false);
     const [items, setItems] = useState(webConfig?.components?.portfolio?.items || []);
     const [isVisible, setIsVisible] = useState(webConfig?.components?.portfolio?.visible ?? true);
+    const [fbToken, setFbToken] = useState<string | null>(null);
 
     document.title = t('portfolio.title');
 
@@ -194,18 +195,6 @@ const Portfolio: React.FC = () => {
         }
     };
 
-    if (webConfigLoading && !webConfig) {
-        return (
-            <div className="flex justify-center items-center h-96 w-full">
-                <RefreshCcw className="animate-spin text-primary h-8 w-8" />
-            </div>
-        );
-    }
-
-    const canAddMore = items.length < 12;
-    const remainingSlots = 12 - items.length;
-    const [fbToken, setFbToken] = useState<string | null>(null);
-
     /**
      * Import from Facebook (LT-010). The Graph token lives only in this
      * page's state for the lifetime of the picker; what goes to our server
@@ -230,6 +219,17 @@ const Portfolio: React.FC = () => {
             setIsLoading(false);
         }
     };
+
+    if (webConfigLoading && !webConfig) {
+        return (
+            <div className="flex justify-center items-center h-96 w-full">
+                <RefreshCcw className="animate-spin text-primary h-8 w-8" />
+            </div>
+        );
+    }
+
+    const canAddMore = items.length < 12;
+    const remainingSlots = 12 - items.length;
 
     return (
         <motion.div
