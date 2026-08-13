@@ -28,6 +28,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      # LT-039 shipped a hooks-order crash the repo's own eslint config would
+      # have flagged; nothing ran it. This gate is hooks-rules-only until the
+      # pre-existing lint debt is cleared (LT-040), then it becomes `npm run lint`.
+      - name: Lint (hooks rules)
+        run: npm run lint:hooks
+
       - name: Authorise the runner against the server
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
