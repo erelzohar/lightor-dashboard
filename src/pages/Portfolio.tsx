@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCcw, Image as ImageIcon, Plus, Sparkles, Facebook } from 'lucide-react';
+import { RefreshCcw, Image as ImageIcon, Plus, Sparkles, Facebook, Instagram } from 'lucide-react';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 
@@ -29,6 +29,7 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import { uploadImage, importImageFromUrl } from '../services/imagesApi';
 import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
+import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
 import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +55,7 @@ const Portfolio: React.FC = () => {
     const [items, setItems] = useState(webConfig?.components?.portfolio?.items || []);
     const [isVisible, setIsVisible] = useState(webConfig?.components?.portfolio?.visible ?? true);
     const [fbToken, setFbToken] = useState<string | null>(null);
+    const [igToken, setIgToken] = useState<string | null>(null);
 
     document.title = t('portfolio.title');
 
@@ -196,10 +198,11 @@ const Portfolio: React.FC = () => {
     };
 
     /**
-     * Import from Facebook (LT-010). The Graph token lives only in this
-     * page's state for the lifetime of the picker; what goes to our server
-     * is the CDN URL of each picked photo, which it fetches and pushes
-     * through the same pipeline as a manual upload.
+     * Import from Facebook (LT-010) or Instagram (LT-042) — both pickers feed
+     * this. The Graph token lives only in this page's state for the lifetime
+     * of the picker; what goes to our server is the CDN URL of each picked
+     * photo, which it fetches and pushes through the same pipeline as a
+     * manual upload.
      */
     const handleFacebookImport = async (urls: string[]) => {
         setIsLoading(true);
@@ -343,6 +346,37 @@ const Portfolio: React.FC = () => {
                                 )}
                             />
                         )}
+
+                        {canAddMore && (
+                            <FacebookLogin
+                                appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
+                                autoLoad={false}
+                                scope="instagram_basic,pages_show_list"
+                                callback={(response: unknown) => {
+                                    const token = (response as { accessToken?: string }).accessToken;
+                                    if (token) setIgToken(token);
+                                    else toast.error(t('igImport.authFailed'));
+                                }}
+                                render={(renderProps: { onClick: () => void }) => (
+                                    <button
+                                        type="button"
+                                        onClick={renderProps.onClick}
+                                        disabled={isLoading || isSaving}
+                                        className="group flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-[#E1306C]/40 hover:border-[#E1306C] transition-colors disabled:opacity-50"
+                                    >
+                                        <div
+                                            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                                            style={{ background: 'rgba(225,48,108,0.08)' }}
+                                        >
+                                            <Instagram className="text-[#E1306C] w-7 h-7" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-[#E1306C] transition-colors">
+                                            {t('igImport.button')}
+                                        </span>
+                                    </button>
+                                )}
+                            />
+                        )}
                     </div>
                 </DndContext>
 
@@ -351,6 +385,15 @@ const Portfolio: React.FC = () => {
                         accessToken={fbToken}
                         remainingSlots={remainingSlots}
                         onClose={() => setFbToken(null)}
+                        onImport={handleFacebookImport}
+                    />
+                )}
+
+                {igToken && (
+                    <InstagramPhotoPicker
+                        accessToken={igToken}
+                        remainingSlots={remainingSlots}
+                        onClose={() => setIgToken(null)}
                         onImport={handleFacebookImport}
                     />
                 )}

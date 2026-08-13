@@ -493,6 +493,20 @@
     "importing": "Importing...",
     "authFailed": "Facebook sign-in was cancelled or failed"
   },
+  "igImport": {
+    "button": "Import from Instagram",
+    "pickAccount": "Pick an Instagram account",
+    "back": "Back",
+    "close": "Close",
+    "noAccounts": "No Instagram account is linked to your Facebook pages.\nInstagram import needs a professional (business or creator) Instagram account linked to a Facebook page you manage.",
+    "noPhotos": "No photos found on this account",
+    "loadFailed": "Loading photos from Instagram failed",
+    "loadMore": "Load more",
+    "selectedCount": "{{count}} of {{max}} selected",
+    "importSelected": "Import selected",
+    "importing": "Importing...",
+    "authFailed": "Instagram sign-in was cancelled or failed"
+  },
   "legal": {
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
