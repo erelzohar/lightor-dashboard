@@ -12,15 +12,20 @@ import { useTranslation } from 'react-i18next';
  * backend and is not stored anywhere. Only the CDN URLs of the picked photos
  * are sent up, through the same /images/import-from-url pipeline.
  *
- * The route to the media is Facebook Login's: /me/accounts lists the pages
- * the user manages, each page may carry a linked instagram_business_account,
- * and that account's /media is readable with instagram_basic. Meta retired
- * API access for personal Instagram accounts (Basic Display, Dec 2024), so a
- * professional account linked to a Facebook page is a hard requirement — the
+ * Two routes to the media, chosen by `source` (LT-043):
+ * - 'facebook' — Facebook Login's token: /me/accounts lists the pages the
+ *   user manages, each may carry a linked instagram_business_account, and
+ *   that account's /media is readable with instagram_basic.
+ * - 'instagram' — Instagram Login's token: the account is /me on
+ *   graph.instagram.com, no page walk needed and no Facebook page required.
+ *
+ * Either way Meta retired API access for personal Instagram accounts (Basic
+ * Display, Dec 2024), so a professional account is a hard requirement — the
  * empty state says so rather than presenting it as an error.
  */
 
 const GRAPH = 'https://graph.facebook.com/v19.0';
+const IG_GRAPH = 'https://graph.instagram.com';
 
 interface IgAccount {
   /** IG user id — the node /media hangs off. */
@@ -64,6 +69,8 @@ const toTiles = (media: IgMedia[]): Tile[] =>
 
 interface Props {
   accessToken: string;
+  /** Which login produced the token — decides the Graph host and entry point. */
+  source?: 'facebook' | 'instagram';
   /** How many photos may still be added before the portfolio cap. */
   remainingSlots: number;
   onClose: () => void;
@@ -73,7 +80,7 @@ interface Props {
 
 const MEDIA_FIELDS = 'id,media_type,media_url,thumbnail_url,children{media_url,media_type}';
 
-const InstagramPhotoPicker: React.FC<Props> = ({ accessToken, remainingSlots, onClose, onImport }) => {
+const InstagramPhotoPicker: React.FC<Props> = ({ accessToken, source = 'facebook', remainingSlots, onClose, onImport }) => {
   const { t } = useTranslation();
   const [accounts, setAccounts] = useState<IgAccount[] | null>(null);
   const [account, setAccount] = useState<IgAccount | null>(null);
@@ -96,7 +103,8 @@ const InstagramPhotoPicker: React.FC<Props> = ({ accessToken, remainingSlots, on
     setTiles([]);
     setLoading(true);
     try {
-      const json = await graphGet(`${GRAPH}/${a.id}/media?fields=${MEDIA_FIELDS}&limit=50&access_token=${accessToken}`);
+      const base = source === 'instagram' ? IG_GRAPH : GRAPH;
+      const json = await graphGet(`${base}/${a.id}/media?fields=${MEDIA_FIELDS}&limit=50&access_token=${accessToken}`);
       setTiles(toTiles(json.data ?? []));
       setNextPage(json.paging?.next ?? null);
     } catch {
@@ -107,6 +115,21 @@ const InstagramPhotoPicker: React.FC<Props> = ({ accessToken, remainingSlots, on
   };
 
   useEffect(() => {
+    if (source === 'instagram') {
+      // Instagram Login: the token *is* the account — /me resolves it, no
+      // page walk, and the account list never shows.
+      graphGet(`${IG_GRAPH}/me?fields=username&access_token=${accessToken}`)
+        .then((me: { username?: string }) => {
+          const a = { id: 'me', username: me.username };
+          setAccounts([a]);
+          openAccount(a);
+        })
+        .catch(() => {
+          setFailed(true);
+          setLoading(false);
+        });
+      return;
+    }
     graphGet(`${GRAPH}/me/accounts?fields=name,instagram_business_account{id,username,profile_picture_url,media_count}&limit=100&access_token=${accessToken}`)
       .then((json) => {
         const igAccounts: IgAccount[] = (json.data ?? [])

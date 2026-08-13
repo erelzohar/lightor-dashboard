@@ -24,6 +24,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
+import InstagramCallback from './pages/InstagramCallback';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
                   <Route path="/" element={<Login />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/handoff" element={<Handoff />} />
+                  <Route path="/instagram-callback" element={<InstagramCallback />} />
                   <Route path="/verify" element={<VerifyEmail />} />
                   <Route path="/verify/:token" element={<VerifyEmail />} />
                   <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>

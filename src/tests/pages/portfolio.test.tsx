@@ -38,10 +38,10 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }));
 vi.mock('react-facebook-login/dist/facebook-login-render-props', () => ({
-    default: ({ render }: { render: (p: { onClick: () => void }) => JSX.Element }) =>
+    default: ({ render }: { render: (p: { onClick: () => void }) => unknown }): unknown =>
         render({ onClick: () => {} }),
 }));
-vi.mock('../../components/portfolio/FacebookPhotoPicker', () => ({ default: () => null }));
+vi.mock('../../components/portfolio/FacebookPhotoPicker', () => ({ default: (): null => null }));
 vi.mock('../../components/portfolio/SortableImageItem', () => ({
     default: ({ item }: { item: { url: string } }) => <div data-testid="item">{item.url}</div>,
 }));

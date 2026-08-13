@@ -505,7 +505,8 @@
     "selectedCount": "{{count}} of {{max}} selected",
     "importSelected": "Import selected",
     "importing": "Importing...",
-    "authFailed": "Instagram sign-in was cancelled or failed"
+    "authFailed": "Instagram sign-in was cancelled or failed",
+    "completing": "Completing Instagram sign-in..."
   },
   "legal": {
     "terms": "Terms of Service",

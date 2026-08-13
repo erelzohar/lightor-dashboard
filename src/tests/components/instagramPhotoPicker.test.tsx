@@ -115,3 +115,35 @@ describe('InstagramPhotoPicker', () => {
     await waitFor(() => expect(screen.getByText('igImport.loadFailed')).toBeInTheDocument());
   });
 });
+
+describe('InstagramPhotoPicker · Instagram Login source', () => {
+  beforeEach(() => {
+    graphResponses.clear();
+    vi.stubGlobal('fetch', mockFetch);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mockFetch.mockClear();
+  });
+
+  it('resolves /me on graph.instagram.com and never walks Facebook pages', async () => {
+    graphResponses.set('graph.instagram.com/me?', { username: 'ig_only_salon' } as never);
+    graphResponses.set('graph.instagram.com/me/media', { data: media });
+
+    render(
+      <InstagramPhotoPicker
+        accessToken="ig-tok"
+        source="instagram"
+        remainingSlots={5}
+        onClose={vi.fn()}
+        onImport={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    await waitFor(() => expect(document.querySelectorAll('img')).toHaveLength(2));
+    expect(screen.getByText('@ig_only_salon')).toBeInTheDocument();
+    const urls = mockFetch.mock.calls.map((c) => String(c[0]));
+    expect(urls.every((u) => u.startsWith('https://graph.instagram.com/'))).toBe(true);
+    expect(urls.some((u) => u.includes('/me/accounts'))).toBe(false);
+  });
+});

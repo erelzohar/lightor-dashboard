@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCcw, Image as ImageIcon, Plus, Sparkles, Facebook, Instagram } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -28,11 +28,20 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import { uploadImage, importImageFromUrl } from '../services/imagesApi';
+import { exchangeInstagramCode } from '../services/instagramApi';
 import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
 import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
 import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Instagram Login (LT-043) is env-gated: with the Instagram app id present
+ * the tile opens Instagram's own OAuth dialog (no Facebook page needed);
+ * without it the tile falls back to the Facebook-linked route (LT-042), so
+ * the feature keeps working while the Meta side is unconfigured.
+ */
+const IG_APP_ID = (import.meta.env.VITE_INSTAGRAM_APP_ID as string | undefined) || '';
 
 const GLASS: React.CSSProperties = {
     background: 'rgba(255,255,255,0.03)',
@@ -55,7 +64,51 @@ const Portfolio: React.FC = () => {
     const [items, setItems] = useState(webConfig?.components?.portfolio?.items || []);
     const [isVisible, setIsVisible] = useState(webConfig?.components?.portfolio?.visible ?? true);
     const [fbToken, setFbToken] = useState<string | null>(null);
-    const [igToken, setIgToken] = useState<string | null>(null);
+    const [igAuth, setIgAuth] = useState<{ token: string; source: 'facebook' | 'instagram' } | null>(null);
+    /** CSRF state for the in-flight Instagram Login popup, if any. */
+    const igStateRef = useRef<string | null>(null);
+
+    // Relay target for the Instagram Login popup (see InstagramCallback).
+    useEffect(() => {
+        const onMessage = async (e: MessageEvent) => {
+            if (e.origin !== window.location.origin) return;
+            const d = e.data as { type?: string; code?: string; state?: string };
+            if (d?.type !== 'ig-oauth') return;
+            const expected = igStateRef.current;
+            igStateRef.current = null;
+            if (!d.code || !expected || d.state !== expected) {
+                toast.error(t('igImport.authFailed'));
+                return;
+            }
+            try {
+                const { accessToken } = await exchangeInstagramCode(
+                    d.code,
+                    `${window.location.origin}/instagram-callback`
+                );
+                setIgAuth({ token: accessToken, source: 'instagram' });
+            } catch {
+                toast.error(t('igImport.authFailed'));
+            }
+        };
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const openInstagramLogin = () => {
+        const state = crypto.randomUUID();
+        igStateRef.current = state;
+        const redirectUri = `${window.location.origin}/instagram-callback`;
+        const url =
+            'https://www.instagram.com/oauth/authorize' +
+            `?client_id=${IG_APP_ID}` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+            '&response_type=code' +
+            '&scope=instagram_business_basic' +
+            `&state=${state}`;
+        const popup = window.open(url, 'ig-login', 'width=500,height=700');
+        if (!popup) toast.error(t('igImport.authFailed'));
+    };
 
     document.title = t('portfolio.title');
 
@@ -223,6 +276,26 @@ const Portfolio: React.FC = () => {
         }
     };
 
+    /** The Instagram tile, identical for both login routes — only onClick differs. */
+    const igTile = (onClick: () => void) => (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={isLoading || isSaving}
+            className="group flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-[#E1306C]/40 hover:border-[#E1306C] transition-colors disabled:opacity-50"
+        >
+            <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                style={{ background: 'rgba(225,48,108,0.08)' }}
+            >
+                <Instagram className="text-[#E1306C] w-7 h-7" />
+            </div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-[#E1306C] transition-colors">
+                {t('igImport.button')}
+            </span>
+        </button>
+    );
+
     if (webConfigLoading && !webConfig) {
         return (
             <div className="flex justify-center items-center h-96 w-full">
@@ -347,36 +420,21 @@ const Portfolio: React.FC = () => {
                             />
                         )}
 
-                        {canAddMore && (
+                        {canAddMore && (IG_APP_ID ? (
+                            igTile(openInstagramLogin)
+                        ) : (
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
                                 autoLoad={false}
                                 scope="instagram_basic,pages_show_list"
                                 callback={(response: unknown) => {
                                     const token = (response as { accessToken?: string }).accessToken;
-                                    if (token) setIgToken(token);
+                                    if (token) setIgAuth({ token, source: 'facebook' });
                                     else toast.error(t('igImport.authFailed'));
                                 }}
-                                render={(renderProps: { onClick: () => void }) => (
-                                    <button
-                                        type="button"
-                                        onClick={renderProps.onClick}
-                                        disabled={isLoading || isSaving}
-                                        className="group flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-[#E1306C]/40 hover:border-[#E1306C] transition-colors disabled:opacity-50"
-                                    >
-                                        <div
-                                            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
-                                            style={{ background: 'rgba(225,48,108,0.08)' }}
-                                        >
-                                            <Instagram className="text-[#E1306C] w-7 h-7" />
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-[#E1306C] transition-colors">
-                                            {t('igImport.button')}
-                                        </span>
-                                    </button>
-                                )}
+                                render={(renderProps: { onClick: () => void }) => igTile(renderProps.onClick)}
                             />
-                        )}
+                        ))}
                     </div>
                 </DndContext>
 
@@ -389,11 +447,12 @@ const Portfolio: React.FC = () => {
                     />
                 )}
 
-                {igToken && (
+                {igAuth && (
                     <InstagramPhotoPicker
-                        accessToken={igToken}
+                        accessToken={igAuth.token}
+                        source={igAuth.source}
                         remainingSlots={remainingSlots}
-                        onClose={() => setIgToken(null)}
+                        onClose={() => setIgAuth(null)}
                         onImport={handleFacebookImport}
                     />
                 )}
