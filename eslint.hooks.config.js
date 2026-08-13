@@ -15,7 +15,10 @@ export default [
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { parser: tseslint.parser },
-    plugins: { 'react-hooks': reactHooks },
+    // tseslint's plugin is registered but none of its rules are enabled: the
+    // codebase carries inline `eslint-disable @typescript-eslint/*` comments,
+    // and a directive naming an unregistered rule is itself an error.
+    plugins: { 'react-hooks': reactHooks, '@typescript-eslint': tseslint.plugin },
     rules: reactHooks.configs.recommended.rules,
   },
 ];
