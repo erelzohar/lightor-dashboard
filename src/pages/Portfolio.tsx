@@ -397,6 +397,11 @@ const Portfolio: React.FC = () => {
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
                                 scope="user_photos"
+                                // Closing the consent dialog once records a *decline*, and
+                                // Facebook silently skips declined permissions on every later
+                                // login. rerequest makes it ask again — without it the import
+                                // gets a photo-less token forever and an empty album list.
+                                loginOptions={{ auth_type: 'rerequest', return_scopes: true }}
                                 onSuccess={(response) => {
                                     if (response.accessToken) setFbToken(response.accessToken);
                                     else toast.error(t('fbImport.authFailed'));
@@ -429,6 +434,7 @@ const Portfolio: React.FC = () => {
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
                                 scope="instagram_basic,pages_show_list"
+                                loginOptions={{ auth_type: 'rerequest', return_scopes: true }}
                                 onSuccess={(response) => {
                                     if (response.accessToken) setIgAuth({ token: response.accessToken, source: 'facebook' });
                                     else toast.error(t('igImport.authFailed'));
