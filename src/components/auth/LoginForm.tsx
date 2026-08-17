@@ -6,7 +6,11 @@ import Input from '../ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useGoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import FacebookLoginPkg from '@greatsumini/react-facebook-login';
+
+// CJS/ESM interop: Vite may expose the whole module object as the default
+const FacebookLogin =
+  (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
 
 const LoginForm: React.FC = () => {
   const { login, loginWithGoogle, loginWithFacebook, loading, auth } = useAuth();
@@ -22,7 +26,7 @@ const LoginForm: React.FC = () => {
     onError: (error) => console.log('Login Failed:', error)
   });
 
-  const responseFacebook = (response: { accessToken: string }) => {
+  const responseFacebook = (response: { accessToken?: string }) => {
     if (response.accessToken) {
       loginWithFacebook(response.accessToken);
     }
@@ -118,8 +122,8 @@ const LoginForm: React.FC = () => {
         </Button>
         <FacebookLogin
           appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
-          callback={responseFacebook}
-          render={(renderProps: { onClick: () => void }) => (
+          onSuccess={responseFacebook}
+          render={(renderProps: { onClick?: () => void }) => (
             <Button
               type="button"
               onClick={renderProps.onClick}

@@ -3,8 +3,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 import { SignInCard } from '../components/ui/sign-in-card-2';
+
+// CJS/ESM interop: Vite may expose the whole module object as the default
+const FacebookLogin =
+  (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
 import { motion } from 'framer-motion';
 
 const Login: React.FC = () => {
@@ -24,10 +28,10 @@ const Login: React.FC = () => {
   return (
     <FacebookLogin
       appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
-      callback={(response: { accessToken: string }) => {
+      onSuccess={(response: { accessToken?: string }) => {
         if (response.accessToken) loginWithFacebook(response.accessToken);
       }}
-      render={(renderProps: { onClick: () => void }) => (
+      render={(renderProps: { onClick?: () => void }) => (
         <div className="min-h-screen flex flex-col lg:flex-row w-full">
 
           {/* ── Left panel: Lightor hero (desktop only) ── */}

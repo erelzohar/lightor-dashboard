@@ -37,7 +37,7 @@ vi.mock('../../store/slices/webConfigSlice', () => ({
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }));
-vi.mock('react-facebook-login/dist/facebook-login-render-props', () => ({
+vi.mock('@greatsumini/react-facebook-login', () => ({
     default: ({ render }: { render: (p: { onClick: () => void }) => unknown }): unknown =>
         render({ onClick: () => {} }),
 }));

@@ -26,7 +26,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import FacebookLoginPkg from '@greatsumini/react-facebook-login';
+
+// CJS/ESM interop: Vite may expose the whole module object as the default
+const FacebookLogin =
+    (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
 import { uploadImage, importImageFromUrl } from '../services/imagesApi';
 import { exchangeInstagramCode } from '../services/instagramApi';
 import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
@@ -392,14 +396,13 @@ const Portfolio: React.FC = () => {
                         {canAddMore && (
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
-                                autoLoad={false}
                                 scope="user_photos"
-                                callback={(response: unknown) => {
-                                    const token = (response as { accessToken?: string }).accessToken;
-                                    if (token) setFbToken(token);
+                                onSuccess={(response) => {
+                                    if (response.accessToken) setFbToken(response.accessToken);
                                     else toast.error(t('fbImport.authFailed'));
                                 }}
-                                render={(renderProps: { onClick: () => void }) => (
+                                onFail={() => toast.error(t('fbImport.authFailed'))}
+                                render={(renderProps: { onClick?: () => void }) => (
                                     <button
                                         type="button"
                                         onClick={renderProps.onClick}
@@ -425,14 +428,13 @@ const Portfolio: React.FC = () => {
                         ) : (
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
-                                autoLoad={false}
                                 scope="instagram_basic,pages_show_list"
-                                callback={(response: unknown) => {
-                                    const token = (response as { accessToken?: string }).accessToken;
-                                    if (token) setIgAuth({ token, source: 'facebook' });
+                                onSuccess={(response) => {
+                                    if (response.accessToken) setIgAuth({ token: response.accessToken, source: 'facebook' });
                                     else toast.error(t('igImport.authFailed'));
                                 }}
-                                render={(renderProps: { onClick: () => void }) => igTile(renderProps.onClick)}
+                                onFail={() => toast.error(t('igImport.authFailed'))}
+                                render={(renderProps: { onClick?: () => void }) => igTile(() => renderProps.onClick?.())}
                             />
                         ))}
                     </div>
