@@ -87,6 +87,34 @@
     "mustStartWithHttps": "הקישור חייב להתחיל ב־https://"
   },
   "settings": {
+    "googleCalendar": {
+      "title": "סנכרון ל-Google Calendar",
+      "description": "חברו את חשבון Google שלכם וכל קביעת תור, שינוי או ביטול יופיעו ישירות ביומן Google שלכם — אוטומטית.",
+      "connect": "חיבור Google Calendar",
+      "reconnect": "חיבור מחדש של Google Calendar",
+      "disconnect": "ניתוק",
+      "connectedAs": "מסתנכרן אל",
+      "connectedToast": "Google Calendar חובר — התורים שלכם בדרך",
+      "disconnectedToast": "Google Calendar נותק",
+      "disconnectConfirm": "לנתק את Google Calendar? תורים חדשים יפסיקו להופיע שם. אירועים שכבר ביומן יישארו.",
+      "revokedNote": "הגישה בוטלה בצד של Google — חברו מחדש כדי להמשיך בסנכרון.",
+      "errorToast": "משהו השתבש מול Google Calendar — נסו שוב"
+    },
+    "calendar": {
+      "title": "סנכרון ליומן שלך",
+      "description": "הירשמו לקישור הפרטי הזה וכל תור יופיע ביומן שלכם — Apple Calendar, Google Calendar או Outlook — ויתעדכן אוטומטית.",
+      "copy": "העתקה",
+      "copied": "הועתק!",
+      "copyFailed": "לא ניתן להעתיק את הקישור",
+      "regenerate": "קישור חדש",
+      "regenerateConfirm": "ליצור קישור חדש? הקישור הנוכחי יפסיק לעבוד מיד — יהיה צורך להירשם מחדש ביומן.",
+      "regenerated": "נוצר קישור חדש — הירשמו מחדש ביומן שלכם",
+      "regenerateFailed": "לא ניתן ליצור קישור חדש",
+      "loadFailed": "לא ניתן לטעון את קישור היומן",
+      "howApple": "Apple Calendar: קובץ ← מנוי לוח שנה חדש, והדביקו את הקישור.",
+      "howGoogle": "Google Calendar: יומנים נוספים ← + ← מכתובת URL, והדביקו את הקישור.",
+      "privacyNote": "כל מי שיש בידו את הקישור יכול לראות את התורים שלכם. שמרו עליו — אם דלף, צרו קישור חדש."
+    },
     "title": "הגדרות",
     "description": "התאם את ההגדרות של האתר שלך",
     "generalSettings": "הגדרות כלליות",

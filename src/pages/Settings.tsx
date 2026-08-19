@@ -17,6 +17,8 @@ import { useAuth } from '../contexts/AuthContext';
 import globals from '../services/globals';
 import { uploadImage } from '../services/imagesApi';
 import FieldTooltip from '../components/settings/FieldTooltip';
+import CalendarFeedCard from '../components/settings/CalendarFeedCard';
+import GoogleCalendarCard from '../components/settings/GoogleCalendarCard';
 import Select from '../components/ui/Select';
 import { useTranslation } from 'react-i18next';
 
@@ -816,6 +818,11 @@ const Settings: React.FC = () => {
             {renderTabContent()}
           </div>
         </Card>
+      </motion.div>
+
+      <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }} className="mt-6 space-y-6">
+        <GoogleCalendarCard />
+        <CalendarFeedCard />
       </motion.div>
     </motion.div>
   );

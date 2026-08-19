@@ -87,6 +87,34 @@
     "mustStartWithHttps": "Must start with https://"
   },
   "settings": {
+    "googleCalendar": {
+      "title": "Google Calendar sync",
+      "description": "Connect your Google account and every booking, reschedule and cancellation is pushed straight into your Google Calendar — automatically.",
+      "connect": "Connect Google Calendar",
+      "reconnect": "Reconnect Google Calendar",
+      "disconnect": "Disconnect",
+      "connectedAs": "Syncing to",
+      "connectedToast": "Google Calendar connected — your appointments are on their way",
+      "disconnectedToast": "Google Calendar disconnected",
+      "disconnectConfirm": "Disconnect Google Calendar? New appointments will stop appearing there. Events already in your calendar stay.",
+      "revokedNote": "Access was revoked on the Google side — reconnect to resume syncing.",
+      "errorToast": "Something went wrong with Google Calendar — please try again"
+    },
+    "calendar": {
+      "title": "Sync to your calendar",
+      "description": "Subscribe to this private link and every appointment appears in your own calendar app — Apple Calendar, Google Calendar or Outlook — and stays up to date.",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "copyFailed": "Could not copy the link",
+      "regenerate": "New link",
+      "regenerateConfirm": "Create a new link? The current link will stop working immediately — you will need to re-subscribe in your calendar app.",
+      "regenerated": "New link created — re-subscribe in your calendar app",
+      "regenerateFailed": "Could not create a new link",
+      "loadFailed": "Could not load your calendar link",
+      "howApple": "Apple Calendar: File → New Calendar Subscription, then paste the link.",
+      "howGoogle": "Google Calendar: Other calendars → + → From URL, then paste the link.",
+      "privacyNote": "Anyone with this link can see your appointments. Keep it private — if it leaks, create a new link."
+    },
     "title": "Settings",
     "description": "Customize your website settings",
     "generalSettings": "General Settings",

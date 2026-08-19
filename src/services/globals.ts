@@ -10,6 +10,7 @@ abstract class Globals {
     public paddleUrl:string;
     public entitlementsUrl:string;
     public instagramUrl:string;
+    public calendarUrl:string;
 }
 
 class DevelopmentGlobals extends Globals {
@@ -25,6 +26,7 @@ class DevelopmentGlobals extends Globals {
     public paddleUrl = "http://localhost:3000/api/paddle/";
     public entitlementsUrl = "http://localhost:3000/api/entitlements/";
     public instagramUrl = "http://localhost:3000/api/instagram/";
+    public calendarUrl = "http://localhost:3000/api/calendar/";
 }
 
 // class ProductionGlobals extends Globals {
@@ -60,6 +62,7 @@ class ProductionGlobals extends Globals {
     public paddleUrl = "https://api.lightor.app/api/paddle/";
     public entitlementsUrl = "https://api.lightor.app/api/entitlements/";
     public instagramUrl = "https://api.lightor.app/api/instagram/";
+    public calendarUrl = "https://api.lightor.app/api/calendar/";
 }
 // class ProductionGlobals extends Globals {
 //     public appointmentsUrl = "https://api.ez-lines.com/api/appointments/";
