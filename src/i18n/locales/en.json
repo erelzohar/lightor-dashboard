@@ -42,7 +42,8 @@
     "upgradePlanDesc": "You're on the free plan. Upgrading lifts the monthly booking cap and removes the Lightor credit from your site.",
     "upgradePlanBtn": "Upgrade your plan",
     "completeSetupFirst": "Complete your website setup first",
-    "search": "Search"
+    "search": "Search",
+    "adminPanel": "Admin Panel"
   },
   "greetings": {
     "morning": "Good morning",
@@ -58,7 +59,8 @@
     "newAppointment": "New Appointment",
     "newAppointmentMsg": "New appointment scheduled for {{time}}",
     "appointmentCancelled": "Appointment Cancelled",
-    "appointmentCancelledMsg": "Appointment for {{time}} was cancelled"
+    "appointmentCancelledMsg": "Appointment for {{time}} was cancelled",
+    "admin": "Admin"
   },
   "notifications": {
     "newAppointment": "New Appointment",
@@ -559,5 +561,227 @@
   "legal": {
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
+  },
+  "admin": {
+    "nav": {
+      "title": "Admin Panel",
+      "overview": "Overview",
+      "users": "Users",
+      "appointments": "Appointments",
+      "subscriptions": "Subscriptions",
+      "costs": "Costs",
+      "backToDashboard": "Back to my dashboard",
+      "userDetail": "User details"
+    },
+    "table": {
+      "search": "Search…",
+      "empty": "Nothing here yet",
+      "showing": "Showing {{count}} of {{total}}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "errors": {
+      "loadFailed": "Failed to load data",
+      "actionFailed": "The action failed — nothing was changed"
+    },
+    "status": {
+      "active": "Plus",
+      "free": "Free",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "deleted": "Deleted"
+    },
+    "boarding": {
+      "new": "New",
+      "onboarded": "Onboarded",
+      "active": "Active"
+    },
+    "role": {
+      "admin": "Admin",
+      "user": "Owner",
+      "client": "Service"
+    },
+    "flags": {
+      "canceled": "Ends at period end"
+    },
+    "appointmentStatus": {
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "plan": {
+      "free": "Free",
+      "plus": "Plus"
+    },
+    "overview": {
+      "title": "System Overview",
+      "subtitle": "Signups, revenue and activity across every business",
+      "sandboxBadge": "Paddle sandbox",
+      "signupsChart": "Signups — last 30 days",
+      "signups": "Signups",
+      "planMix": "Plan mix",
+      "topBusinesses": "Top businesses by bookings (30 days)",
+      "kpi": {
+        "businesses": "Businesses",
+        "verifiedOfThem": "{{count}} verified",
+        "activeSubs": "Active subscriptions",
+        "ofBusinesses": "of {{count}} businesses",
+        "mrr": "MRR (estimate)",
+        "mrrDetail": "{{monthly}} monthly · {{yearly}} yearly",
+        "appointmentsThisMonth": "Bookings this month",
+        "appointmentsTotal": "{{count}} all-time"
+      },
+      "funnel": {
+        "title": "Conversion funnel",
+        "signedUp": "Signed up",
+        "onboarded": "Onboarded",
+        "verified": "Verified email",
+        "paying": "Paying"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "{{count}} business accounts",
+      "searchPlaceholder": "Search name, email or subdomain…",
+      "columns": {
+        "name": "Business",
+        "site": "Site",
+        "plan": "Plan",
+        "verified": "Verified",
+        "boarding": "Onboarding",
+        "created": "Joined",
+        "lastActivity": "Last activity"
+      },
+      "filters": {
+        "allPlans": "All plans",
+        "allVerification": "Verified & not",
+        "verified": "Verified only",
+        "unverified": "Unverified only"
+      }
+    },
+    "userDetail": {
+      "back": "All users",
+      "identity": {
+        "title": "Account",
+        "verified": "Email",
+        "verifiedYes": "Verified",
+        "verifiedNo": "Not verified",
+        "boarding": "Onboarding",
+        "created": "Joined",
+        "language": "Language",
+        "channel": "Channel",
+        "lastBooked": "Last booking"
+      },
+      "site": {
+        "title": "Public site",
+        "open": "Open site",
+        "none": "No site yet"
+      },
+      "usage": {
+        "title": "Usage this month — {{plan}} plan",
+        "appointments": "Bookings",
+        "services": "Services",
+        "aiGenerations": "AI generations"
+      },
+      "appointments": {
+        "title": "Appointments ({{count}} total)",
+        "viewAll": "View all",
+        "none": "No appointments yet"
+      },
+      "paddle": {
+        "title": "Paddle identifiers",
+        "subscription": "Subscription",
+        "customer": "Customer"
+      }
+    },
+    "actions": {
+      "title": "Operator actions",
+      "cancel": "Cancel",
+      "typeToConfirm": "Type {{text}} to confirm",
+      "verifyHint": "Marks the email verified without the user clicking the link.",
+      "verifyEmail": "Verify email",
+      "verifySuccess": "Email marked verified",
+      "role": "Role",
+      "roleSelfNote": "You cannot change your own role",
+      "saveRole": "Save role",
+      "roleSuccess": "Role updated",
+      "billing": "Billing",
+      "cancelSubscription": "Cancel subscription",
+      "resumeSubscription": "Resume subscription",
+      "noBillingActions": "No active Paddle subscription to act on.",
+      "nextBill": "Next bill: {{date}}",
+      "dangerZone": "Danger zone",
+      "deleteAccount": "Delete account",
+      "cancelConfirm": "Cancel {{name}}'s subscription at the end of the paid period? Their plan keeps running until then. The change is confirmed by Paddle and may take a moment to reflect here.",
+      "resumeConfirm": "Undo the scheduled cancellation for {{name}}? The subscription will keep renewing. Confirmed by Paddle shortly after.",
+      "deleteConfirm": "Permanently delete {{name}}'s account, site and all appointments? Any live subscription is cancelled first. This cannot be undone.",
+      "cancelSuccess": "Cancellation requested — Paddle will confirm shortly",
+      "resumeSuccess": "Resume requested — Paddle will confirm shortly",
+      "deleteSuccess": "Account deleted"
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Every account with a Paddle subscription — money operations live in Paddle",
+      "endingSoon": "ending",
+      "empty": "No subscriptions yet",
+      "columns": {
+        "status": "Status",
+        "nextBill": "Next bill",
+        "paddleId": "Paddle subscription"
+      },
+      "filters": {
+        "all": "All statuses"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "subtitle": "{{count}} appointments across all businesses",
+      "filteredByBusiness": "Filtered to one business — clear",
+      "volumeChart": "Scheduled volume — 2 weeks back and ahead",
+      "scheduledSeries": "Booked",
+      "cancelledSeries": "Cancelled",
+      "empty": "No appointments match",
+      "columns": {
+        "when": "When",
+        "customer": "Customer",
+        "business": "Business",
+        "service": "Service",
+        "status": "Status"
+      },
+      "ranges": {
+        "upcoming": "Upcoming",
+        "past30": "Past 30 days",
+        "all": "All time"
+      },
+      "filters": {
+        "allStatuses": "All statuses"
+      }
+    },
+    "costs": {
+      "title": "Costs & Usage",
+      "subtitle": "Estimated operating spend, metered per provider call",
+      "estimatedBanner": "No metering data for this month (it predates the metering deploy) — SMS spend is estimated from booking volume and the per-plan message heuristic.",
+      "kpi": {
+        "variable": "Variable costs",
+        "variableDetail": "SMS · WhatsApp · email · AI",
+        "fixed": "Fixed costs",
+        "fixedDetail": "Servers, database, domains (estimate)",
+        "total": "Total burn",
+        "totalDetail": "for {{month}}"
+      },
+      "kinds": {
+        "sms": "SMS",
+        "whatsapp": "WhatsApp",
+        "email": "Email",
+        "ai": "AI",
+        "messages": "{{count}} sends",
+        "aiDetail": "{{calls}} calls · {{tokens}} tokens"
+      },
+      "topConsumers": "Top consumers",
+      "noTenantData": "No attributed usage this month",
+      "columns": {
+        "cost": "Cost"
+      }
+    }
   }
 }

@@ -23,7 +23,14 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
       case '/dashboard/settings': return t('common.settings');
       case '/dashboard/portfolio': return t('common.portfolio');
       case '/dashboard/account': return t('common.account');
-      default: return t('common.dashboard');
+      case '/admin': return t('admin.nav.overview');
+      case '/admin/users': return t('admin.nav.users');
+      case '/admin/appointments': return t('admin.nav.appointments');
+      case '/admin/subscriptions': return t('admin.nav.subscriptions');
+      case '/admin/costs': return t('admin.nav.costs');
+      default:
+        if (location.pathname.startsWith('/admin/users/')) return t('admin.nav.userDetail');
+        return t('common.dashboard');
     }
   };
 

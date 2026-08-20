@@ -15,6 +15,7 @@ import {
   Search,
   Moon,
   Sun,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -54,6 +55,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isRestricted =
         { path: '/dashboard/settings', Icon: Settings, name: t('common.settings') },
       ],
     },
+    // Operator-only section (LT-058). Reading role here is display logic —
+    // the API refuses non-admins regardless of what the client renders.
+    ...(auth.user?.role === 'admin'
+      ? [
+          {
+            label: t('sidebar.admin'),
+            items: [
+              { path: '/admin', Icon: ShieldCheck, name: t('common.adminPanel') },
+            ],
+          },
+        ]
+      : []),
   ];
 
   // Collapse icon respects RTL direction

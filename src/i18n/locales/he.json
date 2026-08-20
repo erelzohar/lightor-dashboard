@@ -42,7 +42,8 @@
     "upgradePlanDesc": "אתה בתוכנית החינמית. שדרוג פותח תורים ללא הגבלה ומסיר את הקרדיט של Lightor מהאתר.",
     "upgradePlanBtn": "שדרג תוכנית",
     "completeSetupFirst": "השלם את הגדרת האתר שלך תחילה",
-    "search": "חיפוש"
+    "search": "חיפוש",
+    "adminPanel": "פאנל ניהול"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -58,7 +59,8 @@
     "newAppointment": "תור חדש",
     "newAppointmentMsg": "נקבע תור חדש ל-{{time}}",
     "appointmentCancelled": "ביטול תור",
-    "appointmentCancelledMsg": "התור ל-{{time}} בוטל"
+    "appointmentCancelledMsg": "התור ל-{{time}} בוטל",
+    "admin": "ניהול מערכת"
   },
   "notifications": {
     "newAppointment": "תור חדש",
@@ -559,5 +561,227 @@
   "legal": {
     "terms": "תנאי שימוש",
     "privacy": "מדיניות פרטיות"
+  },
+  "admin": {
+    "nav": {
+      "title": "פאנל ניהול",
+      "overview": "סקירה",
+      "users": "משתמשים",
+      "appointments": "תורים",
+      "subscriptions": "מנויים",
+      "costs": "עלויות",
+      "backToDashboard": "חזרה לדשבורד שלי",
+      "userDetail": "פרטי משתמש"
+    },
+    "table": {
+      "search": "חיפוש…",
+      "empty": "אין כאן כלום עדיין",
+      "showing": "מציג {{count}} מתוך {{total}}",
+      "previousPage": "עמוד קודם",
+      "nextPage": "עמוד הבא"
+    },
+    "errors": {
+      "loadFailed": "טעינת הנתונים נכשלה",
+      "actionFailed": "הפעולה נכשלה — שום דבר לא השתנה"
+    },
+    "status": {
+      "active": "פלוס",
+      "free": "חינם",
+      "past_due": "בפיגור תשלום",
+      "canceled": "בוטל",
+      "deleted": "נמחק"
+    },
+    "boarding": {
+      "new": "חדש",
+      "onboarded": "עבר הקמה",
+      "active": "פעיל"
+    },
+    "role": {
+      "admin": "מנהל מערכת",
+      "user": "בעל עסק",
+      "client": "חשבון שירות"
+    },
+    "flags": {
+      "canceled": "מסתיים בסוף התקופה"
+    },
+    "appointmentStatus": {
+      "scheduled": "מתוכנן",
+      "cancelled": "בוטל",
+      "completed": "הושלם"
+    },
+    "plan": {
+      "free": "חינם",
+      "plus": "פלוס"
+    },
+    "overview": {
+      "title": "סקירת מערכת",
+      "subtitle": "הרשמות, הכנסות ופעילות בכל העסקים",
+      "sandboxBadge": "Paddle סנדבוקס",
+      "signupsChart": "הרשמות — 30 הימים האחרונים",
+      "signups": "הרשמות",
+      "planMix": "התפלגות מסלולים",
+      "topBusinesses": "העסקים המובילים לפי תורים (30 יום)",
+      "kpi": {
+        "businesses": "עסקים",
+        "verifiedOfThem": "{{count}} מאומתים",
+        "activeSubs": "מנויים פעילים",
+        "ofBusinesses": "מתוך {{count}} עסקים",
+        "mrr": "‏MRR (הערכה)",
+        "mrrDetail": "{{monthly}} חודשי · {{yearly}} שנתי",
+        "appointmentsThisMonth": "תורים שנקבעו החודש",
+        "appointmentsTotal": "{{count}} מאז ומעולם"
+      },
+      "funnel": {
+        "title": "משפך המרה",
+        "signedUp": "נרשמו",
+        "onboarded": "עברו הקמה",
+        "verified": "אימתו מייל",
+        "paying": "משלמים"
+      }
+    },
+    "users": {
+      "title": "משתמשים",
+      "subtitle": "{{count}} חשבונות עסקיים",
+      "searchPlaceholder": "חיפוש לפי שם, מייל או סאבדומיין…",
+      "columns": {
+        "name": "עסק",
+        "site": "אתר",
+        "plan": "מסלול",
+        "verified": "מאומת",
+        "boarding": "הקמה",
+        "created": "הצטרף",
+        "lastActivity": "פעילות אחרונה"
+      },
+      "filters": {
+        "allPlans": "כל המסלולים",
+        "allVerification": "מאומתים ולא",
+        "verified": "מאומתים בלבד",
+        "unverified": "לא מאומתים בלבד"
+      }
+    },
+    "userDetail": {
+      "back": "כל המשתמשים",
+      "identity": {
+        "title": "חשבון",
+        "verified": "אימייל",
+        "verifiedYes": "מאומת",
+        "verifiedNo": "לא מאומת",
+        "boarding": "הקמה",
+        "created": "הצטרף",
+        "language": "שפה",
+        "channel": "ערוץ",
+        "lastBooked": "תור אחרון"
+      },
+      "site": {
+        "title": "האתר הציבורי",
+        "open": "פתח אתר",
+        "none": "אין אתר עדיין"
+      },
+      "usage": {
+        "title": "שימוש החודש — מסלול {{plan}}",
+        "appointments": "תורים",
+        "services": "שירותים",
+        "aiGenerations": "יצירות AI"
+      },
+      "appointments": {
+        "title": "תורים ({{count}} סה\"כ)",
+        "viewAll": "הצג הכול",
+        "none": "אין תורים עדיין"
+      },
+      "paddle": {
+        "title": "מזהי Paddle",
+        "subscription": "מנוי",
+        "customer": "לקוח"
+      }
+    },
+    "actions": {
+      "title": "פעולות מנהל",
+      "cancel": "ביטול",
+      "typeToConfirm": "הקלד {{text}} לאישור",
+      "verifyHint": "מסמן את המייל כמאומת בלי שהמשתמש ילחץ על הקישור.",
+      "verifyEmail": "אמת מייל",
+      "verifySuccess": "המייל סומן כמאומת",
+      "role": "תפקיד",
+      "roleSelfNote": "אי אפשר לשנות את התפקיד של עצמך",
+      "saveRole": "שמור תפקיד",
+      "roleSuccess": "התפקיד עודכן",
+      "billing": "חיוב",
+      "cancelSubscription": "בטל מנוי",
+      "resumeSubscription": "חדש מנוי",
+      "noBillingActions": "אין מנוי Paddle פעיל לפעול עליו.",
+      "nextBill": "חיוב הבא: {{date}}",
+      "dangerZone": "אזור מסוכן",
+      "deleteAccount": "מחק חשבון",
+      "cancelConfirm": "לבטל את המנוי של {{name}} בסוף התקופה ששולמה? המסלול ממשיך לרוץ עד אז. השינוי מאושר על ידי Paddle ועשוי לקחת רגע להתעדכן כאן.",
+      "resumeConfirm": "לבטל את הביטול המתוכנן של {{name}}? המנוי ימשיך להתחדש. מאושר על ידי Paddle תוך זמן קצר.",
+      "deleteConfirm": "למחוק לצמיתות את החשבון, האתר וכל התורים של {{name}}? מנוי פעיל מבוטל קודם. אי אפשר לשחזר.",
+      "cancelSuccess": "בקשת הביטול נשלחה — Paddle יאשר בקרוב",
+      "resumeSuccess": "בקשת החידוש נשלחה — Paddle יאשר בקרוב",
+      "deleteSuccess": "החשבון נמחק"
+    },
+    "subscriptions": {
+      "title": "מנויים",
+      "subtitle": "כל חשבון עם מנוי Paddle — פעולות כספיות מתבצעות ב-Paddle",
+      "endingSoon": "מסתיים",
+      "empty": "אין מנויים עדיין",
+      "columns": {
+        "status": "סטטוס",
+        "nextBill": "חיוב הבא",
+        "paddleId": "מנוי Paddle"
+      },
+      "filters": {
+        "all": "כל הסטטוסים"
+      }
+    },
+    "appointments": {
+      "title": "תורים",
+      "subtitle": "{{count}} תורים בכל העסקים",
+      "filteredByBusiness": "מסונן לעסק אחד — נקה",
+      "volumeChart": "נפח תורים — שבועיים אחורה וקדימה",
+      "scheduledSeries": "נקבעו",
+      "cancelledSeries": "בוטלו",
+      "empty": "אין תורים תואמים",
+      "columns": {
+        "when": "מתי",
+        "customer": "לקוח",
+        "business": "עסק",
+        "service": "שירות",
+        "status": "סטטוס"
+      },
+      "ranges": {
+        "upcoming": "קרובים",
+        "past30": "30 הימים האחרונים",
+        "all": "כל הזמן"
+      },
+      "filters": {
+        "allStatuses": "כל הסטטוסים"
+      }
+    },
+    "costs": {
+      "title": "עלויות ושימוש",
+      "subtitle": "הוצאות תפעול משוערות, נמדדות לפי כל קריאת ספק",
+      "estimatedBanner": "אין נתוני מדידה לחודש הזה (הוא קדם לפריסת המדידה) — הוצאות ה-SMS מוערכות לפי נפח התורים והיוריסטיקת ההודעות למסלול.",
+      "kpi": {
+        "variable": "עלויות משתנות",
+        "variableDetail": "SMS · וואטסאפ · מייל · AI",
+        "fixed": "עלויות קבועות",
+        "fixedDetail": "שרתים, מסד נתונים, דומיינים (הערכה)",
+        "total": "הוצאה כוללת",
+        "totalDetail": "עבור {{month}}"
+      },
+      "kinds": {
+        "sms": "SMS",
+        "whatsapp": "וואטסאפ",
+        "email": "אימייל",
+        "ai": "AI",
+        "messages": "{{count}} שליחות",
+        "aiDetail": "{{calls}} קריאות · {{tokens}} טוקנים"
+      },
+      "topConsumers": "הצרכנים הגדולים",
+      "noTenantData": "אין שימוש משויך החודש",
+      "columns": {
+        "cost": "עלות"
+      }
+    }
   }
 }

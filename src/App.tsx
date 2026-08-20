@@ -21,6 +21,14 @@ import AiBuilder from './pages/AiBuilder';
 // Components
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminOverview from './pages/admin/AdminOverview';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminUserDetail from './pages/admin/AdminUserDetail';
+import AdminAppointments from './pages/admin/AdminAppointments';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
+import AdminCosts from './pages/admin/AdminCosts';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
@@ -54,6 +62,14 @@ function App() {
                     <Route path="account" element={<Account />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="ai" element={<AiBuilder />} />
+                  </Route>
+                  <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                    <Route index element={<AdminOverview />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="users/:id" element={<AdminUserDetail />} />
+                    <Route path="appointments" element={<AdminAppointments />} />
+                    <Route path="subscriptions" element={<AdminSubscriptions />} />
+                    <Route path="costs" element={<AdminCosts />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

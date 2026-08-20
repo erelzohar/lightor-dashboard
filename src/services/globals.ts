@@ -11,22 +11,30 @@ abstract class Globals {
     public entitlementsUrl:string;
     public instagramUrl:string;
     public calendarUrl:string;
+    public adminUrl:string;
 }
 
+// Overridable so a local dashboard can target a backend on a non-default
+// port (e.g. when :3000 is taken by another checkout). Dev-only: the
+// production class below stays hardcoded on purpose (the LT-027 lesson —
+// an env leaking into prod bounced local runs into production).
+const DEV_API_BASE = import.meta.env?.VITE_API_BASE || "http://localhost:3000";
+
 class DevelopmentGlobals extends Globals {
-    public appointmentsUrl = "http://localhost:3000/api/appointments/";
-    public webConfigsUrl = "http://localhost:3000/api/web-configs/";
-    public vacationsUrl = "http://localhost:3000/api/vacations/";
-    public messagingUrl = "http://localhost:3000/api/messaging/";
-    public usersUrl = "http://localhost:3000/api/users/";
-    public typesUrl = "http://localhost:3000/api/appointment-types/";
-    public authUrl = "http://localhost:3000/api/auth/";
-    public imagesUrl = "http://localhost:3000/api/images/";
-    public aiUrl = "http://localhost:3000/api/ai/";
-    public paddleUrl = "http://localhost:3000/api/paddle/";
-    public entitlementsUrl = "http://localhost:3000/api/entitlements/";
-    public instagramUrl = "http://localhost:3000/api/instagram/";
-    public calendarUrl = "http://localhost:3000/api/calendar/";
+    public appointmentsUrl = `${DEV_API_BASE}/api/appointments/`;
+    public webConfigsUrl = `${DEV_API_BASE}/api/web-configs/`;
+    public vacationsUrl = `${DEV_API_BASE}/api/vacations/`;
+    public messagingUrl = `${DEV_API_BASE}/api/messaging/`;
+    public usersUrl = `${DEV_API_BASE}/api/users/`;
+    public typesUrl = `${DEV_API_BASE}/api/appointment-types/`;
+    public authUrl = `${DEV_API_BASE}/api/auth/`;
+    public imagesUrl = `${DEV_API_BASE}/api/images/`;
+    public aiUrl = `${DEV_API_BASE}/api/ai/`;
+    public paddleUrl = `${DEV_API_BASE}/api/paddle/`;
+    public entitlementsUrl = `${DEV_API_BASE}/api/entitlements/`;
+    public instagramUrl = `${DEV_API_BASE}/api/instagram/`;
+    public calendarUrl = `${DEV_API_BASE}/api/calendar/`;
+    public adminUrl = `${DEV_API_BASE}/api/admin/`;
 }
 
 // class ProductionGlobals extends Globals {
@@ -63,6 +71,7 @@ class ProductionGlobals extends Globals {
     public entitlementsUrl = "https://api.lightor.app/api/entitlements/";
     public instagramUrl = "https://api.lightor.app/api/instagram/";
     public calendarUrl = "https://api.lightor.app/api/calendar/";
+    public adminUrl = "https://api.lightor.app/api/admin/";
 }
 // class ProductionGlobals extends Globals {
 //     public appointmentsUrl = "https://api.ez-lines.com/api/appointments/";
