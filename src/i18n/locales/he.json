@@ -377,6 +377,7 @@
     "invalidBreakOrder": "סיום ההפסקה חייב להיות אחרי תחילתה",
     "breakOutsideHours": "ההפסקה חייבת להיות בתוך שעות העבודה",
     "fixErrorsBeforeSave": "יש לתקן את השגיאות לפני השמירה",
+    "unsavedChanges": "יש לך שינויים שלא נשמרו",
     "maxDateOverrides": "ניתן להגדיר עד 50 תאריכים מיוחדים",
     "duplicateDate": "כבר הוגדרו שעות מיוחדות לתאריך זה",
     "selectDate": "יש לבחור תאריך",

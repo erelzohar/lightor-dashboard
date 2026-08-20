@@ -377,6 +377,7 @@
     "invalidBreakOrder": "Break end must be after the break start",
     "breakOutsideHours": "The break must be within the working hours",
     "fixErrorsBeforeSave": "Please fix the errors before saving",
+    "unsavedChanges": "You have unsaved changes",
     "maxDateOverrides": "Up to 50 special dates can be set",
     "duplicateDate": "This date already has special hours",
     "selectDate": "Please choose a date",

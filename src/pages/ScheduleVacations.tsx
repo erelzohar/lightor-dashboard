@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Save, RefreshCcw, Calendar, Plus, Trash2, Edit3,
@@ -637,35 +638,52 @@ const ScheduleVacations: React.FC = () => {
             )}
           </div>
 
-          {/* Save / Discard footer */}
-          <div className="pt-6 border-t border-black/10 dark:border-white/5">
-            {hasValidationErrors && (
-              <p className={`text-xs text-red-500 font-medium mb-3 ${isRtl ? 'text-start' : 'text-end'}`}>
-                {t('scheduleVacations.fixErrorsBeforeSave')}
-              </p>
-            )}
-            <div className={`flex gap-3 ${isRtl ? 'justify-start' : 'justify-end'}`}>
-              <button
-                onClick={handleDiscard}
-                disabled={!changesDetected}
-                className="px-6 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !changesDetected || hasValidationErrors}
-                className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSaving
-                  ? <RefreshCcw size={14} className="animate-spin" />
-                  : <Save size={14} />
-                }
-                {t('common.save')}
-              </button>
-            </div>
-          </div>
         </div>
+
+        {/* Floating unsaved-changes bar — portaled to <body> so the page's
+            entrance-animation transforms can't re-anchor position:fixed. */}
+        {createPortal(
+          <AnimatePresence>
+            {changesDetected && (
+              <motion.div
+                initial={{ y: 96, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 96, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                className="fixed bottom-5 inset-x-0 z-50 flex justify-center px-4 pointer-events-none"
+                dir={isRtl ? 'rtl' : 'ltr'}
+              >
+                <div className="pointer-events-auto flex items-center gap-4 rounded-2xl px-5 py-3 bg-light-surface/90 dark:bg-dark-surface/90 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20">
+                  <p className="text-sm font-semibold text-light-text dark:text-dark-text whitespace-nowrap">
+                    {hasValidationErrors
+                      ? <span className="text-red-500">{t('scheduleVacations.fixErrorsBeforeSave')}</span>
+                      : t('scheduleVacations.unsavedChanges')}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDiscard}
+                      className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={isSaving || hasValidationErrors}
+                      className="px-5 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSaving
+                        ? <RefreshCcw size={14} className="animate-spin" />
+                        : <Save size={14} />
+                      }
+                      {t('common.save')}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
         {/* ── Vacations Panel ── */}
         <div className="xl:col-span-5 flex flex-col gap-6">
