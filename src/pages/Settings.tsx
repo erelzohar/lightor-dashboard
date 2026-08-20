@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check } from 'lucide-react';
+import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
 import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import WebConfigTabs from '../components/settings/WebConfigTabs';
 import toast from 'react-hot-toast';
@@ -76,27 +75,7 @@ const Settings: React.FC = () => {
     return settingsChanged;
   };
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const [isStuck, setIsStuck] = useState(false);
   const changesDetected = hasChanges();
-
-  useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (!mainElement) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsStuck(!entry.isIntersecting);
-      },
-      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
-    );
-
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [changesDetected]);
 
   useEffect(() => {
     document.title = t('settings.title');
@@ -301,27 +280,6 @@ const Settings: React.FC = () => {
     <div className="flex items-center gap-2 pb-2 mb-4">
       <Icon className="text-primary w-5 h-5" />
       <h3 className="font-semibold text-lg text-gray-800 dark:text-white">{title}</h3>
-    </div>
-  );
-
-  const UnsavedBar = () => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <AlertCircle size={16} className="text-orange-600 dark:text-orange-400" />
-        <span className="text-sm text-orange-700 dark:text-orange-300 font-medium whitespace-nowrap">
-          {t('common.unsavedChanges')}
-        </span>
-      </div>
-      <Button
-        onClick={handleSave}
-        rightIcon={<Save size={18} />}
-        isLoading={isSaving || isCheckingSubdomain}
-        disabled={isSaving || isCheckingSubdomain || !!subdomainError}
-        size="sm"
-        className="ms-4"
-      >
-        {t('common.save')}
-      </Button>
     </div>
   );
 
@@ -766,49 +724,15 @@ const Settings: React.FC = () => {
           </p>
         </div>
 
-        {/* Desktop Save Bar */}
-        <div className="hidden md:block">
-          <AnimatePresence>
-            {changesDetected && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-3 flex items-center gap-4"
-              >
-                <UnsavedBar />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
 
-      {/* Mobile Sticky Save Bar Container */}
-      <div className="md:hidden relative z-[40]">
-        <div ref={sentinelRef} className="absolute w-full h-px invisible" />
-        <AnimatePresence>
-          {changesDetected && !isStuck && (
-            <motion.div
-              layout
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="relative z-50 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 rounded-xl p-3">
-                <UnsavedBar />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {changesDetected && isStuck && typeof document !== 'undefined' && createPortal(
-          <div className="md:hidden fixed top-0 left-0 right-0 z-[40] bg-white/95 dark:bg-dark-bg backdrop-blur-md shadow-md border-b border-orange-200 dark:border-orange-900/50 px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <UnsavedBar />
-          </div>,
-          document.body
-        )}
-      </div>
+      {/* Floating unsaved-changes bar (shared with Schedule & Vacations). */}
+      <UnsavedChangesBar
+        visible={!!changesDetected}
+        onSave={handleSave}
+        saving={isSaving || isCheckingSubdomain}
+        errorMessage={subdomainError}
+      />
 
       <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }}>
         <Card className='shadow-xl'>
