@@ -177,19 +177,22 @@ const AiBuilder: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      let newConfig: AiSiteConfig;
-      if (draftConfig?.businessName) {
-        newConfig = await aiService.editSite(prompt, draftConfig, logoFile);
-      } else {
-        newConfig = await aiService.generateSite(prompt, logoFile);
-      }
+      const result = draftConfig?.businessName
+        ? await aiService.editSite(prompt, draftConfig, logoFile)
+        : await aiService.generateSite(prompt, logoFile);
+      const newConfig = result.config;
 
       setDraftConfig(newConfig);
       setGeneratedThisSession(true);
       setLogoFile(null);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: t('aiBuilder.generatedMessage', { name: newConfig.businessName }) },
+        {
+          role: 'assistant',
+          // LT-052: the model writes its own reply, grounded in what it built.
+          // Canned line stays as the fallback for older responses.
+          content: result.message || t('aiBuilder.generatedMessage', { name: newConfig.businessName }),
+        },
       ]);
       if (activeTab === 'chat') setActiveTab('preview');
     } catch {

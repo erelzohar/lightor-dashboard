@@ -18,6 +18,14 @@ export interface AiSiteConfig {
   [k: string]: unknown;
 }
 
+// LT-052: the backend now lifts the model's conversational reply out of the
+// config and returns it alongside. Optional — older responses and degraded
+// model outputs simply omit it, and callers fall back to their canned line.
+export interface AiChatResult {
+  config: AiSiteConfig;
+  message?: string;
+}
+
 const SOCIAL_DEFAULTS: Record<string, string> = {
   instagram: 'https://instagram.com',
   facebook: 'https://facebook.com',
@@ -52,7 +60,7 @@ function getAuthHeaders() {
 const MAX_RETRIES = 3;
 
 export const aiService = {
-  generateSite: async (prompt: string, logoFile: File | null): Promise<AiSiteConfig> => {
+  generateSite: async (prompt: string, logoFile: File | null): Promise<AiChatResult> => {
     const formData = new FormData();
     formData.append('message', prompt);
     if (logoFile) formData.append('logo', logoFile);
@@ -61,7 +69,7 @@ export const aiService = {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const response = await axios.post<{ success: boolean; data: AiSiteConfig }>(
+        const response = await axios.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
           `${globals.aiUrl}onboarding`,
           formData,
           {
@@ -93,7 +101,7 @@ export const aiService = {
           }
         }
 
-        return config;
+        return { config, message: response.data.message };
       } catch (err) {
         const status = (err as AxiosError)?.response?.status;
         if (status === 500 && attempt < MAX_RETRIES) {
@@ -107,7 +115,7 @@ export const aiService = {
     throw lastError;
   },
 
-  editSite: async (prompt: string, webConfig: AiSiteConfig, logoFile: File | null): Promise<AiSiteConfig> => {
+  editSite: async (prompt: string, webConfig: AiSiteConfig, logoFile: File | null): Promise<AiChatResult> => {
     const formData = new FormData();
     formData.append('message', prompt);
     formData.append('webConfig', JSON.stringify(webConfig));
@@ -117,7 +125,7 @@ export const aiService = {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const response = await axios.post<{ success: boolean; data: AiSiteConfig }>(
+        const response = await axios.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
           `${globals.aiUrl}edit`,
           formData,
           {
@@ -149,7 +157,7 @@ export const aiService = {
           }
         }
 
-        return config;
+        return { config, message: response.data.message };
       } catch (err) {
         const status = (err as AxiosError)?.response?.status;
         if (status === 500 && attempt < MAX_RETRIES) {
