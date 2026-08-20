@@ -13,21 +13,45 @@ export const formatDateTime = (date: Date | number, language: string = 'he'): st
   return format(date, 'PPP HH:mm', { locale: language === 'he' ? he : enUS });
 };
 
-export const parseTimeRange = (rangeString: string | null): { start: string; end: string } | null => {
+export interface TimeInterval {
+  start: string;
+  end: string;
+}
+
+export interface ParsedTimeRange extends TimeInterval {
+  /**
+   * Every "HH:MM-HH:MM" interval of the day, in order. A single-interval day
+   * has one entry; a day with a break has two (the gap is the break). `start`
+   * and `end` above are the overall span: first interval's start, last
+   * interval's end.
+   */
+  intervals: TimeInterval[];
+}
+
+export const parseTimeRange = (rangeString: string | null): ParsedTimeRange | null => {
   if (!rangeString) return null;
-  
-  const [start, end] = rangeString.split('-');
-  
-  return { start, end };
+
+  const intervals: TimeInterval[] = [];
+  for (const range of rangeString.split(',')) {
+    const [start, end] = range.split('-');
+    if (!start || !end) return null;
+    intervals.push({ start: start.trim(), end: end.trim() });
+  }
+
+  return {
+    start: intervals[0].start,
+    end: intervals[intervals.length - 1].end,
+    intervals,
+  };
 };
 
-export const parseWorkingHours = (workingDays: (string | null)[]): { [key: number]: { start: string; end: string } | null } => {
-  const result: { [key: number]: { start: string; end: string } | null } = {};
-  
+export const parseWorkingHours = (workingDays: (string | null)[]): { [key: number]: ParsedTimeRange | null } => {
+  const result: { [key: number]: ParsedTimeRange | null } = {};
+
   workingDays.forEach((day, index) => {
     result[index] = parseTimeRange(day);
   });
-  
+
   return result;
 };
 

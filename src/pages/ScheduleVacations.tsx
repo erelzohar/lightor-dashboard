@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Save, RefreshCcw, Calendar, Plus, Trash2, Edit3,
-  CalendarClock, Info,
+  CalendarClock, Info, Coffee, X,
 } from 'lucide-react';
-import { WebConfig } from '../types';
+import { DateOverride, WebConfig } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
@@ -20,10 +20,102 @@ import { Vacation } from '../types';
 import { createVacation, deleteVacation, updateVacation } from '../store/slices/vacationsSlice';
 import { useTranslation } from 'react-i18next';
 
-interface WorkingHours {
+interface DayHours {
   startTime: string;
   endTime: string;
+  /** Break window; both present when the day has a break, both absent otherwise. */
+  breakStart?: string;
+  breakEnd?: string;
 }
+
+type ParsedDay =
+  | { kind: 'simple'; hours: DayHours }
+  | { kind: 'complex'; ranges: string[] };
+
+/**
+ * Lenient editing-oriented parse of a day's serialized hours. One interval =
+ * plain hours, two intervals = hours + break (the gap). Three or more
+ * intervals can't be produced by this UI — they render read-only so the data
+ * survives untouched. Incomplete values (a cleared time input mid-edit) keep
+ * their empty parts so the inputs stay editable; validateDayHours flags them.
+ */
+const parseDayHours = (value: string): ParsedDay => {
+  const parts = value.split(',');
+  if (parts.length >= 3) return { kind: 'complex', ranges: parts.map(p => p.trim()) };
+
+  const [start = '', firstEnd = ''] = parts[0].split('-').map(p => p.trim());
+  if (parts.length === 2) {
+    const [secondStart = '', end = ''] = parts[1].split('-').map(p => p.trim());
+    return {
+      kind: 'simple',
+      hours: { startTime: start, endTime: end, breakStart: firstEnd, breakEnd: secondStart },
+    };
+  }
+  return { kind: 'simple', hours: { startTime: start, endTime: firstEnd } };
+};
+
+/** "start-end", or "start-breakStart,breakEnd-end" when a break is set. */
+const serializeDayHours = (hours: DayHours): string =>
+  hours.breakStart !== undefined || hours.breakEnd !== undefined
+    ? `${hours.startTime}-${hours.breakStart ?? ''},${hours.breakEnd ?? ''}-${hours.endTime}`
+    : `${hours.startTime}-${hours.endTime}`;
+
+const toMinutes = (time: string): number => {
+  const [hh, mm] = time.split(':').map(Number);
+  return hh * 60 + mm;
+};
+
+const toTimeString = (minutes: number): string =>
+  `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+
+/** Default break centred in the day's hours; null when there is no room for one. */
+const suggestBreak = (hours: DayHours): { breakStart: string; breakEnd: string } | null => {
+  if (!hours.startTime || !hours.endTime) return null;
+  const start = toMinutes(hours.startTime);
+  const end = toMinutes(hours.endTime);
+  if (Number.isNaN(start) || Number.isNaN(end) || end - start < 45) return null;
+
+  const length = end - start >= 180 ? 60 : 15;
+  let breakStart = start + Math.round((end - start - length) / 2 / 15) * 15;
+  if (breakStart <= start) breakStart = start + 15;
+  let breakEnd = breakStart + length;
+  if (breakEnd >= end) {
+    breakEnd = end - 15;
+    breakStart = Math.max(start + 15, breakEnd - length);
+  }
+  if (breakStart >= breakEnd) return null;
+  return { breakStart: toTimeString(breakStart), breakEnd: toTimeString(breakEnd) };
+};
+
+/**
+ * Returns an i18n key suffix (under scheduleVacations) describing what is
+ * wrong with a day's hours, or null when they are valid. Serialization is
+ * valid exactly when start < breakStart < breakEnd < end (sorted,
+ * non-overlapping ranges — what the backend enforces).
+ */
+const validateDayHours = (value: string | null): string | null => {
+  if (value === null) return null;
+  const parsed = parseDayHours(value);
+  if (parsed.kind === 'complex') return null;
+
+  const { startTime, endTime, breakStart, breakEnd } = parsed.hours;
+  const hasBreak = breakStart !== undefined || breakEnd !== undefined;
+  if (!startTime || !endTime || (hasBreak && (!breakStart || !breakEnd))) return 'fillRequired';
+  if (toMinutes(endTime) <= toMinutes(startTime)) return 'invalidDayHours';
+  if (hasBreak) {
+    if (toMinutes(breakEnd!) <= toMinutes(breakStart!)) return 'invalidBreakOrder';
+    if (toMinutes(breakStart!) <= toMinutes(startTime) || toMinutes(breakEnd!) >= toMinutes(endTime)) {
+      return 'breakOutsideHours';
+    }
+  }
+  return null;
+};
+
+/** Weekday index (0 = Sunday, matching workingDays) of a local "YYYY-MM-DD". */
+const weekdayOf = (dateString: string): number => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day).getDay();
+};
 
 const getActiveDayStyle = (darkMode: boolean) => ({
   background: darkMode
@@ -40,6 +132,8 @@ const ScheduleVacations: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [vacations, setVacations] = useState<Vacation[]>([]);
   const [isAddingVacation, setIsAddingVacation] = useState(false);
+  const [isAddingOverride, setIsAddingOverride] = useState(false);
+  const [newOverrideDate, setNewOverrideDate] = useState('');
   const [editingVacation, setEditingVacation] = useState<string | null>(null);
   const [isEditingVacation, setIsEditingVacation] = useState<boolean>(false);
   const [newVacation, setNewVacation] = useState<Vacation>({
@@ -70,27 +164,40 @@ const ScheduleVacations: React.FC = () => {
     }
   }, [auth, dispatch, webConfig]);
 
-  const parseWorkingHours = (workingHoursString: string | null): WorkingHours | null => {
-    if (!workingHoursString) return null;
-    const [startTime, endTime] = workingHoursString.split('-');
-    if (!startTime || !endTime) return null;
-    return { startTime: startTime.trim(), endTime: endTime.trim() };
-  };
-
-  const formatWorkingHours = (startTime: string, endTime: string): string => `${startTime}-${endTime}`;
+  // Absent on configs saved before dateOverrides existed — treat as [].
+  const dateOverrides = webConfigLocalState?.dateOverrides ?? [];
+  const sortedOverrides = [...dateOverrides].sort((a, b) => a.date.localeCompare(b.date));
+  const todayString = new Date().toLocaleDateString('sv-SE');
 
   const hasChanges = () => {
     if (!webConfigLocalState || !originalConfig) return false;
-    return JSON.stringify(webConfigLocalState.workingDays) !== JSON.stringify(originalConfig.workingDays);
+    return (
+      JSON.stringify(webConfigLocalState.workingDays) !== JSON.stringify(originalConfig.workingDays) ||
+      JSON.stringify(webConfigLocalState.dateOverrides ?? []) !== JSON.stringify(originalConfig.dateOverrides ?? [])
+    );
   };
 
   const changesDetected = hasChanges();
 
+  const workingDayErrors = (webConfigLocalState?.workingDays ?? []).map(validateDayHours);
+  const overrideErrors: Record<string, string | null> = {};
+  dateOverrides.forEach(override => { overrideErrors[override.date] = validateDayHours(override.hours); });
+  const hasValidationErrors =
+    workingDayErrors.some(Boolean) || Object.values(overrideErrors).some(Boolean);
+
   const handleSave = async () => {
     if (!webConfigLocalState) return;
+    if (hasValidationErrors) {
+      toast.error(t('scheduleVacations.fixErrorsBeforeSave'));
+      return;
+    }
     setIsSaving(true);
     try {
-      await dispatch(updateWebConfig({ _id: webConfigLocalState._id, workingDays: webConfigLocalState.workingDays }));
+      await dispatch(updateWebConfig({
+        _id: webConfigLocalState._id,
+        workingDays: webConfigLocalState.workingDays,
+        dateOverrides: webConfigLocalState.dateOverrides ?? [],
+      }));
       setOriginalConfig(JSON.parse(JSON.stringify(webConfigLocalState)));
       toast.success(t('scheduleVacations.saveSuccess'));
     } catch (error) {
@@ -121,13 +228,58 @@ const ScheduleVacations: React.FC = () => {
     handleChange('root', 'workingDays', newWorkingDays);
   };
 
-  const handleWorkingTimeChange = (dayIndex: number, timeType: 'start' | 'end', value: string) => {
+  const handleDayHoursChange = (dayIndex: number, value: string) => {
     const newWorkingDays = [...webConfigLocalState!.workingDays];
-    const currentHours = parseWorkingHours(newWorkingDays[dayIndex]);
-    if (!currentHours) return;
-    const updatedHours = { ...currentHours, [timeType === 'start' ? 'startTime' : 'endTime']: value };
-    newWorkingDays[dayIndex] = formatWorkingHours(updatedHours.startTime, updatedHours.endTime);
+    newWorkingDays[dayIndex] = value;
     handleChange('root', 'workingDays', newWorkingDays);
+  };
+
+  const setOverrides = (overrides: DateOverride[]) => {
+    handleChange('root', 'dateOverrides', [...overrides].sort((a, b) => a.date.localeCompare(b.date)));
+  };
+
+  const handleAddOverride = () => {
+    if (!newOverrideDate) {
+      toast.error(t('scheduleVacations.selectDate'));
+      return;
+    }
+    if (newOverrideDate < todayString) {
+      toast.error(t('scheduleVacations.pastDate'));
+      return;
+    }
+    if (dateOverrides.some(override => override.date === newOverrideDate)) {
+      toast.error(t('scheduleVacations.duplicateDate'));
+      return;
+    }
+    if (dateOverrides.length >= 50) {
+      toast.error(t('scheduleVacations.maxDateOverrides'));
+      return;
+    }
+    // Start from that weekday's regular hours; the owner tweaks from there.
+    const weekdayHours = webConfigLocalState!.workingDays[weekdayOf(newOverrideDate)] ?? null;
+    setOverrides([...dateOverrides, { date: newOverrideDate, hours: weekdayHours }]);
+    setNewOverrideDate('');
+    setIsAddingOverride(false);
+  };
+
+  const handleOverrideToggle = (date: string, open: boolean) => {
+    setOverrides(dateOverrides.map(override => override.date === date
+      ? { ...override, hours: open ? (webConfigLocalState!.workingDays[weekdayOf(date)] ?? '09:00-17:00') : null }
+      : override));
+  };
+
+  const handleOverrideHoursChange = (date: string, value: string) => {
+    setOverrides(dateOverrides.map(override =>
+      override.date === date ? { ...override, hours: value } : override));
+  };
+
+  const handleDeleteOverride = (date: string) => {
+    setOverrides(dateOverrides.filter(override => override.date !== date));
+  };
+
+  const formatOverrideDate = (dateString: string): string => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return format(new Date(year, month - 1, day), 'EEEE, PPP', { locale });
   };
 
   const handleAddVacation = async () => {
@@ -270,8 +422,9 @@ const ScheduleVacations: React.FC = () => {
 
           <div className="space-y-3">
             {dayNames.map((day, index) => {
-              const isWorking = webConfigLocalState.workingDays[index] !== null;
-              const workingHours = parseWorkingHours(webConfigLocalState.workingDays[index]);
+              const dayValue = webConfigLocalState.workingDays[index];
+              const isWorking = dayValue !== null;
+              const parsedDay = isWorking ? parseDayHours(dayValue) : null;
 
               if (!isWorking) {
                 return (
@@ -298,6 +451,26 @@ const ScheduleVacations: React.FC = () => {
                 );
               }
 
+              // Multi-range days (3+ intervals) can't be edited with the
+              // hours + break inputs — show them read-only so nothing is lost.
+              if (parsedDay!.kind === 'complex') {
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.04 * index }}
+                    className="flex flex-col items-center md:flex-row md:items-center md:justify-between p-5 rounded-2xl gap-4"
+                    style={getActiveDayStyle(darkMode)}
+                  >
+                    <span className="font-bold w-24 text-primary text-sm text-center md:text-start">
+                      {day}
+                    </span>
+                    <ComplexHoursView ranges={parsedDay!.ranges} />
+                  </motion.div>
+                );
+              }
+
               return (
                 <motion.div
                   key={index}
@@ -317,66 +490,178 @@ const ScheduleVacations: React.FC = () => {
                     />
                   </div>
 
-                  {/* time inputs — container follows page direction (RTL: start right, end left)
-                      each pill is forced LTR so the clock icon and HH:MM value stay readable */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
-                        {t('scheduleVacations.start')}
-                      </span>
-                      <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
-                        <input
-                          type="time"
-                          dir="ltr"
-                          value={workingHours?.startTime || ''}
-                          onChange={(e) => handleWorkingTimeChange(index, 'start', e.target.value)}
-                          className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="h-px w-3 bg-black/20 dark:bg-white/20 mt-4 flex-shrink-0" />
-
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
-                        {t('scheduleVacations.end')}
-                      </span>
-                      <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
-                        <input
-                          type="time"
-                          dir="ltr"
-                          value={workingHours?.endTime || ''}
-                          onChange={(e) => handleWorkingTimeChange(index, 'end', e.target.value)}
-                          className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <HoursEditor
+                    value={dayValue as string}
+                    onChange={(value) => handleDayHoursChange(index, value)}
+                    error={workingDayErrors[index]}
+                  />
                 </motion.div>
               );
             })}
           </div>
 
+          {/* ── Special hours (per-date overrides) ── */}
+          <div className="pt-6 border-t border-black/10 dark:border-white/5 flex flex-col gap-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text tracking-tight">
+                  {t('scheduleVacations.specialHours')}
+                </h3>
+                <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
+                  {t('scheduleVacations.specialHoursDesc')}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAddingOverride(prev => !prev)}
+                title={t('scheduleVacations.addDate')}
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
+                  isAddingOverride
+                    ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
+                    : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
+                }`}
+              >
+                <motion.div
+                  animate={{ rotate: isAddingOverride ? 45 : 0 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                >
+                  <Plus size={20} />
+                </motion.div>
+              </button>
+            </div>
+
+            {/* Add date form */}
+            <AnimatePresence>
+              {isAddingOverride && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                  exit={{ opacity: 0, height: 0, scale: 0.97 }}
+                  transition={{
+                    height: { type: 'spring', stiffness: 320, damping: 30 },
+                    opacity: { duration: 0.22 },
+                    scale: { type: 'spring', stiffness: 380, damping: 26 },
+                  }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
+                    <h4 className="font-semibold text-sm text-light-text dark:text-dark-text mb-5">
+                      {t('scheduleVacations.addDate')}
+                    </h4>
+                    <div className="space-y-4">
+                      <Input
+                        label={t('scheduleVacations.dateLabel')}
+                        type="date"
+                        fullWidth={false}
+                        className="w-5/6 self-auto"
+                        value={newOverrideDate}
+                        min={todayString}
+                        onChange={(e) => setNewOverrideDate(e.target.value)}
+                      />
+                      <div className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}>
+                        <Button variant="secondary" size="sm" onClick={() => { setIsAddingOverride(false); setNewOverrideDate(''); }}>
+                          {t('common.cancel')}
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleAddOverride}>
+                          {t('common.add')}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {sortedOverrides.length === 0 && !isAddingOverride ? (
+              <p className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
+                {t('scheduleVacations.noSpecialHours')}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {sortedOverrides.map((override, index) => {
+                  const isOpen = override.hours !== null;
+                  const parsedOverride = isOpen ? parseDayHours(override.hours as string) : null;
+
+                  return (
+                    <motion.div
+                      key={override.date}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.03 * index }}
+                      className={`flex flex-col p-5 rounded-2xl gap-4 ${
+                        isOpen ? '' : 'bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5'
+                      }`}
+                      style={isOpen ? getActiveDayStyle(darkMode) : undefined}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-5 min-w-0">
+                          <span className={`font-bold text-sm truncate ${isOpen ? 'text-primary' : 'text-light-gray dark:text-dark-gray'}`}>
+                            {formatOverrideDate(override.date)}
+                          </span>
+                          {parsedOverride?.kind !== 'complex' && (
+                            <ToggleSwitch
+                              checked={isOpen}
+                              onChange={(checked) => handleOverrideToggle(override.date, checked)}
+                            />
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteOverride(override.date)}
+                          className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors flex-shrink-0"
+                          title={t('common.delete')}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+
+                      {!isOpen ? (
+                        <span className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
+                          {t('scheduleVacations.closedOnDate')}
+                        </span>
+                      ) : parsedOverride!.kind === 'complex' ? (
+                        <ComplexHoursView ranges={parsedOverride!.ranges} />
+                      ) : (
+                        <div className="flex justify-center md:justify-end">
+                          <HoursEditor
+                            value={override.hours as string}
+                            onChange={(value) => handleOverrideHoursChange(override.date, value)}
+                            error={overrideErrors[override.date]}
+                          />
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Save / Discard footer */}
-          <div className={`pt-6 border-t border-black/10 dark:border-white/5 flex gap-3 ${isRtl ? 'justify-start' : 'justify-end'}`}>
-            <button
-              onClick={handleDiscard}
-              disabled={!changesDetected}
-              className="px-6 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !changesDetected}
-              className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isSaving
-                ? <RefreshCcw size={14} className="animate-spin" />
-                : <Save size={14} />
-              }
-              {t('common.save')}
-            </button>
+          <div className="pt-6 border-t border-black/10 dark:border-white/5">
+            {hasValidationErrors && (
+              <p className={`text-xs text-red-500 font-medium mb-3 ${isRtl ? 'text-start' : 'text-end'}`}>
+                {t('scheduleVacations.fixErrorsBeforeSave')}
+              </p>
+            )}
+            <div className={`flex gap-3 ${isRtl ? 'justify-start' : 'justify-end'}`}>
+              <button
+                onClick={handleDiscard}
+                disabled={!changesDetected}
+                className="px-6 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving || !changesDetected || hasValidationErrors}
+                className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSaving
+                  ? <RefreshCcw size={14} className="animate-spin" />
+                  : <Save size={14} />
+                }
+                {t('common.save')}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -584,6 +869,133 @@ const ScheduleVacations: React.FC = () => {
 
       </div>
     </motion.div>
+  );
+};
+
+interface TimeFieldProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+// Pill is forced LTR so the HH:MM value stays readable in RTL layouts.
+const TimeField: React.FC<TimeFieldProps> = ({ label, value, onChange }) => (
+  <div className="flex flex-col gap-1">
+    <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
+      {label}
+    </span>
+    <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
+      <input
+        type="time"
+        dir="ltr"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-transparent text-sm font-semibold text-light-text dark:text-dark-text outline-none w-[4.5rem]"
+      />
+    </div>
+  </div>
+);
+
+interface HoursEditorProps {
+  /** Serialized non-null hours: "start-end" or "start-breakStart,breakEnd-end". */
+  value: string;
+  onChange: (value: string) => void;
+  /** i18n key suffix under scheduleVacations, or null when the hours are valid. */
+  error: string | null;
+}
+
+/**
+ * Start/end time pills plus the optional daily break. The break is stored as
+ * the gap between two ranges — an implementation detail the owner never sees.
+ */
+const HoursEditor: React.FC<HoursEditorProps> = ({ value, onChange, error }) => {
+  const { t } = useTranslation();
+
+  const parsed = parseDayHours(value);
+  if (parsed.kind === 'complex') return null; // callers render ComplexHoursView instead
+
+  const hours = parsed.hours;
+  const hasBreak = hours.breakStart !== undefined || hours.breakEnd !== undefined;
+  const breakSuggestion = hasBreak ? null : suggestBreak(hours);
+
+  const update = (patch: Partial<DayHours>) => onChange(serializeDayHours({ ...hours, ...patch }));
+
+  return (
+    <div className="flex flex-col items-center md:items-end gap-3">
+      {/* time inputs — container follows page direction (RTL: start right, end left) */}
+      <div className="flex items-center gap-3">
+        <TimeField
+          label={t('scheduleVacations.start')}
+          value={hours.startTime}
+          onChange={(v) => update({ startTime: v })}
+        />
+        <div className="h-px w-3 bg-black/20 dark:bg-white/20 mt-4 flex-shrink-0" />
+        <TimeField
+          label={t('scheduleVacations.end')}
+          value={hours.endTime}
+          onChange={(v) => update({ endTime: v })}
+        />
+      </div>
+
+      {hasBreak ? (
+        <div className="flex items-center gap-3">
+          <Coffee size={14} className="text-primary/70 mt-4 flex-shrink-0" aria-label={t('scheduleVacations.break')} />
+          <TimeField
+            label={t('scheduleVacations.breakStart')}
+            value={hours.breakStart ?? ''}
+            onChange={(v) => update({ breakStart: v })}
+          />
+          <div className="h-px w-3 bg-black/20 dark:bg-white/20 mt-4 flex-shrink-0" />
+          <TimeField
+            label={t('scheduleVacations.breakEnd')}
+            value={hours.breakEnd ?? ''}
+            onChange={(v) => update({ breakEnd: v })}
+          />
+          <button
+            onClick={() => onChange(serializeDayHours({ startTime: hours.startTime, endTime: hours.endTime }))}
+            className="p-2 mt-4 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors flex-shrink-0"
+            title={t('scheduleVacations.removeBreak')}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ) : breakSuggestion ? (
+        <button
+          onClick={() => update(breakSuggestion)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-primary/70 hover:text-primary transition-colors"
+        >
+          <Coffee size={13} />
+          {t('scheduleVacations.addBreak')}
+        </button>
+      ) : null}
+
+      {error && (
+        <p className="text-xs text-red-500 font-medium">
+          {t(`scheduleVacations.${error}`)}
+        </p>
+      )}
+    </div>
+  );
+};
+
+/** Read-only view of a day with 3+ ranges — not creatable here, never destroyed. */
+const ComplexHoursView: React.FC<{ ranges: string[] }> = ({ ranges }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col items-center md:items-end gap-2">
+      <div dir="ltr" className="flex flex-wrap justify-center gap-2">
+        {ranges.map((range) => (
+          <span key={range} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+            {range}
+          </span>
+        ))}
+      </div>
+      <p className="text-xs text-light-gray dark:text-dark-gray flex items-center gap-1.5">
+        <Info size={12} className="text-primary/70 flex-shrink-0" />
+        {t('scheduleVacations.complexHoursNote')}
+      </p>
+    </div>
   );
 };
 

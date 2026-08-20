@@ -123,6 +123,16 @@ export interface Vacation {
   endDate: string;   // Epoch timestamp as string
   webConfig_id:string;
 }
+export interface DateOverride {
+  /** Calendar date, "YYYY-MM-DD". */
+  date: string;
+  /**
+   * Same format as a workingDays entry — comma-separated "HH:MM-HH:MM"
+   * ranges — or null when the business is closed on this date.
+   */
+  hours: string | null;
+}
+
 export interface WebConfig {
   _id: string;
   user_id: string;
@@ -134,6 +144,8 @@ export interface WebConfig {
   minCancelTimeMS: number;
   defaultLanguage: string;
   workingDays: (string | null)[];
+  /** Per-date special hours (max 50); absent on configs saved before LT-057. */
+  dateOverrides?: DateOverride[];
   address?: Address;
   contact: Contact;
   social: Social;

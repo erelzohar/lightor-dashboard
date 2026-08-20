@@ -358,7 +358,27 @@
       "Saturday"
     ],
     "noVacationsDesc": "Your business will operate on the standard schedule defined in Working Hours.",
-    "vacationInfoBox": "Adding a vacation period overrides standard hours. Clients will see availability updated immediately across all booking channels."
+    "vacationInfoBox": "Adding a vacation period overrides standard hours. Clients will see availability updated immediately across all booking channels.",
+    "break": "Break",
+    "addBreak": "Add break",
+    "removeBreak": "Remove break",
+    "breakStart": "Break start",
+    "breakEnd": "Break end",
+    "specialHours": "Special Hours",
+    "specialHoursDesc": "Set different opening hours or a closure for specific dates",
+    "addDate": "Add date",
+    "dateLabel": "Date",
+    "closedOnDate": "Closed on this date",
+    "noSpecialHours": "No special hours set yet",
+    "complexHoursNote": "This day has several time ranges, so it can only be viewed here",
+    "invalidDayHours": "End time must be after the start time",
+    "invalidBreakOrder": "Break end must be after the break start",
+    "breakOutsideHours": "The break must be within the working hours",
+    "fixErrorsBeforeSave": "Please fix the errors before saving",
+    "maxDateOverrides": "Up to 50 special dates can be set",
+    "duplicateDate": "This date already has special hours",
+    "selectDate": "Please choose a date",
+    "pastDate": "Past dates cannot be selected"
   },
   "account": {
     "title": "Account Settings",
