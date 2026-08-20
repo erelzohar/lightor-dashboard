@@ -256,7 +256,9 @@ const ScheduleVacations: React.FC = () => {
       return;
     }
     // Start from that weekday's regular hours; the owner tweaks from there.
-    const weekdayHours = webConfigLocalState!.workingDays[weekdayOf(newOverrideDate)] ?? null;
+    // A closed weekday still starts the override OPEN on the standard default —
+    // adding a date means the owner wants hours there, closing stays one toggle away.
+    const weekdayHours = webConfigLocalState!.workingDays[weekdayOf(newOverrideDate)] ?? '09:00-17:00';
     setOverrides([...dateOverrides, { date: newOverrideDate, hours: weekdayHours }]);
     setNewOverrideDate('');
     setIsAddingOverride(false);
