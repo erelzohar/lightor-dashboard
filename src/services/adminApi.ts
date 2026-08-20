@@ -188,6 +188,50 @@ export interface TenantCost {
   subDomain?: string;
 }
 
+export interface LiveSubscriptionItem {
+  quantity: number;
+  productName?: string;
+  priceName?: string;
+  /** Major units — ₪119 arrives as 119. */
+  amount: number;
+  currencyCode?: string;
+  interval?: string;
+  frequency?: number;
+}
+
+export interface LiveSubscription {
+  id: string;
+  status: string;
+  currencyCode?: string;
+  startedAt?: string | null;
+  nextBilledAt?: string | null;
+  canceledAt?: string | null;
+  pausedAt?: string | null;
+  currentPeriod: { startsAt?: string; endsAt?: string } | null;
+  billingCycle: { frequency?: number; interval?: string } | null;
+  scheduledChange: { action?: string; effectiveAt?: string | null } | null;
+  items: LiveSubscriptionItem[];
+  managementUrls: { updatePaymentMethod?: string; cancel?: string } | null;
+}
+
+export interface LiveTransaction {
+  id: string;
+  status: string;
+  origin?: string;
+  billedAt?: string | null;
+  createdAt?: string;
+  invoiceNumber?: string | null;
+  currencyCode?: string;
+  total: number;
+}
+
+export interface UserBilling {
+  subscription: LiveSubscription | null;
+  transactions: LiveTransaction[];
+  /** The stored subscription id is one Paddle no longer knows (wiped sandbox / deleted). */
+  stale?: boolean;
+}
+
 export interface AdminUsersQuery {
   page?: number;
   limit?: number;
@@ -255,6 +299,12 @@ export const resumeUserSubscription = async (id: string): Promise<void> => {
 export const deleteUser = async (id: string, confirmEmail: string): Promise<void> => {
   await send('delete', `users/${id}`, { confirmEmail });
 };
+
+export const fetchUserBilling = async (id: string): Promise<UserBilling> =>
+  (await get<{ data: UserBilling }>(`users/${id}/billing`)).data;
+
+export const fetchInvoiceUrl = async (transactionId: string): Promise<string> =>
+  (await get<{ data: { url: string } }>(`billing/invoice/${transactionId}`)).data.url;
 
 export const fetchAppointments = async (
   query: AdminAppointmentsQuery = {}

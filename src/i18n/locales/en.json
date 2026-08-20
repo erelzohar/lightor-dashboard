@@ -687,11 +687,6 @@
         "title": "Appointments ({{count}} total)",
         "viewAll": "View all",
         "none": "No appointments yet"
-      },
-      "paddle": {
-        "title": "Paddle identifiers",
-        "subscription": "Subscription",
-        "customer": "Customer"
       }
     },
     "actions": {
@@ -782,6 +777,43 @@
       "columns": {
         "cost": "Cost"
       }
+    },
+    "billing": {
+      "title": "Paddle subscription",
+      "loadError": "Couldn't reach Paddle",
+      "retry": "Retry",
+      "started": "Started",
+      "nextBill": "Next bill",
+      "periodEnds": "Current period ends",
+      "scheduledCancel": "Cancels at period end — {{date}}",
+      "payments": "Payments",
+      "noPayments": "No payments yet",
+      "invoice": "Open invoice (PDF)",
+      "invoiceError": "Couldn't fetch the invoice",
+      "updatePaymentMethod": "Payment-method update link (for the customer)",
+      "interval": {
+        "month": "month",
+        "year": "year",
+        "week": "week",
+        "day": "day"
+      },
+      "stale": "Paddle no longer recognises the stored subscription id (deleted, or from a wiped sandbox). The raw ids are below for cross-checking."
+    },
+    "paddleStatus": {
+      "active": "Active",
+      "trialing": "Trial",
+      "past_due": "Past due",
+      "paused": "Paused",
+      "canceled": "Canceled"
+    },
+    "txStatus": {
+      "completed": "Completed",
+      "paid": "Paid",
+      "billed": "Billed",
+      "ready": "Ready",
+      "draft": "Draft",
+      "past_due": "Past due",
+      "canceled": "Canceled"
     }
   }
 }

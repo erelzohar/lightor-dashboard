@@ -687,11 +687,6 @@
         "title": "תורים ({{count}} סה\"כ)",
         "viewAll": "הצג הכול",
         "none": "אין תורים עדיין"
-      },
-      "paddle": {
-        "title": "מזהי Paddle",
-        "subscription": "מנוי",
-        "customer": "לקוח"
       }
     },
     "actions": {
@@ -782,6 +777,43 @@
       "columns": {
         "cost": "עלות"
       }
+    },
+    "billing": {
+      "title": "מנוי Paddle",
+      "loadError": "לא ניתן להגיע ל-Paddle",
+      "retry": "נסה שוב",
+      "started": "התחיל",
+      "nextBill": "חיוב הבא",
+      "periodEnds": "התקופה הנוכחית מסתיימת",
+      "scheduledCancel": "מתבטל בסוף התקופה — {{date}}",
+      "payments": "תשלומים",
+      "noPayments": "אין תשלומים עדיין",
+      "invoice": "פתח חשבונית (PDF)",
+      "invoiceError": "לא ניתן להביא את החשבונית",
+      "updatePaymentMethod": "קישור עדכון אמצעי תשלום (ללקוח)",
+      "interval": {
+        "month": "חודש",
+        "year": "שנה",
+        "week": "שבוע",
+        "day": "יום"
+      },
+      "stale": "Paddle כבר לא מזהה את מזהה המנוי השמור (נמחק, או שייך לסנדבוקס שאופס). המזהים הגולמיים למטה להצלבה."
+    },
+    "paddleStatus": {
+      "active": "פעיל",
+      "trialing": "ניסיון",
+      "past_due": "בפיגור תשלום",
+      "paused": "מושהה",
+      "canceled": "בוטל"
+    },
+    "txStatus": {
+      "completed": "הושלם",
+      "paid": "שולם",
+      "billed": "חויב",
+      "ready": "ממתין",
+      "draft": "טיוטה",
+      "past_due": "בפיגור",
+      "canceled": "בוטל"
     }
   }
 }

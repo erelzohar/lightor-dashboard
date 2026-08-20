@@ -21,6 +21,7 @@ import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import StatusBadge from '../../components/admin/StatusBadge';
+import BillingCard from '../../components/admin/BillingCard';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -427,27 +428,11 @@ const AdminUserDetail: React.FC = () => {
           </Card>
 
           {sub.subscriptionId && (
-            <Card animate={false}>
-              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-3 text-sm">
-                {t('admin.userDetail.paddle.title')}
-              </h3>
-              <dl className="space-y-2 text-xs">
-                <div>
-                  <dt className="text-gray-400">{t('admin.userDetail.paddle.subscription')}</dt>
-                  <dd className="text-gray-700 dark:text-gray-300 font-mono" dir="ltr">
-                    {sub.subscriptionId}
-                  </dd>
-                </div>
-                {sub.customerId && (
-                  <div>
-                    <dt className="text-gray-400">{t('admin.userDetail.paddle.customer')}</dt>
-                    <dd className="text-gray-700 dark:text-gray-300 font-mono" dir="ltr">
-                      {sub.customerId}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </Card>
+            <BillingCard
+              userId={user._id}
+              subscriptionId={sub.subscriptionId}
+              customerId={sub.customerId}
+            />
           )}
         </div>
       </div>
