@@ -8,6 +8,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Clock,
+  Pencil,
   ExternalLink,
   Globe,
   ShieldAlert,
@@ -22,6 +23,7 @@ import Select from '../../components/ui/Select';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import StatusBadge from '../../components/admin/StatusBadge';
 import BillingCard from '../../components/admin/BillingCard';
+import UserFormModal from '../../components/admin/UserFormModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -51,6 +53,7 @@ const AdminUserDetail: React.FC = () => {
   const [roleDraft, setRoleDraft] = useState<string>('');
   const [busy, setBusy] = useState<string | null>(null);
   const [dialog, setDialog] = useState<'cancel' | 'resume' | 'delete' | null>(null);
+  const [editing, setEditing] = useState(false);
 
   document.title = t('admin.nav.userDetail');
 
@@ -183,7 +186,23 @@ const AdminUserDetail: React.FC = () => {
             {user.phone ? ` · ${user.phone}` : ''}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={<Pencil size={14} />}
+          onClick={() => setEditing(true)}
+        >
+          {t('admin.userForm.editButton')}
+        </Button>
       </div>
+
+      <UserFormModal
+        open={editing}
+        mode="edit"
+        user={user}
+        onClose={() => setEditing(false)}
+        onSaved={() => load()}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* ── Left column: identity + site + usage ── */}

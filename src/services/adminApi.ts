@@ -102,6 +102,8 @@ export interface AdminUserRow {
   name: string;
   email: string;
   phone?: string;
+  /** Present on the detail endpoint (full document); absent from list rows. */
+  username?: string;
   role: 'admin' | 'client' | 'user';
   isVerified: boolean;
   boardingStatus: 'new' | 'onboarded' | 'active';
@@ -272,6 +274,20 @@ export const fetchTopBusinesses = async (limit = 10): Promise<TopBusiness[]> =>
 
 export const fetchUsers = async (query: AdminUsersQuery = {}): Promise<Paginated<AdminUserRow>> =>
   get<Paginated<AdminUserRow>>('users', query as Record<string, unknown>);
+
+export interface AdminCreateUserInput {
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+  phone?: string;
+  defaultLanguage?: string;
+  channelType?: 'sms' | 'whatsapp';
+  isVerified?: boolean;
+}
+
+export const createUser = async (input: AdminCreateUserInput): Promise<AdminUserRow> =>
+  (await send<{ data: AdminUserRow }>('post', 'users', input as unknown as Record<string, unknown>)).data;
 
 export const fetchUser = async (id: string): Promise<AdminUserDetail> =>
   (await get<{ data: AdminUserDetail }>(`users/${id}`)).data;

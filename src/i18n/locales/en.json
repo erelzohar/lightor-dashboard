@@ -657,7 +657,8 @@
         "allVerification": "Verified & not",
         "verified": "Verified only",
         "unverified": "Unverified only"
-      }
+      },
+      "addUser": "Add user"
     },
     "userDetail": {
       "back": "All users",
@@ -814,6 +815,26 @@
       "draft": "Draft",
       "past_due": "Past due",
       "canceled": "Canceled"
+    },
+    "userForm": {
+      "titleCreate": "Add user",
+      "titleEdit": "Edit user",
+      "editButton": "Edit",
+      "name": "Business / owner name",
+      "email": "Email",
+      "username": "Username",
+      "password": "Temporary password",
+      "passwordHint": "At least 6 characters with letters and digits. Share it with the owner — they can change it in their account settings.",
+      "generate": "Generate",
+      "phone": "Phone (optional)",
+      "language": "Language",
+      "channel": "Channel",
+      "verified": "Mark email as verified",
+      "verifiedHint": "Off = the account hits the verification gate after 48h",
+      "create": "Create user",
+      "save": "Save changes",
+      "created": "User created",
+      "saved": "User updated"
     }
   }
 }

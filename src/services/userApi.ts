@@ -29,7 +29,9 @@ export const updateUserInfo = async (id: string, userData: Partial<User>): Promi
     const response = await api.put<any>(`/${id}`, userData);
     return response.data.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to update account');
+    // The API's error envelope is { success:false, error }, not .message —
+    // surface the real reason (e.g. "Email already in use") when it's there.
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to update account');
   }
 };
 

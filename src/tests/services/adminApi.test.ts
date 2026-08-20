@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
   fetchOverview,
   fetchUsers,
+  createUser,
   changeUserRole,
   deleteUser,
   fetchCostsSummary,
@@ -89,6 +90,30 @@ describe('adminApi', () => {
         method: 'delete',
         url: `${globals.adminUrl}users/u9`,
         data: { confirmEmail: 'owner@biz.com' },
+      })
+    );
+  });
+
+  it('creates a user via POST and unwraps the created row', async () => {
+    const request = vi
+      .spyOn(axios, 'request')
+      .mockResolvedValue({ data: { success: true, data: { _id: 'u_new' } } } as never);
+
+    const created = await createUser({
+      name: 'New Biz',
+      email: 'new@biz.com',
+      username: 'newbiz',
+      password: 'secret123',
+      isVerified: true,
+    });
+
+    expect(created._id).toBe('u_new');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'post',
+        url: `${globals.adminUrl}users`,
+        data: expect.objectContaining({ username: 'newbiz', isVerified: true }),
+        withCredentials: true,
       })
     );
   });

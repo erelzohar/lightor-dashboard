@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Users, BadgeCheck, Clock } from 'lucide-react';
+import { Users, BadgeCheck, Clock, UserPlus } from 'lucide-react';
 import DataTable, { DataTableColumn } from '../../components/ui/DataTable';
 import Select from '../../components/ui/Select';
+import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/admin/StatusBadge';
+import UserFormModal from '../../components/admin/UserFormModal';
 import { fetchUsers, AdminUserRow, Paginated } from '../../services/adminApi';
 
 /**
@@ -25,6 +27,7 @@ const AdminUsers: React.FC = () => {
   const [verified, setVerified] = useState('');
   const [sort, setSort] = useState('createdAt');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [creating, setCreating] = useState(false);
 
   document.title = t('admin.users.title');
 
@@ -135,11 +138,11 @@ const AdminUsers: React.FC = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="p-2.5 rounded-xl bg-primary/10">
           <Users size={22} className="text-primary" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">
             {t('admin.users.title')}
           </h1>
@@ -147,7 +150,22 @@ const AdminUsers: React.FC = () => {
             {t('admin.users.subtitle', { count: result?.pagination.total ?? 0 })}
           </p>
         </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<UserPlus size={15} />}
+          onClick={() => setCreating(true)}
+        >
+          {t('admin.users.addUser')}
+        </Button>
       </div>
+
+      <UserFormModal
+        open={creating}
+        mode="create"
+        onClose={() => setCreating(false)}
+        onSaved={(userId) => navigate(`/admin/users/${userId}`)}
+      />
 
       <DataTable
         columns={columns}
