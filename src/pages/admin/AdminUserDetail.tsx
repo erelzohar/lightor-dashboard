@@ -75,13 +75,20 @@ const AdminUserDetail: React.FC = () => {
     load();
   }, [load]);
 
-  const run = async (key: string, action: () => Promise<unknown>, successKey: string) => {
+  const run = async (
+    key: string,
+    action: () => Promise<unknown>,
+    successKey: string,
+    // Delete navigates away — refetching the record we just destroyed fires
+    // a pointless 404 GET (Erel spotted it in the network tab).
+    { reload = true }: { reload?: boolean } = {}
+  ) => {
     setBusy(key);
     try {
       await action();
       toast.success(t(successKey));
       setDialog(null);
-      await load();
+      if (reload) await load();
     } catch (error) {
       const message =
         (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
@@ -490,10 +497,15 @@ const AdminUserDetail: React.FC = () => {
         loading={busy === 'delete'}
         onClose={() => setDialog(null)}
         onConfirm={() =>
-          run('delete', async () => {
-            await deleteUser(user._id, user.email);
-            navigate('/admin/users');
-          }, 'admin.actions.deleteSuccess')
+          run(
+            'delete',
+            async () => {
+              await deleteUser(user._id, user.email);
+              navigate('/admin/users');
+            },
+            'admin.actions.deleteSuccess',
+            { reload: false }
+          )
         }
       />
     </motion.div>
