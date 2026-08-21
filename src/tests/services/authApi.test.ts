@@ -46,7 +46,19 @@ describe('authApi', () => {
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}login`,
-        { username: 'jane', password: 'secret' },
+        { username: 'jane', password: 'secret', staySignedIn: false },
+        { withCredentials: true }
+      );
+    });
+
+    it('forwards the remember-me flag when set', async () => {
+      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok());
+
+      await loginUser('jane', 'secret', true);
+
+      expect(post).toHaveBeenCalledWith(
+        `${authUrl}login`,
+        { username: 'jane', password: 'secret', staySignedIn: true },
         { withCredentials: true }
       );
     });

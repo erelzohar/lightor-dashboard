@@ -61,7 +61,7 @@ const Consumer: React.FC = () => {
       <span data-testid="plan">{auth.user?.subscription?.status ?? '-'}</span>
       <span data-testid="error">{auth.error ?? '-'}</span>
       <span data-testid="token">{auth.token === null ? 'null' : String(auth.token)}</span>
-      <button onClick={() => login('jane', 'secret')}>login</button>
+      <button onClick={() => login('jane', 'secret', true)}>login</button>
       <button onClick={() => loginWithGoogle('g-cred')}>google</button>
       <button onClick={() => loginWithFacebook('fb-token')}>facebook</button>
       <button onClick={() => void refreshUser()}>refresh</button>
@@ -188,7 +188,7 @@ describe('AuthContext', () => {
       await userEvent.click(screen.getByText('login'));
 
       await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
-      expect(loginUser).toHaveBeenCalledWith('jane', 'secret');
+      expect(loginUser).toHaveBeenCalledWith('jane', 'secret', true);
       expect(getCurrentUser).toHaveBeenCalledTimes(2);
       expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true });
     });

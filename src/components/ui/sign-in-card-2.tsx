@@ -19,7 +19,7 @@ function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>
 }
 
 interface SignInCardProps {
-  onSubmit: (username: string, password: string) => Promise<void>;
+  onSubmit: (username: string, password: string, staySignedIn: boolean) => Promise<void>;
   onGoogleLogin: () => void;
   onFacebookLogin: () => void;
   isLoading?: boolean;
@@ -36,7 +36,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit(username, password);
+    await onSubmit(username, password, rememberMe);
   };
 
   return (

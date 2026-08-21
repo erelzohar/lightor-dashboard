@@ -8,7 +8,7 @@ import { logout as storeLogout } from '../store/slices/userSlice';
 import i18n from '../i18n/config';
 interface AuthContextType {
   auth: AuthState;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, staySignedIn?: boolean) => Promise<void>;
   loginWithGoogle: (token: string) => Promise<void>;
   loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
@@ -80,11 +80,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, staySignedIn = false) => {
     setLoading(true);
     try {
       // The response set the HttpOnly session cookie; nothing to store here.
-      await loginUser(username, password);
+      // staySignedIn (LT-066) picks the 60m vs 180d session server-side.
+      await loginUser(username, password, staySignedIn);
       const user = await getCurrentUser();
 
       setAuth({
