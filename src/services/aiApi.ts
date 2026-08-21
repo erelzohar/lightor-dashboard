@@ -1,5 +1,12 @@
 import axios, { type AxiosError } from 'axios';
 import globals from './globals';
+import i18n from '../i18n/config';
+
+// LT-052: the AI's chat reply must answer in the language the user is reading
+// the dashboard in, not the site's content language (a Hebrew business edited
+// by an English-speaking user was getting Hebrew replies). Send the live UI
+// language so the backend can bind the reply to it.
+const replyLanguage = () => (i18n.language || 'en').split('-')[0];
 
 export interface AiSiteConfig {
   businessName: string;
@@ -63,6 +70,7 @@ export const aiService = {
   generateSite: async (prompt: string, logoFile: File | null): Promise<AiChatResult> => {
     const formData = new FormData();
     formData.append('message', prompt);
+    formData.append('replyLanguage', replyLanguage());
     if (logoFile) formData.append('logo', logoFile);
 
     let lastError: unknown;
@@ -119,6 +127,7 @@ export const aiService = {
     const formData = new FormData();
     formData.append('message', prompt);
     formData.append('webConfig', JSON.stringify(webConfig));
+    formData.append('replyLanguage', replyLanguage());
     if (logoFile) formData.append('image', logoFile);
 
     let lastError: unknown;
