@@ -17,8 +17,6 @@ import { createVacation } from '../services/vacationsApi';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 
-const isValidObjectId = (id: string) => /^[a-f\d]{24}$/i.test(id);
-
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
 
@@ -235,10 +233,18 @@ const AiBuilder: React.FC = () => {
       }
 
       if (appointmentTypes?.length) {
+        // The AI fabricates valid-looking 24-hex ids for services it invents,
+        // so "looks like an ObjectId" can't tell a new service from an existing
+        // one — PUTting a fabricated id 404s. Trust only the ids the server
+        // actually returned for this site (populated on webConfig); anything
+        // else is new and must be created.
+        const existingTypeIds = new Set(
+          (webConfig?.appointmentTypes ?? []).map((t) => t._id)
+        );
         await Promise.all(
           appointmentTypes.map((type) => {
             const { _id, ...rest } = type as AppointmentType;
-            if (_id && isValidObjectId(_id)) return updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId });
+            if (_id && existingTypeIds.has(_id)) return updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId });
             return createAppointmentType({ ...rest, webConfig_id: savedConfigId });
           })
         );
