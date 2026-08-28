@@ -682,7 +682,8 @@
         "title": "שימוש החודש — מסלול {{plan}}",
         "appointments": "תורים",
         "services": "שירותים",
-        "aiGenerations": "יצירות AI"
+        "aiGenerations": "יצירות AI",
+        "aiTokens": "טוקני AI"
       },
       "appointments": {
         "title": "תורים ({{count}} סה\"כ)",
@@ -771,7 +772,8 @@
         "email": "אימייל",
         "ai": "AI",
         "messages": "{{count}} שליחות",
-        "aiDetail": "{{calls}} קריאות · {{tokens}} טוקנים"
+        "aiDetail": "{{calls}} קריאות · {{tokens}} טוקנים",
+        "aiTokens": "{{tokens}} טוקנים"
       },
       "topConsumers": "הצרכנים הגדולים",
       "noTenantData": "אין שימוש משויך החודש",

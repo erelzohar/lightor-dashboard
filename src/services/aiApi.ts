@@ -33,6 +33,20 @@ export interface AiChatResult {
   message?: string;
 }
 
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+// The prior conversation the AI should see. Starts at the first user turn —
+// the seeded welcome bubble is client-side i18n text the model never wrote —
+// and keeps only the newest 12 turns; the server enforces its own caps on top
+// (character budgets), so this only keeps the payload small.
+export function trimHistory(msgs: ChatTurn[]): ChatTurn[] {
+  const firstUser = msgs.findIndex((m) => m.role === 'user');
+  return firstUser === -1 ? [] : msgs.slice(firstUser).slice(-12);
+}
+
 const SOCIAL_DEFAULTS: Record<string, string> = {
   instagram: 'https://instagram.com',
   facebook: 'https://facebook.com',
@@ -67,10 +81,15 @@ function getAuthHeaders() {
 const MAX_RETRIES = 3;
 
 export const aiService = {
-  generateSite: async (prompt: string, logoFile: File | null): Promise<AiChatResult> => {
+  generateSite: async (
+    prompt: string,
+    logoFile: File | null,
+    history: ChatTurn[] = []
+  ): Promise<AiChatResult> => {
     const formData = new FormData();
     formData.append('message', prompt);
     formData.append('replyLanguage', replyLanguage());
+    if (history.length) formData.append('history', JSON.stringify(history));
     if (logoFile) formData.append('logo', logoFile);
 
     let lastError: unknown;
@@ -123,11 +142,17 @@ export const aiService = {
     throw lastError;
   },
 
-  editSite: async (prompt: string, webConfig: AiSiteConfig, logoFile: File | null): Promise<AiChatResult> => {
+  editSite: async (
+    prompt: string,
+    webConfig: AiSiteConfig,
+    logoFile: File | null,
+    history: ChatTurn[] = []
+  ): Promise<AiChatResult> => {
     const formData = new FormData();
     formData.append('message', prompt);
     formData.append('webConfig', JSON.stringify(webConfig));
     formData.append('replyLanguage', replyLanguage());
+    if (history.length) formData.append('history', JSON.stringify(history));
     if (logoFile) formData.append('image', logoFile);
 
     let lastError: unknown;

@@ -682,7 +682,8 @@
         "title": "Usage this month — {{plan}} plan",
         "appointments": "Bookings",
         "services": "Services",
-        "aiGenerations": "AI generations"
+        "aiGenerations": "AI generations",
+        "aiTokens": "AI tokens"
       },
       "appointments": {
         "title": "Appointments ({{count}} total)",
@@ -771,7 +772,8 @@
         "email": "Email",
         "ai": "AI",
         "messages": "{{count}} sends",
-        "aiDetail": "{{calls}} calls · {{tokens}} tokens"
+        "aiDetail": "{{calls}} calls · {{tokens}} tokens",
+        "aiTokens": "{{tokens}} tokens"
       },
       "topConsumers": "Top consumers",
       "noTenantData": "No attributed usage this month",

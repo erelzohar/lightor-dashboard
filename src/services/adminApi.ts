@@ -132,7 +132,12 @@ export interface AdminUserDetail {
   webConfig: { businessName: string; subDomain: string; createdAt: string } | null;
   plan: 'free' | 'plus';
   limits: PlanLimits;
-  usage: { appointmentsThisMonth: number; servicesCount: number; aiGenerationsThisMonth: number };
+  usage: {
+    appointmentsThisMonth: number;
+    servicesCount: number;
+    aiGenerationsThisMonth: number;
+    aiTokensThisMonth: number;
+  };
   counts: { appointmentsTotal: number; lastBookedAt: string | null };
   recentAppointments: AdminRecentAppointment[];
 }
@@ -182,7 +187,7 @@ export interface CostsSummary {
 export interface TenantCost {
   userId: string;
   costILS: number;
-  counts: { sms: number; whatsapp: number; email: number; ai: number };
+  counts: { sms: number; whatsapp: number; email: number; ai: number; aiTokens: number };
   name?: string;
   email?: string;
   subscriptionStatus?: string;

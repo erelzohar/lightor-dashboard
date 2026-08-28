@@ -11,7 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { updateWebConfig, createWebConfig, fetchWebConfig } from '../store/slices/webConfigSlice';
-import { aiService, type AiSiteConfig } from '../services/aiApi';
+import { aiService, trimHistory, type AiSiteConfig } from '../services/aiApi';
 import { createAppointmentType, updateAppointmentType } from '../services/appointmentsApi';
 import { createVacation } from '../services/vacationsApi';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
@@ -173,13 +173,16 @@ const AiBuilder: React.FC = () => {
       if (textareaRef.current) textareaRef.current.style.height = 'auto';
     }
 
+    // The thread as it stood BEFORE this prompt — the prompt itself travels
+    // in `message`, so it must not also appear in `history`.
+    const historyToSend = trimHistory(messages);
     setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
     setIsGenerating(true);
 
     try {
       const result = draftConfig?.businessName
-        ? await aiService.editSite(prompt, draftConfig, logoFile)
-        : await aiService.generateSite(prompt, logoFile);
+        ? await aiService.editSite(prompt, draftConfig, logoFile, historyToSend)
+        : await aiService.generateSite(prompt, logoFile, historyToSend);
       const newConfig = result.config;
 
       setDraftConfig(newConfig);

@@ -114,7 +114,16 @@ const AdminCosts: React.FC = () => {
       key: 'ai',
       label: t('admin.costs.kinds.ai'),
       className: 'hidden md:table-cell',
-      render: (row) => <span className="tabular-nums">{row.counts.ai}</span>,
+      render: (row) => (
+        <span className="tabular-nums">
+          {row.counts.ai}
+          <span className="block text-xs text-gray-400">
+            {t('admin.costs.kinds.aiTokens', {
+              tokens: (row.counts.aiTokens ?? 0).toLocaleString(),
+            })}
+          </span>
+        </span>
+      ),
     },
     {
       key: 'costILS',

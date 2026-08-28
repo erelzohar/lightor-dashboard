@@ -164,6 +164,11 @@ const AdminUserDetail: React.FC = () => {
       used: usage.aiGenerationsThisMonth,
       limit: limits.aiGenerationsPerMonth,
     },
+    {
+      label: t('admin.userDetail.usage.aiTokens'),
+      used: usage.aiTokensThisMonth ?? 0,
+      limit: limits.aiTokensPerMonth ?? null,
+    },
   ];
 
   return (
@@ -301,7 +306,7 @@ const AdminUserDetail: React.FC = () => {
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600 dark:text-gray-300">{row.label}</span>
                       <span className="text-gray-500 tabular-nums" dir="ltr">
-                        {row.used} / {unlimited ? '∞' : row.limit}
+                        {row.used.toLocaleString()} / {unlimited ? '∞' : row.limit?.toLocaleString()}
                       </span>
                     </div>
                     <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">

@@ -13,6 +13,8 @@ export interface PlanLimits {
   hourlyReminder: boolean;
   aiGenerationsPerMonth: number;
   aiEditsPerMonth: number;
+  /** Gemini tokens per month; null = unlimited (every current plan). */
+  aiTokensPerMonth: number | null;
   showBranding: boolean;
 }
 
@@ -23,6 +25,7 @@ export interface MyEntitlements {
     appointmentsThisMonth: number;
     servicesCount: number;
     aiGenerationsThisMonth: number;
+    aiTokensThisMonth: number;
   };
 }
 
