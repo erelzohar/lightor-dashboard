@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 import {
   loginUser,
   googleLogin,
@@ -40,7 +40,7 @@ describe('authApi', () => {
 
   describe('carries the session cookie', () => {
     it('on login', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok());
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
       await loginUser('jane', 'secret');
 
@@ -52,7 +52,7 @@ describe('authApi', () => {
     });
 
     it('forwards the remember-me flag when set', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok());
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
       await loginUser('jane', 'secret', true);
 
@@ -64,7 +64,7 @@ describe('authApi', () => {
     });
 
     it('on google login', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok());
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
       await googleLogin('g-credential');
 
@@ -76,7 +76,7 @@ describe('authApi', () => {
     });
 
     it('on facebook login', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok());
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
       await facebookLogin('fb-access-token');
 
@@ -88,7 +88,7 @@ describe('authApi', () => {
     });
 
     it('on /me', async () => {
-      const get = vi.spyOn(axios, 'get').mockResolvedValue(ok());
+      const get = vi.spyOn(apiClient, 'get').mockResolvedValue(ok());
 
       await getCurrentUser();
 
@@ -99,7 +99,7 @@ describe('authApi', () => {
     });
 
     it('on logout', async () => {
-      const get = vi.spyOn(axios, 'get').mockResolvedValue(ok());
+      const get = vi.spyOn(apiClient, 'get').mockResolvedValue(ok());
 
       await serverLogout();
 
@@ -107,7 +107,7 @@ describe('authApi', () => {
     });
 
     it('on account deletion', async () => {
-      const del = vi.spyOn(axios, 'delete').mockResolvedValue(ok({ success: true }));
+      const del = vi.spyOn(apiClient, 'delete').mockResolvedValue(ok({ success: true }));
 
       await deleteAccount({ password: 'secret' });
 
@@ -118,7 +118,7 @@ describe('authApi', () => {
     });
 
     it('on a password change', async () => {
-      const put = vi.spyOn(axios, 'put').mockResolvedValue(ok({ success: true, message: 'ok' }));
+      const put = vi.spyOn(apiClient, 'put').mockResolvedValue(ok({ success: true, message: 'ok' }));
 
       await changePassword('old', 'new', 'new');
 
@@ -135,7 +135,7 @@ describe('authApi', () => {
     // only when one exists — sending `Bearer null` would be worse than sending
     // nothing, because it is a token the API must reject.
     it('is absent when no legacy token is stored', async () => {
-      const get = vi.spyOn(axios, 'get').mockResolvedValue(ok());
+      const get = vi.spyOn(apiClient, 'get').mockResolvedValue(ok());
 
       await getCurrentUser();
 
@@ -144,7 +144,7 @@ describe('authApi', () => {
 
     it('is attached when a legacy token is stored', async () => {
       localStorage.setItem('lightor', 'legacy-jwt');
-      const get = vi.spyOn(axios, 'get').mockResolvedValue(ok());
+      const get = vi.spyOn(apiClient, 'get').mockResolvedValue(ok());
 
       await getCurrentUser();
 
@@ -156,7 +156,7 @@ describe('authApi', () => {
 
   describe('handoff', () => {
     it('posts the token and returns the new user', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(
         ok({ success: true, token: 'jwt', data: { _id: 'u9', email: 'new@biz.com' } })
       );
 
@@ -173,7 +173,7 @@ describe('authApi', () => {
     it('throws on an unsuccessful exchange', async () => {
       // An expired handoff token answers 200 with success:false. Treating that
       // as a session would leave the browser on whatever stale account it had.
-      vi.spyOn(axios, 'post').mockResolvedValue(ok({ success: false }));
+      vi.spyOn(apiClient, 'post').mockResolvedValue(ok({ success: false }));
 
       await expect(handoffLogin('ho_expired')).rejects.toThrow('Handoff failed');
     });
@@ -181,7 +181,7 @@ describe('authApi', () => {
 
   describe('cookieSync', () => {
     it('proves the legacy session with a Bearer and asks for a cookie', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok({ success: true }));
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok({ success: true }));
 
       await cookieSync('legacy-jwt');
 
@@ -193,7 +193,7 @@ describe('authApi', () => {
     });
 
     it('throws when the server refuses', async () => {
-      vi.spyOn(axios, 'post').mockResolvedValue(ok({ success: false }));
+      vi.spyOn(apiClient, 'post').mockResolvedValue(ok({ success: false }));
 
       await expect(cookieSync('forged')).rejects.toThrow('Cookie sync failed');
     });
@@ -201,7 +201,7 @@ describe('authApi', () => {
 
   describe('failure handling', () => {
     it('reports bad credentials as such', async () => {
-      vi.spyOn(axios, 'post').mockRejectedValue(new Error('401'));
+      vi.spyOn(apiClient, 'post').mockRejectedValue(new Error('401'));
 
       await expect(loginUser('jane', 'wrong')).rejects.toThrow('Invalid credentials');
     });
@@ -209,7 +209,7 @@ describe('authApi', () => {
     it('rejects /me rather than returning undefined', async () => {
       // AuthContext treats a rejection as "not signed in". Returning undefined
       // instead would mark the session authenticated with a null user.
-      vi.spyOn(axios, 'get').mockRejectedValue(new Error('401'));
+      vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('401'));
 
       await expect(getCurrentUser()).rejects.toThrow('Invalid token');
     });
@@ -217,7 +217,7 @@ describe('authApi', () => {
     it('never blocks logout on a network failure', async () => {
       // Only the server can clear an HttpOnly cookie, but a user who clicked
       // sign-out must still end up signed out locally.
-      vi.spyOn(axios, 'get').mockRejectedValue(new Error('offline'));
+      vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('offline'));
 
       await expect(serverLogout()).resolves.toBeUndefined();
     });
@@ -226,7 +226,7 @@ describe('authApi', () => {
       // Deletion aborts if the Paddle subscription cannot be cancelled, so the
       // reason matters: "nothing was deleted" is a different instruction to the
       // user than a generic failure (LT-031).
-      vi.spyOn(axios, 'delete').mockRejectedValue({
+      vi.spyOn(apiClient, 'delete').mockRejectedValue({
         response: { data: { error: 'Could not cancel your subscription' } },
       });
 
@@ -236,7 +236,7 @@ describe('authApi', () => {
     });
 
     it('falls back to a generic message when the server sends none', async () => {
-      vi.spyOn(axios, 'delete').mockRejectedValue(new Error('network'));
+      vi.spyOn(apiClient, 'delete').mockRejectedValue(new Error('network'));
 
       await expect(deleteAccount({ confirmEmail: 'a@b.com' })).rejects.toThrow(
         'Account deletion failed'
@@ -244,7 +244,7 @@ describe('authApi', () => {
     });
 
     it('surfaces the server message when a password change fails', async () => {
-      vi.spyOn(axios, 'put').mockRejectedValue({
+      vi.spyOn(apiClient, 'put').mockRejectedValue({
         response: { data: { error: 'Current password is incorrect' } },
       });
 
@@ -257,7 +257,7 @@ describe('authApi', () => {
   it('resends verification without credentials', async () => {
     // Deliberately unauthenticated: the whole point is that the account cannot
     // yet prove anything, and the email address is the only identifier.
-    const post = vi.spyOn(axios, 'post').mockResolvedValue(ok({ success: true }));
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok({ success: true }));
 
     await resendVerification('jane@biz.com');
 

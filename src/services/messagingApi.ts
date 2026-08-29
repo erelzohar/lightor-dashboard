@@ -1,27 +1,5 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
-import { install401Handler } from './authInterceptor';
-
-const api = axios.create({
-    baseURL: globals.messagingUrl,
-    withCredentials: true,
-});
-install401Handler(api);
-
-// LT-009: the session now rides an HttpOnly cookie (withCredentials). This
-// Bearer interceptor is a transition shim for sessions that predate the
-// cookie — AuthContext migrates them at startup and clears localStorage, so
-// this finds nothing on any session created after LT-009. Delete it (and the
-// other copies of it) once pre-cookie tokens have aged out: 2027-02.
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('lightor');
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-});
 
 interface ErrorReport {
     error: string;
@@ -45,7 +23,7 @@ export const reportError = async (errorReport: Partial<ErrorReport> & { error: s
             timestamp: new Date().toISOString(),
             ...errorReport,
         };
-        await api.post('/report-error', fullReport);
+        await apiClient.post(`${globals.messagingUrl}report-error`, fullReport);
     } catch (err) {
         console.error('Failed to report error to backend:', err);
     }

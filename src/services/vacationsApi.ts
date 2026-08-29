@@ -1,33 +1,13 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import { Vacation } from '../types';
 import globals from './globals';
-import { install401Handler } from './authInterceptor';
 
-// Create axios instance for vacations
-const api = axios.create({
-  baseURL: globals.vacationsUrl,
-  withCredentials: true,
-});
-install401Handler(api);
-
-// LT-009: the session now rides an HttpOnly cookie (withCredentials). This
-// Bearer interceptor is a transition shim for sessions that predate the
-// cookie — AuthContext migrates them at startup and clears localStorage, so
-// this finds nothing on any session created after LT-009. Delete it (and the
-// other copies of it) once pre-cookie tokens have aged out: 2027-02.
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('lightor');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+const URL = globals.vacationsUrl;
 
 // Get all vacations
 export const getVacations = async (): Promise<Vacation[]> => {
   try {
-    const res = await api.get('/');
+    const res = await apiClient.get(URL);
     return res.data.data;
   } catch (err) {
     console.error('Failed to fetch vacations:', err);
@@ -39,7 +19,7 @@ export const getVacations = async (): Promise<Vacation[]> => {
 export const getVacationById = async (id: string): Promise<Vacation> => {
   if (!id) throw new Error('Vacation ID is required');
   try {
-    const res = await api.get(id);
+    const res = await apiClient.get(`${URL}${id}`);
     return res.data.data;
   } catch (err) {
     console.error('Failed to fetch vacation:', err);
@@ -52,7 +32,7 @@ export const createVacation = async (
   vacation: Omit<Vacation, '_id'>
 ): Promise<Vacation> => {
   try {
-    const res = await api.post('/', vacation);
+    const res = await apiClient.post(URL, vacation);
     return res.data.data;
   } catch (err) {
     console.error('Failed to create vacation:', err);
@@ -66,7 +46,7 @@ export const updateVacation = async (
 ): Promise<Vacation> => {
   if (!vacation._id) throw new Error('Vacation ID is required for update');
   try {
-    const res = await api.put(vacation._id, vacation);
+    const res = await apiClient.put(`${URL}${vacation._id}`, vacation);
     return res.data.data;
   } catch (err) {
     console.error('Failed to update vacation:', err);
@@ -78,7 +58,7 @@ export const updateVacation = async (
 export const deleteVacation = async (id: string): Promise<void> => {
   if (!id) throw new Error('Vacation ID is required for delete');
   try {
-    await api.delete(id);
+    await apiClient.delete(`${URL}${id}`);
   } catch (err) {
     console.error('Failed to delete vacation:', err);
     throw err;

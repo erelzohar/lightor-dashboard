@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import { initializePaddle, type Paddle } from '@paddle/paddle-js';
 import globals from './globals';
 
@@ -123,7 +123,7 @@ export async function openUpgradeCheckout(opts: {
 export async function cancelSubscription(): Promise<{ activeUntil: string | null }> {
   // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${globals.paddleUrl}subscription/cancel`,
     {},
     { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
@@ -140,7 +140,7 @@ export async function cancelSubscription(): Promise<{ activeUntil: string | null
 export async function resumeSubscription(): Promise<void> {
   // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${globals.paddleUrl}subscription/resume`,
     {},
     { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }

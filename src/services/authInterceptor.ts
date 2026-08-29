@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import { type AxiosInstance, type AxiosError } from 'axios';
 
 /**
  * Auto-logout on an expired/failed session token.
@@ -29,15 +29,9 @@ function report401(error: AxiosError): Promise<never> {
 }
 
 /**
- * Add the 401 reporter to an axios instance. Call once per `axios.create()`
- * instance; the default `axios` (bare `axios.get/post/…` calls) is installed
- * automatically at import.
+ * Add the 401 reporter to an axios instance. Called once, on the shared
+ * apiClient — every service goes through it.
  */
 export function install401Handler(instance: AxiosInstance): void {
   instance.interceptors.response.use((r) => r, report401);
 }
-
-// Cover every bare `axios.*` call app-wide (authApi, aiApi, adminApi, …) with a
-// single install on the shared default instance. Created instances don't inherit
-// this and opt in explicitly via install401Handler(api).
-install401Handler(axios);

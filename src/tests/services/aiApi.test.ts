@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../services/aiApi';
 import globals from '../../services/globals';
 
@@ -56,7 +56,7 @@ describe('aiApi conversation history', () => {
 
   describe('editSite', () => {
     it('appends the trimmed thread as a history JSON field', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok);
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
       const history: ChatTurn[] = [
         { role: 'user', content: 'a nail salon' },
         { role: 'assistant', content: 'Built it.' },
@@ -75,7 +75,7 @@ describe('aiApi conversation history', () => {
     });
 
     it('omits the history field when there are no prior turns', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok);
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
 
       await aiService.editSite('make it blue', config, null, []);
 
@@ -83,7 +83,7 @@ describe('aiApi conversation history', () => {
     });
 
     it('stays backward compatible when the param is not passed at all', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok);
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
 
       await aiService.editSite('make it blue', config, null);
 
@@ -93,7 +93,7 @@ describe('aiApi conversation history', () => {
 
   describe('generateSite', () => {
     it('appends the history field on onboarding too', async () => {
-      const post = vi.spyOn(axios, 'post').mockResolvedValue(ok);
+      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
       const history: ChatTurn[] = [{ role: 'user', content: 'first try' }];
 
       await aiService.generateSite('a barbershop', null, history);

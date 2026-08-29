@@ -1,4 +1,5 @@
-import axios, { type AxiosError } from 'axios';
+import { type AxiosError } from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
 import i18n from '../i18n/config';
 
@@ -96,7 +97,7 @@ export const aiService = {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const response = await axios.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
+        const response = await apiClient.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
           `${globals.aiUrl}onboarding`,
           formData,
           {
@@ -159,7 +160,7 @@ export const aiService = {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const response = await axios.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
+        const response = await apiClient.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
           `${globals.aiUrl}edit`,
           formData,
           {

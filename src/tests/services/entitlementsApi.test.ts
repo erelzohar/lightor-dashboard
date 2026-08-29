@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import globals from '../../services/globals';
 
@@ -24,7 +24,7 @@ describe('fetchMyEntitlements', () => {
   };
 
   it('carries the session cookie', () => {
-    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
 
     return fetchMyEntitlements().then(() => {
       expect(get).toHaveBeenCalledWith(
@@ -35,25 +35,25 @@ describe('fetchMyEntitlements', () => {
   });
 
   it('returns the server payload', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
 
     await expect(fetchMyEntitlements()).resolves.toEqual(entitlements);
   });
 
   it('returns null when the request fails', async () => {
-    vi.spyOn(axios, 'get').mockRejectedValue(new Error('500'));
+    vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('500'));
 
     await expect(fetchMyEntitlements()).resolves.toBeNull();
   });
 
   it('returns null when the server reports failure', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { success: false } } as never);
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: false } } as never);
 
     await expect(fetchMyEntitlements()).resolves.toBeNull();
   });
 
   it('attaches the legacy Bearer only when one exists', async () => {
-    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: entitlements } } as never);
 
     await fetchMyEntitlements();
     expect(get.mock.calls[0][1]).not.toHaveProperty('headers');

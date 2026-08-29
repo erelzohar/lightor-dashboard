@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
 import {
   fetchOverview,
   fetchUsers,
@@ -25,7 +25,7 @@ describe('adminApi', () => {
   it('carries the session cookie and unwraps the envelope', async () => {
     const overview = { totals: {}, funnel: {}, mrr: {}, paddleEnv: 'sandbox' };
     const get = vi
-      .spyOn(axios, 'get')
+      .spyOn(apiClient, 'get')
       .mockResolvedValue({ data: { success: true, data: overview } } as never);
 
     await expect(fetchOverview()).resolves.toEqual(overview);
@@ -38,7 +38,7 @@ describe('adminApi', () => {
   it('adds the legacy Bearer shim when a token is stored (handoff sessions)', async () => {
     localStorage.setItem('lightor', 'legacy-token');
     const get = vi
-      .spyOn(axios, 'get')
+      .spyOn(apiClient, 'get')
       .mockResolvedValue({ data: { success: true, data: {} } } as never);
 
     await fetchOverview();
@@ -57,7 +57,7 @@ describe('adminApi', () => {
       pagination: { total: 1, page: 2, limit: 20, pages: 1 },
       data: [{ _id: 'u1' }],
     };
-    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: envelope } as never);
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ data: envelope } as never);
 
     const result = await fetchUsers({ page: 2, search: 'acme', subscriptionStatus: 'active' });
     expect(result.pagination.page).toBe(2);
@@ -71,7 +71,7 @@ describe('adminApi', () => {
 
   it('sends mutations with the right verb, path and body', async () => {
     const request = vi
-      .spyOn(axios, 'request')
+      .spyOn(apiClient, 'request')
       .mockResolvedValue({ data: { success: true } } as never);
 
     await changeUserRole('u9', 'admin');
@@ -96,7 +96,7 @@ describe('adminApi', () => {
 
   it('creates a user via POST and unwraps the created row', async () => {
     const request = vi
-      .spyOn(axios, 'request')
+      .spyOn(apiClient, 'request')
       .mockResolvedValue({ data: { success: true, data: { _id: 'u_new' } } } as never);
 
     const created = await createUser({
@@ -119,7 +119,7 @@ describe('adminApi', () => {
   });
 
   it('propagates failures instead of swallowing them', async () => {
-    vi.spyOn(axios, 'get').mockRejectedValue(new Error('403') as never);
+    vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('403') as never);
     await expect(fetchCostsSummary('2026-08')).rejects.toThrow('403');
   });
 });

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import { User } from '../types';
 import globals from './globals';
 
@@ -24,7 +24,7 @@ const legacyAuthHeader = () => {
  * (LT-030 / LT-009)
  */
 export const handoffLogin = async (handoffToken: string): Promise<{ token: string; user: User }> => {
-  const response = await axios.post(
+  const response = await apiClient.post(
     globals.authUrl + 'handoff',
     { token: handoffToken },
     { withCredentials: true },
@@ -38,7 +38,7 @@ export const handoffLogin = async (handoffToken: string): Promise<{ token: strin
  * the cookie back. The caller deletes the localStorage copy on success.
  */
 export const cookieSync = async (token: string): Promise<void> => {
-  const response = await axios.post(
+  const response = await apiClient.post(
     globals.authUrl + 'cookie-sync',
     {},
     { withCredentials: true, headers: { Authorization: `Bearer ${token}` } },
@@ -49,7 +49,7 @@ export const cookieSync = async (token: string): Promise<void> => {
 /** Clears the HttpOnly session cookie — only the server can, JS cannot see it. */
 export const serverLogout = async (): Promise<void> => {
   try {
-    await axios.get(`${globals.authUrl}logout`, { withCredentials: true });
+    await apiClient.get(`${globals.authUrl}logout`, { withCredentials: true });
   } catch {
     // Logging out locally must never be blocked by a network hiccup; the
     // cookie's JWT still dies at its own expiry.
@@ -58,7 +58,7 @@ export const serverLogout = async (): Promise<void> => {
 
 export const loginUser = async (username: string, password: string, staySignedIn = false): Promise<{ token: string; user: User }> => {
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       globals.authUrl + 'login',
       { username, password, staySignedIn },
       { withCredentials: true },
@@ -74,7 +74,7 @@ export const loginUser = async (username: string, password: string, staySignedIn
 
 export const googleLogin = async (token: string): Promise<{ token: string; user: User }> => {
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       globals.authUrl + 'google',
       { token },
       { withCredentials: true },
@@ -90,7 +90,7 @@ export const googleLogin = async (token: string): Promise<{ token: string; user:
 
 export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       globals.authUrl + 'facebook',
       { accessToken },
       { withCredentials: true },
@@ -106,7 +106,7 @@ export const facebookLogin = async (accessToken: string): Promise<{ token: strin
 
 export const getCurrentUser = async (): Promise<User> => {
   try {
-    const response = await axios.get(`${globals.authUrl}me`, {
+    const response = await apiClient.get(`${globals.authUrl}me`, {
       withCredentials: true,
       ...legacyAuthHeader(),
     });
@@ -119,14 +119,14 @@ export const getCurrentUser = async (): Promise<User> => {
 
 
 export const verifyEmail = async (token: string): Promise<void> => {
-  const response = await axios.get(`${globals.authUrl}verify/${token}`);
+  const response = await apiClient.get(`${globals.authUrl}verify/${token}`);
   if (!response.data?.success) {
     throw new Error('Verification failed');
   }
 };
 
 export const resendVerification = async (email: string): Promise<void> => {
-  await axios.post(`${globals.authUrl}resend-verification`, { email });
+  await apiClient.post(`${globals.authUrl}resend-verification`, { email });
 };
 
 /**
@@ -138,7 +138,7 @@ export const resendVerification = async (email: string): Promise<void> => {
  */
 export const deleteAccount = async (proof: { password?: string; confirmEmail?: string }): Promise<void> => {
   try {
-    const response = await axios.delete(`${globals.authUrl}me`, {
+    const response = await apiClient.delete(`${globals.authUrl}me`, {
       withCredentials: true,
       ...legacyAuthHeader(),
       data: proof,
@@ -151,7 +151,7 @@ export const deleteAccount = async (proof: { password?: string; confirmEmail?: s
 
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
   try {
-    const response = await axios.put(
+    const response = await apiClient.put(
       `${globals.authUrl}change-password`,
       { currentPassword, newPassword, confirmNewPassword },
       {

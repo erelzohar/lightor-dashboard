@@ -1,53 +1,15 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import { AppointmentType, Appointment } from '../types';
 import globals from './globals';
-import { install401Handler } from './authInterceptor';
 
-// Create an axios instance with default config for appointments
-const api = axios.create({
-  baseURL: globals.appointmentsUrl,
-  withCredentials: true,
-});
-install401Handler(api);
-
-// LT-009: the session now rides an HttpOnly cookie (withCredentials). This
-// Bearer interceptor is a transition shim for sessions that predate the
-// cookie — AuthContext migrates them at startup and clears localStorage, so
-// this finds nothing on any session created after LT-009. Delete it (and the
-// other copies of it) once pre-cookie tokens have aged out: 2027-02.
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('lightor');
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-// Create an axios instance with default config for appointments types
-const typesApi = axios.create({
-  baseURL: globals.typesUrl,
-  withCredentials: true,
-});
-install401Handler(typesApi);
-
-// Add request interceptor to include the token with each request
-typesApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('lightor');
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
+const APPOINTMENTS_URL = globals.appointmentsUrl;
+const TYPES_URL = globals.typesUrl;
 
 /* ------------------ Appointment Types ------------------ */
 
 export const getAppointmentTypes = async (webConfig_id: string): Promise<AppointmentType[]> => {
   try {
-    const res = await typesApi.get('webconfig/' + webConfig_id);
+    const res = await apiClient.get(`${TYPES_URL}webconfig/${webConfig_id}`);
     return res.data.data;
   } catch (err) {
     console.error('Failed to fetch appointment types:', err);
@@ -59,7 +21,7 @@ export const createAppointmentType = async (
   data: Omit<AppointmentType, '_id'>
 ): Promise<AppointmentType> => {
   try {
-    const res = await typesApi.post('/', data);
+    const res = await apiClient.post(TYPES_URL, data);
     return res.data.data;
   } catch (err) {
     console.error('Failed to create appointment type:', err);
@@ -72,7 +34,7 @@ export const updateAppointmentType = async (
   data: Partial<AppointmentType>
 ): Promise<AppointmentType> => {
   try {
-    const res = await typesApi.put(id, data);
+    const res = await apiClient.put(`${TYPES_URL}${id}`, data);
     return res.data.data;
   } catch (err) {
     console.error('Failed to update appointment type:', err);
@@ -82,7 +44,7 @@ export const updateAppointmentType = async (
 
 export const deleteAppointmentType = async (id: string): Promise<void> => {
   try {
-    await typesApi.delete(id);
+    await apiClient.delete(`${TYPES_URL}${id}`);
   } catch (err) {
     console.error('Failed to delete appointment type:', err);
     throw err;
@@ -108,7 +70,7 @@ export const getAppointments = async ({
 }): Promise<Appointment[]> => {
   try {
     if (!user_id) throw "user_id required";
-    const response = await api.get('/', {
+    const response = await apiClient.get(APPOINTMENTS_URL, {
       params: {
         user_id,
         startDate,
@@ -132,7 +94,7 @@ export const updateAppointmentStatus = async (
 ): Promise<Appointment> => {
   if (!id) return;
   try {
-    const res = await await api.put(id, { status });
+    const res = await apiClient.put(`${APPOINTMENTS_URL}${id}`, { status });
     return res.data.data;
   }
   catch (err) {

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
 import { PlanLimits } from './entitlementsApi';
 
@@ -21,7 +21,7 @@ const authHeaders = () => {
 };
 
 const get = async <T>(path: string, params?: Record<string, unknown>): Promise<T> => {
-  const response = await axios.get(`${globals.adminUrl}${path}`, {
+  const response = await apiClient.get(`${globals.adminUrl}${path}`, {
     withCredentials: true,
     headers: authHeaders(),
     params,
@@ -34,7 +34,7 @@ const send = async <T>(
   path: string,
   body?: Record<string, unknown>
 ): Promise<T> => {
-  const response = await axios.request({
+  const response = await apiClient.request({
     method,
     url: `${globals.adminUrl}${path}`,
     withCredentials: true,

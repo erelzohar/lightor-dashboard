@@ -1,21 +1,5 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
-import { install401Handler } from './authInterceptor';
-
-const api = axios.create({
-    baseURL: globals.instagramUrl,
-    withCredentials: true,
-});
-install401Handler(api);
-
-// LT-009 transition shim, same as the other services — delete 2027-02.
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('lightor');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
 
 /**
  * Exchange an Instagram Login authorization code for a short-lived Graph
@@ -27,6 +11,6 @@ export const exchangeInstagramCode = async (
     code: string,
     redirectUri: string
 ): Promise<{ accessToken: string; userId: string }> => {
-    const res = await api.post('/oauth/exchange', { code, redirectUri });
+    const res = await apiClient.post(`${globals.instagramUrl}oauth/exchange`, { code, redirectUri });
     return res.data.data;
 };

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
 
 /**
@@ -15,7 +15,7 @@ const authHeaders = () => {
 
 export const fetchCalendarFeedUrl = async (): Promise<string | null> => {
   try {
-    const response = await axios.get(`${globals.calendarUrl}feed-info`, {
+    const response = await apiClient.get(`${globals.calendarUrl}feed-info`, {
       withCredentials: true,
       ...authHeaders(),
     });
@@ -27,7 +27,7 @@ export const fetchCalendarFeedUrl = async (): Promise<string | null> => {
 
 export const regenerateCalendarFeedUrl = async (): Promise<string | null> => {
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       `${globals.calendarUrl}feed/regenerate`,
       {},
       { withCredentials: true, ...authHeaders() }
@@ -53,7 +53,7 @@ export interface GoogleCalendarStatus {
 
 export const fetchGoogleCalendarStatus = async (): Promise<GoogleCalendarStatus | null> => {
   try {
-    const response = await axios.get(`${globals.calendarUrl}google/status`, {
+    const response = await apiClient.get(`${globals.calendarUrl}google/status`, {
       withCredentials: true,
       ...authHeaders(),
     });
@@ -65,7 +65,7 @@ export const fetchGoogleCalendarStatus = async (): Promise<GoogleCalendarStatus 
 
 export const fetchGoogleConnectUrl = async (): Promise<string | null> => {
   try {
-    const response = await axios.get(`${globals.calendarUrl}google/connect-url`, {
+    const response = await apiClient.get(`${globals.calendarUrl}google/connect-url`, {
       withCredentials: true,
       ...authHeaders(),
     });
@@ -77,7 +77,7 @@ export const fetchGoogleConnectUrl = async (): Promise<string | null> => {
 
 export const disconnectGoogleCalendar = async (): Promise<boolean> => {
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       `${globals.calendarUrl}google/disconnect`,
       {},
       { withCredentials: true, ...authHeaders() }

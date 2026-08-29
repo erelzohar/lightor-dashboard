@@ -1,26 +1,7 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
-import { install401Handler } from './authInterceptor';
 
-// Create axios instance
-const api = axios.create({
-    baseURL: globals.imagesUrl, // e.g., https://api.yourdomain.com/images
-    withCredentials: true,
-});
-install401Handler(api);
-
-// LT-009: the session now rides an HttpOnly cookie (withCredentials). This
-// Bearer interceptor is a transition shim for sessions that predate the
-// cookie — AuthContext migrates them at startup and clears localStorage, so
-// this finds nothing on any session created after LT-009. Delete it (and the
-// other copies of it) once pre-cookie tokens have aged out: 2027-02.
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('lightor');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+const URL = globals.imagesUrl;
 
 /**
  * Upload a single image
@@ -32,7 +13,7 @@ export const uploadImage = async (file: File): Promise<{ imageName: string }> =>
         const formData = new FormData();
         formData.append('image', file);
 
-        const res = await api.post('/', formData, {
+        const res = await apiClient.post(URL, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -48,7 +29,7 @@ export const uploadImage = async (file: File): Promise<{ imageName: string }> =>
  */
 export const getImageById = async (id: string): Promise<{ url: string; name: string; id: string }> => {
     try {
-        const res = await api.get(id);
+        const res = await apiClient.get(`${URL}${id}`);
         return res.data.data;
     } catch (err) {
         console.error('Failed to fetch image:', err);
@@ -61,7 +42,7 @@ export const getImageById = async (id: string): Promise<{ url: string; name: str
  */
 export const deleteImage = async (id: string): Promise<void> => {
     try {
-        await api.delete(id);
+        await apiClient.delete(`${URL}${id}`);
     } catch (err) {
         console.error('Failed to delete image:', err);
         throw err;
@@ -74,6 +55,6 @@ export const deleteImage = async (id: string): Promise<void> => {
  * pipeline as manual uploads, and answers with the stored name. (LT-010)
  */
 export const importImageFromUrl = async (url: string): Promise<{ imageName: string }> => {
-    const res = await api.post('/import-from-url', { url });
+    const res = await apiClient.post(`${URL}import-from-url`, { url });
     return res.data.data;
 };

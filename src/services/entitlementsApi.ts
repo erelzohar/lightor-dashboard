@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import globals from './globals';
 
 /**
@@ -33,7 +33,7 @@ export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {
   // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
   try {
-    const response = await axios.get(`${globals.entitlementsUrl}me`, {
+    const response = await apiClient.get(`${globals.entitlementsUrl}me`, {
       withCredentials: true,
       ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     });
