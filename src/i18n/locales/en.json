@@ -225,7 +225,8 @@
     "or": "or",
     "rememberMe": "Remember me",
     "noAccount": "Don't have an account?",
-    "registerHere": "Register here"
+    "registerHere": "Register here",
+    "sessionExpired": "Your session has expired. Please sign in again."
   },
   "onboarding": {
     "welcomeTitle": "Welcome, {{name}}!",

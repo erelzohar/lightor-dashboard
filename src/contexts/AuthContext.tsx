@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { AuthState, User } from '../types';
 import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout as storeLogout } from '../store/slices/userSlice';
+import { setUnauthorizedHandler } from '../services/authInterceptor';
 import i18n from '../i18n/config';
 interface AuthContextType {
   auth: AuthState;
@@ -36,6 +38,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
+  // Auto-logout when a request comes back 401 (expired/invalid token) so the
+  // user is bounced to login in place — no page refresh needed. Refs let the
+  // once-registered handler always see the latest auth state and logout fn.
+  const isAuthedRef = useRef(false);
+  const logoutRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    isAuthedRef.current = auth.isAuthenticated;
+  }, [auth.isAuthenticated]);
+  useEffect(() => {
+    return setUnauthorizedHandler(() => {
+      // Ignore 401s while logged out — e.g. a failed login is also a 401 and
+      // must not trigger this. Flip the ref immediately to dedupe the burst of
+      // 401s a Promise.all of expired requests produces.
+      if (!isAuthedRef.current) return;
+      isAuthedRef.current = false;
+      toast.error(i18n.t('login.sessionExpired', { defaultValue: 'Your session has expired. Please sign in again.' }));
+      logoutRef.current();
+    });
+  }, []);
 
   // Initial authentication check (runs ONLY on first load)
   useEffect(() => {
@@ -226,6 +248,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch(storeLogout());
     navigate('/', { replace: true });
   };
+  // Keep the 401 handler pointed at the current logout closure.
+  logoutRef.current = logout;
 
   return (
     <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>

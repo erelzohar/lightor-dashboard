@@ -1,10 +1,12 @@
 import axios from 'axios';
 import globals from './globals';
+import { install401Handler } from './authInterceptor';
 
 const api = axios.create({
     baseURL: globals.instagramUrl,
     withCredentials: true,
 });
+install401Handler(api);
 
 // LT-009 transition shim, same as the other services — delete 2027-02.
 api.interceptors.request.use((config) => {

@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { WebConfig } from '../types';
 import globals from './globals';
+import { install401Handler } from './authInterceptor';
 
 // Create an axios instance with default config
 const api = axios.create({
   baseURL: globals.webConfigsUrl,
   withCredentials: true,
 });
+install401Handler(api);
 
 // LT-009: the session now rides an HttpOnly cookie (withCredentials). This
 // Bearer interceptor is a transition shim for sessions that predate the

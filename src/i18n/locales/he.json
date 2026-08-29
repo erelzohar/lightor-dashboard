@@ -225,7 +225,8 @@
     "or": "או",
     "rememberMe": "זכור אותי",
     "noAccount": "אין לך חשבון?",
-    "registerHere": "הירשם כאן"
+    "registerHere": "הירשם כאן",
+    "sessionExpired": "פג תוקף החיבור. יש להתחבר מחדש."
   },
   "onboarding": {
     "welcomeTitle": "ברוך הבא, {{name}}!",

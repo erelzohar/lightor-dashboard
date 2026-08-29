@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { AppointmentType, Appointment } from '../types';
 import globals from './globals';
+import { install401Handler } from './authInterceptor';
 
 // Create an axios instance with default config for appointments
 const api = axios.create({
   baseURL: globals.appointmentsUrl,
   withCredentials: true,
 });
+install401Handler(api);
 
 // LT-009: the session now rides an HttpOnly cookie (withCredentials). This
 // Bearer interceptor is a transition shim for sessions that predate the
@@ -28,6 +30,7 @@ const typesApi = axios.create({
   baseURL: globals.typesUrl,
   withCredentials: true,
 });
+install401Handler(typesApi);
 
 // Add request interceptor to include the token with each request
 typesApi.interceptors.request.use((config) => {
