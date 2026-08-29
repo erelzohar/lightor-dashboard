@@ -12,8 +12,10 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { updateWebConfig, createWebConfig, fetchWebConfig } from '../store/slices/webConfigSlice';
 import { aiService, trimHistory, type AiSiteConfig } from '../services/aiApi';
-import { createAppointmentType, updateAppointmentType } from '../services/appointmentsApi';
+import { createAppointmentType, updateAppointmentType, deleteAppointmentType } from '../services/appointmentsApi';
+import { deleteImage } from '../services/imagesApi';
 import { createVacation } from '../services/vacationsApi';
+import { reconcileAppointmentTypes, removedStoredImages } from '../utils/aiReconcile';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 
@@ -232,22 +234,38 @@ const AiBuilder: React.FC = () => {
         await updateUser({ webConfig_id: newConf._id, boardingStatus: 'onboarded' });
       }
 
-      if (appointmentTypes?.length) {
-        // The AI fabricates valid-looking 24-hex ids for services it invents,
-        // so "looks like an ObjectId" can't tell a new service from an existing
-        // one — PUTting a fabricated id 404s. Trust only the ids the server
-        // actually returned for this site (populated on webConfig); anything
-        // else is new and must be created.
-        const existingTypeIds = new Set(
-          (webConfig?.appointmentTypes ?? []).map((t) => t._id)
+      // Reconcile services against what the server actually has: create the
+      // AI's new ones, update existing ones by their real id, and DELETE the
+      // ones the AI dropped.
+      //
+      // GUARD: only reconcile when the AI actually returned an appointmentTypes
+      // array. The edit response replaces draftConfig wholesale, so an *omitted*
+      // key must mean "unchanged", never "delete them all" — deletes only fire
+      // when the array is present (`[]` = a deliberate "remove all").
+      if (appointmentTypes) {
+        const { toCreate, toUpdate, toDeleteIds } = reconcileAppointmentTypes(
+          appointmentTypes as AppointmentType[],
+          webConfig?.appointmentTypes ?? []
         );
-        await Promise.all(
-          appointmentTypes.map((type) => {
-            const { _id, ...rest } = type as AppointmentType;
-            if (_id && existingTypeIds.has(_id)) return updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId });
-            return createAppointmentType({ ...rest, webConfig_id: savedConfigId });
-          })
+        await Promise.all([
+          ...toCreate.map((rest) => createAppointmentType({ ...rest, webConfig_id: savedConfigId })),
+          ...toUpdate.map(({ _id, ...rest }) => updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId })),
+          // Best-effort — the helper swallows its own errors so a failed delete
+          // never fails the save.
+          ...toDeleteIds.map((id) => deleteAppointmentType(id)),
+        ]);
+      }
+
+      // Portfolio images the AI removed: delete the underlying uploads so they
+      // don't orphan in storage. Same presence guard — skip entirely if the AI
+      // omitted the items array, so a dropped key never wipes the gallery.
+      const draftPortfolio = (draftConfig as unknown as WebConfig).components?.portfolio?.items;
+      if (draftPortfolio) {
+        const removedImages = removedStoredImages(
+          (webConfig?.components?.portfolio?.items ?? []).map((i) => i.url),
+          draftPortfolio.map((i) => i.url)
         );
+        await Promise.all(removedImages.map((name) => deleteImage(name)));
       }
 
       if (vacations?.length) {
