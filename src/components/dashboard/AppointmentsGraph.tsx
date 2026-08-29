@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, subYears, startOfYear, endOfYear, addMonths, addYears, addWeeks, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Appointment } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import Card from '../ui/Card';
@@ -36,6 +36,26 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
     const handleResize = () => setIsMobile(window.innerWidth < 1300);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Chart sizing (LT-083): Recharts' ResponsiveContainer takes its first
+  // measurement while the dashboard grid is still settling, so the chart
+  // painted shrunken until a window resize. We measure the wrapper ourselves
+  // with a ResizeObserver and mount the chart only once a real width exists —
+  // the first paint is correct by construction, and later layout changes
+  // (sidebar, grid, window) re-measure automatically.
+  const chartWrapRef = React.useRef<HTMLDivElement>(null);
+  const [chartSize, setChartSize] = React.useState<{ w: number; h: number } | null>(null);
+
+  React.useEffect(() => {
+    const el = chartWrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (width > 0 && height > 0) setChartSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   const getDateRange = () => {
@@ -243,9 +263,13 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
           </div>
         </div>
 
-        <div className="h-[22rem] p-0 px-1 flex-1">
-          <ResponsiveContainer width={window.innerWidth < 500 ? '110%' : '100%'} height="100%">
+        <div ref={chartWrapRef} className="h-[22rem] p-0 px-1 flex-1">
+          {chartSize && (
             <BarChart
+              // Preserves the old ResponsiveContainer quirk: on very narrow
+              // screens the chart renders 10% wider than its box.
+              width={Math.round(chartSize.w * (window.innerWidth < 500 ? 1.1 : 1))}
+              height={Math.round(chartSize.h)}
               data={data}
               margin={{ top: 10, right: 0, left: 0, bottom: 20 }}
               className={direction === 'rtl' ? 'direction-rtl' : ''}
@@ -307,7 +331,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
               <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />
               <Bar dataKey="cancelled" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
             </BarChart>
-          </ResponsiveContainer>
+          )}
         </div>
       </Card>
     </motion.div>
