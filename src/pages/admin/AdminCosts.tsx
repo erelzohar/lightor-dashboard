@@ -24,6 +24,7 @@ import {
   CostsSummary,
   TenantCost,
 } from '../../services/adminApi';
+import { resetWizardAiLimit } from '../../utils/resetWizardAiLimit';
 
 /**
  * Admin → Costs (LT-058): the operator's burn-rate view. Live months come
@@ -39,13 +40,21 @@ const AdminCosts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
 
-  // LT-076: prod-testing escape hatch — clears this IP's daily visitor AI
-  // budget (the register wizard) and the admin's own monthly counters.
+  // LT-076/LT-077: prod-testing escape hatch — one click clears BOTH gates:
+  // the server's Redis budgets (this IP's daily wizard allowance + the
+  // admin's monthly counters) and this browser's client-side wizard counter
+  // (via a hidden same-site iframe of the register's /reset-ai.html).
   const handleResetQuota = async () => {
     setResetting(true);
     try {
-      await resetAiQuota();
-      toast.success(t('admin.costs.resetQuotaDone'));
+      const [, localCleared] = await Promise.all([resetAiQuota(), resetWizardAiLimit()]);
+      if (localCleared) {
+        toast.success(t('admin.costs.resetQuotaDone'));
+      } else {
+        // Server budgets are clear; only this browser's wizard counter failed.
+        toast.success(t('admin.costs.resetQuotaDone'));
+        toast.error(t('admin.costs.resetQuotaLocalFailed'));
+      }
     } catch {
       toast.error(t('admin.costs.resetQuotaFailed'));
     } finally {

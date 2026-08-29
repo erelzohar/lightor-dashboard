@@ -778,9 +778,10 @@
       "topConsumers": "Top consumers",
       "noTenantData": "No attributed usage this month",
       "resetQuota": "Reset AI test quota",
-      "resetQuotaHint": "Clears this device's daily AI limits (register wizard) and your account's monthly AI limits — for testing",
+      "resetQuotaHint": "Clears the server AI limits (this IP's daily wizard budget + your account's monthly) and this browser's wizard counter — for testing",
       "resetQuotaDone": "AI quota reset — you can keep testing",
       "resetQuotaFailed": "Could not reset the AI quota",
+      "resetQuotaLocalFailed": "Server limits cleared, but this browser's wizard counter could not be reset",
       "columns": {
         "cost": "Cost"
       }
