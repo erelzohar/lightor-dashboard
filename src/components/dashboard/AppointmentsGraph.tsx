@@ -192,7 +192,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
       className="h-full"
     >
       <Card className="-mx-4.5 px-1 h-full flex flex-col">
-        <div className="flex flex-col sm:flex-row justify-around items-center gap-4 mb-6">
+        {/* flex-wrap: at narrow card widths the control groups drop to the
+            next line instead of overflowing the card border (LT-082). */}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap justify-around items-center gap-4 mb-6">
           <h3 className="font-semibold text-lg flex items-center gap-2">
             {getRangeTitle()}
           </h3>
@@ -227,7 +229,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
               </Button>
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {timeRangeOptions.map((option) => (
               <Button
                 key={option.value}
