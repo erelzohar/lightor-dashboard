@@ -56,11 +56,11 @@ export const serverLogout = async (): Promise<void> => {
   }
 };
 
-export const loginUser = async (username: string, password: string, staySignedIn = false): Promise<{ token: string; user: User }> => {
+export const loginUser = async (email: string, password: string, staySignedIn = false): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(
       globals.authUrl + 'login',
-      { username, password, staySignedIn },
+      { email, password, staySignedIn },
       { withCredentials: true },
     );
     if (response.data?.success) {

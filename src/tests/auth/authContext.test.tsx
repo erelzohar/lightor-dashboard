@@ -35,7 +35,6 @@ vi.mock('../../i18n/config', () => ({ default: { changeLanguage: vi.fn() } }));
 const user = (overrides: Partial<User> = {}): User =>
   ({
     _id: 'u1',
-    username: 'jane',
     email: 'jane@biz.com',
     phone: '0501234567',
     name: 'Jane',

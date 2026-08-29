@@ -42,11 +42,11 @@ describe('authApi', () => {
     it('on login', async () => {
       const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
-      await loginUser('jane', 'secret');
+      await loginUser('jane@biz.com', 'secret');
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}login`,
-        { username: 'jane', password: 'secret', staySignedIn: false },
+        { email: 'jane@biz.com', password: 'secret', staySignedIn: false },
         { withCredentials: true }
       );
     });
@@ -54,11 +54,11 @@ describe('authApi', () => {
     it('forwards the remember-me flag when set', async () => {
       const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
-      await loginUser('jane', 'secret', true);
+      await loginUser('jane@biz.com', 'secret', true);
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}login`,
-        { username: 'jane', password: 'secret', staySignedIn: true },
+        { email: 'jane@biz.com', password: 'secret', staySignedIn: true },
         { withCredentials: true }
       );
     });

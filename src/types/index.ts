@@ -155,7 +155,6 @@ export interface WebConfig {
 
 export interface User {
   _id: string;
-  username: string;
   password?: string;
   webConfig_id?: string;
   email: string;

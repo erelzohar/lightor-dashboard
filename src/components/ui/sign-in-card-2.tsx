@@ -19,7 +19,7 @@ function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>
 }
 
 interface SignInCardProps {
-  onSubmit: (username: string, password: string, staySignedIn: boolean) => Promise<void>;
+  onSubmit: (email: string, password: string, staySignedIn: boolean) => Promise<void>;
   onGoogleLogin: () => void;
   onFacebookLogin: () => void;
   isLoading?: boolean;
@@ -29,14 +29,14 @@ interface SignInCardProps {
 export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error }: SignInCardProps) {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit(username, password, rememberMe);
+    await onSubmit(email, password, rememberMe);
   };
 
   return (
@@ -148,21 +148,22 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
             {/* Login form */}
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="space-y-3">
-                {/* Username input */}
-                <div className={`relative ${focusedInput === 'username' ? 'z-10' : ''}`}>
+                {/* Email input */}
+                <div className={`relative ${focusedInput === 'email' ? 'z-10' : ''}`}>
                   <div className="relative flex items-center overflow-hidden rounded-lg">
-                    <Mail className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === 'username' ? 'text-white' : 'text-white/40'}`} />
+                    <Mail className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === 'email' ? 'text-white' : 'text-white/40'}`} />
                     <LocalInput
-                      type="text"
-                      placeholder={t('login.enterUsername')}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      onFocus={() => setFocusedInput('username')}
+                      type="email"
+                      autoComplete="email"
+                      placeholder={t('login.enterEmail')}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedInput('email')}
                       onBlur={() => setFocusedInput(null)}
                       className="w-full bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30 h-10 transition-all duration-300 pl-10 pr-3 focus:bg-white/10 rounded-lg"
                       required
                     />
-                    {focusedInput === 'username' && (
+                    {focusedInput === 'email' && (
                       <motion.div
                         layoutId="input-highlight"
                         className="absolute inset-0 bg-white/5 -z-10"

@@ -102,7 +102,6 @@ describe('adminApi', () => {
     const created = await createUser({
       name: 'New Biz',
       email: 'new@biz.com',
-      username: 'newbiz',
       password: 'secret123',
       isVerified: true,
     });
@@ -112,7 +111,7 @@ describe('adminApi', () => {
       expect.objectContaining({
         method: 'post',
         url: `${globals.adminUrl}users`,
-        data: expect.objectContaining({ username: 'newbiz', isVerified: true }),
+        data: expect.objectContaining({ email: 'new@biz.com', isVerified: true }),
         withCredentials: true,
       })
     );

@@ -25,7 +25,7 @@ interface UserFormModalProps {
   open: boolean;
   mode: 'create' | 'edit';
   /** Prefill for edit mode. */
-  user?: Pick<AdminUserRow, '_id' | 'name' | 'email' | 'phone' | 'defaultLanguage' | 'channelType'> & { username?: string };
+  user?: Pick<AdminUserRow, '_id' | 'name' | 'email' | 'phone' | 'defaultLanguage' | 'channelType'>;
   onClose: () => void;
   /** Fires after a successful save with the affected user's id. */
   onSaved: (userId: string) => void;
@@ -47,7 +47,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
   const [form, setForm] = useState({
     name: '',
     email: '',
-    username: '',
     password: '',
     phone: '',
     defaultLanguage: 'he',
@@ -60,7 +59,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
     setForm({
       name: user?.name ?? '',
       email: user?.email ?? '',
-      username: user?.username ?? '',
       password: '',
       phone: user?.phone ?? '',
       defaultLanguage: user?.defaultLanguage ?? 'he',
@@ -80,7 +78,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
         const created = await createUser({
           name: form.name.trim(),
           email: form.email.trim(),
-          username: form.username.trim(),
           password: form.password,
           ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
           defaultLanguage: form.defaultLanguage,
@@ -93,7 +90,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
         const updated = await updateUserInfo(user!._id, {
           name: form.name.trim(),
           email: form.email.trim(),
-          ...(form.username.trim() ? { username: form.username.trim() } : {}),
           phone: form.phone.trim(),
           defaultLanguage: form.defaultLanguage,
           channelType: form.channelType,
@@ -155,15 +151,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
                   value={form.email}
                   onChange={(e) => set('email', e.target.value)}
                   required
-                />
-                <Input
-                  label={t('admin.userForm.username')}
-                  dir="ltr"
-                  value={form.username}
-                  onChange={(e) => set('username', e.target.value)}
-                  required={mode === 'create'}
-                  minLength={3}
-                  maxLength={35}
                 />
               </div>
 

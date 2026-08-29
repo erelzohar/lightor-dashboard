@@ -7,7 +7,6 @@ interface ErrorReport {
     componentStack?: string;
     userInfo?: {
         id: string;
-        username: string;
         email: string;
     };
     url: string;

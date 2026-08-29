@@ -103,7 +103,6 @@ export interface AdminUserRow {
   email: string;
   phone?: string;
   /** Present on the detail endpoint (full document); absent from list rows. */
-  username?: string;
   role: 'admin' | 'client' | 'user';
   isVerified: boolean;
   boardingStatus: 'new' | 'onboarded' | 'active';
@@ -283,7 +282,6 @@ export const fetchUsers = async (query: AdminUsersQuery = {}): Promise<Paginated
 export interface AdminCreateUserInput {
   name: string;
   email: string;
-  username: string;
   password: string;
   phone?: string;
   defaultLanguage?: string;

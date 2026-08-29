@@ -53,7 +53,6 @@ class ErrorBoundaryClass extends Component<
       componentStack: errorInfo.componentStack,
       userInfo: user ? {
         id: user._id,
-        username: user.username,
         email: user.email || user.mail,
       } : undefined,
       url: window.location.href,
