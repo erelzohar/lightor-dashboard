@@ -263,7 +263,13 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
           </div>
         </div>
 
-        <div ref={chartWrapRef} className="h-[22rem] p-0 px-1 flex-1">
+        {/* min-h, not h (LT-084): with flex-1, flex-basis:0% overrides a
+            plain height in the flex algorithm, so when nothing else
+            stretched the card (e.g. a data-less week) this wrapper collapsed
+            to ~0px and the plot vanished. min-height is respected as a floor
+            even at basis 0, and flex-1 still grows it when the row is
+            taller. */}
+        <div ref={chartWrapRef} className="min-h-[22rem] p-0 px-1 flex-1">
           {chartSize && (
             <BarChart
               // Preserves the old ResponsiveContainer quirk: on very narrow
