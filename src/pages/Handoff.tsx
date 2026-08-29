@@ -39,7 +39,7 @@ const Handoff: React.FC = () => {
         // Full navigation, not client-side routing: the exchange set the
         // HttpOnly session cookie (LT-009), and a fresh load makes
         // AuthContext initialise from it everywhere at once.
-        window.location.replace('/dashboard');
+        window.location.replace('/');
       })
       .catch(() => setFailed(true));
   }, []);

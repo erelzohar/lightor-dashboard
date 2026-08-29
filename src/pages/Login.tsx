@@ -21,7 +21,7 @@ const Login: React.FC = () => {
   });
 
   if (auth.isLoading) return null;
-  if (auth.isAuthenticated) return <Navigate to="/dashboard" />;
+  if (auth.isAuthenticated) return <Navigate to="/" />;
 
   document.title = t('login.title');
 

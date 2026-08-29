@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       setAuth(prev => ({
         ...prev,
@@ -147,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       setAuth(prev => ({
         ...prev,
@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       setAuth(prev => ({
         ...prev,

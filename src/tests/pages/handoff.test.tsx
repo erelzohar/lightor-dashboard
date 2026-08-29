@@ -44,7 +44,7 @@ describe('Handoff', () => {
 
     render(<Handoff />);
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/'));
   });
 
   it('reads a token that is not the first fragment parameter', async () => {

@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
+import LegacyDashboardRedirect from './components/routing/LegacyDashboardRedirect';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Pages
@@ -47,13 +48,12 @@ function App() {
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>
-                  <Route path="/" element={<Login />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/handoff" element={<Handoff />} />
                   <Route path="/instagram-callback" element={<InstagramCallback />} />
                   <Route path="/verify" element={<VerifyEmail />} />
                   <Route path="/verify/:token" element={<VerifyEmail />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                     <Route index element={<Dashboard />} />
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="schedule-vacations" element={<ScheduleVacations />} />
@@ -71,6 +71,7 @@ function App() {
                     <Route path="subscriptions" element={<AdminSubscriptions />} />
                     <Route path="costs" element={<AdminCosts />} />
                   </Route>
+                  <Route path="/dashboard/*" element={<LegacyDashboardRedirect />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </ErrorBoundaryWithLanguage>

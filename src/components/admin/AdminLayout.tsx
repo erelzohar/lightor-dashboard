@@ -9,7 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
  * Shell for the operator admin panel (LT-058). Deliberately NOT the owner
  * Layout: that component is entangled with tenant concerns — the webConfig
  * fetch, the onboarding welcome, the restricted-mode redirect to
- * /dashboard/ai (which would fight /admin paths), the floating AI assistant.
+ * /ai (which would fight /admin paths), the floating AI assistant.
  * This is just sidebar + topbar + outlet with the same flex/dark/RTL shell.
  */
 const AdminLayout: React.FC = () => {

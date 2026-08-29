@@ -11,8 +11,6 @@ import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 
-const ALLOWED_WHEN_RESTRICTED = ['/dashboard', '/dashboard/ai'];
-
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [welcomeLoading, setWelcomeLoading] = useState(false);
@@ -53,27 +51,28 @@ const Layout: React.FC = () => {
   const isRestricted =
     boardingStatus === 'new' && webConfigChecked && !webConfigData?.businessName;
 
-  // Guard restricted users away from locked pages
-  useEffect(() => {
-    if (!isRestricted) return;
-    const allowed = ALLOWED_WHEN_RESTRICTED.some(
-      (p) => location.pathname === p || location.pathname.startsWith(p + '/')
-    );
-    if (!allowed) navigate('/dashboard/ai', { replace: true });
-  }, [isRestricted, location.pathname, navigate]);
+  // No route guard for restricted users: the one that used to sit here never
+  // fired. Its allow-list was ['/dashboard', '/dashboard/ai'] tested with
+  // `pathname.startsWith(p + '/')`, and every page in this Layout lived under
+  // /dashboard — so everything matched the first entry and nothing was ever
+  // redirected. Rewriting it for the LT-087 root paths would have switched it
+  // on for the first time and locked new accounts out of pages they can reach
+  // today, so it went instead. Sidebar still hides the nav entries for
+  // restricted users (exact match, no prefix bug), which is the half that
+  // works. Re-add a real guard here deliberately if the restriction is wanted.
 
   const handleGetStarted = async () => {
     if (isRestricted) {
       // No webConfig yet — just navigate to AI builder, don't advance status
       setWelcomeDismissed(true);
-      navigate('/dashboard/ai');
+      navigate('/ai');
       return;
     }
     // Has existing webConfig — advance status and go to dashboard
     setWelcomeLoading(true);
     try {
       await updateUser({ boardingStatus: 'onboarded' });
-      navigate('/dashboard');
+      navigate('/');
     } finally {
       setWelcomeLoading(false);
     }
@@ -104,7 +103,7 @@ const Layout: React.FC = () => {
       {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && (
         <FloatingAiAssistant
           direction={direction}
-          onSend={(msg) => navigate('/dashboard/ai', { state: { floatingMessage: msg } })}
+          onSend={(msg) => navigate('/ai', { state: { floatingMessage: msg } })}
         />
       )}
 

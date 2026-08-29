@@ -30,11 +30,11 @@ const hoursAgo = (n: number) => new Date(Date.now() - n * 60 * 60 * 1000).toISOS
 
 const renderRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/dashboard']}>
+    <MemoryRouter initialEntries={['/']}>
       <Routes>
         <Route path="/login" element={<div>login-page</div>} />
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
               <div>dashboard-content</div>

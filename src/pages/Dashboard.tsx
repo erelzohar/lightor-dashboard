@@ -52,10 +52,10 @@ const Dashboard: React.FC = () => {
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
 
   const setupSteps = [
-    { key: 'businessName', label: t('onboarding.step_businessName'), done: !!(webConfig?.businessName?.trim()), icon: Briefcase, tab: '/dashboard/settings' },
-    { key: 'phone', label: t('onboarding.step_phone'), done: !!(webConfig?.contact?.phone?.trim()), icon: Phone, tab: '/dashboard/settings' },
-    { key: 'address', label: t('onboarding.step_address'), done: !!(webConfig?.address?.city?.trim() && webConfig?.address?.street?.trim()), icon: MapPin, tab: '/dashboard/settings' },
-    { key: 'workingHours', label: t('onboarding.step_workingHours'), done: !!(webConfig?.workingDays?.some(d => d !== null)), icon: Clock, tab: '/dashboard/schedule-vacations' },
+    { key: 'businessName', label: t('onboarding.step_businessName'), done: !!(webConfig?.businessName?.trim()), icon: Briefcase, tab: '/settings' },
+    { key: 'phone', label: t('onboarding.step_phone'), done: !!(webConfig?.contact?.phone?.trim()), icon: Phone, tab: '/settings' },
+    { key: 'address', label: t('onboarding.step_address'), done: !!(webConfig?.address?.city?.trim() && webConfig?.address?.street?.trim()), icon: MapPin, tab: '/settings' },
+    { key: 'workingHours', label: t('onboarding.step_workingHours'), done: !!(webConfig?.workingDays?.some(d => d !== null)), icon: Clock, tab: '/schedule-vacations' },
     // Services seeded from the AI wizard arrive without a price on purpose
     // (LT-026), so merely having services is not "done" — the owner has to go
     // in and price them. Otherwise the checklist would tick itself and the
@@ -67,9 +67,9 @@ const Dashboard: React.FC = () => {
         : t('onboarding.step_serviceTypes'),
       done: appointmentTypes.length > 0 && appointmentTypes.every(type => !!type.price?.toString().trim()),
       icon: Tag,
-      tab: '/dashboard/appointment-types',
+      tab: '/appointment-types',
     },
-    { key: 'logo', label: t('onboarding.step_logo'), done: !!(webConfig?.logoImageName?.trim()), icon: Image, tab: '/dashboard/settings' },
+    { key: 'logo', label: t('onboarding.step_logo'), done: !!(webConfig?.logoImageName?.trim()), icon: Image, tab: '/settings' },
   ];
   const doneCount = setupSteps.filter(s => s.done).length;
   const progressPct = Math.round((doneCount / setupSteps.length) * 100);
@@ -294,7 +294,7 @@ const Dashboard: React.FC = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/dashboard/settings')}
+                    onClick={() => navigate('/settings')}
                     className="mt-1 mb-2 bg-black/80 hover:bg-black text-white font-medium px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-colors text-sm shadow-lg"
                   >
                     {t('common.exploreAppBtn')}
@@ -335,7 +335,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => navigate('/dashboard/account')}
+              onClick={() => navigate('/account')}
               className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
             >
               {t('common.upgradePlanBtn')}

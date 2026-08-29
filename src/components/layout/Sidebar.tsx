@@ -28,7 +28,7 @@ interface SidebarProps {
   isRestricted?: boolean;
 }
 
-const ALLOWED_WHEN_RESTRICTED = ['/dashboard', '/dashboard/ai'];
+const ALLOWED_WHEN_RESTRICTED = ['/', '/ai'];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isRestricted = false }) => {
   const { t } = useTranslation();
@@ -41,18 +41,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isRestricted =
     {
       label: t('sidebar.navigation'),
       items: [
-        { path: '/dashboard', Icon: LayoutDashboard, name: t('common.dashboard') },
-        { path: '/dashboard/ai', Icon: Sparkles, name: t('common.aiBuilder') },
-        { path: '/dashboard/appointments', Icon: CalendarRange, name: t('common.appointments') },
+        { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
+        { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
+        { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
       ],
     },
     {
       label: t('sidebar.manage'),
       items: [
-        { path: '/dashboard/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
-        { path: '/dashboard/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
-        { path: '/dashboard/portfolio', Icon: ImageIcon, name: t('common.portfolio') },
-        { path: '/dashboard/settings', Icon: Settings, name: t('common.settings') },
+        { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
+        { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
+        { path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') },
+        { path: '/settings', Icon: Settings, name: t('common.settings') },
       ],
     },
     // Operator-only section (LT-058). Reading role here is display logic —
@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isRestricted =
         {isOpen ? (
           <div
             className="mx-2 mt-4 p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 cursor-pointer hover:border-primary/20 transition-all flex-shrink-0"
-            onClick={() => navigate('/dashboard/account')}
+            onClick={() => navigate('/account')}
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-lg shadow-primary/20">
@@ -232,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isRestricted =
           <div className="flex justify-center mb-3 flex-shrink-0">
             <div
               className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-sm font-bold cursor-pointer shadow-lg shadow-primary/20"
-              onClick={() => navigate('/dashboard/account')}
+              onClick={() => navigate('/account')}
               title={auth.user?.name}
             >
               {auth.user?.name?.charAt(0).toUpperCase() || 'A'}

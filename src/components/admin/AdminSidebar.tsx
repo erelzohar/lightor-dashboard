@@ -144,7 +144,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) =>
             .join(' ')}
         >
           <NavLink
-            to="/dashboard"
+            to="/"
             className={[
               'flex items-center gap-3 px-3 py-2.5 rounded-lg w-full',
               'text-gray-600 dark:text-dark-gray hover:bg-white dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-dark-text transition-colors',

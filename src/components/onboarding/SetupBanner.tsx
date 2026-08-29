@@ -62,7 +62,7 @@ const SetupBanner: React.FC<Props> = ({ steps }) => {
         </div>
 
         <button
-          onClick={() => navigate('/dashboard/settings')}
+          onClick={() => navigate('/settings')}
           className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline shrink-0 self-end sm:self-auto"
         >
           {t('onboarding.completeSetup')}

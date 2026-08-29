@@ -35,7 +35,7 @@ const renderRoute = () =>
     <MemoryRouter initialEntries={['/admin']}>
       <Routes>
         <Route path="/login" element={<div>login-page</div>} />
-        <Route path="/dashboard" element={<div>owner-dashboard</div>} />
+        <Route path="/" element={<div>owner-dashboard</div>} />
         <Route
           path="/admin"
           element={

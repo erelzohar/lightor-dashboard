@@ -189,7 +189,7 @@ describe('AuthContext', () => {
       await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
       expect(loginUser).toHaveBeenCalledWith('jane', 'secret', true);
       expect(getCurrentUser).toHaveBeenCalledTimes(2);
-      expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true });
+      expect(navigate).toHaveBeenCalledWith('/', { replace: true });
     });
 
     it('reports bad credentials without navigating', async () => {
@@ -216,7 +216,7 @@ describe('AuthContext', () => {
 
       await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
       expect(googleLogin).toHaveBeenCalledWith('g-cred');
-      expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true });
+      expect(navigate).toHaveBeenCalledWith('/', { replace: true });
     });
 
     it('signs in with Facebook', async () => {

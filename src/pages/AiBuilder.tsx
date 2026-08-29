@@ -286,7 +286,7 @@ const AiBuilder: React.FC = () => {
       }
 
       setSaved(true);
-      setTimeout(() => navigate('/dashboard'), 1200);
+      setTimeout(() => navigate('/'), 1200);
     } catch (err) {
       toast.error('Failed to save website. Please try again.');
       console.error('Save failed:', err);

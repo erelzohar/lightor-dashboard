@@ -15,14 +15,14 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
 
   const getPageTitle = () => {
     switch (location.pathname) {
-      case '/dashboard': return t('common.dashboard');
-      case '/dashboard/ai': return t('common.aiBuilder');
-      case '/dashboard/appointments': return t('common.appointments');
-      case '/dashboard/schedule-vacations': return t('common.scheduleVacations');
-      case '/dashboard/appointment-types': return t('common.serviceTypes');
-      case '/dashboard/settings': return t('common.settings');
-      case '/dashboard/portfolio': return t('common.portfolio');
-      case '/dashboard/account': return t('common.account');
+      case '/': return t('common.dashboard');
+      case '/ai': return t('common.aiBuilder');
+      case '/appointments': return t('common.appointments');
+      case '/schedule-vacations': return t('common.scheduleVacations');
+      case '/appointment-types': return t('common.serviceTypes');
+      case '/settings': return t('common.settings');
+      case '/portfolio': return t('common.portfolio');
+      case '/account': return t('common.account');
       case '/admin': return t('admin.nav.overview');
       case '/admin/users': return t('admin.nav.users');
       case '/admin/appointments': return t('admin.nav.appointments');
