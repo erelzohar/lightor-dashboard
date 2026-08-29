@@ -31,7 +31,9 @@ import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const FacebookLogin =
     (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
-import { uploadImage, importImageFromUrl } from '../services/imagesApi';
+import { uploadImage, importImageFromUrl, deleteImage } from '../services/imagesApi';
+import globals from '../services/globals';
+import { storedImageName } from '../utils/aiReconcile';
 import { exchangeInstagramCode } from '../services/instagramApi';
 import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
 import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
@@ -209,6 +211,15 @@ const Portfolio: React.FC = () => {
             await saveUpdatedItems(newItems);
         } catch (e) {
             setItems(items);
+            return;
+        }
+        // Config saved — clean up the underlying upload so it doesn't orphan in
+        // storage. Only OUR image (bare name or a url to our images endpoint),
+        // and only if no remaining item still references it. Best-effort:
+        // deleteImage swallows its own errors.
+        const name = storedImageName(url, globals.imagesUrl);
+        if (name && !newItems.some(i => storedImageName(i.url, globals.imagesUrl) === name)) {
+            await deleteImage(name);
         }
     };
 

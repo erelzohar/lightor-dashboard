@@ -15,6 +15,7 @@ import { aiService, trimHistory, type AiSiteConfig } from '../services/aiApi';
 import { createAppointmentType, updateAppointmentType, deleteAppointmentType } from '../services/appointmentsApi';
 import { deleteImage } from '../services/imagesApi';
 import { createVacation } from '../services/vacationsApi';
+import globals from '../services/globals';
 import { reconcileAppointmentTypes, removedStoredImages } from '../utils/aiReconcile';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
@@ -218,6 +219,10 @@ const AiBuilder: React.FC = () => {
       };
 
       const configId = webConfig?._id || auth.user?.webConfig_id;
+      // Only an edit reconciles removals against the server. Onboarding has no
+      // prior services or images, so everything is a fresh create — never a
+      // delete (and there's nothing to compare against).
+      const isEdit = !!configId;
       let savedConfigId: string;
 
       if (configId) {
@@ -234,36 +239,44 @@ const AiBuilder: React.FC = () => {
         await updateUser({ webConfig_id: newConf._id, boardingStatus: 'onboarded' });
       }
 
-      // Reconcile services against what the server actually has: create the
-      // AI's new ones, update existing ones by their real id, and DELETE the
-      // ones the AI dropped.
-      //
-      // GUARD: only reconcile when the AI actually returned an appointmentTypes
-      // array. The edit response replaces draftConfig wholesale, so an *omitted*
-      // key must mean "unchanged", never "delete them all" — deletes only fire
-      // when the array is present (`[]` = a deliberate "remove all").
       if (appointmentTypes) {
-        const { toCreate, toUpdate, toDeleteIds } = reconcileAppointmentTypes(
-          appointmentTypes as AppointmentType[],
-          webConfig?.appointmentTypes ?? []
-        );
-        await Promise.all([
-          ...toCreate.map((rest) => createAppointmentType({ ...rest, webConfig_id: savedConfigId })),
-          ...toUpdate.map(({ _id, ...rest }) => updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId })),
-          // Best-effort — the helper swallows its own errors so a failed delete
-          // never fails the save.
-          ...toDeleteIds.map((id) => deleteAppointmentType(id)),
-        ]);
+        if (isEdit) {
+          // Reconcile services against what the server actually has: create the
+          // AI's new ones, update existing ones by their real id, and DELETE the
+          // ones the AI dropped. (The AI invents valid-looking 24-hex ids, so
+          // only membership in the server's real id set tells new from existing.)
+          const { toCreate, toUpdate, toDeleteIds } = reconcileAppointmentTypes(
+            appointmentTypes as AppointmentType[],
+            webConfig?.appointmentTypes ?? []
+          );
+          await Promise.all([
+            ...toCreate.map((rest) => createAppointmentType({ ...rest, webConfig_id: savedConfigId })),
+            ...toUpdate.map(({ _id, ...rest }) => updateAppointmentType(_id, { ...rest, webConfig_id: savedConfigId })),
+            // Best-effort — the helper swallows its own errors so a failed delete
+            // never fails the save.
+            ...toDeleteIds.map((id) => deleteAppointmentType(id)),
+          ]);
+        } else {
+          // Onboarding — every service is new.
+          await Promise.all(
+            (appointmentTypes as AppointmentType[]).map(({ _id, ...rest }) => {
+              void _id;
+              return createAppointmentType({ ...rest, webConfig_id: savedConfigId });
+            })
+          );
+        }
       }
 
       // Portfolio images the AI removed: delete the underlying uploads so they
-      // don't orphan in storage. Same presence guard — skip entirely if the AI
-      // omitted the items array, so a dropped key never wipes the gallery.
+      // don't orphan in storage. Edit-only (onboarding has no prior images), and
+      // guarded on the items array being present — a dropped key means
+      // "unchanged", never "wipe the gallery".
       const draftPortfolio = (draftConfig as unknown as WebConfig).components?.portfolio?.items;
-      if (draftPortfolio) {
+      if (isEdit && draftPortfolio) {
         const removedImages = removedStoredImages(
           (webConfig?.components?.portfolio?.items ?? []).map((i) => i.url),
-          draftPortfolio.map((i) => i.url)
+          draftPortfolio.map((i) => i.url),
+          globals.imagesUrl
         );
         await Promise.all(removedImages.map((name) => deleteImage(name)));
       }

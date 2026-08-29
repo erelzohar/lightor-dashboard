@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
   reconcileAppointmentTypes,
   removedStoredImages,
-  isStoredImage,
+  storedImageName,
 } from '../../utils/aiReconcile';
 import type { AppointmentType } from '../../types';
+
+const IMAGES_BASE = 'https://api.lightor.app/api/images/';
 
 const type = (over: Partial<AppointmentType>): AppointmentType => ({
   _id: '',
@@ -68,17 +70,28 @@ describe('reconcileAppointmentTypes', () => {
   });
 });
 
-describe('isStoredImage', () => {
-  it('treats a bare S3 imageName as ours', () => {
-    expect(isStoredImage('1690000000000-abc.webp')).toBe(true);
+describe('storedImageName', () => {
+  it('returns a bare S3 imageName as-is', () => {
+    expect(storedImageName('1690000000000-abc.webp', IMAGES_BASE)).toBe('1690000000000-abc.webp');
   });
-  it('treats external / data / blob refs as not ours', () => {
-    expect(isStoredImage('https://picsum.photos/seed/x/800/600')).toBe(false);
-    expect(isStoredImage('http://example.com/a.jpg')).toBe(false);
-    expect(isStoredImage('data:image/png;base64,AAAA')).toBe(false);
-    expect(isStoredImage('blob:http://localhost/uuid')).toBe(false);
-    expect(isStoredImage('')).toBe(false);
-    expect(isStoredImage(undefined)).toBe(false);
+  it('extracts the imageName from a full url to our images endpoint', () => {
+    expect(storedImageName(`${IMAGES_BASE}1690-abc.webp`, IMAGES_BASE)).toBe('1690-abc.webp');
+  });
+  it('still resolves our prod url when running against another host', () => {
+    // Stored value is a prod url; app configured with a dev base.
+    expect(storedImageName('https://api.lightor.app/api/images/x.webp', 'http://localhost:3000/api/images/'))
+      .toBe('x.webp');
+  });
+  it('drops query/hash and decodes', () => {
+    expect(storedImageName(`${IMAGES_BASE}a%20b.webp?v=2`, IMAGES_BASE)).toBe('a b.webp');
+  });
+  it('returns null for external / data / blob refs and empties', () => {
+    expect(storedImageName('https://picsum.photos/seed/x/800/600', IMAGES_BASE)).toBeNull();
+    expect(storedImageName('https://scontent.cdninstagram.com/a.jpg', IMAGES_BASE)).toBeNull();
+    expect(storedImageName('data:image/png;base64,AAAA', IMAGES_BASE)).toBeNull();
+    expect(storedImageName('blob:http://localhost/uuid', IMAGES_BASE)).toBeNull();
+    expect(storedImageName('', IMAGES_BASE)).toBeNull();
+    expect(storedImageName(undefined, IMAGES_BASE)).toBeNull();
   });
 });
 
@@ -87,15 +100,26 @@ describe('removedStoredImages', () => {
     const original = ['up1.webp', 'https://picsum.photos/x', 'up2.webp'];
     const draft = ['up2.webp']; // up1 removed, picsum removed
     // up1.webp is ours and gone → delete. picsum is external → ignore.
-    expect(removedStoredImages(original, draft)).toEqual(['up1.webp']);
+    expect(removedStoredImages(original, draft, IMAGES_BASE)).toEqual(['up1.webp']);
+  });
+
+  it('does not delete an upload kept under a different ref shape', () => {
+    // Removed as a bare name, but still referenced as a full url → must survive.
+    const original = ['dup.webp'];
+    const draft = [`${IMAGES_BASE}dup.webp`];
+    expect(removedStoredImages(original, draft, IMAGES_BASE)).toEqual([]);
   });
 
   it('does not delete an upload still used elsewhere in the gallery', () => {
-    // Same image kept under a second item — must survive.
-    expect(removedStoredImages(['dup.webp', 'dup.webp'], ['dup.webp'])).toEqual([]);
+    expect(removedStoredImages(['dup.webp', 'dup.webp'], ['dup.webp'], IMAGES_BASE)).toEqual([]);
   });
 
   it('deletes every upload when the gallery is cleared', () => {
-    expect(removedStoredImages(['a.webp', 'b.webp'], [])).toEqual(['a.webp', 'b.webp']);
+    expect(removedStoredImages(['a.webp', 'b.webp'], [], IMAGES_BASE)).toEqual(['a.webp', 'b.webp']);
+  });
+
+  it('deletes our image even when it was stored as a full url', () => {
+    const original = [`${IMAGES_BASE}gone.webp`];
+    expect(removedStoredImages(original, [], IMAGES_BASE)).toEqual(['gone.webp']);
   });
 });
