@@ -10,6 +10,7 @@ import {
   Sparkles,
   Server,
   Info,
+  RotateCcw,
 } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import StatCard from '../../components/ui/StatCard';
@@ -19,6 +20,7 @@ import StatusBadge from '../../components/admin/StatusBadge';
 import {
   fetchCostsSummary,
   fetchCostsByTenant,
+  resetAiQuota,
   CostsSummary,
   TenantCost,
 } from '../../services/adminApi';
@@ -35,6 +37,21 @@ const AdminCosts: React.FC = () => {
   const [summary, setSummary] = useState<CostsSummary | null>(null);
   const [tenants, setTenants] = useState<TenantCost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
+
+  // LT-076: prod-testing escape hatch — clears this IP's daily visitor AI
+  // budget (the register wizard) and the admin's own monthly counters.
+  const handleResetQuota = async () => {
+    setResetting(true);
+    try {
+      await resetAiQuota();
+      toast.success(t('admin.costs.resetQuotaDone'));
+    } catch {
+      toast.error(t('admin.costs.resetQuotaFailed'));
+    } finally {
+      setResetting(false);
+    }
+  };
 
   document.title = t('admin.costs.title');
 
@@ -154,13 +171,24 @@ const AdminCosts: React.FC = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.costs.subtitle')}</p>
           </div>
         </div>
-        <Select
-          fullWidth={false}
-          className="!py-2 text-sm min-w-[170px]"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          options={monthOptions}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleResetQuota}
+            disabled={resetting}
+            title={t('admin.costs.resetQuotaHint')}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+          >
+            <RotateCcw size={14} className={resetting ? 'animate-spin' : ''} />
+            {t('admin.costs.resetQuota')}
+          </button>
+          <Select
+            fullWidth={false}
+            className="!py-2 text-sm min-w-[170px]"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            options={monthOptions}
+          />
+        </div>
       </div>
 
       {summary?.estimated && (

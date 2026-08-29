@@ -777,6 +777,10 @@
       },
       "topConsumers": "Top consumers",
       "noTenantData": "No attributed usage this month",
+      "resetQuota": "Reset AI test quota",
+      "resetQuotaHint": "Clears this device's daily AI limits (register wizard) and your account's monthly AI limits — for testing",
+      "resetQuotaDone": "AI quota reset — you can keep testing",
+      "resetQuotaFailed": "Could not reset the AI quota",
       "columns": {
         "cost": "Cost"
       }

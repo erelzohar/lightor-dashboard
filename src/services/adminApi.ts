@@ -364,3 +364,11 @@ export const fetchCostsByTenant = async (
     ...(month ? { month } : {}),
     limit,
   })).data.tenants;
+
+/**
+ * LT-076: the operator's prod-testing reset — clears this connection's per-IP
+ * daily AI counters (the register wizard budget) and the admin's own monthly
+ * ones. Signed-in admins already bypass the AI quotas server-side.
+ */
+export const resetAiQuota = async (): Promise<{ cleared: number }> =>
+  (await send<{ data: { cleared: number } }>('post', 'ai-quota/reset')).data;
