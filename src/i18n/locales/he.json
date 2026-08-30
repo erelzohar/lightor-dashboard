@@ -123,7 +123,7 @@
     "logo": "לוגו",
     "noLogo": "אין לוגו",
     "uploadLogo": "העלה קובץ",
-    "logoUrlMode": "כתובת תמונה",
+    "logoUrlMode": "לינק לתמונה",
     "logoUrlPlaceholder": "https://example.com/logo.png",
     "logoUrlInvalid": "הכתובת חייבת להתחיל ב-http",
     "yourLink": "הלינק שלך",
