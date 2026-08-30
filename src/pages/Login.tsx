@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 import { SignInCard } from '../components/ui/sign-in-card-2';
+import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const FacebookLogin =
@@ -25,13 +26,7 @@ const Login: React.FC = () => {
 
   document.title = t('login.title');
 
-  return (
-    <FacebookLogin
-      appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
-      onSuccess={(response: { accessToken?: string }) => {
-        if (response.accessToken) loginWithFacebook(response.accessToken);
-      }}
-      render={(renderProps: { onClick?: () => void }) => (
+  const page = (onFacebookLogin?: () => void) => (
         <div className="min-h-screen flex flex-col lg:flex-row w-full">
 
           {/* ── Left panel: Lightor hero (desktop only) ── */}
@@ -117,7 +112,7 @@ const Login: React.FC = () => {
               <SignInCard
                 onSubmit={login}
                 onGoogleLogin={() => googleLogin()}
-                onFacebookLogin={renderProps.onClick}
+                onFacebookLogin={onFacebookLogin ?? (() => {})}
                 isLoading={loading}
                 error={auth.error}
               />
@@ -143,7 +138,20 @@ const Login: React.FC = () => {
           </div>
 
         </div>
-      )}
+  );
+
+  // While the Meta integration is parked (LT-090) the Facebook SDK is not
+  // mounted at all — hiding the button but still loading Meta's script on
+  // every visit to the sign-in page would be the worst of both.
+  if (!META_FEATURES_ENABLED) return page();
+
+  return (
+    <FacebookLogin
+      appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
+      onSuccess={(response: { accessToken?: string }) => {
+        if (response.accessToken) loginWithFacebook(response.accessToken);
+      }}
+      render={(renderProps: { onClick?: () => void }) => page(renderProps.onClick)}
     />
   );
 };

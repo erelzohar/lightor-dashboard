@@ -40,6 +40,7 @@ import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
 import SortableImageItem from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
+import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 
 /**
  * Instagram Login (LT-043) is env-gated: with the Instagram app id present
@@ -404,7 +405,7 @@ const Portfolio: React.FC = () => {
                             </label>
                         )}
 
-                        {canAddMore && (
+                        {META_FEATURES_ENABLED && canAddMore && (
                             <FacebookLogin
                                 appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
                                 scope="user_photos"
@@ -439,7 +440,7 @@ const Portfolio: React.FC = () => {
                             />
                         )}
 
-                        {canAddMore && (IG_APP_ID ? (
+                        {META_FEATURES_ENABLED && canAddMore && (IG_APP_ID ? (
                             igTile(openInstagramLogin)
                         ) : (
                             <FacebookLogin

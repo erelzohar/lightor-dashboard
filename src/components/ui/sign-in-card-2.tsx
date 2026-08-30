@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { META_FEATURES_ENABLED } from '../../config/metaFeatures';
 
 function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -280,7 +281,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
               </div>
 
               {/* Social login buttons */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid gap-3 ${META_FEATURES_ENABLED ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
@@ -299,6 +300,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                   </div>
                 </motion.button>
 
+                {META_FEATURES_ENABLED && (
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
@@ -313,6 +315,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                     <span className="text-white/80 group-hover/facebook:text-white transition-colors text-xs">Facebook</span>
                   </div>
                 </motion.button>
+                )}
               </div>
 
               {/* Register link */}
