@@ -163,7 +163,9 @@
       "general": "الملف الشخصي",
       "address": "العنوان",
       "contact": "الاتصال"
-    }
+    },
+    "websiteLanguage": "لغة الموقع",
+    "websiteLanguageTooltip": "اللغة الافتراضية التي يراها عملاؤك في موقع الحجز العام الخاص بك."
   },
   "appointmentTypes": {
     "title": "أنواع الخدمات",
@@ -407,7 +409,11 @@
     "channelSms": "رسائل SMS",
     "channelWhatsapp": "واتساب",
     "channelUpdateSuccess": "تم تحديث قناة الإشعارات",
-    "channelUpdateError": "فشل تحديث قناة الإشعارات"
+    "channelUpdateError": "فشل تحديث قناة الإشعارات",
+    "language": "لغة لوحة التحكم",
+    "languageDesc": "اللغة التي ترى بها لوحة التحكم هذه",
+    "languageUpdateSuccess": "تم تحديث لغة لوحة التحكم",
+    "languageUpdateError": "فشل تحديث اللغة"
   },
   "incomeStats": {
     "today": "دخل اليوم",

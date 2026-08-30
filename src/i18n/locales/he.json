@@ -163,7 +163,9 @@
       "general": "פרופיל",
       "address": "כתובת",
       "contact": "יצירת קשר"
-    }
+    },
+    "websiteLanguage": "שפת האתר",
+    "websiteLanguageTooltip": "שפת ברירת המחדל שהלקוחות שלך רואים באתר ההזמנות הציבורי שלך."
   },
   "appointmentTypes": {
     "title": "ניהול סוגי שירותים",
@@ -407,7 +409,11 @@
     "channelSms": "SMS",
     "channelWhatsapp": "WhatsApp",
     "channelUpdateSuccess": "ערוץ ההתראות עודכן",
-    "channelUpdateError": "אירעה שגיאה בעדכון ערוץ ההתראות"
+    "channelUpdateError": "אירעה שגיאה בעדכון ערוץ ההתראות",
+    "language": "שפת הדשבורד",
+    "languageDesc": "השפה שבה אתה רואה את הדשבורד הזה",
+    "languageUpdateSuccess": "שפת הדשבורד עודכנה",
+    "languageUpdateError": "עדכון השפה נכשל"
   },
   "incomeStats": {
     "today": "הכנסות היום",

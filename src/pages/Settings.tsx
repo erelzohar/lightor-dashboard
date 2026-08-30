@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -19,7 +19,23 @@ import FieldTooltip from '../components/settings/FieldTooltip';
 import CalendarFeedCard from '../components/settings/CalendarFeedCard';
 import GoogleCalendarCard from '../components/settings/GoogleCalendarCard';
 import Select from '../components/ui/Select';
+import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { useTranslation } from 'react-i18next';
+
+// The public booking site's default language (WebConfig.defaultLanguage) —
+// distinct from the owner's dashboard language (User.defaultLanguage). Native
+// names so each option reads in the language it selects.
+const WEBSITE_LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  he: 'עברית',
+  ar: 'العربية',
+  fr: 'Français',
+  es: 'Español',
+};
+const WEBSITE_LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map((lng) => ({
+  value: lng,
+  label: WEBSITE_LANGUAGE_NAMES[lng],
+}));
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -65,6 +81,7 @@ const Settings: React.FC = () => {
     const settingsChanged = meaningfulAddress(localWebConfig.address) !== meaningfulAddress(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
+      JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
       JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
@@ -185,7 +202,7 @@ const Settings: React.FC = () => {
         if (!imgResponse) throw new Error("Failed to upload image");
       }
 
-      const { _id, businessName, subDomain, address, minCancelTimeMS, social, contact } = localWebConfig;
+      const { _id, businessName, subDomain, address, minCancelTimeMS, social, contact, defaultLanguage } = localWebConfig;
 
       const fixedSocials = { ...social };
       fixedSocials.facebook = social.facebook === "" ? null : social.facebook;
@@ -193,7 +210,7 @@ const Settings: React.FC = () => {
       fixedSocials.tiktok = social.tiktok === "" ? null : social.tiktok;
       fixedSocials.x = social.x === "" ? null : social.x;
 
-      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact };
+      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage };
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -537,6 +554,22 @@ const Settings: React.FC = () => {
                 options={cancellationOptions}
                 onChange={(e) => handleChange("root", "minCancelTimeMS", Number(e.target.value))}
                 error={errors?.minCancelTimeMS}
+              />
+
+              <Select
+                label={
+                  <>
+                    {t('settings.websiteLanguage')}
+                    <FieldTooltip
+                      title={t('settings.websiteLanguage')}
+                      description={t('settings.websiteLanguageTooltip')}
+                    />
+                  </>
+                }
+                leftIcon={<Languages className="w-4 h-4 text-gray-400" />}
+                value={localWebConfig.defaultLanguage || 'he'}
+                options={WEBSITE_LANGUAGE_OPTIONS}
+                onChange={(e) => handleChange('root', 'defaultLanguage', e.target.value)}
               />
             </div>
 

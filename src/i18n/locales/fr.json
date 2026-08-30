@@ -163,7 +163,9 @@
       "general": "Profil",
       "address": "Adresse",
       "contact": "Contact"
-    }
+    },
+    "websiteLanguage": "Langue du site",
+    "websiteLanguageTooltip": "La langue par défaut que vos clients voient sur votre site de réservation public."
   },
   "appointmentTypes": {
     "title": "Types de services",
@@ -407,7 +409,11 @@
     "channelSms": "SMS",
     "channelWhatsapp": "WhatsApp",
     "channelUpdateSuccess": "Canal de notification mis à jour",
-    "channelUpdateError": "Échec de la mise à jour du canal de notification"
+    "channelUpdateError": "Échec de la mise à jour du canal de notification",
+    "language": "Langue du tableau de bord",
+    "languageDesc": "La langue dans laquelle vous voyez ce tableau de bord",
+    "languageUpdateSuccess": "Langue du tableau de bord mise à jour",
+    "languageUpdateError": "Échec de la mise à jour de la langue"
   },
   "incomeStats": {
     "today": "Revenus du jour",

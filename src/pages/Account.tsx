@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, KeyRound, Eye, EyeOff, MessageSquare } from 'lucide-react';
+import { User, Phone, KeyRound, Eye, EyeOff, MessageSquare, Languages } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
 import BillingSection from '../components/account/BillingSection';
 import DangerZoneSection from '../components/account/DangerZoneSection';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
+// Native names — a language selector should read in the language it selects.
+const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  en: 'English',
+  he: 'עברית',
+  ar: 'العربية',
+  fr: 'Français',
+  es: 'Español',
+};
+
 const Account: React.FC = () => {
   const { auth, updateUser, updatePassword } = useAuth();
+  const { changeLanguage } = useTheme();
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -25,6 +38,8 @@ const Account: React.FC = () => {
   });
   const [channelType, setChannelType] = useState<'sms' | 'whatsapp'>(auth.user?.channelType ?? 'sms');
   const [isSavingChannel, setIsSavingChannel] = useState(false);
+  const [language, setLanguage] = useState<SupportedLanguage>((auth.user?.defaultLanguage as SupportedLanguage) ?? 'he');
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -41,6 +56,7 @@ const Account: React.FC = () => {
         defaultLanguage: auth.user.defaultLanguage || 'he'
       });
       setChannelType(auth.user.channelType ?? 'sms');
+      setLanguage((auth.user.defaultLanguage as SupportedLanguage) ?? 'he');
     }
   }, [auth.user]);
 
@@ -54,6 +70,24 @@ const Account: React.FC = () => {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLanguageChange = async (value: SupportedLanguage) => {
+    const previous = language;
+    setLanguage(value);
+    changeLanguage(value); // instant: swaps the dashboard UI + direction now
+    setIsSavingLanguage(true);
+    try {
+      await updateUser({ defaultLanguage: value });
+      toast.success(t('account.languageUpdateSuccess'));
+    } catch {
+      // Roll back both the persisted intent and the live UI on failure.
+      setLanguage(previous);
+      changeLanguage(previous);
+      toast.error(t('account.languageUpdateError'));
+    } finally {
+      setIsSavingLanguage(false);
+    }
   };
 
   const handleChannelTypeChange = async (value: 'sms' | 'whatsapp') => {
@@ -155,6 +189,32 @@ const Account: React.FC = () => {
             >
               {t('account.channelWhatsapp')}
             </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Dashboard Language Card */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Languages className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                {t('account.language')}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {t('account.languageDesc')}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full sm:w-48 shrink-0">
+            <Select
+              value={language}
+              disabled={isSavingLanguage}
+              onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+              options={SUPPORTED_LANGUAGES.map((lng) => ({ value: lng, label: LANGUAGE_NAMES[lng] }))}
+            />
           </div>
         </div>
       </Card>

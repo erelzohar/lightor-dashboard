@@ -163,7 +163,9 @@
       "general": "Perfil",
       "address": "Dirección",
       "contact": "Contacto"
-    }
+    },
+    "websiteLanguage": "Idioma del sitio",
+    "websiteLanguageTooltip": "El idioma predeterminado que tus clientes ven en tu sitio de reservas público."
   },
   "appointmentTypes": {
     "title": "Tipos de servicio",
@@ -407,7 +409,11 @@
     "channelSms": "SMS",
     "channelWhatsapp": "WhatsApp",
     "channelUpdateSuccess": "Canal de notificación actualizado",
-    "channelUpdateError": "No se pudo actualizar el canal de notificación"
+    "channelUpdateError": "No se pudo actualizar el canal de notificación",
+    "language": "Idioma del panel",
+    "languageDesc": "El idioma en el que ves este panel",
+    "languageUpdateSuccess": "Idioma del panel actualizado",
+    "languageUpdateError": "No se pudo actualizar el idioma"
   },
   "incomeStats": {
     "today": "Ingresos de hoy",

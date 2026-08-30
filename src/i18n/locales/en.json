@@ -163,7 +163,9 @@
       "general": "Profile",
       "address": "Address",
       "contact": "Contact"
-    }
+    },
+    "websiteLanguage": "Website language",
+    "websiteLanguageTooltip": "The default language your clients see on your public booking site."
   },
   "appointmentTypes": {
     "title": "Service Types",
@@ -407,7 +409,11 @@
     "channelSms": "SMS",
     "channelWhatsapp": "WhatsApp",
     "channelUpdateSuccess": "Notification channel updated",
-    "channelUpdateError": "Failed to update notification channel"
+    "channelUpdateError": "Failed to update notification channel",
+    "language": "Dashboard language",
+    "languageDesc": "The language you see this dashboard in",
+    "languageUpdateSuccess": "Dashboard language updated",
+    "languageUpdateError": "Failed to update the language"
   },
   "incomeStats": {
     "today": "Today's Income",
