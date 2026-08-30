@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import en from '../../i18n/locales/en.json';
 import he from '../../i18n/locales/he.json';
+import ar from '../../i18n/locales/ar.json';
+import fr from '../../i18n/locales/fr.json';
+import es from '../../i18n/locales/es.json';
 
 type Tree = { [key: string]: unknown };
 
@@ -20,22 +23,26 @@ const flatten = (tree: Tree, prefix = ''): Record<string, string> =>
 const locales = {
   en: flatten(en as unknown as Tree),
   he: flatten(he as unknown as Tree),
+  ar: flatten(ar as unknown as Tree),
+  fr: flatten(fr as unknown as Tree),
+  es: flatten(es as unknown as Tree),
 };
 
+// English is the canonical key set; every other locale must match it exactly.
+const OTHER_LANGS = ['he', 'ar', 'fr', 'es'] as const;
+
 /**
- * The dashboard ships in Hebrew and English only, and i18next falls back to
- * Hebrew silently — so an English-only user hitting a key that was added in
- * Hebrew alone sees Hebrew text mid-sentence with no error anywhere.
+ * The dashboard ships in five languages (en, he, ar, fr, es) and i18next
+ * falls back to Hebrew silently — so a key present in one locale but missing
+ * from another shows fallback text mid-sentence with no error anywhere.
+ * Every locale must carry exactly the English key set.
  */
 describe('dashboard translations', () => {
-  it('has no keys missing from English', () => {
-    const missing = Object.keys(locales.he).filter((key) => !(key in locales.en));
-    expect(missing).toEqual([]);
-  });
-
-  it('has no keys missing from Hebrew', () => {
-    const missing = Object.keys(locales.en).filter((key) => !(key in locales.he));
-    expect(missing).toEqual([]);
+  it.each(OTHER_LANGS)('%s has exactly the English key set', (lang) => {
+    const target = locales[lang];
+    const missing = Object.keys(locales.en).filter((key) => !(key in target));
+    const extra = Object.keys(target).filter((key) => !(key in locales.en));
+    expect({ lang, missing, extra }).toEqual({ lang, missing: [], extra: [] });
   });
 
   it.each(Object.keys(locales))('%s has no blank strings', (lang) => {
@@ -45,13 +52,14 @@ describe('dashboard translations', () => {
     expect(blank).toEqual([]);
   });
 
-  it('keeps interpolation placeholders identical across languages', () => {
+  it.each(OTHER_LANGS)('%s keeps interpolation placeholders identical to English', (lang) => {
     const placeholders = (value: string) => (value.match(/\{\{\s*\w+\s*\}\}/g) ?? []).sort();
+    const target = locales[lang];
 
-    const mismatched = Object.keys(locales.he).filter(
+    const mismatched = Object.keys(locales.en).filter(
       (key) =>
-        JSON.stringify(placeholders(locales.he[key])) !==
-        JSON.stringify(placeholders(locales.en[key] ?? ''))
+        JSON.stringify(placeholders(locales.en[key])) !==
+        JSON.stringify(placeholders(target[key] ?? ''))
     );
     expect(mismatched).toEqual([]);
   });

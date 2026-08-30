@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Palette } from '../types';
-import i18n from '../i18n/config';
+import i18n, { isRtlLanguage, SupportedLanguage } from '../i18n/config';
 
 /**
  * What the dashboard looks like before (or without) a webConfig — Lightor's
@@ -30,7 +30,7 @@ interface ThemeContextProps {
   darkMode: boolean;
   toggleDirection: () => void;
   toggleDarkMode: () => void;
-  changeLanguage: (lang: 'he' | 'en') => void;
+  changeLanguage: (lang: SupportedLanguage) => void;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -38,7 +38,7 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [palette, setPalette] = useState<Palette>(DEFAULT_PALETTE);
   const [direction, setDirection] = useState<'rtl' | 'ltr'>(
-    i18n.language === 'he' ? 'rtl' : 'ltr'
+    isRtlLanguage(i18n.language) ? 'rtl' : 'ltr'
   );
   const [language, setLanguage] = useState(i18n.language);
   const [darkMode, setDarkMode] = useState(() => {
@@ -49,8 +49,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
       setLanguage(lng);
-      const newDir = lng === 'he' ? 'rtl' : 'ltr';
-      setDirection(newDir);
+      setDirection(isRtlLanguage(lng) ? 'rtl' : 'ltr');
     };
 
     i18n.on('languageChanged', handleLanguageChange);
@@ -68,19 +67,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
     });
 
-    // Apply direction to HTML
+    // Apply direction + language to HTML (lang helps font selection & a11y)
     document.documentElement.setAttribute('dir', direction);
+    document.documentElement.setAttribute('lang', language);
     document.documentElement.classList.toggle('rtl', direction === 'rtl');
     
     // Apply dark mode
     document.documentElement.classList.toggle('dark', darkMode);
-  }, [palette, direction, darkMode]);
+  }, [palette, direction, darkMode, language]);
 
   const updatePalette = (newPalette: Palette) => {
     setPalette(newPalette);
   };
 
-  const changeLanguage = (lang: 'he' | 'en') => {
+  const changeLanguage = (lang: SupportedLanguage) => {
     i18n.changeLanguage(lang);
   };
 
