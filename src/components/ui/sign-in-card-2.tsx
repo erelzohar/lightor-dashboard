@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -27,7 +27,8 @@ interface SignInCardProps {
 }
 
 export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error }: SignInCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -103,18 +104,8 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
               }}
             />
 
-            {/* Logo & header */}
+            {/* Header */}
             <div className="text-center space-y-1 mb-5">
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', duration: 0.8 }}
-                className="mx-auto w-10 h-10 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden"
-              >
-                <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">L</span>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -213,7 +204,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
 
               {/* Remember me */}
               <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <div className="relative">
                     <input
                       id="remember-me"
@@ -264,7 +255,11 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                     ) : (
                       <motion.span key="button-text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-1 text-sm font-medium">
                         {t('login.signIn')}
-                        <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
+                        {isRtl ? (
+                          <ArrowLeft className="w-3 h-3 group-hover/button:-translate-x-1 transition-transform duration-300" />
+                        ) : (
+                          <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
+                        )}
                       </motion.span>
                     )}
                   </AnimatePresence>

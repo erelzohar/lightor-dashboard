@@ -110,9 +110,7 @@ const Login: React.FC = () => {
           <div
             className="
               flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8
-              bg-gradient-to-br from-slate-100 via-purple-50 to-white
-              dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900
-              transition-colors duration-200
+              bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-900
             "
           >
             <div className="w-full flex flex-col items-center gap-6">
