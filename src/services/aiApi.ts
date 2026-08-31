@@ -81,6 +81,15 @@ function getAuthHeaders() {
 
 const MAX_RETRIES = 3;
 
+// LT-103: one random seed per builder CONVERSATION drives the server's design
+// rotation (preset family, hero layout, background, image set) — same
+// contract as the register app. Without it the server seeded off business
+// name + message, so regenerating similar text converged on the same look.
+let currentDesignSeed: string | null = null;
+
+const mintDesignSeed = (): string =>
+  (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+
 export const aiService = {
   generateSite: async (
     prompt: string,
@@ -92,6 +101,9 @@ export const aiService = {
     formData.append('replyLanguage', replyLanguage());
     if (history.length) formData.append('history', JSON.stringify(history));
     if (logoFile) formData.append('logo', logoFile);
+    // Fresh conversation → fresh seed; follow-up turns reuse it.
+    if (!history.length || !currentDesignSeed) currentDesignSeed = mintDesignSeed();
+    formData.append('designSeed', currentDesignSeed);
 
     let lastError: unknown;
 
