@@ -22,6 +22,7 @@ import AiBuilder from './pages/AiBuilder';
 // Components
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import RequireVerified from './components/auth/RequireVerified';
 import AdminRoute from './components/auth/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
@@ -61,7 +62,7 @@ function App() {
                     <Route path="appointment-types" element={<AppointmentTypes />} />
                     <Route path="account" element={<Account />} />
                     <Route path="portfolio" element={<Portfolio />} />
-                    <Route path="ai" element={<AiBuilder />} />
+                    <Route path="ai" element={<RequireVerified><AiBuilder /></RequireVerified>} />
                   </Route>
                   <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                     <Route index element={<AdminOverview />} />
