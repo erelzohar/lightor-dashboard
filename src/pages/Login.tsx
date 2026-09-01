@@ -59,13 +59,12 @@ const Login: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.9, type: 'spring' }}
-                className="inline-flex rounded-full p-3 bg-white/10 backdrop-blur-sm"
+                className="inline-flex rounded-full p-3 bg-white shadow-lg shadow-black/20 ring-1 ring-white/40"
               >
                 <img
-                  src="/lightor.svg"
+                  src="/lightor.png"
                   alt="Lightor"
                   className="w-14 h-14 object-contain"
-                  style={{ filter: 'brightness(0) invert(1)' }}
                 />
               </motion.div>
 
