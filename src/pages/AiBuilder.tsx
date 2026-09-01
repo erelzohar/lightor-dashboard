@@ -23,10 +23,6 @@ import toast from 'react-hot-toast';
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
 
-// One stamp per page load — stable across re-renders so the iframe doesn't
-// reload mid-session, fresh on every builder visit (see previewUrl).
-const previewCacheBust = Date.now();
-
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -299,12 +295,9 @@ const AiBuilder: React.FC = () => {
     }
   };
 
-  // LT-102: per-page-load stamp so the iframe can never be served a stale
-  // cached copy of the site renderer (cache entries are keyed by full URL,
-  // and iframe navigations ignore the parent page's hard refresh).
-  const previewUrl = `${webConfig?.subDomain && import.meta.env.PROD
+  const previewUrl = webConfig?.subDomain && import.meta.env.PROD
     ? `https://${webConfig.subDomain}.lightor.app`
-    : CLIENT_APP_URL}?v=${previewCacheBust}`;
+    : CLIENT_APP_URL;
 
   const showPhoneShell = isMobilePreview && isLargeScreen;
   const hasUserMessage = messages.some((m) => m.role === 'user');
