@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
-import TopBar from './TopBar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
@@ -12,7 +11,6 @@ import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 
 const Layout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [welcomeLoading, setWelcomeLoading] = useState(false);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
@@ -20,7 +18,6 @@ const Layout: React.FC = () => {
   const { direction } = useTheme();
   const { auth, updateUser } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
 
   const webConfigData = useAppSelector((state) => state.webConfig.data);
@@ -78,16 +75,9 @@ const Layout: React.FC = () => {
     }
   };
 
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
-
-  // Close sidebar on mobile when route changes
-  useEffect(() => {
-    if (window.innerWidth < 768) setSidebarOpen(false);
-  }, [location.pathname]);
-
   return (
     <div
-      className={`h-[100dvh] w-full flex bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
+      className={`h-[100dvh] w-full flex flex-col md:flex-row bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >
@@ -107,11 +97,9 @@ const Layout: React.FC = () => {
         />
       )}
 
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} isRestricted={isRestricted} />
+      <Sidebar isRestricted={isRestricted} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar toggleSidebar={toggleSidebar} />
-
         <motion.main
           className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
           initial={{ opacity: 0, y: 10 }}
