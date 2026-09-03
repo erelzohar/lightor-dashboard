@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AdminSidebar from './AdminSidebar';
-import TopBar from '../layout/TopBar';
 import { useTheme } from '../../contexts/ThemeContext';
 
 /**
@@ -10,31 +9,21 @@ import { useTheme } from '../../contexts/ThemeContext';
  * Layout: that component is entangled with tenant concerns — the webConfig
  * fetch, the onboarding welcome, the restricted-mode redirect to
  * /ai (which would fight /admin paths), the floating AI assistant.
- * This is just sidebar + topbar + outlet with the same flex/dark/RTL shell.
+ * This is just the hover-expand sidebar + outlet with the same
+ * flex/dark/RTL shell.
  */
 const AdminLayout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const { direction } = useTheme();
-  const location = useLocation();
-
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
-
-  // Close sidebar on mobile when route changes
-  useEffect(() => {
-    if (window.innerWidth < 768) setSidebarOpen(false);
-  }, [location.pathname]);
 
   return (
     <div
-      className={`h-[100dvh] w-full flex bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
+      className={`h-[100dvh] w-full flex flex-col md:flex-row bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >
-      <AdminSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <AdminSidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar toggleSidebar={toggleSidebar} />
-
         <motion.main
           className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
           initial={{ opacity: 0, y: 10 }}
