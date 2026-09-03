@@ -13,6 +13,9 @@ import {
   Moon,
   Sun,
   ShieldCheck,
+  Users,
+  CreditCard,
+  Coins,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -164,7 +167,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       ? [
           {
             label: t('sidebar.admin'),
-            items: [{ path: '/admin', Icon: ShieldCheck, name: t('common.adminPanel') }],
+            items: [
+              { path: '/admin', Icon: ShieldCheck, name: t('admin.nav.overview') },
+              { path: '/admin/users', Icon: Users, name: t('admin.nav.users') },
+              { path: '/admin/appointments', Icon: CalendarRange, name: t('admin.nav.appointments') },
+              { path: '/admin/subscriptions', Icon: CreditCard, name: t('admin.nav.subscriptions') },
+              { path: '/admin/costs', Icon: Coins, name: t('admin.nav.costs') },
+            ],
           },
         ]
       : []),
@@ -184,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                   return (
                     <SidebarLink
                       key={path}
-                      end
+                      end={path === '/' || path === '/admin'}
                       link={{
                         label: name,
                         href: path,

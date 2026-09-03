@@ -16,9 +16,10 @@ vi.mock('../../hooks/useAppSelector', () => ({
 }));
 
 /**
- * The sidebar's admin entry (LT-058): visible only to role 'admin'. This is
+ * The sidebar's admin section (LT-058): visible only to role 'admin'. This is
  * the first place the app ever reads auth.user.role — display logic only,
- * the API refuses non-admins regardless.
+ * the API refuses non-admins regardless. Since the admin panel merged into
+ * the owner layout, the section carries the admin pages directly.
  */
 const mockAuthWithRole = (role: string) => {
   vi.mocked(useAuth).mockReturnValue({
@@ -34,20 +35,32 @@ const mockAuthWithRole = (role: string) => {
 const renderSidebar = () =>
   render(
     <MemoryRouter>
-      <Sidebar isOpen toggleSidebar={vi.fn()} />
+      <Sidebar />
     </MemoryRouter>
   );
 
-describe('Sidebar admin link', () => {
-  it('shows the admin section for an admin', () => {
+const ADMIN_LINKS = [
+  'admin.nav.overview',
+  'admin.nav.users',
+  'admin.nav.appointments',
+  'admin.nav.subscriptions',
+  'admin.nav.costs',
+];
+
+describe('Sidebar admin section', () => {
+  it('shows the admin links for an admin', () => {
     mockAuthWithRole('admin');
     renderSidebar();
-    expect(screen.getByText('common.adminPanel')).toBeInTheDocument();
+    for (const key of ADMIN_LINKS) {
+      expect(screen.getByText(key)).toBeInTheDocument();
+    }
   });
 
-  it('hides the admin section from a business owner', () => {
+  it('hides the admin links from a business owner', () => {
     mockAuthWithRole('user');
     renderSidebar();
-    expect(screen.queryByText('common.adminPanel')).not.toBeInTheDocument();
+    for (const key of ADMIN_LINKS) {
+      expect(screen.queryByText(key)).not.toBeInTheDocument();
+    }
   });
 });

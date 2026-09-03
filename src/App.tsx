@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -23,7 +23,6 @@ import AiBuilder from './pages/AiBuilder';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
-import AdminLayout from './components/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminUserDetail from './pages/admin/AdminUserDetail';
@@ -62,14 +61,16 @@ function App() {
                     <Route path="account" element={<Account />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="ai" element={<AiBuilder />} />
-                  </Route>
-                  <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-                    <Route index element={<AdminOverview />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    <Route path="users/:id" element={<AdminUserDetail />} />
-                    <Route path="appointments" element={<AdminAppointments />} />
-                    <Route path="subscriptions" element={<AdminSubscriptions />} />
-                    <Route path="costs" element={<AdminCosts />} />
+                    {/* Admin pages share the owner Layout — the sidebar simply
+                        grows an admin section when the operator is logged in. */}
+                    <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
+                      <Route index element={<AdminOverview />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="users/:id" element={<AdminUserDetail />} />
+                      <Route path="appointments" element={<AdminAppointments />} />
+                      <Route path="subscriptions" element={<AdminSubscriptions />} />
+                      <Route path="costs" element={<AdminCosts />} />
+                    </Route>
                   </Route>
                   <Route path="/dashboard/*" element={<LegacyDashboardRedirect />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
