@@ -121,7 +121,7 @@ function DataTable<T>({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-800/60 bg-light-surface shadow-sm">
+      <div className="overflow-x-auto rounded-xl glass-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-800/60 bg-gray-50/70 dark:bg-gray-800/30">

@@ -82,6 +82,28 @@ html[dir="rtl"] body {
   scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
 }
 
+/* ── Glass cards (LT-era: dashboard card surfaces) ──────────────────
+   Translucent surface + backdrop blur. The blur only reads against the
+   ambient tint Layout paints behind the content — over a flat colour a
+   backdrop-filter is invisible. */
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 8px 32px rgba(100, 90, 180, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.dark .glass-card {
+  background: rgba(51, 65, 85, 0.5); /* dark-surface at half opacity */
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
 /* Dark mode styles */
 .dark body {
   @apply bg-dark-bg text-dark-text;

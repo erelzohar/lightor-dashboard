@@ -21,7 +21,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   if (!animate) {
     return (
-      <div className={`bg-light-surface rounded-lg shadow-md p-6 ${className}`}>
+      <div className={`glass-card rounded-lg p-6 ${className}`}>
         {children}
       </div>
     );
@@ -29,7 +29,7 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <motion.div
-      className={`bg-light-surface rounded-lg shadow-md p-6 ${className}`}
+      className={`glass-card rounded-lg p-6 ${className}`}
       variants={cardVariants}
       initial="hidden"
       animate="visible"

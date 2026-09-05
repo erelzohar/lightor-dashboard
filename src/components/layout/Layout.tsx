@@ -89,6 +89,18 @@ const Layout: React.FC = () => {
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >
+      {/* Ambient tint the glass cards blur against — over a flat colour a
+          backdrop-filter is invisible. Fixed and paint-only. */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(60rem 60rem at 12% 8%, color-mix(in srgb, var(--color-primary) 11%, transparent), transparent 68%),' +
+            'radial-gradient(70rem 70rem at 88% 92%, color-mix(in srgb, var(--color-primary-dark) 9%, transparent), transparent 68%)',
+        }}
+      />
+
       {boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && (
         <OnboardingWelcome
           userName={auth.user?.name || ''}

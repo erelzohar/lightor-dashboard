@@ -1,7 +1,6 @@
 import React from 'react';
 import { Hourglass } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Card from '../ui/Card';
 import { Appointment } from '../../types';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +18,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, delay })
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="bg-light-surface rounded-lg shadow-sm p-6 relative overflow-hidden border border-light-gray/10"
+      className="glass-card rounded-lg p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start">
         <div>
