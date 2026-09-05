@@ -956,6 +956,11 @@
     "errors": {
       "loadFailed": "No se pudieron cargar los clientes",
       "saveFailed": "No se pudo guardar"
+    },
+    "upgrade": {
+      "insightsTitle": "Los mejores clientes son una función Plus",
+      "insightsDesc": "Descubre quién visita más y quién genera más ingresos. Mejora tu plan para desbloquear las estadísticas de clientes y la exportación CSV.",
+      "exportToast": "La exportación CSV está disponible en el plan Plus"
     }
   }
 }

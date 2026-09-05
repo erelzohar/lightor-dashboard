@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { UsersRound, UserPlus, Download, Ban, Repeat, Sparkles } from 'lucide-react';
+import { UsersRound, UserPlus, Download, Ban, Repeat, Sparkles, Lock } from 'lucide-react';
 import DataTable, { DataTableColumn } from '../components/ui/DataTable';
 import StatCard from '../components/ui/StatCard';
 import Select from '../components/ui/Select';
@@ -11,10 +12,12 @@ import StatusBadge from '../components/admin/StatusBadge';
 import TopCustomers from '../components/customers/TopCustomers';
 import CustomerDetailDrawer from '../components/customers/CustomerDetailDrawer';
 import AddCustomerModal from '../components/customers/AddCustomerModal';
+import UpgradeCard from '../components/customers/UpgradeCard';
 import {
   fetchCustomers,
   fetchCustomerStats,
   exportCustomersCsv,
+  isApiErrorCode,
   CustomerRow,
   CustomersOverview,
   CustomerSort,
@@ -29,6 +32,7 @@ import { formatPhoneForDisplay } from '../utils/phone';
  */
 const Customers: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const [result, setResult] = useState<Paginated<CustomerRow> | null>(null);
   const [overview, setOverview] = useState<CustomersOverview | null>(null);
@@ -89,12 +93,29 @@ const Customers: React.FC = () => {
   const formatDate = (value?: string | null) =>
     value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+  // Plus-only (LT-125). The flag from /stats short-circuits the round trip;
+  // the server's 403 PLAN_REQUIRED is handled too in case stats never loaded.
+  // Missing flags (an API deployed before this build) read as unlocked — the
+  // server still refuses a gated call, and PLAN_REQUIRED below covers it.
+  const exportLocked = overview?.entitlements ? !overview.entitlements.export : false;
+  const insightsLocked = overview?.entitlements ? !overview.entitlements.insights : false;
+
+  const promptUpgrade = () => {
+    toast(t('customers.upgrade.exportToast'), { icon: '👑' });
+    navigate('/account');
+  };
+
   const handleExport = async () => {
+    if (exportLocked) {
+      promptUpgrade();
+      return;
+    }
     setExporting(true);
     try {
       await exportCustomersCsv({ search: search || undefined, blocked: blocked || undefined });
-    } catch {
-      toast.error(t('customers.export.failed'));
+    } catch (error) {
+      if (isApiErrorCode(error, 'PLAN_REQUIRED')) promptUpgrade();
+      else toast.error(t('customers.export.failed'));
     } finally {
       setExporting(false);
     }
@@ -165,7 +186,14 @@ const Customers: React.FC = () => {
             {t('customers.subtitle', { count: result?.pagination.total ?? 0 })}
           </p>
         </div>
-        <Button variant="outline" size="sm" leftIcon={<Download size={15} />} onClick={handleExport} isLoading={exporting}>
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={exportLocked ? <Lock size={15} /> : <Download size={15} />}
+          onClick={handleExport}
+          isLoading={exporting}
+          title={exportLocked ? t('customers.upgrade.exportToast') : undefined}
+        >
           {t('customers.export.button')}
         </Button>
         <Button variant="primary" size="sm" leftIcon={<UserPlus size={15} />} onClick={() => setAdding(true)}>
@@ -202,11 +230,15 @@ const Customers: React.FC = () => {
         />
       </div>
 
-      <TopCustomers
-        byVisits={overview?.top.byVisits ?? []}
-        byRevenue={overview?.top.byRevenue ?? []}
-        onSelect={setSelectedId}
-      />
+      {insightsLocked ? (
+        <UpgradeCard title={t('customers.upgrade.insightsTitle')} description={t('customers.upgrade.insightsDesc')} />
+      ) : (
+        <TopCustomers
+          byVisits={overview?.top.byVisits ?? []}
+          byRevenue={overview?.top.byRevenue ?? []}
+          onSelect={setSelectedId}
+        />
+      )}
 
       <DataTable
         columns={columns}

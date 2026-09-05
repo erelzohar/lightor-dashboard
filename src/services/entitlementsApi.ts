@@ -16,6 +16,9 @@ export interface PlanLimits {
   /** Gemini tokens per month; null = unlimited (every current plan). */
   aiTokensPerMonth: number | null;
   showBranding: boolean;
+  /** Customers page: top-customers ranking and CSV export are Plus (LT-125). */
+  customerInsights: boolean;
+  customerExport: boolean;
 }
 
 export interface MyEntitlements {

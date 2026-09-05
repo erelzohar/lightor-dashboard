@@ -10,7 +10,10 @@ const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t, i18n: { language: 'en' } }),
 }));
-vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
+const toastMock = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
+vi.mock('react-hot-toast', () => ({ default: toastMock }));
+const navigateMock = vi.hoisted(() => vi.fn());
+vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', darkMode: false, language: 'en' }),
 }));
@@ -66,8 +69,12 @@ describe('Customers page', () => {
         byVisits: [{ customerId: 'c1', name: 'Dana Levi', phone: '0584006014', visits: 3, revenue: 300, isBlocked: false }],
         byRevenue: [],
       },
+      entitlements: { insights: true, export: true },
     } as never);
-    vi.mocked(exportCustomersCsv).mockResolvedValue(undefined);
+    vi.mocked(exportCustomersCsv).mockReset().mockResolvedValue(undefined);
+    vi.mocked(fetchCustomers).mockClear();
+    navigateMock.mockClear();
+    toastMock.mockClear();
   });
 
   it('renders the rows, the totals and the top list from the API', async () => {
@@ -90,5 +97,25 @@ describe('Customers page', () => {
     fireEvent.click(screen.getByText('customers.export.button'));
 
     await waitFor(() => expect(exportCustomersCsv).toHaveBeenCalledWith({ search: undefined, blocked: undefined }));
+  });
+
+  it('on the free plan swaps the ranking for an upgrade card and sends export to the account page (LT-125)', async () => {
+    vi.mocked(fetchCustomerStats).mockResolvedValue({
+      totals: { customers: 2, blocked: 1, newThisMonth: 1, returning: 1 },
+      top: { byVisits: [], byRevenue: [] },
+      entitlements: { insights: false, export: false },
+    } as never);
+
+    render(<Customers />);
+    await screen.findByText('Moshe Cohen');
+
+    expect(await screen.findByText('customers.upgrade.insightsTitle')).toBeInTheDocument();
+    expect(screen.queryByText('customers.top.byVisits')).not.toBeInTheDocument();
+    // The directory itself stays fully available.
+    expect(screen.getByText('Dana Levi')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('customers.export.button'));
+    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/account'));
+    expect(exportCustomersCsv).not.toHaveBeenCalled();
   });
 });

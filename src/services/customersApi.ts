@@ -116,7 +116,10 @@ export interface TopCustomer {
 
 export interface CustomersOverview {
   totals: { customers: number; blocked: number; newThisMonth: number; returning: number };
+  /** Empty lists when `entitlements.insights` is false. */
   top: { byVisits: TopCustomer[]; byRevenue: TopCustomer[] };
+  /** What the caller's plan unlocks (LT-125); the server enforces the same. */
+  entitlements: { insights: boolean; export: boolean };
 }
 
 export type CustomerSort = 'name' | 'lastSeenAt' | 'createdAt' | 'visits' | 'lastVisit';

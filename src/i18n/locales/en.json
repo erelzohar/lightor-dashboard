@@ -956,6 +956,11 @@
     "errors": {
       "loadFailed": "Could not load customers",
       "saveFailed": "Could not save"
+    },
+    "upgrade": {
+      "insightsTitle": "Top customers is a Plus feature",
+      "insightsDesc": "See who visits most and who brings the most revenue. Upgrade to unlock customer insights and CSV export.",
+      "exportToast": "CSV export is available on the Plus plan"
     }
   }
 }

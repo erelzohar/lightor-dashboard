@@ -956,6 +956,11 @@
     "errors": {
       "loadFailed": "تعذّر تحميل العملاء",
       "saveFailed": "تعذّر الحفظ"
+    },
+    "upgrade": {
+      "insightsTitle": "أفضل العملاء ميزة في خطة Plus",
+      "insightsDesc": "اعرف من يزور أكثر ومن يحقق أعلى إيراد. قم بالترقية لفتح رؤى العملاء وتصدير CSV.",
+      "exportToast": "تصدير CSV متاح في خطة Plus"
     }
   }
 }

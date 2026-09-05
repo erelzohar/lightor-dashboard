@@ -956,6 +956,11 @@
     "errors": {
       "loadFailed": "Impossible de charger les clients",
       "saveFailed": "Enregistrement impossible"
+    },
+    "upgrade": {
+      "insightsTitle": "Le top clients est une fonctionnalité Plus",
+      "insightsDesc": "Voyez qui vient le plus souvent et qui rapporte le plus. Passez à Plus pour débloquer les statistiques clients et l’export CSV.",
+      "exportToast": "L’export CSV est disponible avec l’offre Plus"
     }
   }
 }
