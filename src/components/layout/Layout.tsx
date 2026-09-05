@@ -96,8 +96,9 @@ const Layout: React.FC = () => {
         className="fixed inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(60rem 60rem at 12% 8%, color-mix(in srgb, var(--color-primary) 11%, transparent), transparent 68%),' +
-            'radial-gradient(70rem 70rem at 88% 92%, color-mix(in srgb, var(--color-primary-dark) 9%, transparent), transparent 68%)',
+            'radial-gradient(60rem 60rem at 12% 8%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 68%),' +
+            'radial-gradient(70rem 70rem at 88% 92%, color-mix(in srgb, var(--color-primary-dark) 14%, transparent), transparent 68%),' +
+            'radial-gradient(50rem 50rem at 75% 20%, color-mix(in srgb, #4cd7f6 8%, transparent), transparent 70%)',
         }}
       />
 

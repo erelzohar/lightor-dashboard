@@ -87,13 +87,13 @@ html[dir="rtl"] body {
    ambient tint Layout paints behind the content — over a flat colour a
    backdrop-filter is invisible. */
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.42);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.75);
   box-shadow:
-    0 8px 32px rgba(100, 90, 180, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 8px 32px rgba(100, 90, 180, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .dark .glass-card {
