@@ -43,7 +43,8 @@
     "upgradePlanBtn": "Mejorar tu plan",
     "completeSetupFirst": "Completa primero la configuración de tu sitio",
     "search": "Buscar",
-    "adminPanel": "Panel de administración"
+    "adminPanel": "Panel de administración",
+    "customers": "Clientes"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -848,6 +849,113 @@
       "save": "Guardar cambios",
       "created": "Usuario creado",
       "saved": "Usuario actualizado"
+    }
+  },
+  "customers": {
+    "title": "Clientes",
+    "subtitle": "{{count}} clientes",
+    "search": "Buscar por nombre o teléfono…",
+    "empty": "Aún no hay clientes — aparecerán aquí tras su primera reserva",
+    "filter": {
+      "all": "Todos los clientes",
+      "active": "Activos",
+      "blocked": "Bloqueados"
+    },
+    "columns": {
+      "name": "Cliente",
+      "phone": "Teléfono",
+      "visits": "Visitas",
+      "lastVisit": "Última visita",
+      "revenue": "Ingresos",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "blocked": "Bloqueado"
+    },
+    "source": {
+      "booking": "Reservó en línea",
+      "manual": "Añadido por ti"
+    },
+    "stats": {
+      "total": "Clientes",
+      "newThisMonth": "Nuevos este mes",
+      "returning": "Recurrentes",
+      "returningHint": "2 o más reservas",
+      "blocked": "Bloqueados"
+    },
+    "top": {
+      "byVisits": "Más visitas",
+      "byRevenue": "Mayores ingresos",
+      "visits": "{{count}} visitas",
+      "estimated": "Estimado según los precios de los servicios",
+      "empty": "Aún no hay suficientes reservas"
+    },
+    "detail": {
+      "title": "Ficha del cliente",
+      "close": "Cerrar",
+      "call": "Llamar",
+      "schedule": "Reservar cita",
+      "cancelledCount": "Canceladas",
+      "upcoming": "Próximas",
+      "nextVisit": "Próxima visita",
+      "firstSeen": "Primera visita",
+      "source": "Origen",
+      "notes": "Notas privadas",
+      "notesPlaceholder": "Solo tú lo ves — preferencias, alergias, recordatorios…",
+      "saveNotes": "Guardar notas",
+      "notesSaved": "Notas guardadas",
+      "history": "Historial de citas",
+      "noHistory": "Aún no hay citas"
+    },
+    "block": {
+      "title": "Bloquear cliente",
+      "message": "{{name}} ya no podrá reservar en línea ni cambiar sus citas existentes. Podrá seguir cancelando.",
+      "cancelUpcoming": "Cancelar también sus próximas citas",
+      "cancelUpcomingHint": "{{count}} próximas — no se envía ningún mensaje al cliente",
+      "reason": "Motivo (opcional)",
+      "reasonPlaceholder": "Solo tú lo ves",
+      "confirm": "Bloquear",
+      "cancel": "Cancelar",
+      "done": "Cliente bloqueado",
+      "doneWithCancelled": "Cliente bloqueado · {{count}} próximas citas canceladas",
+      "unblockTitle": "Desbloquear cliente",
+      "unblockMessage": "{{name}} podrá volver a reservar contigo.",
+      "unblockConfirm": "Desbloquear",
+      "unblocked": "Cliente desbloqueado"
+    },
+    "add": {
+      "title": "Añadir cliente",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "phoneHint": "Números israelíes como 05X…; añade el prefijo de país para otros",
+      "notes": "Notas (opcional)",
+      "blockNow": "Bloquear de inmediato",
+      "blockNowHint": "Rechazar reservas en línea desde este número",
+      "submit": "Añadir",
+      "done": "Cliente añadido",
+      "exists": "Este número ya está entre tus clientes"
+    },
+    "export": {
+      "button": "Exportar CSV",
+      "failed": "La exportación falló"
+    },
+    "booking": {
+      "title": "Reservar una cita",
+      "service": "Servicio",
+      "date": "Fecha",
+      "time": "Hora",
+      "pickTime": "Elige una hora",
+      "noSlots": "Cerrado en esta fecha",
+      "noServices": "Añade un servicio primero",
+      "submit": "Reservar",
+      "success": "Cita reservada",
+      "slotTaken": "Esa hora ya está ocupada — elige otra",
+      "failed": "No se pudo reservar la cita"
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar los clientes",
+      "saveFailed": "No se pudo guardar"
     }
   }
 }

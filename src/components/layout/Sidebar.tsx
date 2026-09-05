@@ -14,6 +14,7 @@ import {
   Sun,
   ShieldCheck,
   Users,
+  UsersRound,
   CreditCard,
   Coins,
 } from 'lucide-react';
@@ -175,6 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
     {
       label: t('sidebar.manage'),
       items: [
+        { path: '/customers', Icon: UsersRound, name: t('common.customers') },
         { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
         { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
         { path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') },

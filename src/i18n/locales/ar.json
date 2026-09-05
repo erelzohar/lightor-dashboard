@@ -43,7 +43,8 @@
     "upgradePlanBtn": "ترقية خطتك",
     "completeSetupFirst": "أكمل إعداد موقعك أولًا",
     "search": "بحث",
-    "adminPanel": "لوحة الإدارة"
+    "adminPanel": "لوحة الإدارة",
+    "customers": "العملاء"
   },
   "greetings": {
     "morning": "صباح الخير",
@@ -848,6 +849,113 @@
       "save": "حفظ التغييرات",
       "created": "تم إنشاء المستخدم",
       "saved": "تم تحديث المستخدم"
+    }
+  },
+  "customers": {
+    "title": "العملاء",
+    "subtitle": "{{count}} عملاء",
+    "search": "ابحث بالاسم أو رقم الهاتف…",
+    "empty": "لا يوجد عملاء بعد — سيظهرون هنا بعد أول حجز",
+    "filter": {
+      "all": "كل العملاء",
+      "active": "نشطون",
+      "blocked": "محظورون"
+    },
+    "columns": {
+      "name": "العميل",
+      "phone": "الهاتف",
+      "visits": "الزيارات",
+      "lastVisit": "آخر زيارة",
+      "revenue": "الإيراد",
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشط",
+      "blocked": "محظور"
+    },
+    "source": {
+      "booking": "حجز عبر الموقع",
+      "manual": "أضفته أنت"
+    },
+    "stats": {
+      "total": "العملاء",
+      "newThisMonth": "جدد هذا الشهر",
+      "returning": "عائدون",
+      "returningHint": "حجزوا مرتين أو أكثر",
+      "blocked": "محظورون"
+    },
+    "top": {
+      "byVisits": "الأكثر زيارة",
+      "byRevenue": "الأعلى إيرادًا",
+      "visits": "{{count}} زيارات",
+      "estimated": "تقدير حسب أسعار الخدمات",
+      "empty": "لا توجد حجوزات كافية بعد"
+    },
+    "detail": {
+      "title": "تفاصيل العميل",
+      "close": "إغلاق",
+      "call": "اتصال",
+      "schedule": "حجز موعد",
+      "cancelledCount": "ملغاة",
+      "upcoming": "قادمة",
+      "nextVisit": "الزيارة التالية",
+      "firstSeen": "أول زيارة",
+      "source": "المصدر",
+      "notes": "ملاحظات خاصة",
+      "notesPlaceholder": "أنت وحدك تراها — تفضيلات، حساسية، تذكيرات…",
+      "saveNotes": "حفظ الملاحظات",
+      "notesSaved": "تم حفظ الملاحظات",
+      "history": "سجل المواعيد",
+      "noHistory": "لا مواعيد بعد"
+    },
+    "block": {
+      "title": "حظر العميل",
+      "message": "لن يتمكن {{name}} بعد الآن من الحجز عبر الموقع أو تغيير المواعيد القائمة. يمكنه الإلغاء فقط.",
+      "cancelUpcoming": "إلغاء مواعيده القادمة أيضًا",
+      "cancelUpcomingHint": "{{count}} مواعيد قادمة — لا تُرسل رسالة للعميل",
+      "reason": "السبب (اختياري)",
+      "reasonPlaceholder": "أنت وحدك تراه",
+      "confirm": "حظر",
+      "cancel": "إلغاء",
+      "done": "تم حظر العميل",
+      "doneWithCancelled": "تم حظر العميل · أُلغي {{count}} مواعيد قادمة",
+      "unblockTitle": "إلغاء الحظر",
+      "unblockMessage": "سيتمكن {{name}} من الحجز لديك مجددًا.",
+      "unblockConfirm": "إلغاء الحظر",
+      "unblocked": "تم إلغاء الحظر"
+    },
+    "add": {
+      "title": "إضافة عميل",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "phoneHint": "الأرقام الإسرائيلية بصيغة 05X…؛ أضف رمز الدولة للأرقام الأخرى",
+      "notes": "ملاحظات (اختياري)",
+      "blockNow": "حظر فورًا",
+      "blockNowHint": "رفض الحجوزات عبر الموقع من هذا الرقم",
+      "submit": "إضافة",
+      "done": "تمت إضافة العميل",
+      "exists": "رقم الهاتف هذا موجود مسبقًا لدى عملائك"
+    },
+    "export": {
+      "button": "تصدير CSV",
+      "failed": "فشل التصدير"
+    },
+    "booking": {
+      "title": "حجز موعد",
+      "service": "الخدمة",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "pickTime": "اختر وقتًا",
+      "noSlots": "مغلق في هذا التاريخ",
+      "noServices": "أضف خدمة أولًا",
+      "submit": "حجز",
+      "success": "تم حجز الموعد",
+      "slotTaken": "هذا الوقت محجوز — اختر وقتًا آخر",
+      "failed": "تعذّر حجز الموعد"
+    },
+    "errors": {
+      "loadFailed": "تعذّر تحميل العملاء",
+      "saveFailed": "تعذّر الحفظ"
     }
   }
 }

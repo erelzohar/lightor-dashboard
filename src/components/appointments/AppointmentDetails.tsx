@@ -10,6 +10,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 
 interface AppointmentDetailsProps {
   appointment: Appointment | null;
@@ -43,12 +44,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
     }
   };
 
-  const fmtPhone = (p: string) => p.startsWith('0') ? p : `0${p.slice(3)}`;
 
-  const getWhatsAppLink = (phone: string) => {
-    const n = phone.startsWith('+') ? phone.slice(1) : `972${phone.slice(1)}`;
-    return `https://wa.me/${n}`;
-  };
 
   const getStatusBadgeClass = (s: string) => ({
     scheduled: 'bg-violet-100 text-violet-700',
@@ -132,13 +128,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <div className="flex items-center gap-2 px-3 py-2">
             <Phone size={14} className="text-gray-400 shrink-0" />
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <a href={`tel:${fmtPhone(appointment.phone)}`}
+              <a href={`tel:${formatPhoneForDisplay(appointment.phone)}`}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors truncate"
                 onClick={e => e.stopPropagation()}>
                 <Phone size={11} />
-                {fmtPhone(appointment.phone)}
+                {formatPhoneForDisplay(appointment.phone)}
               </a>
-              <a href={getWhatsAppLink(appointment.phone)}
+              <a href={whatsAppHref(appointment.phone)}
                 target="_blank" rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
                 className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/30 transition-colors shrink-0">

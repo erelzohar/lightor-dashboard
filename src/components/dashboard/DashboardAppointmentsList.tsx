@@ -9,6 +9,7 @@ import { isToday, isTomorrow, format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
+import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 
 interface DashboardAppointmentsListProps {
   appointments: Appointment[];
@@ -68,13 +69,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
-  const formatPhoneNumber = (phone: string) =>
-    phone.startsWith('0') ? phone : `0${phone.slice(3)}`;
 
-  const getWhatsAppLink = (phone: string) => {
-    const formatted = phone.startsWith('+') ? phone.slice(1) : `972${phone.slice(1)}`;
-    return `https://wa.me/${formatted}`;
-  };
 
   const sorted = [...appointments].sort(
     (a, b) => parseInt(a.timestamp) - parseInt(b.timestamp)
@@ -212,7 +207,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                       </span>
                       <div className="hidden group-hover:flex items-center gap-1.5">
                         <a
-                          href={`tel:${formatPhoneNumber(appointment.phone)}`}
+                          href={`tel:${formatPhoneForDisplay(appointment.phone)}`}
                           onClick={(e) => e.stopPropagation()}
                           className="p-1.5 rounded-full bg-teal-100 text-teal-700 hover:bg-teal-200 transition-colors"
                           title={t('appointments.call')}
@@ -220,7 +215,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                           <Phone size={13} />
                         </a>
                         <a
-                          href={getWhatsAppLink(appointment.phone)}
+                          href={whatsAppHref(appointment.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}

@@ -88,6 +88,27 @@ export const getAppointments = async ({
 };
 
 
+export interface CreateAppointmentBody {
+  name: string;
+  phone: string;
+  type_id: string;
+  /** Epoch milliseconds as a string, as the API stores it. */
+  timestamp: string;
+  user_id: string;
+  channelType?: 'sms' | 'whatsapp';
+}
+
+/**
+ * Owner-made booking (LT-122). A signed-in business books into its own
+ * calendar without an OTP; the server refuses a foreign user_id and answers
+ * 409 when the slot overlaps an existing appointment — callers turn that
+ * into a message rather than an error.
+ */
+export const createAppointment = async (body: CreateAppointmentBody): Promise<Appointment> => {
+  const res = await apiClient.post(APPOINTMENTS_URL, body);
+  return res.data.data;
+};
+
 export const updateAppointmentStatus = async (
   id: string,
   status: 'scheduled' | 'completed' | 'cancelled'

@@ -196,6 +196,9 @@ export interface Appointment {
   name: string;
   type: AppointmentType;
   phone: string;
+  /** Canonical phone the customers directory keys on (LT-122). */
+  phoneNormalized?: string;
+  channelType?: 'sms' | 'whatsapp';
   status: string;
   user_id: string;
   timestamp: string;

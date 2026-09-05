@@ -18,6 +18,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -221,7 +222,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     } catch { toast.error(t('appointments.updateError')); }
   };
 
-  const fmtPhone = (p: string) => p.startsWith('0') ? p : `0${p.slice(3)}`;
   const initials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   const getStatusBadgeClass = (s: string) => ({
@@ -797,11 +797,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {/* Phone */}
               <div className="flex items-center gap-3 px-3 py-1">
                 <Phone size={14} className="text-gray-400 shrink-0" />
-                <a href={`tel:${fmtPhone(selectedAppt.phone)}`}
+                <a href={`tel:${formatPhoneForDisplay(selectedAppt.phone)}`}
                   className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                   onClick={e => e.stopPropagation()}>
                   <Phone size={11} />
-                  {fmtPhone(selectedAppt.phone)}
+                  {formatPhoneForDisplay(selectedAppt.phone)}
                 </a>
               </div>
             </div>

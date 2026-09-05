@@ -9,6 +9,7 @@ import { isToday, isTomorrow, format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
+import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -58,14 +59,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     (a, b) => parseInt(a.timestamp) - parseInt(b.timestamp)
   );
 
-  const formatPhoneNumber = (phone: string) => {
-    return phone.startsWith('0') ? phone : `0${phone.slice(3)}`;
-  };
 
-  const getWhatsAppLink = (phone: string) => {
-    const formattedPhone = phone.startsWith('+') ? phone.slice(1) : `972${phone.slice(1)}`;
-    return `https://wa.me/${formattedPhone}`;
-  };
 
   const getDateDisplay = (timestamp: string) => {
     const date = new Date(parseInt(timestamp));
@@ -125,7 +119,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                     <div className="flex items-center justify-end gap-2">
                       <a
-                        href={`tel:${formatPhoneNumber(appointment.phone)}`}
+                        href={`tel:${formatPhoneForDisplay(appointment.phone)}`}
                         onClick={(e) => e.stopPropagation()}
                         className="p-2 rounded-full bg-[#088F8F] text-white hover:bg-[#088F8F]/80 transition-colors"
                         title={t('appointments.call')}
@@ -133,7 +127,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         <Phone size={16} />
                       </a>
                       <a
-                        href={getWhatsAppLink(appointment.phone)}
+                        href={whatsAppHref(appointment.phone)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}

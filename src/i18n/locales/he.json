@@ -43,7 +43,8 @@
     "upgradePlanBtn": "שדרג תוכנית",
     "completeSetupFirst": "השלם את הגדרת האתר שלך תחילה",
     "search": "חיפוש",
-    "adminPanel": "פאנל ניהול"
+    "adminPanel": "פאנל ניהול",
+    "customers": "לקוחות"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -848,6 +849,113 @@
       "save": "שמור שינויים",
       "created": "המשתמש נוצר",
       "saved": "המשתמש עודכן"
+    }
+  },
+  "customers": {
+    "title": "לקוחות",
+    "subtitle": "{{count}} לקוחות",
+    "search": "חיפוש לפי שם או טלפון…",
+    "empty": "אין לקוחות עדיין — הם יופיעו כאן אחרי התור הראשון",
+    "filter": {
+      "all": "כל הלקוחות",
+      "active": "פעילים",
+      "blocked": "חסומים"
+    },
+    "columns": {
+      "name": "לקוח",
+      "phone": "טלפון",
+      "visits": "ביקורים",
+      "lastVisit": "ביקור אחרון",
+      "revenue": "הכנסה",
+      "status": "סטטוס"
+    },
+    "status": {
+      "active": "פעיל",
+      "blocked": "חסום"
+    },
+    "source": {
+      "booking": "הזמין באתר",
+      "manual": "נוסף על ידך"
+    },
+    "stats": {
+      "total": "לקוחות",
+      "newThisMonth": "חדשים החודש",
+      "returning": "חוזרים",
+      "returningHint": "הזמינו 2 תורים ויותר",
+      "blocked": "חסומים"
+    },
+    "top": {
+      "byVisits": "הכי הרבה ביקורים",
+      "byRevenue": "הכנסה גבוהה",
+      "visits": "{{count}} ביקורים",
+      "estimated": "הערכה לפי מחירי השירותים",
+      "empty": "אין עדיין מספיק תורים"
+    },
+    "detail": {
+      "title": "פרטי לקוח",
+      "close": "סגירה",
+      "call": "התקשר",
+      "schedule": "קבע תור",
+      "cancelledCount": "בוטלו",
+      "upcoming": "קרובים",
+      "nextVisit": "הביקור הבא",
+      "firstSeen": "ביקור ראשון",
+      "source": "מקור",
+      "notes": "הערות פרטיות",
+      "notesPlaceholder": "רק אתה רואה את זה — העדפות, אלרגיות, תזכורות…",
+      "saveNotes": "שמור הערות",
+      "notesSaved": "ההערות נשמרו",
+      "history": "היסטוריית תורים",
+      "noHistory": "אין תורים עדיין"
+    },
+    "block": {
+      "title": "חסימת לקוח",
+      "message": "{{name}} לא יוכל יותר לקבוע תור באתר או לשנות תורים קיימים. הוא עדיין יוכל לבטל.",
+      "cancelUpcoming": "בטל גם את התורים הקרובים שלו",
+      "cancelUpcomingHint": "{{count}} תורים קרובים — לא נשלחת הודעה ללקוח",
+      "reason": "סיבה (לא חובה)",
+      "reasonPlaceholder": "רק אתה רואה את זה",
+      "confirm": "חסום",
+      "cancel": "ביטול",
+      "done": "הלקוח נחסם",
+      "doneWithCancelled": "הלקוח נחסם · {{count}} תורים קרובים בוטלו",
+      "unblockTitle": "ביטול חסימה",
+      "unblockMessage": "{{name}} יוכל שוב לקבוע אצלך תורים.",
+      "unblockConfirm": "בטל חסימה",
+      "unblocked": "החסימה בוטלה"
+    },
+    "add": {
+      "title": "הוספת לקוח",
+      "name": "שם",
+      "phone": "טלפון",
+      "phoneHint": "מספרים ישראליים בפורמט 05X…; למספרים אחרים הוסף קידומת מדינה",
+      "notes": "הערות (לא חובה)",
+      "blockNow": "חסום מיד",
+      "blockNowHint": "סרב לתורים מהאתר ממספר זה",
+      "submit": "הוסף",
+      "done": "הלקוח נוסף",
+      "exists": "מספר הטלפון הזה כבר קיים אצלך"
+    },
+    "export": {
+      "button": "ייצוא CSV",
+      "failed": "הייצוא נכשל"
+    },
+    "booking": {
+      "title": "קביעת תור",
+      "service": "שירות",
+      "date": "תאריך",
+      "time": "שעה",
+      "pickTime": "בחר שעה",
+      "noSlots": "סגור בתאריך זה",
+      "noServices": "הוסף שירות קודם",
+      "submit": "קבע",
+      "success": "התור נקבע",
+      "slotTaken": "השעה הזו כבר תפוסה — בחר אחרת",
+      "failed": "לא ניתן לקבוע את התור"
+    },
+    "errors": {
+      "loadFailed": "לא ניתן לטעון את הלקוחות",
+      "saveFailed": "השמירה נכשלה"
     }
   }
 }

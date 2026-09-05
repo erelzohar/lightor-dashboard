@@ -43,7 +43,8 @@
     "upgradePlanBtn": "Upgrade your plan",
     "completeSetupFirst": "Complete your website setup first",
     "search": "Search",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "customers": "Customers"
   },
   "greetings": {
     "morning": "Good morning",
@@ -848,6 +849,113 @@
       "save": "Save changes",
       "created": "User created",
       "saved": "User updated"
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "{{count}} customers",
+    "search": "Search by name or phone…",
+    "empty": "No customers yet — they appear here after their first booking",
+    "filter": {
+      "all": "All customers",
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "columns": {
+      "name": "Customer",
+      "phone": "Phone",
+      "visits": "Visits",
+      "lastVisit": "Last visit",
+      "revenue": "Revenue",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "blocked": "Blocked"
+    },
+    "source": {
+      "booking": "Booked online",
+      "manual": "Added by you"
+    },
+    "stats": {
+      "total": "Customers",
+      "newThisMonth": "New this month",
+      "returning": "Returning",
+      "returningHint": "Booked 2+ times",
+      "blocked": "Blocked"
+    },
+    "top": {
+      "byVisits": "Most visits",
+      "byRevenue": "Top revenue",
+      "visits": "{{count}} visits",
+      "estimated": "Estimated from service prices",
+      "empty": "Not enough bookings yet"
+    },
+    "detail": {
+      "title": "Customer details",
+      "close": "Close",
+      "call": "Call",
+      "schedule": "Book appointment",
+      "cancelledCount": "Cancelled",
+      "upcoming": "Upcoming",
+      "nextVisit": "Next visit",
+      "firstSeen": "First visit",
+      "source": "Source",
+      "notes": "Private notes",
+      "notesPlaceholder": "Only you can see this — preferences, allergies, reminders…",
+      "saveNotes": "Save notes",
+      "notesSaved": "Notes saved",
+      "history": "Appointment history",
+      "noHistory": "No appointments yet"
+    },
+    "block": {
+      "title": "Block customer",
+      "message": "{{name}} will no longer be able to book with you online or reschedule existing appointments. They can still cancel.",
+      "cancelUpcoming": "Also cancel their upcoming appointments",
+      "cancelUpcomingHint": "{{count}} upcoming — no message is sent to the customer",
+      "reason": "Reason (optional)",
+      "reasonPlaceholder": "Only you see this",
+      "confirm": "Block",
+      "cancel": "Cancel",
+      "done": "Customer blocked",
+      "doneWithCancelled": "Customer blocked · {{count}} upcoming appointments cancelled",
+      "unblockTitle": "Unblock customer",
+      "unblockMessage": "{{name}} will be able to book with you again.",
+      "unblockConfirm": "Unblock",
+      "unblocked": "Customer unblocked"
+    },
+    "add": {
+      "title": "Add customer",
+      "name": "Name",
+      "phone": "Phone",
+      "phoneHint": "Israeli numbers as 05X…; add a country code for others",
+      "notes": "Notes (optional)",
+      "blockNow": "Block immediately",
+      "blockNowHint": "Refuse online bookings from this number",
+      "submit": "Add",
+      "done": "Customer added",
+      "exists": "This phone number is already in your customers"
+    },
+    "export": {
+      "button": "Export CSV",
+      "failed": "Export failed"
+    },
+    "booking": {
+      "title": "Book an appointment",
+      "service": "Service",
+      "date": "Date",
+      "time": "Time",
+      "pickTime": "Choose a time",
+      "noSlots": "Closed on this date",
+      "noServices": "Add a service first",
+      "submit": "Book",
+      "success": "Appointment booked",
+      "slotTaken": "That time is already taken — pick another",
+      "failed": "Could not book the appointment"
+    },
+    "errors": {
+      "loadFailed": "Could not load customers",
+      "saveFailed": "Could not save"
     }
   }
 }

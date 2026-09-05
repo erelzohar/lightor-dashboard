@@ -43,7 +43,8 @@
     "upgradePlanBtn": "Améliorer votre forfait",
     "completeSetupFirst": "Terminez d'abord la configuration de votre site",
     "search": "Rechercher",
-    "adminPanel": "Panneau d'administration"
+    "adminPanel": "Panneau d'administration",
+    "customers": "Clients"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -848,6 +849,113 @@
       "save": "Enregistrer les modifications",
       "created": "Utilisateur créé",
       "saved": "Utilisateur mis à jour"
+    }
+  },
+  "customers": {
+    "title": "Clients",
+    "subtitle": "{{count}} clients",
+    "search": "Rechercher par nom ou téléphone…",
+    "empty": "Aucun client pour l’instant — ils apparaissent ici après leur première réservation",
+    "filter": {
+      "all": "Tous les clients",
+      "active": "Actifs",
+      "blocked": "Bloqués"
+    },
+    "columns": {
+      "name": "Client",
+      "phone": "Téléphone",
+      "visits": "Visites",
+      "lastVisit": "Dernière visite",
+      "revenue": "Revenu",
+      "status": "Statut"
+    },
+    "status": {
+      "active": "Actif",
+      "blocked": "Bloqué"
+    },
+    "source": {
+      "booking": "Réservé en ligne",
+      "manual": "Ajouté par vous"
+    },
+    "stats": {
+      "total": "Clients",
+      "newThisMonth": "Nouveaux ce mois",
+      "returning": "Fidèles",
+      "returningHint": "2 réservations ou plus",
+      "blocked": "Bloqués"
+    },
+    "top": {
+      "byVisits": "Le plus de visites",
+      "byRevenue": "Meilleur revenu",
+      "visits": "{{count}} visites",
+      "estimated": "Estimé d’après les prix des services",
+      "empty": "Pas encore assez de réservations"
+    },
+    "detail": {
+      "title": "Fiche client",
+      "close": "Fermer",
+      "call": "Appeler",
+      "schedule": "Prendre rendez-vous",
+      "cancelledCount": "Annulés",
+      "upcoming": "À venir",
+      "nextVisit": "Prochaine visite",
+      "firstSeen": "Première visite",
+      "source": "Origine",
+      "notes": "Notes privées",
+      "notesPlaceholder": "Visible par vous seul — préférences, allergies, rappels…",
+      "saveNotes": "Enregistrer les notes",
+      "notesSaved": "Notes enregistrées",
+      "history": "Historique des rendez-vous",
+      "noHistory": "Aucun rendez-vous pour l’instant"
+    },
+    "block": {
+      "title": "Bloquer le client",
+      "message": "{{name}} ne pourra plus réserver en ligne ni déplacer ses rendez-vous. Il pourra toujours annuler.",
+      "cancelUpcoming": "Annuler aussi ses rendez-vous à venir",
+      "cancelUpcomingHint": "{{count}} à venir — aucun message n’est envoyé au client",
+      "reason": "Motif (facultatif)",
+      "reasonPlaceholder": "Visible par vous seul",
+      "confirm": "Bloquer",
+      "cancel": "Annuler",
+      "done": "Client bloqué",
+      "doneWithCancelled": "Client bloqué · {{count}} rendez-vous à venir annulés",
+      "unblockTitle": "Débloquer le client",
+      "unblockMessage": "{{name}} pourra de nouveau réserver chez vous.",
+      "unblockConfirm": "Débloquer",
+      "unblocked": "Client débloqué"
+    },
+    "add": {
+      "title": "Ajouter un client",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "phoneHint": "Numéros israéliens au format 05X… ; ajoutez l’indicatif pour les autres",
+      "notes": "Notes (facultatif)",
+      "blockNow": "Bloquer immédiatement",
+      "blockNowHint": "Refuser les réservations en ligne de ce numéro",
+      "submit": "Ajouter",
+      "done": "Client ajouté",
+      "exists": "Ce numéro figure déjà dans vos clients"
+    },
+    "export": {
+      "button": "Exporter en CSV",
+      "failed": "Échec de l’export"
+    },
+    "booking": {
+      "title": "Prendre un rendez-vous",
+      "service": "Service",
+      "date": "Date",
+      "time": "Heure",
+      "pickTime": "Choisir une heure",
+      "noSlots": "Fermé à cette date",
+      "noServices": "Ajoutez d’abord un service",
+      "submit": "Réserver",
+      "success": "Rendez-vous réservé",
+      "slotTaken": "Ce créneau est déjà pris — choisissez-en un autre",
+      "failed": "Impossible de réserver le rendez-vous"
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger les clients",
+      "saveFailed": "Enregistrement impossible"
     }
   }
 }

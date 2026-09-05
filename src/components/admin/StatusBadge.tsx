@@ -20,6 +20,8 @@ const STYLES: Record<string, string> = {
   admin: 'bg-primary/10 text-primary',
   user: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
   client: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+  // customers (LT-122)
+  blocked: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
   // appointments
   scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   cancelled: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
