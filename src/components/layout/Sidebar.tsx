@@ -22,6 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks/useAppSelector';
+import globals from '../../services/globals';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -34,21 +35,53 @@ const linkClasses =
 
 const iconClasses = 'h-5 w-5 flex-shrink-0';
 
-/** Business name + logo; the name is shown only while expanded. */
+// Same resolution as Settings: full URLs pass through, bare names are S3
+// image ids served by the images API.
+const resolveLogoUrl = (imgName?: string): string => {
+  if (!imgName) return '';
+  if (imgName.startsWith('http') || imgName.startsWith('data:') || imgName.startsWith('blob:')) return imgName;
+  return globals.imagesUrl + imgName;
+};
+
+/** Business logo + name, with the round theme toggle beside them while expanded. */
 const SidebarHeader: React.FC = () => {
   const { open } = useSidebar();
+  const { t } = useTranslation();
   const { auth } = useAuth();
-  const businessName = useAppSelector((state) => state.webConfig.data?.businessName);
+  const { darkMode, toggleDarkMode } = useTheme();
+  const webConfig = useAppSelector((state) => state.webConfig.data);
+  const logoUrl = resolveLogoUrl(webConfig?.logoImageName);
   return (
     <div className="flex items-center gap-3 py-1 min-w-0 relative z-20">
-      <img src="/lightor.svg" alt="Lightor" className="w-7 h-7 flex-shrink-0" />
+      <img
+        src={logoUrl || '/lightor.svg'}
+        alt={webConfig?.businessName || 'Lightor'}
+        className="w-7 h-7 flex-shrink-0 rounded-lg object-cover"
+        onError={(e) => {
+          // A dead logo URL (or the local no-S3-creds case) falls back to the
+          // Lightor mark; the src guard stops a loop if that ever 404s too.
+          const img = e.currentTarget;
+          if (!img.src.endsWith('/lightor.svg')) img.src = '/lightor.svg';
+        }}
+      />
       {open && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0 flex-1">
           <span className="font-bold text-sm text-gray-900 dark:text-dark-text block truncate leading-tight">
-            {businessName || auth?.user.name}
+            {webConfig?.businessName || auth?.user.name}
           </span>
           <span className="text-[10px] uppercase tracking-widest text-gray-400">Lightor</span>
         </motion.div>
+      )}
+      {open && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={toggleDarkMode}
+          aria-label={darkMode ? t('settings.lightMode', 'Light mode') : t('settings.darkMode', 'Dark mode')}
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 text-gray-500 hover:text-primary hover:border-primary/40 transition-colors shadow-sm"
+        >
+          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+        </motion.button>
       )}
     </div>
   );
@@ -75,13 +108,12 @@ const SectionLabel: React.FC<{ label: string; first?: boolean }> = ({ label, fir
   );
 };
 
-/** Footer: account avatar, logout, dark-mode toggle. */
+/** Footer: account avatar and logout (the theme toggle lives in the header). */
 const SidebarFooter: React.FC = () => {
   const { open, setOpen } = useSidebar();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout, auth } = useAuth();
-  const { darkMode, toggleDarkMode } = useTheme();
   const closeOnMobile = () => window.innerWidth < 768 && setOpen(false);
   return (
     <div className="flex flex-col gap-1">
@@ -116,18 +148,6 @@ const SidebarFooter: React.FC = () => {
         </motion.span>
       </button>
 
-      <button
-        onClick={toggleDarkMode}
-        className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg text-gray-500 hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
-      >
-        {darkMode ? <Sun className={iconClasses} /> : <Moon className={iconClasses} />}
-        <motion.span
-          animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
-          className="text-sm whitespace-pre"
-        >
-          {darkMode ? t('settings.lightMode', 'Light') : t('settings.darkMode', 'Dark')}
-        </motion.span>
-      </button>
     </div>
   );
 };

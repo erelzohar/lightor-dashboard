@@ -22,6 +22,7 @@ const Layout: React.FC = () => {
 
   const webConfigData = useAppSelector((state) => state.webConfig.data);
   const webConfigLoading = useAppSelector((state) => state.webConfig.loading);
+  const webConfigError = useAppSelector((state) => state.webConfig.error);
 
   const boardingStatus = auth.user?.boardingStatus;
 
@@ -29,6 +30,13 @@ const Layout: React.FC = () => {
   useEffect(() => {
     if (boardingStatus !== 'new') {
       setWebConfigChecked(true);
+      // The sidebar header shows the business logo + name from webConfig, so
+      // load it once for everyone — previously only 'new' users and a few
+      // pages fetched it. The error guard stops retrying a failing API (the
+      // effect re-runs on every loading flip).
+      if (auth.user?.webConfig_id && !webConfigLoading && !webConfigData && !webConfigError) {
+        dispatch(fetchWebConfig(auth.user.webConfig_id));
+      }
       return;
     }
     if (webConfigData) {
