@@ -150,19 +150,23 @@ export const MobileSidebar = ({
                 ease: 'easeInOut',
               }}
               className={cn(
-                'fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-[calc(2.5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col justify-between',
+                'fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(2.5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col justify-between',
                 className
               )}
             >
-              <button
-                type="button"
-                aria-label={t('sidebar.closeSidebar')}
-                className="absolute end-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-50 w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
-                onClick={() => setOpen(!open)}
-              >
-                <X aria-hidden="true" />
-              </button>
-              {children}
+              {/* In flow, not absolute — the header row's round theme toggle
+                  lives in the same corner, and an overlaid X sat on top of it. */}
+              <div className="flex justify-end shrink-0 -me-6">
+                <button
+                  type="button"
+                  aria-label={t('sidebar.closeSidebar')}
+                  className="w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
+                  onClick={() => setOpen(!open)}
+                >
+                  <X aria-hidden="true" />
+                </button>
+              </div>
+              <div className="flex flex-1 min-h-0 flex-col justify-between gap-10">{children}</div>
             </motion.div>
           )}
         </AnimatePresence>
