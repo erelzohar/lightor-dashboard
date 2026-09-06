@@ -21,6 +21,7 @@ const dispatch = vi.fn();
 vi.mock('../../services/authApi', () => ({
   loginUser: vi.fn(),
   googleLogin: vi.fn(),
+  googleLoginWithIdToken: vi.fn(),
   facebookLogin: vi.fn(),
   getCurrentUser: vi.fn(),
   cookieSync: vi.fn(),

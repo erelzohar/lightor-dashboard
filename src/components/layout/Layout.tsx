@@ -9,6 +9,8 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
+import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
+import { bindNotificationTaps } from '../../services/pushClient';
 
 const Layout: React.FC = () => {
   const [welcomeLoading, setWelcomeLoading] = useState(false);
@@ -25,6 +27,13 @@ const Layout: React.FC = () => {
   const webConfigError = useAppSelector((state) => state.webConfig.error);
 
   const boardingStatus = auth.user?.boardingStatus;
+
+  // Native shell (LT-128 §6 / LT-129): deep links + Android back button, and
+  // notification taps routed to their `data.url`. Both no-ops on the web.
+  useAppUrlOpen();
+  useEffect(() => {
+    void bindNotificationTaps(navigate);
+  }, [navigate]);
 
   // For new users, fetch their webConfig so we can determine if they have one
   useEffect(() => {

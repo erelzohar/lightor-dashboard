@@ -13,6 +13,8 @@ abstract class Globals {
     public calendarUrl:string;
     public adminUrl:string;
     public customersUrl:string;
+    /** Push device registry (LT-129). */
+    public devicesUrl:string;
     /** The register app's ORIGIN (no path) — same site as the dashboard. */
     public registerOrigin:string;
 }
@@ -39,6 +41,7 @@ class DevelopmentGlobals extends Globals {
     public calendarUrl = `${DEV_API_BASE}/api/calendar/`;
     public adminUrl = `${DEV_API_BASE}/api/admin/`;
     public customersUrl = `${DEV_API_BASE}/api/customers/`;
+    public devicesUrl = `${DEV_API_BASE}/api/devices/`;
     public registerOrigin = "http://localhost:5173";
 }
 
@@ -78,6 +81,7 @@ class ProductionGlobals extends Globals {
     public calendarUrl = "https://api.lightor.app/api/calendar/";
     public adminUrl = "https://api.lightor.app/api/admin/";
     public customersUrl = "https://api.lightor.app/api/customers/";
+    public devicesUrl = "https://api.lightor.app/api/devices/";
     public registerOrigin = "https://register.lightor.app";
 }
 // class ProductionGlobals extends Globals {

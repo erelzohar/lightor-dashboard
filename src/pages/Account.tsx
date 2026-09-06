@@ -10,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
 import BillingSection from '../components/account/BillingSection';
 import DangerZoneSection from '../components/account/DangerZoneSection';
+import NotificationsCard from '../components/account/NotificationsCard';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -218,6 +219,9 @@ const Account: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Push per-event toggles — renders nothing outside the native app (LT-129) */}
+      <NotificationsCard />
 
       <BillingSection />
 

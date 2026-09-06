@@ -415,7 +415,17 @@
     "language": "שפת הדשבורד",
     "languageDesc": "השפה שבה אתה רואה את הדשבורד הזה",
     "languageUpdateSuccess": "שפת הדשבורד עודכנה",
-    "languageUpdateError": "עדכון השפה נכשל"
+    "languageUpdateError": "עדכון השפה נכשל",
+    "notifications": {
+      "title": "התראות",
+      "description": "בחר על מה לקבל התראה בטלפון",
+      "newBooking": "תור חדש",
+      "cancellation": "ביטול תור",
+      "reschedule": "שינוי מועד",
+      "morningDigest": "סיכום בוקר",
+      "saved": "ההעדפות נשמרו",
+      "saveFailed": "השמירה נכשלה"
+    }
   },
   "incomeStats": {
     "today": "הכנסות היום",

@@ -415,7 +415,17 @@
     "language": "Langue du tableau de bord",
     "languageDesc": "La langue dans laquelle vous voyez ce tableau de bord",
     "languageUpdateSuccess": "Langue du tableau de bord mise à jour",
-    "languageUpdateError": "Échec de la mise à jour de la langue"
+    "languageUpdateError": "Échec de la mise à jour de la langue",
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choisissez ce dont votre téléphone vous avertit",
+      "newBooking": "Nouvelle réservation",
+      "cancellation": "Annulation",
+      "reschedule": "Report",
+      "morningDigest": "Résumé du matin",
+      "saved": "Préférences enregistrées",
+      "saveFailed": "Échec de l’enregistrement"
+    }
   },
   "incomeStats": {
     "today": "Revenus du jour",

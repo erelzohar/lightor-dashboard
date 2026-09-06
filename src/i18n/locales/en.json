@@ -415,7 +415,17 @@
     "language": "Dashboard language",
     "languageDesc": "The language you see this dashboard in",
     "languageUpdateSuccess": "Dashboard language updated",
-    "languageUpdateError": "Failed to update the language"
+    "languageUpdateError": "Failed to update the language",
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose what your phone notifies you about",
+      "newBooking": "New booking",
+      "cancellation": "Cancellation",
+      "reschedule": "Reschedule",
+      "morningDigest": "Morning digest",
+      "saved": "Preferences saved",
+      "saveFailed": "Could not save"
+    }
   },
   "incomeStats": {
     "today": "Today's Income",

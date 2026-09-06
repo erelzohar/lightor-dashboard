@@ -415,7 +415,17 @@
     "language": "Idioma del panel",
     "languageDesc": "El idioma en el que ves este panel",
     "languageUpdateSuccess": "Idioma del panel actualizado",
-    "languageUpdateError": "No se pudo actualizar el idioma"
+    "languageUpdateError": "No se pudo actualizar el idioma",
+    "notifications": {
+      "title": "Notificaciones",
+      "description": "Elige de qué te avisa tu teléfono",
+      "newBooking": "Nueva reserva",
+      "cancellation": "Cancelación",
+      "reschedule": "Cambio de horario",
+      "morningDigest": "Resumen matutino",
+      "saved": "Preferencias guardadas",
+      "saveFailed": "No se pudo guardar"
+    }
   },
   "incomeStats": {
     "today": "Ingresos de hoy",

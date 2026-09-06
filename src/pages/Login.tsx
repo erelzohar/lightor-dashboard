@@ -6,6 +6,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 import { SignInCard } from '../components/ui/sign-in-card-2';
 import { META_FEATURES_ENABLED } from '../config/metaFeatures';
+import { isNativeApp } from '../lib/platform';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const FacebookLogin =
@@ -13,13 +14,34 @@ const FacebookLogin =
 import { motion } from 'framer-motion';
 
 const Login: React.FC = () => {
-  const { auth, login, loginWithGoogle, loginWithFacebook, loading } = useAuth();
+  const { auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithFacebook, loading } = useAuth();
   const { t } = useTranslation();
+  const [nativeError, setNativeError] = React.useState<string | null>(null);
 
   const googleLogin = useGoogleLogin({
     onSuccess: (codeResponse) => loginWithGoogle(codeResponse.access_token),
     onError: (error) => console.log('Login Failed:', error),
   });
+
+  // Native app (LT-128 §3): Google refuses its OAuth pages inside embedded
+  // WebViews, so the popup above cannot work there. The Firebase plugin runs
+  // the system sign-in sheet and yields an ID token. Loaded on demand so the
+  // web bundle never carries firebase/auth. Without a Firebase config file
+  // (not in the repo yet) the plugin throws — that is the ordinary login
+  // error, not a crash.
+  const nativeGoogleLogin = async () => {
+    setNativeError(null);
+    try {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const idToken = result.credential?.idToken;
+      if (!idToken) throw new Error('No ID token');
+      await loginWithGoogleIdToken(idToken);
+    } catch {
+      setNativeError('Google login failed');
+    }
+  };
+  const onGoogleLogin = isNativeApp() ? nativeGoogleLogin : () => googleLogin();
 
   if (auth.isLoading) return null;
   if (auth.isAuthenticated) return <Navigate to="/" />;
@@ -110,10 +132,11 @@ const Login: React.FC = () => {
             <div className="w-full flex flex-col items-center gap-6">
               <SignInCard
                 onSubmit={login}
-                onGoogleLogin={() => googleLogin()}
+                onGoogleLogin={() => void onGoogleLogin()}
                 onFacebookLogin={onFacebookLogin ?? (() => {})}
                 isLoading={loading}
-                error={auth.error}
+                error={auth.error ?? nativeError}
+                hideRememberMe={isNativeApp()}
               />
               <div className="flex gap-6">
                 <a

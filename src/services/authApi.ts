@@ -88,6 +88,28 @@ export const googleLogin = async (token: string): Promise<{ token: string; user:
   }
 };
 
+/**
+ * Native Google Sign-In (LT-128 §3): the iOS/Android plugin yields an ID
+ * token, not the access token the web popup gives `googleLogin`. Same
+ * endpoint, `{ idToken }` body; the API verifies it against the app's OAuth
+ * client IDs.
+ */
+export const googleLoginWithIdToken = async (idToken: string): Promise<{ token: string; user: User }> => {
+  try {
+    const response = await apiClient.post(
+      globals.authUrl + 'google',
+      { idToken },
+      { withCredentials: true },
+    );
+    if (response.data?.success) {
+      return { token: response.data?.token, user: response.data.data };
+    }
+    throw new Error('Invalid credentials');
+  } catch {
+    throw new Error('Google login failed');
+  }
+};
+
 export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(

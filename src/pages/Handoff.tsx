@@ -4,6 +4,7 @@ import { Loader, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { handoffLogin } from '../services/authApi';
+import { saveSession } from '../services/nativeSession';
 import Button from '../components/ui/Button';
 
 /**
@@ -35,6 +36,9 @@ const Handoff: React.FC = () => {
     }
 
     handoffLogin(match[1])
+      // Native app (LT-128): the body token becomes the Bearer the reload
+      // below hydrates from; no-op on the web.
+      .then(({ token }) => saveSession(token))
       .then(() => {
         // Full navigation, not client-side routing: the exchange set the
         // HttpOnly session cookie (LT-009), and a fresh load makes

@@ -181,6 +181,19 @@ export interface User {
   boardingStatus: 'new' | 'onboarded' | 'active';
   /** Mongoose timestamp; the verified-email gate's grace window keys off it. */
   createdAt?: string | Date;
+  /**
+   * Which push events the phone gets (LT-129). All default true server-side;
+   * absent on accounts that predate the field, which the UI treats as true.
+   * `PUT /api/users/:id` merges a partial object.
+   */
+  notificationPrefs?: NotificationPrefs;
+}
+
+export interface NotificationPrefs {
+  newBooking: boolean;
+  cancellation: boolean;
+  reschedule: boolean;
+  morningDigest: boolean;
 }
 
 export interface AppointmentType {

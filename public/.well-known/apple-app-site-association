@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.app.lightor.dashboard",
+        "paths": ["/verify/*", "/handoff", "/appointments*", "/customers*", "/"]
+      }
+    ]
+  }
+}

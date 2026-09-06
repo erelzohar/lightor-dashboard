@@ -22,12 +22,14 @@ function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>
 interface SignInCardProps {
   onSubmit: (email: string, password: string, staySignedIn: boolean) => Promise<void>;
   onGoogleLogin: () => void;
+  /** Native app (LT-128): every login is "remembered", so the checkbox goes. */
+  hideRememberMe?: boolean;
   onFacebookLogin: () => void;
   isLoading?: boolean;
   error?: string | null;
 }
 
-export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error }: SignInCardProps) {
+export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error, hideRememberMe = false }: SignInCardProps) {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
   const [showPassword, setShowPassword] = useState(false);
@@ -204,6 +206,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
               </div>
 
               {/* Remember me */}
+              {!hideRememberMe && (
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
                   <div className="relative">
@@ -232,6 +235,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                   </label>
                 </div>
               </div>
+              )}
 
               {/* Sign in button */}
               <motion.button

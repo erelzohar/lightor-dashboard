@@ -415,7 +415,17 @@
     "language": "لغة لوحة التحكم",
     "languageDesc": "اللغة التي ترى بها لوحة التحكم هذه",
     "languageUpdateSuccess": "تم تحديث لغة لوحة التحكم",
-    "languageUpdateError": "فشل تحديث اللغة"
+    "languageUpdateError": "فشل تحديث اللغة",
+    "notifications": {
+      "title": "الإشعارات",
+      "description": "اختر ما يُرسل إليك هاتفك إشعارات بشأنه",
+      "newBooking": "حجز جديد",
+      "cancellation": "إلغاء موعد",
+      "reschedule": "تغيير الموعد",
+      "morningDigest": "ملخص الصباح",
+      "saved": "تم حفظ التفضيلات",
+      "saveFailed": "فشل الحفظ"
+    }
   },
   "incomeStats": {
     "today": "دخل اليوم",

@@ -1,17 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { AuthState, User } from '../types';
-import { loginUser, googleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
+import { loginUser, googleLogin, googleLoginWithIdToken, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout as storeLogout } from '../store/slices/userSlice';
 import { setUnauthorizedHandler } from '../services/authInterceptor';
+import { loadSession, saveSession, clearSession } from '../services/nativeSession';
+import { registerForPush, unregisterPush } from '../services/pushClient';
+import { isNativeApp } from '../lib/platform';
 import i18n from '../i18n/config';
 interface AuthContextType {
   auth: AuthState;
   login: (email: string, password: string, staySignedIn?: boolean) => Promise<void>;
   loginWithGoogle: (token: string) => Promise<void>;
+  /** Native Google Sign-In (LT-128 §3): the plugin's ID token, not an access token. */
+  loginWithGoogleIdToken: (idToken: string) => Promise<void>;
   loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -59,6 +64,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  // Push registration (LT-129): once per session, only after the account is
+  // both signed in and verified — i.e. after the first successful /auth/me,
+  // never on launch or on a login that has not completed. No-op on the web.
+  const pushRegisteredRef = useRef(false);
+  useEffect(() => {
+    if (!auth.isAuthenticated || !auth.user?.isVerified || pushRegisteredRef.current) return;
+    pushRegisteredRef.current = true;
+    void registerForPush();
+  }, [auth.isAuthenticated, auth.user?.isVerified]);
+
   // Initial authentication check (runs ONLY on first load)
   useEffect(() => {
     const initAuth = async () => {
@@ -75,6 +90,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         localStorage.removeItem('lightor');
       }
+
+      // Native app (LT-128): hydrate the Bearer from @capacitor/preferences so
+      // the probe below carries it. No-op (null) on the web.
+      await loadSession();
 
       try {
         // The cookie (if any) rides along; no token handling in client code.
@@ -105,9 +124,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, staySignedIn = false) => {
     setLoading(true);
     try {
-      // The response set the HttpOnly session cookie; nothing to store here.
-      // staySignedIn (LT-066) picks the 60m vs 180d session server-side.
-      await loginUser(email, password, staySignedIn);
+      // The response set the HttpOnly session cookie; nothing to store here
+      // on the web. staySignedIn (LT-066) picks the 60m vs 180d session
+      // server-side — the native app always takes the 180d token and keeps it
+      // as a Bearer (LT-128): a phone app that logs itself out hourly is broken.
+      const { token } = await loginUser(email, password, isNativeApp() || staySignedIn);
+      if (token) await saveSession(token);
       const user = await getCurrentUser();
 
       setAuth({
@@ -131,11 +153,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithGoogle = async (credential: string) => {
+  /**
+   * Shared tail of both Google paths: the web popup's access token and the
+   * native plugin's ID token differ only in the API call that trades them.
+   */
+  const finishGoogleLogin = async (exchange: () => Promise<{ token: string }>) => {
     setLoading(true);
     try {
-      // The response set the HttpOnly session cookie; nothing to store here.
-      await googleLogin(credential);
+      // The response set the HttpOnly session cookie; on native the body's
+      // token becomes the Bearer (LT-128).
+      const { token } = await exchange();
+      if (token) await saveSession(token);
       const user = await getCurrentUser();
 
       setAuth({
@@ -148,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
       navigate('/', { replace: true });
-    } catch (error) {
+    } catch {
       setAuth(prev => ({
         ...prev,
         error: 'Google login failed',
@@ -159,11 +187,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithGoogle = (credential: string) => finishGoogleLogin(() => googleLogin(credential));
+  const loginWithGoogleIdToken = (idToken: string) => finishGoogleLogin(() => googleLoginWithIdToken(idToken));
+
   const loginWithFacebook = async (accessToken: string) => {
     setLoading(true);
     try {
-      // The response set the HttpOnly session cookie; nothing to store here.
-      await facebookLogin(accessToken);
+      // The response set the HttpOnly session cookie; on native the body's
+      // token becomes the Bearer (LT-128).
+      const { token } = await facebookLogin(accessToken);
+      if (token) await saveSession(token);
       const user = await getCurrentUser();
 
       setAuth({
@@ -237,6 +270,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Only the server can clear an HttpOnly cookie. Fire-and-forget: local
     // state resets regardless, and the JWT dies at its own expiry anyway.
     void serverLogout();
+    // Native (LT-128/LT-129): drop the push registration for this account
+    // while the Bearer is still cached (the DELETE needs it), then forget the
+    // Bearer. Both are no-ops on the web. Also covers the 401 auto-logout.
+    void unregisterPush().finally(() => void clearSession());
+    pushRegisteredRef.current = false;
     localStorage.removeItem('lightor');
     setAuth({
       user: null,
@@ -252,7 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   logoutRef.current = logout;
 
   return (
-    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
+    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

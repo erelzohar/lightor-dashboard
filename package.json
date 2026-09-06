@@ -12,9 +12,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "cap:sync": "vite build && cap sync",
+    "cap:ios": "npm run cap:sync && cap open ios",
+    "cap:android": "npm run cap:sync && cap open android"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^8.5.1",
+    "@capacitor-firebase/messaging": "^8.5.1",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/preferences": "^8.0.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
@@ -30,6 +38,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.3.1",
+    "firebase": "^12.18.0",
     "framer-motion": "^11.0.8",
     "i18next": "^26.0.8",
     "i18next-browser-languagedetector": "^8.2.1",
@@ -49,6 +58,9 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/ios": "^8.5.1",
     "@eslint/js": "^9.9.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
