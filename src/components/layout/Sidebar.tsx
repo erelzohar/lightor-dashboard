@@ -82,7 +82,13 @@ const SidebarHeader: React.FC = () => {
           aria-label={darkMode ? t('settings.lightMode', 'Light mode') : t('settings.darkMode', 'Dark mode')}
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 text-gray-500 hover:text-primary hover:border-primary/40 transition-colors shadow-sm"
         >
-          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+          {/* Explicit colours — the button's muted gray was invisible on the
+              dark surface. fill gives the sun a solid bright core. */}
+          {darkMode ? (
+            <Sun size={15} className="text-amber-400" fill="currentColor" />
+          ) : (
+            <Moon size={15} className="text-indigo-500" fill="currentColor" />
+          )}
         </motion.button>
       )}
     </div>
