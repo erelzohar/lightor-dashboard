@@ -23,8 +23,17 @@ describe('BottomTabBar', () => {
     for (const key of ['common.dashboard', 'common.appointments', 'common.customers', 'common.scheduleVacations']) {
       expect(screen.getByText(key)).toBeInTheDocument();
     }
-    expect(screen.getByText('common.appointments').closest('a')).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('common.dashboard').closest('a')).not.toHaveAttribute('aria-current');
+    const active = screen.getByText('common.appointments').closest('a')!;
+    const idle = screen.getByText('common.dashboard').closest('a')!;
+    expect(active).toHaveAttribute('aria-current', 'page');
+    expect(idle).not.toHaveAttribute('aria-current');
+    // The highlight must win in BOTH themes: no idle colour class may remain
+    // on the active tab (a leftover `dark:text-gray-400` outranks text-primary).
+    expect(active.className).toContain('text-primary');
+    expect(active.className).toContain('dark:text-primary');
+    expect(active.className).not.toContain('text-gray-500');
+    expect(active.className).not.toContain('dark:text-gray-400');
+    expect(idle.className).toContain('dark:text-gray-400');
 
     fireEvent.click(screen.getByText('sidebar.more'));
     expect(onMore).toHaveBeenCalledTimes(1);
@@ -48,6 +57,10 @@ describe('BottomTabBar', () => {
         <BottomTabBar onMore={vi.fn()} />
       </MemoryRouter>
     );
-    expect(screen.getByTestId('bottom-tab-bar').className).toContain('pb-[env(safe-area-inset-bottom)]');
+    const bar = screen.getByTestId('bottom-tab-bar');
+    expect(bar.className).toContain('pb-[env(safe-area-inset-bottom)]');
+    // Theme colours are bare CSS vars, so `/95` on them emits no CSS at all.
+    expect(bar.className).toContain('dark:bg-dark-surface');
+    expect(bar.className).not.toMatch(/dark:bg-dark-surface\/\d/);
   });
 });

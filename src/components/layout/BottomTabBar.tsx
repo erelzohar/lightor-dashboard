@@ -44,27 +44,34 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
 
   if (keyboardOpen) return null;
 
+  // Colour lives on the active/idle branches, never on the shared classes:
+  // an idle `dark:text-gray-400` would outrank `text-primary` in dark mode.
   const itemClasses =
-    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1.5 text-[10px] font-medium leading-tight text-gray-500 dark:text-gray-400 transition-colors';
+    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1.5 text-[10px] font-medium leading-tight transition-colors';
+  const idleClasses = 'text-gray-500 dark:text-gray-400';
+  const activeClasses = 'text-primary dark:text-primary font-semibold';
 
   return (
     <nav
       aria-label={t('sidebar.navigation')}
       data-testid="bottom-tab-bar"
-      className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff]/95 dark:bg-dark-surface/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+      // No `/95` on the dark surface: the theme colours are bare CSS variables
+      // (no <alpha-value>), so an opacity modifier silently emits nothing and
+      // the bar stayed light in dark mode. Solid surfaces on both themes.
+      className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff] dark:bg-dark-surface pb-[env(safe-area-inset-bottom)]"
     >
       {tabs.map(({ path, Icon, label }) => (
         <NavLink
           key={path}
           to={path}
           end={path === '/'}
-          className={({ isActive }) => cn(itemClasses, isActive && 'text-primary font-semibold')}
+          className={({ isActive }) => cn(itemClasses, isActive ? activeClasses : idleClasses)}
         >
           <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
           <span className="truncate max-w-full px-1">{label}</span>
         </NavLink>
       ))}
-      <button type="button" onClick={onMore} className={itemClasses} aria-label={t('sidebar.openSidebar')}>
+      <button type="button" onClick={onMore} className={cn(itemClasses, idleClasses)} aria-label={t('sidebar.openSidebar')}>
         <Menu className="h-5 w-5 shrink-0" aria-hidden="true" />
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
