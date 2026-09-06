@@ -122,7 +122,11 @@ const Layout: React.FC = () => {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <motion.main
-          className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
+          // data-scroll-root: PullToRefresh listens on this scroller. The
+          // phone bottom padding clears the fixed BottomTabBar (h≈3.5rem) plus
+          // the home indicator; md+ has no bar (LT-127).
+          data-scroll-root
+          className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

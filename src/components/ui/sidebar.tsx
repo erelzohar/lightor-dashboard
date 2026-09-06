@@ -2,6 +2,7 @@ import React, { useState, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 /**
@@ -113,6 +114,7 @@ export const MobileSidebar = ({
   ...props
 }: React.ComponentProps<'div'>) => {
   const { open, setOpen } = useSidebar();
+  const { t } = useTranslation();
   // Drawer slides in from the sidebar's own edge — mirrored under RTL.
   const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
   const offscreen = rtl ? '100%' : '-100%';
@@ -120,15 +122,22 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          'h-14 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full flex-shrink-0'
+          // pt-[env()]: status-bar clearance inside the Capacitor shell
+          // (LT-127); zero in a browser, whose chrome sits above the page.
+          'min-h-14 px-2 pt-[env(safe-area-inset-top)] flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full flex-shrink-0'
         )}
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
-          <Menu
-            className="text-neutral-800 dark:text-neutral-200 cursor-pointer"
+          <button
+            type="button"
+            aria-label={open ? t('sidebar.closeSidebar') : t('sidebar.openSidebar')}
+            aria-expanded={open}
+            className="w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
             onClick={() => setOpen(!open)}
-          />
+          >
+            <Menu aria-hidden="true" />
+          </button>
         </div>
         <AnimatePresence>
           {open && (
@@ -141,16 +150,18 @@ export const MobileSidebar = ({
                 ease: 'easeInOut',
               }}
               className={cn(
-                'fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between',
+                'fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-[calc(2.5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col justify-between',
                 className
               )}
             >
-              <div
-                className="absolute end-10 top-10 z-50 text-neutral-800 dark:text-neutral-200 cursor-pointer"
+              <button
+                type="button"
+                aria-label={t('sidebar.closeSidebar')}
+                className="absolute end-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-50 w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
                 onClick={() => setOpen(!open)}
               >
-                <X />
-              </div>
+                <X aria-hidden="true" />
+              </button>
               {children}
             </motion.div>
           )}

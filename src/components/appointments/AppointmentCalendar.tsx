@@ -246,19 +246,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   // ══════════════════════════════════════════════════════════════════════
   const userName = auth?.user?.name ?? '';
 
-  return (
-    <div
-      className="flex h-full overflow-hidden"
-      onClick={() => setSelectedAppt(null)}
-    >
-
-      {/* ─────────────────────────────────────────────────────────────────
-          SIDEBAR — always dark, fixed colors
-      ───────────────────────────────────────────────────────────────── */}
-      <aside
-        className="hidden lg:block w-[300px] flex-shrink-0 overflow-y-auto"
-        style={{ background: '#1a1b26', borderRight: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}
-      >
+  // Side panel (mini calendar, next appointment, calendars, categories).
+  // Rendered in the desktop aside AND the phone drawer (LT-127) — the drawer
+  // used to be an empty shell.
+  const sidePanel = (
+    <>
         {/* ── Profile ─────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 pt-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3">
@@ -480,6 +472,23 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             )}
           </AnimatePresence>
         </div>
+    </>
+  );
+
+  return (
+    <div
+      className="flex h-full overflow-hidden"
+      onClick={() => setSelectedAppt(null)}
+    >
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SIDEBAR — always dark, fixed colors
+      ───────────────────────────────────────────────────────────────── */}
+      <aside
+        className="hidden lg:block w-[300px] flex-shrink-0 overflow-y-auto"
+        style={{ background: '#1a1b26', borderRight: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}
+      >
+        {sidePanel}
       </aside>
 
       {/* ─────────────────────────────────────────────────────────────────
@@ -509,7 +518,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                   <X size={14} style={{ color: '#9ca3af' }} />
                 </button>
               </div>
-              {/* Reuse sidebar content inline for mobile */}
+              <div className="flex-1 overflow-y-auto" style={{ color: '#9ca3af' }}>
+                {sidePanel}
+              </div>
             </motion.div>
           </>
         )}
@@ -521,16 +532,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       <section className="flex-1 flex flex-col min-w-0 bg-gray-50 dark:bg-gray-900 overflow-hidden">
 
         {/* ── Header ────────────────────────────────────────────────── */}
-        <header className="h-[72px] flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700/60 shrink-0 gap-3">
+        <header className="h-[72px] flex items-center justify-between px-4 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700/60 shrink-0 gap-3">
 
           {/* Mobile menu + month label */}
           <div className="flex items-center gap-3 min-w-0">
-            <button className="lg:hidden w-8 h-8 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+            <button className="lg:hidden w-10 h-10 -ms-2 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+              aria-label={language === 'he' ? 'פתח תפריט לוח שנה' : 'Open calendar menu'}
               onClick={e => { e.stopPropagation(); setSidebarOpen(true); }}>
               <Menu size={18} />
             </button>
             <h1 className="text-2xl font-semibold text-gray-800 dark:text-white truncate">
-              {format(currentDate, 'MMMM, yyyy', { locale })}
+              <span className="sm:hidden">{format(currentDate, 'MMM yyyy', { locale })}</span>
+              <span className="hidden sm:inline">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
             </h1>
           </div>
 
@@ -553,7 +566,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             {/* Navigation */}
             <div className="flex items-center gap-1" dir="ltr">
               <button onClick={e => { e.stopPropagation(); (direction === 'rtl' ? nextPeriod : prevPeriod)(); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <ChevronLeft size={14} />
               </button>
               <button onClick={e => { e.stopPropagation(); goToday(); }}
@@ -561,7 +574,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {language === 'he' ? 'היום' : 'Today'}
               </button>
               <button onClick={e => { e.stopPropagation(); (direction === 'rtl' ? prevPeriod : nextPeriod)(); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <ChevronRight size={14} />
               </button>
             </div>

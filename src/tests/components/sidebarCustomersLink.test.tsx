@@ -35,7 +35,8 @@ describe('Sidebar customers link', () => {
         <Sidebar />
       </MemoryRouter>
     );
-    expect(screen.getByText('common.customers')).toBeInTheDocument();
+    // Twice since LT-127: the desktop rail and the phone tab bar both list it.
+    expect(screen.getAllByText('common.customers').length).toBeGreaterThan(0);
   });
 
   it('hides it for a restricted (not-yet-onboarded) account, like the other manage links', () => {
@@ -45,7 +46,7 @@ describe('Sidebar customers link', () => {
         <Sidebar isRestricted />
       </MemoryRouter>
     );
-    expect(screen.queryByText('common.customers')).not.toBeInTheDocument();
-    expect(screen.getByText('common.dashboard')).toBeInTheDocument();
+    expect(screen.queryAllByText('common.customers')).toHaveLength(0);
+    expect(screen.getAllByText('common.dashboard').length).toBeGreaterThan(0);
   });
 });

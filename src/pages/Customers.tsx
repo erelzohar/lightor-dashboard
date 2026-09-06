@@ -13,6 +13,7 @@ import TopCustomers from '../components/customers/TopCustomers';
 import CustomerDetailDrawer from '../components/customers/CustomerDetailDrawer';
 import AddCustomerModal from '../components/customers/AddCustomerModal';
 import UpgradeCard from '../components/customers/UpgradeCard';
+import PullToRefresh from '../components/ui/PullToRefresh';
 import {
   fetchCustomers,
   fetchCustomerStats,
@@ -175,6 +176,7 @@ const Customers: React.FC = () => {
   const totals = overview?.totals;
 
   return (
+    <PullToRefresh onRefresh={refreshAll}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <div className="p-2.5 rounded-xl bg-primary/10">
@@ -291,6 +293,7 @@ const Customers: React.FC = () => {
         onExists={(id) => setSelectedId(id)}
       />
     </motion.div>
+    </PullToRefresh>
   );
 };
 

@@ -46,7 +46,8 @@ export function FloatingAiAssistant({ onSend, direction = 'ltr' }: FloatingAiAss
 
   return (
     <div
-      className={`fixed bottom-6 z-50 ${isRtl ? 'left-6' : 'right-6'}`}
+      // Phones: sit above the BottomTabBar + home indicator (LT-127); md+ has no bar.
+      className={`fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 z-50 ${isRtl ? 'left-6' : 'right-6'}`}
     >
       {/* Chat panel */}
       {isChatOpen && (

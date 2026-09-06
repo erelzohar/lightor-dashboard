@@ -19,6 +19,7 @@ import {
   Coins,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
+import BottomTabBar from './BottomTabBar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -232,6 +233,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         </div>
         <SidebarFooter />
       </SidebarBody>
+      {/* Phone-only thumb bar (LT-127); "More" opens this same drawer. */}
+      <BottomTabBar isRestricted={isRestricted} onMore={() => setOpen(true)} />
     </SidebarRoot>
   );
 };

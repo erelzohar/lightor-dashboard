@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, CalendarRange, List } from 'lucide-react';
 import { Appointment } from '../types';
@@ -6,6 +6,7 @@ import AppointmentCalendar from '../components/appointments/AppointmentCalendar'
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import { useTheme } from '../contexts/ThemeContext';
 import AppointmentsList from '../components/appointments/AppointmentsList';
+import PullToRefresh from '../components/ui/PullToRefresh';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchAppointments } from '../store/slices/appointmentsSlice';
@@ -45,6 +46,10 @@ const Appointments: React.FC = () => {
     return () => clearInterval(interval);
   }, [dispatch, auth]);
 
+  const refresh = useCallback(async () => {
+    if (auth.user) await dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 }));
+  }, [dispatch, auth.user]);
+
   const upcomingAppointments = appointments
     .filter(appointment =>
       appointment.status === 'scheduled' &&
@@ -61,6 +66,7 @@ const Appointments: React.FC = () => {
   }
 
   return (
+    <PullToRefresh onRefresh={refresh}>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -143,6 +149,7 @@ const Appointments: React.FC = () => {
         />
       )}
     </motion.div>
+    </PullToRefresh>
   );
 };
 
