@@ -21,7 +21,7 @@ public class MainActivity extends BridgeActivity {
             FirebaseOptions options = new FirebaseOptions.Builder()
                 .setApplicationId("1:000000000000:android:0000000000000000")
                 .setProjectId("placeholder")
-                .setApiKey("AIza00000000000000000000000000000000000") // 39 chars, leading "A": the shape Firebase Installations validates
+                .setApiKey("APLACEHOLDER-NOT-A-REAL-KEY-00000000000") // 39 chars, leading "A": the shape Firebase Installations validates
                 .build();
             FirebaseApp.initializeApp(this, options);
             Log.w("Lightor", "google-services.json missing - Firebase running on placeholder options; push and Google Sign-In are off");

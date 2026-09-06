@@ -27,8 +27,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 gcmSenderID: "000000000000"
             )
             placeholder.projectID = "placeholder"
-            // Installations validates the shape: 39 chars, leading "A".
-            placeholder.apiKey = "AIza00000000000000000000000000000000000"
+            // Installations validates only the shape (39 chars, leading "A"); the
+            // value must NOT look like a real key or GitHub secret scanning flags it.
+            placeholder.apiKey = "APLACEHOLDER-NOT-A-REAL-KEY-00000000000"
             FirebaseApp.configure(options: placeholder)
             NSLog("Lightor: GoogleService-Info.plist missing — Firebase running on placeholder options; push and Google Sign-In are off")
         }
