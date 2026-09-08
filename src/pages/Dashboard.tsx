@@ -204,7 +204,7 @@ const Dashboard: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex-1 min-w-0 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex flex-col sm:flex-row sm:items-start justify-between gap-4 shadow-sm"
+              className="glass-card glass-tint-red flex-1 min-w-0 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-start justify-between gap-4"
             >
               <div className="flex items-start gap-4">
                 <div className="p-2 bg-red-100 dark:bg-red-800/40 rounded-full text-red-600 dark:text-red-400 shrink-0">
@@ -240,7 +240,7 @@ const Dashboard: React.FC = () => {
           {/* Trial Bar */}
           {auth.user?.subscription?.status === 'free' && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-              <div className="h-full rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="glass-card glass-tint-amber h-full rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
                     <Crown className="w-5 h-5" />

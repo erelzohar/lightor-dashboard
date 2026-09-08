@@ -96,6 +96,25 @@ html[dir="rtl"] body {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
+/* Tinted glass for notices (LT-144): same blur/border recipe as .glass-card,
+   colour carried by a translucent wash so the ambient tint still shows. */
+.glass-card.glass-tint-red {
+  background: rgba(254, 226, 226, 0.5);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+.dark .glass-card.glass-tint-red {
+  background: rgba(127, 29, 29, 0.35);
+  border-color: rgba(248, 113, 113, 0.25);
+}
+.glass-card.glass-tint-amber {
+  background: rgba(254, 243, 199, 0.55);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+.dark .glass-card.glass-tint-amber {
+  background: rgba(120, 53, 15, 0.35);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
 .dark .glass-card {
   background: rgba(51, 65, 85, 0.5); /* dark-surface at half opacity */
   border-color: rgba(255, 255, 255, 0.08);

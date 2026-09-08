@@ -5,6 +5,9 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Never pure black: every bg-/text-/border-black reads as 90% black;
+        // an explicit modifier (bg-black/30) still wins.
+        black: 'rgba(0, 0, 0, 0.9)',
         primary: {
           DEFAULT: 'var(--color-primary)',
           dark: 'var(--color-primary-dark)',
