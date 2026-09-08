@@ -180,7 +180,7 @@ const Login: React.FC = () => {
               />
               <div className="flex gap-6">
                 <a
-                  href="https://register.lightor.app/terms.html"
+                  href="https://lightor.app/terms.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
@@ -188,7 +188,7 @@ const Login: React.FC = () => {
                   {t('legal.terms')}
                 </a>
                 <a
-                  href="https://register.lightor.app/privacy.html"
+                  href="https://lightor.app/privacy.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"

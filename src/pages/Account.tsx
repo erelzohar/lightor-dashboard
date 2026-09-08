@@ -356,7 +356,7 @@ const Account: React.FC = () => {
 
       <div className="flex justify-center gap-6 pt-2 pb-6">
         <a
-          href="https://register.lightor.app/terms.html"
+          href="https://lightor.app/terms.html"
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
@@ -364,7 +364,7 @@ const Account: React.FC = () => {
           {t('legal.terms')}
         </a>
         <a
-          href="https://register.lightor.app/privacy.html"
+          href="https://lightor.app/privacy.html"
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
