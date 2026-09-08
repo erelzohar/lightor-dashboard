@@ -34,6 +34,16 @@ jobs:
       - name: Lint (hooks rules)
         run: npm run lint:hooks
 
+      # LT-144 cleared the tsc debt and wired the app typecheck into the gate:
+      # `npm run build` is `vite build`, which never type-checks, so 26 type
+      # errors had been shipping invisibly. (Full `npm run lint` is still
+      # hooks-only above until the lint debt is cleared — LT-040.)
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
       - name: Authorise the runner against the server
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}

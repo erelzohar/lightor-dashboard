@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Circle, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2 } from 'lucide-react';
+import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2 } from 'lucide-react';
 import { Appointment } from '../types';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import IncomeStats from '../components/dashboard/IncomeStats';
@@ -10,7 +10,8 @@ import DashboardAppointmentsList from '../components/dashboard/DashboardAppointm
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { fetchAppointments, fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
+import { useAppointmentsAutoRefresh } from '../hooks/useAppointmentsAutoRefresh';
+import { fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
 import { fetchWebConfig } from '../store/slices/webConfigSlice';
 import { useAuth } from '../contexts/AuthContext';
 import ErrorBoundaryWithLanguage from '../components/ui/ErrorBoundary';
@@ -84,17 +85,7 @@ const Dashboard: React.FC = () => {
   const isLoading = useAppSelector(state => state.appointments.loading);
   document.title = t('common.dashboard');
 
-  useEffect(() => {
-    if (appointments.length === 0 && auth.user) {
-      dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
-    }
-    const interval = setInterval(() => {
-      if (appointments.length && auth.user) {
-        dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
-      }
-    }, 240000);
-    return () => clearInterval(interval);
-  }, [dispatch, auth]);
+  useAppointmentsAutoRefresh(auth.user?._id);
 
   useEffect(() => {
     if (!showOnboarding || !auth.user) return;

@@ -649,7 +649,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               </div>
 
               {/* Day columns */}
-              {weekDays.map((day, colIdx) => {
+              {weekDays.map((day) => {
                 const tod = isToday(day);
                 const dayAppts = getDayAppts(day);
                 // Alternate subtle background for visual separation

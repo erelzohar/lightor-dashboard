@@ -19,7 +19,7 @@ describe('fetchMyEntitlements', () => {
 
   const entitlements = {
     plan: 'free',
-    limits: { monthlyAppointments: 30, maxServices: 3, hourlyReminder: false, aiGenerationsPerMonth: 5, aiEditsPerMonth: 10, aiTokensPerMonth: null, showBranding: true },
+    limits: { monthlyAppointments: 30, maxServices: 3, hourlyReminder: false, aiGenerationsPerMonth: 5, aiEditsPerMonth: 10, aiTokensPerMonth: null as number | null, showBranding: true },
     usage: { appointmentsThisMonth: 4, servicesCount: 2, aiGenerationsThisMonth: 1, aiTokensThisMonth: 1234 },
   };
 

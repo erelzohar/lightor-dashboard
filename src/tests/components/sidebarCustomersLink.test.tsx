@@ -12,7 +12,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', darkMode: false, toggleDarkMode: vi.fn() }),
 }));
 vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: () => undefined,
+  useAppSelector: (): unknown => undefined,
 }));
 
 const mockOwner = () => {

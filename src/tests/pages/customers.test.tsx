@@ -20,8 +20,8 @@ vi.mock('../../contexts/ThemeContext', () => ({
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ auth: { user: { _id: 'u1', webConfig_id: 'wc1' } } }),
 }));
-vi.mock('../../hooks/useAppSelector', () => ({ useAppSelector: () => [] }));
-vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
+vi.mock('../../hooks/useAppSelector', () => ({ useAppSelector: (): unknown[] => [] }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: (): (() => void) => vi.fn() }));
 vi.mock('../../services/customersApi', () => ({
   fetchCustomers: vi.fn(),
   fetchCustomerStats: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock('../../services/customersApi', () => ({
   setCustomerBlock: vi.fn(),
   setCustomerNotes: vi.fn(),
   isApiErrorCode: () => false,
-  apiErrorStatus: () => undefined,
+  apiErrorStatus: (): undefined => undefined,
 }));
 
 const row = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
@@ -40,7 +40,7 @@ const row = (id: string, name: string, extra: Record<string, unknown> = {}) => (
   phone: '0584006014',
   phoneNormalized: '+972584006014',
   isBlocked: false,
-  blockedAt: null,
+  blockedAt: null as string | null,
   source: 'booking',
   firstSeenAt: '2026-01-01T00:00:00.000Z',
   lastSeenAt: '2026-06-01T00:00:00.000Z',
@@ -50,7 +50,7 @@ const row = (id: string, name: string, extra: Record<string, unknown> = {}) => (
   upcoming: 1,
   revenue: 300,
   lastVisit: '2026-06-01T00:00:00.000Z',
-  nextVisit: null,
+  nextVisit: null as string | null,
   ...extra,
 });
 
