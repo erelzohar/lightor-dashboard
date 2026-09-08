@@ -26,7 +26,11 @@ const config: CapacitorConfig = {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
     FirebaseAuthentication: {
-      skipNativeAuth: false,
+      // We only need Google's ID token, which our own API verifies (LT-128).
+      // Signing the user into Firebase Auth as well would create a Firebase
+      // user record nothing reads and, on iOS, write to the keychain — which
+      // fails outright on unsigned simulator builds ("keychain error").
+      skipNativeAuth: true,
       providers: ['google.com'],
     },
   },

@@ -37,8 +37,15 @@ const Login: React.FC = () => {
       const idToken = result.credential?.idToken;
       if (!idToken) throw new Error('No ID token');
       await loginWithGoogleIdToken(idToken);
-    } catch {
-      setNativeError('Google login failed');
+    } catch (err) {
+      // Surface the real cause: the API's message (e.g. "Invalid Google
+      // token" = client id not in GOOGLE_MOBILE_CLIENT_IDS) or the plugin's.
+      // A user backing out of Google's sheet is not an error at all.
+      const e = err as { response?: { data?: { error?: string } }; message?: string; code?: string };
+      const message = e.response?.data?.error || e.message || 'Google login failed';
+      if (/cancel/i.test(message) || e.code === '-5') return;
+      console.error('[login] native Google sign-in failed:', message);
+      setNativeError(message);
     }
   };
   const onGoogleLogin = isNativeApp() ? nativeGoogleLogin : () => googleLogin();
