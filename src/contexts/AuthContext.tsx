@@ -176,18 +176,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
 
       navigate('/', { replace: true });
-    } catch {
+    } catch (err) {
+      // Prefer the API's own message ("Invalid Google token" means the token's
+      // client id is not in the server's GOOGLE_MOBILE_CLIENT_IDS) over a
+      // generic one, then rethrow so a caller can add context (LT-128).
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
       setAuth(prev => ({
         ...prev,
-        error: 'Google login failed',
+        error: e.response?.data?.error || e.message || 'Google login failed',
         isLoading: false,
       }));
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const loginWithGoogle = (credential: string) => finishGoogleLogin(() => googleLogin(credential));
+  // The web popup path has no caller to handle a rejection (it is invoked from
+  // the Google button's onSuccess), so it keeps swallowing after the state is
+  // set; the native path awaits and adds the token's audience to the message.
+  const loginWithGoogle = (credential: string) =>
+    finishGoogleLogin(() => googleLogin(credential)).catch(() => {});
   const loginWithGoogleIdToken = (idToken: string) => finishGoogleLogin(() => googleLoginWithIdToken(idToken));
 
   const loginWithFacebook = async (accessToken: string) => {

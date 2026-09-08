@@ -95,19 +95,18 @@ export const googleLogin = async (token: string): Promise<{ token: string; user:
  * client IDs.
  */
 export const googleLoginWithIdToken = async (idToken: string): Promise<{ token: string; user: User }> => {
-  try {
-    const response = await apiClient.post(
-      globals.authUrl + 'google',
-      { idToken },
-      { withCredentials: true },
-    );
-    if (response.data?.success) {
-      return { token: response.data?.token, user: response.data.data };
-    }
-    throw new Error('Invalid credentials');
-  } catch {
-    throw new Error('Google login failed');
-  }
+  // Deliberately NOT wrapped in a try/catch that replaces the error with a
+  // fixed string (the pattern the older calls above use): the API's own
+  // message is the only thing that tells a native sign-in failure apart from
+  // a server-side misconfiguration, and swallowing it cost a debugging round
+  // trip on the first real device attempt (LT-128).
+  const response = await apiClient.post(
+    globals.authUrl + 'google',
+    { idToken },
+    { withCredentials: true },
+  );
+  if (!response.data?.success) throw new Error('Google login failed');
+  return { token: response.data?.token, user: response.data.data };
 };
 
 export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {

@@ -29,22 +29,36 @@ const Login: React.FC = () => {
   // web bundle never carries firebase/auth. Without a Firebase config file
   // (not in the repo yet) the plugin throws — that is the ordinary login
   // error, not a crash.
+  /** The `aud` claim of an ID token — the OAuth client id it was issued for. */
+  const audienceOf = (jwt: string): string => {
+    try {
+      const payload = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return String(JSON.parse(atob(payload)).aud ?? '');
+    } catch {
+      return '';
+    }
+  };
+
   const nativeGoogleLogin = async () => {
     setNativeError(null);
+    let idToken = '';
     try {
       const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
       const result = await FirebaseAuthentication.signInWithGoogle();
-      const idToken = result.credential?.idToken;
+      idToken = result.credential?.idToken ?? '';
       if (!idToken) throw new Error('No ID token');
       await loginWithGoogleIdToken(idToken);
     } catch (err) {
-      // Surface the real cause: the API's message (e.g. "Invalid Google
-      // token" = client id not in GOOGLE_MOBILE_CLIENT_IDS) or the plugin's.
-      // A user backing out of Google's sheet is not an error at all.
+      // Surface the real cause: the API's message, or the plugin's. A user
+      // backing out of Google's sheet is not an error at all.
       const e = err as { response?: { data?: { error?: string } }; message?: string; code?: string };
-      const message = e.response?.data?.error || e.message || 'Google login failed';
+      let message = e.response?.data?.error || e.message || 'Google login failed';
       if (/cancel/i.test(message) || e.code === '-5') return;
-      console.error('[login] native Google sign-in failed:', message);
+      // The server rejects a token whose client id is missing from its
+      // GOOGLE_MOBILE_CLIENT_IDS, which looks identical to a bad token from
+      // the outside. Naming the id turns it into a one-line fix.
+      const aud = audienceOf(idToken);
+      if (aud && /invalid google token/i.test(message)) message += ` — client id ${aud}`;
       setNativeError(message);
     }
   };
