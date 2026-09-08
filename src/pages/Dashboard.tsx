@@ -204,17 +204,17 @@ const Dashboard: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-card glass-tint-red flex-1 min-w-0 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+              className="glass-card glass-tint-red flex-1 min-w-0 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 dark:bg-red-800/40 rounded-full text-red-600 dark:text-red-400 shrink-0">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-red-800 dark:text-red-300 text-base">
+                  <h3 className="font-semibold text-red-800 dark:text-red-300 text-sm">
                     {t('common.notVerifiedTitle')}
                   </h3>
-                  <p className="text-red-600 dark:text-red-400 mt-1 text-sm">
+                  <p className="text-red-600 dark:text-red-400 mt-0.5 text-xs">
                     {t('common.notVerifiedAlert')}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
               <button
                 onClick={handleResendVerification}
                 disabled={resendLoading || resendSent}
-                className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                   resendSent
                     ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 cursor-default'
                     : 'bg-red-100 dark:bg-red-800/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-700/40 disabled:opacity-60'
@@ -254,7 +254,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <button
                   onClick={() => navigate('/account')}
-                  className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+                  className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors bg-amber-500 hover:bg-amber-600 text-white"
                 >
                   {t('common.upgradePlanBtn')}
                 </button>
