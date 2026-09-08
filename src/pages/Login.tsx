@@ -9,6 +9,8 @@ import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 import { isNativeApp } from '../lib/platform';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
+const NATIVE_GOOGLE_ENABLED = false;
+
 const FacebookLogin =
   (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
 import { motion } from 'framer-motion';
@@ -166,6 +168,15 @@ const Login: React.FC = () => {
                 // client id the server rejected).
                 error={nativeError ?? auth.error}
                 hideRememberMe={isNativeApp()}
+                // Native Google sign-in is off until the new Firebase
+                // project's OAuth consent screen passes Google's branding
+                // verification (LT-128). It is blocked on things outside this
+                // repo — a public home page on a domain verified in Search
+                // Console, and a fuller privacy policy — so rather than ship a
+                // button that always fails, the app offers email/password only.
+                // Flip this to `false` to bring the button back; nothing else
+                // needs to change, the whole ID-token path is already wired.
+                hideSocial={isNativeApp() && !NATIVE_GOOGLE_ENABLED}
               />
               <div className="flex gap-6">
                 <a
