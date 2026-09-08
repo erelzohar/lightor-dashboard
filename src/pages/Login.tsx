@@ -152,11 +152,19 @@ const Login: React.FC = () => {
           >
             <div className="w-full flex flex-col items-center gap-6">
               <SignInCard
-                onSubmit={login}
+                // Clear a stale native Google error when the form is used, so
+                // the banner below never shows last attempt's message.
+                onSubmit={(email, password, staySignedIn) => {
+                  setNativeError(null);
+                  return login(email, password, staySignedIn);
+                }}
                 onGoogleLogin={() => void onGoogleLogin()}
                 onFacebookLogin={onFacebookLogin ?? (() => {})}
                 isLoading={loading}
-                error={auth.error ?? nativeError}
+                // nativeError first: on the native path both are set for the
+                // same failure and this one carries the extra context (the
+                // client id the server rejected).
+                error={nativeError ?? auth.error}
                 hideRememberMe={isNativeApp()}
               />
               <div className="flex gap-6">
