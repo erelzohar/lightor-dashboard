@@ -742,7 +742,7 @@ const Settings: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6"
+      className="space-y-6 pb-24 md:pb-28"
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div className="flex flex-col">
@@ -777,10 +777,13 @@ const Settings: React.FC = () => {
         </Card>
       </motion.div>
 
-      <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }} className="mt-6 space-y-6">
-        <GoogleCalendarCard />
-        <CalendarFeedCard />
-      </motion.div>
+      {/* Calendar sync belongs with the business basics — general tab only. */}
+      {activeTab === 'general' && (
+        <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }} className="mt-6 space-y-6">
+          <GoogleCalendarCard />
+          <CalendarFeedCard />
+        </motion.div>
+      )}
     </motion.div>
   );
 };
