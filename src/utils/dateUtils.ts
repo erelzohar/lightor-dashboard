@@ -1,4 +1,4 @@
-import { format, parseISO, addMinutes, isWithinInterval } from 'date-fns';
+import { format, addMinutes, isWithinInterval } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 
 export const formatDate = (date: Date | number, formatString: string = 'PPP', language: string = 'he'): string => {

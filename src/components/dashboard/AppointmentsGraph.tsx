@@ -326,11 +326,14 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                 }}
               />
               <Legend
-                formatter={(value) => ({
-                  scheduled: t('appointmentsGraph.scheduled'),
-                  completed: t('appointmentsGraph.completed'),
-                  cancelled: t('appointmentsGraph.cancelled'),
-                }[value] || value)}
+                formatter={(value: string) => {
+                  const labels: Record<string, string> = {
+                    scheduled: t('appointmentsGraph.scheduled'),
+                    completed: t('appointmentsGraph.completed'),
+                    cancelled: t('appointmentsGraph.cancelled'),
+                  };
+                  return labels[value] || value;
+                }}
                 wrapperStyle={{ paddingTop: '8px', fontSize: '1rem' }}
               />
               <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />

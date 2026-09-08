@@ -219,7 +219,7 @@ const ScheduleVacations: React.FC = () => {
     setWebConfigLocalState(prev => {
       if (!prev) return prev;
       if (section === 'root') return { ...prev, [field]: value };
-      return { ...prev, [section]: { ...prev[section as keyof WebConfig], [field]: value } };
+      return { ...prev, [section]: { ...(prev[section as keyof WebConfig] as object), [field]: value } };
     });
   };
 

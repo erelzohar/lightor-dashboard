@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
@@ -51,6 +51,53 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const armed = !confirmText || typed.trim().toLowerCase() === confirmText.trim().toLowerCase();
 
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Escape closes (unless a confirm is in flight), matching the backdrop click.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !loading) {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [open, loading, onClose]);
+
+  // Move focus into the dialog on open so keyboard and screen-reader users land
+  // inside it, and keep Tab from escaping to the page behind (a simple trap).
+  useEffect(() => {
+    if (!open) return;
+    const focusables = () =>
+      Array.from(
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      );
+    const first = focusables()[0];
+    first?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const firstEl = items[0];
+      const lastEl = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    };
+    const node = panelRef.current;
+    node?.addEventListener('keydown', onKeyDown);
+    return () => node?.removeEventListener('keydown', onKeyDown);
+  }, [open, confirmText]);
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -63,11 +110,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
           />
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-light-surface rounded-2xl shadow-xl p-6"
+            className="relative w-full max-w-md bg-light-surface dark:bg-dark-surface rounded-2xl shadow-xl p-6"
           >
             <div className="flex items-start gap-3">
               {danger && (
@@ -76,7 +127,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 </div>
               )}
               <div className="min-w-0">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-dark-text">{title}</h3>
+                <h3 id={titleId} className="text-lg font-bold text-gray-900 dark:text-dark-text">{title}</h3>
                 <div className="text-sm text-gray-600 dark:text-gray-300 mt-1.5">{message}</div>
               </div>
             </div>

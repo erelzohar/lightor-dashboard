@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import { Loader } from 'lucide-react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
@@ -75,7 +75,7 @@ const Button: React.FC<ButtonProps> = ({
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
-      {...props}
+      {...(props as unknown as HTMLMotionProps<'button'>)}
     >
       {isLoading ? (
         <Loader size={size === 'sm' ? 14 : size === 'md' ? 18 : 22} className="animate-spin me-2" />

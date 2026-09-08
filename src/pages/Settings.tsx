@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, CalendarClock, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -8,7 +8,6 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import WebConfigTabs from '../components/settings/WebConfigTabs';
 import toast from 'react-hot-toast';
-import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
@@ -52,7 +51,6 @@ const Settings: React.FC = () => {
   const [isCheckingSubdomain, setIsCheckingSubdomain] = useState(false);
   const [subdomainError, setSubdomainError] = useState<string | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { updatePalette } = useTheme();
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector(state => state.webConfig.data);
@@ -266,7 +264,7 @@ const Settings: React.FC = () => {
         return {
           ...prev,
           [parentSection]: {
-            ...prev[parentSection as keyof WebConfig],
+            ...(prev[parentSection as keyof WebConfig] as object),
             [childSection]: {
               ...(prev as any)[parentSection][childSection],
               [field]: value
@@ -278,7 +276,7 @@ const Settings: React.FC = () => {
       return {
         ...prev,
         [section]: {
-          ...prev[section as keyof WebConfig],
+          ...(prev[section as keyof WebConfig] as object),
           [field]: value
         }
       };

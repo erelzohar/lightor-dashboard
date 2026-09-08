@@ -21,7 +21,8 @@ interface ErrorBoundaryState {
 const ErrorBoundaryWithLanguage: React.FC<ErrorBoundaryProps> = (props) => {
   const { language } = useTheme();
   const { auth } = useAuth();
-  return <ErrorBoundaryClass {...props} language={language} user={auth.user} />;
+  const lang: 'en' | 'he' = language === 'he' ? 'he' : 'en';
+  return <ErrorBoundaryClass {...props} language={lang} user={auth.user} />;
 };
 
 class ErrorBoundaryClass extends Component<
@@ -37,7 +38,7 @@ class ErrorBoundaryClass extends Component<
     };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+  static getDerivedStateFromError(_error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true };
   }
 

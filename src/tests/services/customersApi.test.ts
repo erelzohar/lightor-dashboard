@@ -48,7 +48,7 @@ describe('customersApi', () => {
 
   it('unwraps stats and detail, adding the Bearer shim when a token is stored', async () => {
     localStorage.setItem('lightor', 'legacy-token');
-    const overview = { totals: { customers: 3 }, top: { byVisits: [], byRevenue: [] } };
+    const overview = { totals: { customers: 3 }, top: { byVisits: [] as unknown[], byRevenue: [] as unknown[] } };
     const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: overview } } as never);
 
     await expect(fetchCustomerStats(5)).resolves.toEqual(overview);
@@ -60,7 +60,7 @@ describe('customersApi', () => {
       })
     );
 
-    const detail = { customer: { _id: 'c1' }, stats: {}, history: [] };
+    const detail = { customer: { _id: 'c1' }, stats: {}, history: [] as unknown[] };
     get.mockResolvedValue({ data: { success: true, data: detail } } as never);
     await expect(fetchCustomer('c1')).resolves.toEqual(detail);
     expect(get).toHaveBeenLastCalledWith(`${globals.customersUrl}c1`, expect.anything());

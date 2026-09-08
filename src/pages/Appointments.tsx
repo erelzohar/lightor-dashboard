@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, CalendarRange, List } from 'lucide-react';
 import { Appointment } from '../types';
 import AppointmentCalendar from '../components/appointments/AppointmentCalendar';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
-import { useTheme } from '../contexts/ThemeContext';
 import AppointmentsList from '../components/appointments/AppointmentsList';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchAppointments } from '../store/slices/appointmentsSlice';
+import { useAppointmentsAutoRefresh } from '../hooks/useAppointmentsAutoRefresh';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -17,16 +17,9 @@ const Appointments: React.FC = () => {
   const { auth } = useAuth();
   const { t } = useTranslation();
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const { direction } = useTheme();
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>(() => {
     return (localStorage.getItem('appointments_view_mode') as 'calendar' | 'list') || 'calendar';
   });
-
-  const toggleViewMode = () => {
-    const newMode = viewMode === 'calendar' ? 'list' : 'calendar';
-    setViewMode(newMode);
-    localStorage.setItem('appointments_view_mode', newMode);
-  };
 
   document.title = t('appointments.title');
 
@@ -34,17 +27,7 @@ const Appointments: React.FC = () => {
   const appointments = useAppSelector(state => state.appointments.appointments);
   const isLoading = useAppSelector(state => state.appointments.loading);
 
-  useEffect(() => {
-    if (appointments.length === 0 && auth.user) {
-      dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
-    }
-    const interval = setInterval(() => {
-      if (appointments.length && auth.user) {
-        dispatch(fetchAppointments({ user_id: auth.user?._id, limit: 5000 }));
-      }
-    }, 240000);
-    return () => clearInterval(interval);
-  }, [dispatch, auth]);
+  useAppointmentsAutoRefresh(auth.user?._id);
 
   const refresh = useCallback(async () => {
     if (auth.user) await dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 }));
