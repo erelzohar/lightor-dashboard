@@ -169,42 +169,100 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Unverified Alert */}
-      {!auth.user?.isVerified && (
+      {/* ── New account, no bookings yet: Lighty says hello first ── */}
+      {appointments.length === 0 && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start justify-between gap-4 shadow-sm"
+          transition={{ delay: 0.2 }}
+          className="flex flex-col items-center justify-center py-6 gap-6 text-center"
         >
-          <div className="flex items-start gap-4">
-            <div className="p-2 bg-red-100 dark:bg-red-800/40 rounded-full text-red-600 dark:text-red-400 shrink-0">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-red-800 dark:text-red-300 text-base">
-                {t('common.notVerifiedTitle')}
-              </h3>
-              <p className="text-red-600 dark:text-red-400 mt-1 text-sm">
-                {t('common.notVerifiedAlert')}
-              </p>
-            </div>
+          <img
+            src="/lighty-welcome.png"
+            alt="Welcome"
+            className="w-56 h-56 object-contain drop-shadow-lg"
+          />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              {t('dashboard.emptyTitle')}
+            </h2>
+            <p className="text-lg font-medium text-primary">
+              {t('dashboard.emptySubtitle')}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              {t('dashboard.emptyDesc')}
+            </p>
           </div>
-          <button
-            onClick={handleResendVerification}
-            disabled={resendLoading || resendSent}
-            className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-              resendSent
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 cursor-default'
-                : 'bg-red-100 dark:bg-red-800/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-700/40 disabled:opacity-60'
-            }`}
-          >
-            {resendLoading ? <Loader2 className="w-4 h-4 animate-spin" />
-              : resendSent ? <CheckCircle2 className="w-4 h-4" />
-              : <Mail className="w-4 h-4" />
-            }
-            {t('common.resendVerification')}
-          </button>
         </motion.div>
+      )}
+
+      {/* ── Account notices: verify + upgrade share one row when both apply ── */}
+      {(!auth.user?.isVerified || auth.user?.subscription?.status === 'free') && (
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+          {/* Unverified Alert */}
+          {!auth.user?.isVerified && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 min-w-0 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex flex-col sm:flex-row sm:items-start justify-between gap-4 shadow-sm"
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-red-100 dark:bg-red-800/40 rounded-full text-red-600 dark:text-red-400 shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-800 dark:text-red-300 text-base">
+                    {t('common.notVerifiedTitle')}
+                  </h3>
+                  <p className="text-red-600 dark:text-red-400 mt-1 text-sm">
+                    {t('common.notVerifiedAlert')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleResendVerification}
+                disabled={resendLoading || resendSent}
+                className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                  resendSent
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 cursor-default'
+                    : 'bg-red-100 dark:bg-red-800/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-700/40 disabled:opacity-60'
+                }`}
+              >
+                {resendLoading ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : resendSent ? <CheckCircle2 className="w-4 h-4" />
+                  : <Mail className="w-4 h-4" />
+                }
+                {t('common.resendVerification')}
+              </button>
+            </motion.div>
+          )}
+
+          {/* Trial Bar */}
+          {auth.user?.subscription?.status === 'free' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
+              <div className="h-full rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">{t('common.upgradePlanTitle')}</h3>
+                    <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
+                      {t('common.upgradePlanDesc')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/account')}
+                  className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+                >
+                  {t('common.upgradePlanBtn')}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+        </div>
       )}
 
       {/* Onboarding UI */}
@@ -319,57 +377,7 @@ const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Trial Bar */}
-      {auth.user?.subscription?.status === 'free' && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-center justify-between gap-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
-                <Crown className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">{t('common.upgradePlanTitle')}</h3>
-                <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
-                  {t('common.upgradePlanDesc')}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/account')}
-              className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
-            >
-              {t('common.upgradePlanBtn')}
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {appointments.length === 0 ? (
-        /* ── Empty state: no appointments yet ── */
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col items-center justify-center py-16 gap-6 text-center"
-        >
-          <img
-            src="/lighty-welcome.png"
-            alt="Welcome"
-            className="w-56 h-56 object-contain drop-shadow-lg"
-          />
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-              {t('dashboard.emptyTitle')}
-            </h2>
-            <p className="text-lg font-medium text-primary">
-              {t('dashboard.emptySubtitle')}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {t('dashboard.emptyDesc')}
-            </p>
-          </div>
-        </motion.div>
-      ) : (
+      {appointments.length > 0 && (
         <>
           {/* ── Row 1: Income Stats ── */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -410,15 +418,17 @@ const Dashboard: React.FC = () => {
         </>
       )}
 
-      {/* ── Appointments List (always visible) ── */}
-      <ErrorBoundaryWithLanguage
-        fallback={<DashboardFallback language={language} title={t('common.errorLoadingAppointments')} />}
-      >
-        <DashboardAppointmentsList
-          appointments={appointments}
-          onAppointmentClick={setSelectedAppointment}
-        />
-      </ErrorBoundaryWithLanguage>
+      {/* ── Appointments List — hidden until the first booking (the empty card said nothing) ── */}
+      {appointments.length > 0 && (
+        <ErrorBoundaryWithLanguage
+          fallback={<DashboardFallback language={language} title={t('common.errorLoadingAppointments')} />}
+        >
+          <DashboardAppointmentsList
+            appointments={appointments}
+            onAppointmentClick={setSelectedAppointment}
+          />
+        </ErrorBoundaryWithLanguage>
+      )}
 
       {/* Appointment Details Modal */}
       {selectedAppointment && (
