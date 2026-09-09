@@ -740,7 +740,7 @@ const Settings: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6 pb-24 md:pb-28"
+      className={`space-y-6 ${changesDetected ? 'pb-28 sm:pb-8' : ''}`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div className="flex flex-col">
@@ -766,7 +766,7 @@ const Settings: React.FC = () => {
       />
 
       <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }}>
-        <Card className='shadow-xl'>
+        <Card>
           <WebConfigTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
           <div className="my-6">

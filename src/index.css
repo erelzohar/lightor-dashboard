@@ -96,6 +96,26 @@ html[dir="rtl"] body {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
+/* Modal / drawer surface (LT-150): the card recipe, but opaque enough to read
+   over a dimmed backdrop and with a deeper lift. One class for every dialog,
+   drawer and sheet so they cannot drift apart again. */
+.glass-modal {
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 24px 64px rgba(70, 60, 130, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.dark .glass-modal {
+  background: rgba(30, 41, 59, 0.86);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
 /* Tinted glass for notices (LT-144): same blur/border recipe as .glass-card,
    colour carried by a translucent wash so the ambient tint still shows. */
 .glass-card.glass-tint-red {

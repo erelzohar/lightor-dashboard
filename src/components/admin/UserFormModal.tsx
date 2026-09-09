@@ -124,7 +124,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg bg-light-surface rounded-2xl shadow-xl p-6 max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-lg glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
             <h3 className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-5">
               {mode === 'create' ? (

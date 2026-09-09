@@ -27,14 +27,18 @@ vi.mock('../../contexts/AuthContext', () => ({
     updateUser: vi.fn(),
   }),
 }));
-const state = {
+interface MockState {
+  webConfig: { data: { businessName: string; workingDays: (string | null)[]; contact: Record<string, string>; address: Record<string, string> } | null; loading: boolean };
+  appointments: { appointments: unknown[]; appointmentTypes: unknown[]; loading: boolean };
+}
+const state: MockState = {
   webConfig: { data: { businessName: 'Biz', workingDays: [], contact: {}, address: {} }, loading: false },
   appointments: { appointments: [], appointmentTypes: [], loading: false },
 };
 vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (selector: (s: typeof state) => unknown) => selector(state),
+  useAppSelector: (selector: (s: MockState) => unknown): unknown => selector(state),
 }));
-vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: (): (() => void) => vi.fn() }));
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   fetchAppointments: vi.fn(() => ({ type: 'a' })), fetchAppointmentTypes: vi.fn(() => ({ type: 'b' })),
 }));
@@ -45,7 +49,7 @@ vi.mock('../../components/dashboard/DashboardAppointmentsList', () => ({
 vi.mock('../../components/dashboard/IncomeStats', () => ({ default: () => <div data-testid="income" /> }));
 vi.mock('../../components/dashboard/AppointmentsGraph', () => ({ default: () => <div data-testid="graph" /> }));
 vi.mock('../../components/dashboard/DashboardDonutChart', () => ({ default: () => <div data-testid="donut" /> }));
-vi.mock('../../components/appointments/AppointmentDetails', () => ({ default: () => null }));
+vi.mock('../../components/appointments/AppointmentDetails', () => ({ default: (): null => null }));
 
 describe('Dashboard — new account with no bookings', () => {
   it('shows Lighty first, both notices in one row, and no appointments list', () => {

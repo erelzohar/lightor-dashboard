@@ -71,7 +71,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
         exit={{ opacity: 0, scale: 0.93 }}
         transition={{ duration: 0.16, ease: 'easeOut' }}
         onClick={e => e.stopPropagation()}
-        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden w-full max-w-sm"
+        className="relative glass-modal rounded-2xl overflow-hidden w-full max-w-sm"
       >
         {/* Title row */}
         <div className="flex items-start justify-between px-5 pt-5 pb-3 gap-2">

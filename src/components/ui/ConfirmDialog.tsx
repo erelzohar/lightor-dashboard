@@ -118,7 +118,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-light-surface dark:bg-dark-surface rounded-2xl shadow-xl p-6"
+            className="relative w-full max-w-md glass-modal rounded-2xl p-6"
           >
             <div className="flex items-start gap-3">
               {danger && (

@@ -93,7 +93,7 @@ const DangerZoneSection: React.FC = () => {
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white dark:bg-dark-surface p-6 shadow-xl space-y-4"
+            className="w-full max-w-md rounded-2xl glass-modal p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">

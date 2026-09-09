@@ -68,7 +68,7 @@ const GoogleCalendarCard: React.FC = () => {
   if (!isLoading && !status?.configured) return null;
 
   return (
-    <Card className="shadow-xl">
+    <Card>
       <div className="flex items-center gap-3 mb-2">
         <CalendarCheck className="w-5 h-5 text-primary" />
         <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">

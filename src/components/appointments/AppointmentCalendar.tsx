@@ -754,7 +754,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             transition={{ duration: 0.16, ease: 'easeOut' }}
             onClick={e => e.stopPropagation()}
             style={{ position: 'fixed', top: popupPos.y, left: popupPos.x, zIndex: 9999, width: 308 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden"
+            className="glass-modal rounded-2xl overflow-hidden"
           >
             {/* Title row */}
             <div className="flex items-start justify-between px-5 pt-5 pb-3 gap-2">

@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-5 pb-8 md:pb-10"
+      className="space-y-5"
     >
       {/* Page Title */}
       <div className="mb-2">

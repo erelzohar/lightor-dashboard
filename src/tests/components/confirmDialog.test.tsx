@@ -37,9 +37,12 @@ describe('ConfirmDialog', () => {
     expect(heading.id).toBeTruthy();
   });
 
-  it('carries a dark-mode panel background (B2)', () => {
+  // B2 was a light panel in dark mode. Since LT-150 the fix is the shared
+  // .glass-modal surface, which defines its own `.dark` background — so the
+  // panel must carry that class rather than a one-off dark: utility.
+  it('carries the shared modal surface, which is dark-mode aware (B2)', () => {
     render(<ConfirmDialog {...base} />);
-    expect(screen.getByRole('dialog').className).toContain('dark:bg-dark-surface');
+    expect(screen.getByRole('dialog').className).toContain('glass-modal');
   });
 
   it('closes on Escape', () => {

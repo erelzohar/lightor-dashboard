@@ -78,7 +78,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white dark:bg-dark-surface rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+          className="glass-modal rounded-3xl w-full max-w-md overflow-hidden"
         >
           {/* Lighty gradient header */}
           <div className="bg-gradient-to-br from-violet-600 via-primary to-fuchsia-600 p-8 text-white text-center relative overflow-hidden">
@@ -139,7 +139,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
         initial={{ opacity: 0, scale: 0.92, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white dark:bg-dark-surface rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+        className="glass-modal rounded-3xl w-full max-w-md overflow-hidden"
       >
         {/* Header gradient banner */}
         <div className="bg-gradient-to-br from-primary to-primary/70 p-8 text-white text-center">

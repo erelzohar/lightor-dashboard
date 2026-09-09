@@ -140,7 +140,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
             animate={{ x: 0 }}
             exit={{ x: direction === 'rtl' ? '-100%' : '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            className="absolute inset-y-0 end-0 w-full max-w-xl bg-light-surface shadow-2xl flex flex-col"
+            className="absolute inset-y-0 end-0 w-full max-w-xl glass-modal flex flex-col"
             role="dialog"
             aria-modal="true"
             aria-label={t('customers.detail.title')}

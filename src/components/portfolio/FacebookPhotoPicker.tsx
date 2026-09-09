@@ -120,7 +120,7 @@ const FacebookPhotoPicker: React.FC<Props> = ({ accessToken, remainingSlots, onC
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
       <div
-        className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl bg-light-surface dark:bg-dark-surface border border-gray-200 dark:border-gray-700 shadow-xl"
+        className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl glass-modal"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

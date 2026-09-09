@@ -53,7 +53,7 @@ const Appointments: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col gap-4 h-full"
+      className="flex flex-col gap-4 flex-1 min-h-0"
     >
       {/* Page header */}
       <div className="flex items-center justify-between">

@@ -124,7 +124,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-light-surface rounded-2xl shadow-xl p-6 max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-md glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
             <h3 className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-1">
               <CalendarPlus size={18} className="text-primary" />

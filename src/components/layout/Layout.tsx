@@ -135,13 +135,19 @@ const Layout: React.FC = () => {
           // phone bottom padding clears the fixed BottomTabBar (h≈3.5rem) plus
           // the home indicator; md+ has no bar (LT-127).
           data-scroll-root
-          className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
+          className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="container mx-auto h-full">
+          {/* Bottom room for every page lives here, once. It CANNOT sit on the
+              scrolling <main>: a scroll container drops its padding-bottom as soon
+              as content overflows, which is why cards sat flush against the edge
+              (and why content could slide under the phone tab bar). A growable
+              min-h-full flex column keeps short pages filling the pane while the
+              padding still renders below overflowing content. */}
+          <div className="container mx-auto min-h-full flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
             <Outlet />
           </div>
         </motion.main>
