@@ -155,9 +155,10 @@ const Dashboard: React.FC = () => {
             <GreetingIcon className="w-7 h-7" />
           </motion.div>
           {/* Never wrap: "<greeting>, <name>" broke onto a second line on a
-              phone. Smaller until sm, and truncated rather than wrapped if a
-              name is long enough to still overflow. */}
-          <h1 className="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-white whitespace-nowrap truncate min-w-0">
+              phone. Sized to fit instead — an earlier attempt added `truncate`
+              as a safety net and that was worse, ellipsising the name on the
+              very screens it was meant to help. */}
+          <h1 className="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-white whitespace-nowrap">
             {t('common.greetingWithName', { greeting: getGreeting(t), name: auth.user.name })}
           </h1>
         </div>
