@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAMID.app.lightor.dashboard",
+        "appID": "5TJJV55U2J.app.lightor.dashboard",
         "paths": ["/verify/*", "/handoff", "/appointments*", "/customers*", "/"]
       }
     ]
