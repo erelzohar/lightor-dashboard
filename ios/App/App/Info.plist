@@ -37,6 +37,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Lightor uses the camera so you can photograph your work and add it to your business gallery.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Lightor saves images you export to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lightor needs access to your photos so you can add pictures of your work to your business gallery.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

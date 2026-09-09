@@ -58,7 +58,10 @@ describe('BottomTabBar', () => {
       </MemoryRouter>
     );
     const bar = screen.getByTestId('bottom-tab-bar');
-    expect(bar.className).toContain('pb-[env(safe-area-inset-bottom)]');
+    // Split across top and bottom, not all below the icons: the whole inset
+    // sitting underneath made the bar look top-heavy on a real phone.
+    expect(bar.className).toContain('py-[calc(env(safe-area-inset-bottom)/2)]');
+    expect(bar.className).not.toContain('pb-[env(safe-area-inset-bottom)]');
     // Theme colours are bare CSS vars, so `/95` on them emits no CSS at all.
     expect(bar.className).toContain('dark:bg-dark-surface');
     expect(bar.className).not.toMatch(/dark:bg-dark-surface\/\d/);

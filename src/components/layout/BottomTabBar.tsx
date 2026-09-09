@@ -55,10 +55,13 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
     <nav
       aria-label={t('sidebar.navigation')}
       data-testid="bottom-tab-bar"
+      // The home-indicator inset is split between top and bottom rather than
+      // all sitting below the icons, which made the bar look top-heavy. Same
+      // total height, balanced gaps.
       // No `/95` on the dark surface: the theme colours are bare CSS variables
       // (no <alpha-value>), so an opacity modifier silently emits nothing and
       // the bar stayed light in dark mode. Solid surfaces on both themes.
-      className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff] dark:bg-dark-surface pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff] dark:bg-dark-surface py-[calc(env(safe-area-inset-bottom)/2)]"
     >
       {tabs.map(({ path, Icon, label }) => (
         <NavLink

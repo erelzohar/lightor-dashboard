@@ -26,8 +26,13 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
     androidScheme: 'https',
   },
+  // Whatever sits behind the web view shows through during overscroll bounce
+  // and keyboard transitions. Left unset it is black, which reads as bars at
+  // the top and bottom of the app; match the page instead.
+  backgroundColor: '#ffffff',
   ios: {
     contentInset: 'automatic',
+    backgroundColor: '#ffffff',
   },
   plugins: {
     FirebaseMessaging: {
