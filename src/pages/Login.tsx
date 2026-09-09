@@ -9,7 +9,7 @@ import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 import { isNativeApp } from '../lib/platform';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
-const NATIVE_GOOGLE_ENABLED = false;
+const NATIVE_GOOGLE_ENABLED = true;
 
 const FacebookLogin =
   (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
