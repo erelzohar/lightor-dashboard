@@ -39,7 +39,10 @@ ssh -i "$KEY" "$HOST" bash -s <<EOF
   fi
   sudo mkdir -p "$TARGET"
   sudo rm -rf "$TARGET"/*
-  sudo cp -r "$STAGING"/* "$TARGET"/
+  # "$STAGING"/. not /* — a glob silently skips dot-entries, which meant
+  # dist/.well-known (the Apple app-site-association and Google verification
+  # files) never reached the server while every visible file did.
+  sudo cp -r "$STAGING"/. "$TARGET"/
   sudo chown -R www-data:www-data "$TARGET"
   rm -rf "$STAGING"
 EOF
