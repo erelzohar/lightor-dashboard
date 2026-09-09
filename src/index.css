@@ -3,6 +3,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * iOS zooms the whole page in when a field is focused whose text is smaller
+ * than 16px, and never zooms back out — the single worst thing about using the
+ * dashboard on a phone. The component library already sets `text-base` on
+ * mobile (see ui/Input.tsx, ui/Select.tsx), but 17 files render raw <input>,
+ * <select> and <textarea> elements that miss it, including react-datepicker's
+ * own field.
+ *
+ * So the rule is global rather than per-component, and it is `!important`
+ * deliberately: a Tailwind utility such as `text-sm` is a class and would
+ * otherwise beat a bare element selector. It only applies below the `sm`
+ * breakpoint, so nothing changes on a desktop, and checkboxes and radios are
+ * excluded since they render no text and would only grow.
+ */
+@media (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes popIn {
   0% { opacity: 0; transform: scale(0.8) translateY(20px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
