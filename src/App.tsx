@@ -43,7 +43,13 @@ function App() {
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
-            <Toaster position="top-center" />
+            {/* Offset by the safe-area inset: pinned to the very top, the
+                notch and Dynamic Island cover the toast on a real phone.
+                The inset is 0 in a browser, so the web is unaffected. */}
+            <Toaster
+              position="top-center"
+              containerStyle={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+            />
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>

@@ -47,7 +47,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
   // Colour lives on the active/idle branches, never on the shared classes:
   // an idle `dark:text-gray-400` would outrank `text-primary` in dark mode.
   const itemClasses =
-    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1.5 text-[10px] font-medium leading-tight transition-colors';
+    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1 text-[10px] font-medium leading-tight transition-colors';
   const idleClasses = 'text-gray-500 dark:text-gray-400';
   const activeClasses = 'text-primary dark:text-primary font-semibold';
 
@@ -67,12 +67,12 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
           end={path === '/'}
           className={({ isActive }) => cn(itemClasses, isActive ? activeClasses : idleClasses)}
         >
-          <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
           <span className="truncate max-w-full px-1">{label}</span>
         </NavLink>
       ))}
       <button type="button" onClick={onMore} className={cn(itemClasses, idleClasses)} aria-label={t('sidebar.openSidebar')}>
-        <Menu className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <Menu className="h-6 w-6 shrink-0" aria-hidden="true" />
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
     </nav>
