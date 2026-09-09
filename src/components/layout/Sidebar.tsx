@@ -17,6 +17,7 @@ import {
   UsersRound,
   CreditCard,
   Coins,
+  ScrollText,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar from './BottomTabBar';
@@ -202,6 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               { path: '/admin/appointments', Icon: CalendarRange, name: t('admin.nav.appointments') },
               { path: '/admin/subscriptions', Icon: CreditCard, name: t('admin.nav.subscriptions') },
               { path: '/admin/costs', Icon: Coins, name: t('admin.nav.costs') },
+              { path: '/admin/logs', Icon: ScrollText, name: t('admin.nav.logs') },
             ],
           },
         ]

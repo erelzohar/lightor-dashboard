@@ -606,7 +606,8 @@
       "subscriptions": "Abonnements",
       "costs": "Coûts",
       "backToDashboard": "Retour à mon tableau de bord",
-      "userDetail": "Détails de l'utilisateur"
+      "userDetail": "Détails de l'utilisateur",
+      "logs": "Journaux"
     },
     "table": {
       "search": "Rechercher…",
@@ -876,6 +877,36 @@
       "save": "Enregistrer les modifications",
       "created": "Utilisateur créé",
       "saved": "Utilisateur mis à jour"
+    },
+    "logs": {
+      "title": "Journaux du serveur",
+      "subtitle": "{{file}} · {{size}} sur le disque",
+      "subtitleEmpty": "Lecture des fichiers de log de l’API",
+      "searchPlaceholder": "Rechercher dans les journaux…",
+      "empty": "Aucune entrée correspondante",
+      "allLevels": "Tous les niveaux",
+      "autoRefreshOn": "Actualisation auto activée",
+      "autoRefreshOff": "Actualisation auto désactivée",
+      "clear": "Vider le journal",
+      "clearTitle": "Vider ce fichier de journal ?",
+      "clearMessage": "{{file}} ({{size}}) sera vidé sur le serveur et ses copies archivées supprimées. Irréversible.",
+      "cleared": "Journal vidé · {{size}} libérés",
+      "notClearable": "Le journal d’audit ne peut pas être vidé",
+      "truncated": "Seules les entrées les plus récentes sont affichées — ce fichier en contient plus que la visionneuse n’en garde en mémoire.",
+      "entryTitle": "Entrée de journal",
+      "close": "Fermer",
+      "columns": {
+        "time": "Heure",
+        "level": "Niveau",
+        "message": "Message"
+      },
+      "levels": {
+        "error": "Erreur",
+        "warn": "Avertissement",
+        "info": "Info",
+        "debug": "Débogage",
+        "raw": "Brut"
+      }
     }
   },
   "customers": {

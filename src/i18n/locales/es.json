@@ -606,7 +606,8 @@
       "subscriptions": "Suscripciones",
       "costs": "Costes",
       "backToDashboard": "Volver a mi panel",
-      "userDetail": "Detalles del usuario"
+      "userDetail": "Detalles del usuario",
+      "logs": "Registros"
     },
     "table": {
       "search": "Buscar…",
@@ -876,6 +877,36 @@
       "save": "Guardar cambios",
       "created": "Usuario creado",
       "saved": "Usuario actualizado"
+    },
+    "logs": {
+      "title": "Registros del servidor",
+      "subtitle": "{{file}} · {{size}} en disco",
+      "subtitleEmpty": "Leyendo los archivos de registro de la API",
+      "searchPlaceholder": "Buscar en el registro…",
+      "empty": "No hay entradas coincidentes",
+      "allLevels": "Todos los niveles",
+      "autoRefreshOn": "Actualización automática activada",
+      "autoRefreshOff": "Actualización automática desactivada",
+      "clear": "Vaciar registro",
+      "clearTitle": "¿Vaciar este archivo de registro?",
+      "clearMessage": "{{file}} ({{size}}) se vaciará en el servidor y se eliminarán sus copias rotadas. No se puede deshacer.",
+      "cleared": "Registro vaciado · {{size}} liberados",
+      "notClearable": "El registro de auditoría no se puede vaciar",
+      "truncated": "Solo se muestran las entradas más recientes: este archivo contiene más de lo que el visor mantiene en memoria.",
+      "entryTitle": "Entrada de registro",
+      "close": "Cerrar",
+      "columns": {
+        "time": "Hora",
+        "level": "Nivel",
+        "message": "Mensaje"
+      },
+      "levels": {
+        "error": "Error",
+        "warn": "Advertencia",
+        "info": "Info",
+        "debug": "Depuración",
+        "raw": "Sin procesar"
+      }
     }
   },
   "customers": {

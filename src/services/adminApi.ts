@@ -370,3 +370,58 @@ export const fetchCostsByTenant = async (
  */
 export const resetAiQuota = async (): Promise<{ cleared: number }> =>
   (await send<{ data: { cleared: number } }>('post', 'ai-quota/reset')).data;
+
+// ------------------------------------------------------------ server logs --
+
+export interface LogFileInfo {
+  key: 'combined' | 'error' | 'audit';
+  filename: string;
+  /** The audit trail is deliberately not clearable from the panel. */
+  clearable: boolean;
+  size: number;
+  rotatedFiles: number;
+  rotatedSize: number;
+  modified: string | null;
+}
+
+export interface LogEntry {
+  line: number;
+  timestamp: string | null;
+  level: string;
+  message: string;
+  meta: Record<string, unknown>;
+  raw: string;
+}
+
+export interface LogsQuery {
+  file?: string;
+  level?: string;
+  q?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface LogsPage extends Paginated<LogEntry> {
+  /** True when the file held more matches than the server keeps in memory. */
+  truncated: boolean;
+  /** Every level present in the file, for the filter. */
+  levels: string[];
+  file: string;
+}
+
+export const fetchLogFiles = async (): Promise<LogFileInfo[]> =>
+  (await get<{ data: LogFileInfo[] }>('logs/files')).data;
+
+export const fetchLogs = (query: LogsQuery): Promise<LogsPage> =>
+  get<LogsPage>('logs', query as Record<string, unknown>);
+
+/** Truncates the live file and removes its rotated siblings. */
+export const clearLogFile = async (
+  file: string
+): Promise<{ file: string; freedBytes: number; removedRotated: number }> =>
+  (await send<{ data: { file: string; freedBytes: number; removedRotated: number } }>(
+    'post',
+    `logs/${file}/clear`
+  )).data;

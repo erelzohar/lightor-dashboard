@@ -606,7 +606,8 @@
       "subscriptions": "Subscriptions",
       "costs": "Costs",
       "backToDashboard": "Back to my dashboard",
-      "userDetail": "User details"
+      "userDetail": "User details",
+      "logs": "Logs"
     },
     "table": {
       "search": "Search…",
@@ -876,6 +877,36 @@
       "save": "Save changes",
       "created": "User created",
       "saved": "User updated"
+    },
+    "logs": {
+      "title": "Server logs",
+      "subtitle": "{{file}} · {{size}} on disk",
+      "subtitleEmpty": "Reading the API log files",
+      "searchPlaceholder": "Search log text…",
+      "empty": "No log entries match",
+      "allLevels": "All levels",
+      "autoRefreshOn": "Auto-refresh on",
+      "autoRefreshOff": "Auto-refresh off",
+      "clear": "Clear log",
+      "clearTitle": "Clear this log file?",
+      "clearMessage": "{{file}} ({{size}}) will be emptied on the server and its rotated copies deleted. This cannot be undone.",
+      "cleared": "Log cleared · {{size}} freed",
+      "notClearable": "The audit trail cannot be cleared",
+      "truncated": "Showing the most recent matches only — this file holds more than the viewer keeps in memory.",
+      "entryTitle": "Log entry",
+      "close": "Close",
+      "columns": {
+        "time": "Time",
+        "level": "Level",
+        "message": "Message"
+      },
+      "levels": {
+        "error": "Error",
+        "warn": "Warning",
+        "info": "Info",
+        "debug": "Debug",
+        "raw": "Raw"
+      }
     }
   },
   "customers": {

@@ -606,7 +606,8 @@
       "subscriptions": "מנויים",
       "costs": "עלויות",
       "backToDashboard": "חזרה לדשבורד שלי",
-      "userDetail": "פרטי משתמש"
+      "userDetail": "פרטי משתמש",
+      "logs": "לוגים"
     },
     "table": {
       "search": "חיפוש…",
@@ -876,6 +877,36 @@
       "save": "שמור שינויים",
       "created": "המשתמש נוצר",
       "saved": "המשתמש עודכן"
+    },
+    "logs": {
+      "title": "לוגים של השרת",
+      "subtitle": "{{file}} · {{size}} בדיסק",
+      "subtitleEmpty": "קורא את קבצי הלוג של ה-API",
+      "searchPlaceholder": "חיפוש בטקסט הלוג…",
+      "empty": "אין רשומות תואמות",
+      "allLevels": "כל הרמות",
+      "autoRefreshOn": "רענון אוטומטי פעיל",
+      "autoRefreshOff": "רענון אוטומטי כבוי",
+      "clear": "נקה לוג",
+      "clearTitle": "לנקות את קובץ הלוג?",
+      "clearMessage": "{{file}} ({{size}}) יימחק בשרת יחד עם העותקים המסובבים. לא ניתן לשחזר.",
+      "cleared": "הלוג נוקה · שוחררו {{size}}",
+      "notClearable": "לא ניתן לנקות את יומן הביקורת",
+      "truncated": "מוצגות רק הרשומות האחרונות — הקובץ מכיל יותר ממה שהצופה שומר בזיכרון.",
+      "entryTitle": "רשומת לוג",
+      "close": "סגירה",
+      "columns": {
+        "time": "זמן",
+        "level": "רמה",
+        "message": "הודעה"
+      },
+      "levels": {
+        "error": "שגיאה",
+        "warn": "אזהרה",
+        "info": "מידע",
+        "debug": "ניפוי",
+        "raw": "גולמי"
+      }
     }
   },
   "customers": {

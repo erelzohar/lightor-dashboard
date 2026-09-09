@@ -29,6 +29,7 @@ import AdminUserDetail from './pages/admin/AdminUserDetail';
 import AdminAppointments from './pages/admin/AdminAppointments';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminCosts from './pages/admin/AdminCosts';
+import AdminLogs from './pages/admin/AdminLogs';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
@@ -77,6 +78,7 @@ function App() {
                       <Route path="appointments" element={<AdminAppointments />} />
                       <Route path="subscriptions" element={<AdminSubscriptions />} />
                       <Route path="costs" element={<AdminCosts />} />
+                      <Route path="logs" element={<AdminLogs />} />
                     </Route>
                   </Route>
                   <Route path="/dashboard/*" element={<LegacyDashboardRedirect />} />
