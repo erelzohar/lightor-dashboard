@@ -19,6 +19,10 @@ import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay } from '../../utils/phone';
+import {
+  Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus,
+} from '../../utils/sessions';
+import SessionParticipants from './SessionParticipants';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -82,6 +86,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [catSecOpen,  setCatSecOpen]            = useState(true);
   const [sidebarOpen, setSidebarOpen]           = useState(false);
   const [laterApptId, setLaterApptId]           = useState<string | null>(null);
+  const [openSession, setOpenSession]           = useState<Session | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
@@ -120,7 +125,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   // ── Close popup on Escape ─────────────────────────────────────────────
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedAppt(null); };
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') { setSelectedAppt(null); setOpenSession(null); } };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, []);
@@ -166,6 +171,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       .filter(a => isSameDay(new Date(parseInt(a.timestamp)), day))
       .sort((a, b) => parseInt(a.timestamp) - parseInt(b.timestamp));
 
+  // Bookings sharing a service and a start time draw as ONE block (LT-152).
+  // Before this the grid pinned every booking to the full column width with no
+  // lane splitting, so a class of twelve stacked twelve deep and only the last
+  // one was clickable.
+  const getDaySessions = (day: Date) => groupSessions(getDayAppts(day));
+
   const miniHasAppts = (day: Date) =>
     appointments.some(a => isSameDay(new Date(parseInt(a.timestamp)), day));
 
@@ -210,6 +221,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     if (x + PW > window.innerWidth - 8) x = Math.max(8, rect.left - PW - 10);
     if (y + PH > window.innerHeight - 8) y = Math.max(8, window.innerHeight - PH - 8);
     setPopupPos({ x, y });
+  };
+
+  const handleSessionClick = (session: Session, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedAppt(null);
+    setOpenSession(session);
   };
 
   const handleStatus = async (status: 'completed' | 'cancelled') => {
@@ -595,7 +612,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
             {weekDays.map(day => {
               const tod = isToday(day);
-              const dots = Math.min(getDayAppts(day).length, 4);
+              const dots = Math.min(getDaySessions(day).length, 4);
               return (
                 <div key={day.toISOString()}
                   className="flex flex-col items-center py-3 relative"
@@ -651,7 +668,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {/* Day columns */}
               {weekDays.map((day) => {
                 const tod = isToday(day);
-                const dayAppts = getDayAppts(day);
+                const daySessions = getDaySessions(day);
                 // Alternate subtle background for visual separation
                 const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
@@ -689,24 +706,27 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
                     {/* Event cards */}
                     <AnimatePresence>
-                      {dayAppts.map((appt, idx) => {
+                      {daySessions.map((session, idx) => {
+                        const appt    = session.participants[0];
+                        const grouped = isGroupSession(session);
+                        const going   = activeParticipants(session);
                         const { top, height } = getApptPos(appt);
                         const pal    = getPalette(appt);
-                        const status = getDisplayStatus(appt);
+                        const status = grouped ? sessionDisplayStatus(session) : getDisplayStatus(appt);
                         const ts     = new Date(parseInt(appt.timestamp));
                         const endTs  = new Date(parseInt(appt.timestamp) + Number(appt.type.durationMS));
                         const ini    = initials(appt.name);
 
                         return (
                           <motion.div
-                            key={appt._id}
+                            key={session.id}
                             initial={{ opacity: 0, scale: 0.94 }}
                             animate={{ opacity: status === 'cancelled' ? 0.45 : 1, scale: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ delay: idx * 0.02, duration: 0.15 }}
                             whileHover={{ scale: 1.025, zIndex: 25 }}
                             whileTap={{ scale: 0.97 }}
-                            onClick={e => handleEventClick(appt, e)}
+                            onClick={e => grouped ? handleSessionClick(session, e) : handleEventClick(appt, e)}
                             style={{ position: 'absolute', top, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 10 }}
                             className={`
                               rounded-xl cursor-pointer overflow-hidden select-none
@@ -714,7 +734,14 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               px-2.5 py-2 shadow-sm hover:shadow-md transition-shadow duration-150
                             `}
                           >
-                            <p className={`font-semibold text-[11px] leading-tight truncate ${pal.text}`}>
+                            {/* A headcount that survives a half-hour block, where
+                                there is no room for the roster row below. */}
+                            {grouped && (
+                              <span className={`absolute top-1 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${pal.avatar}`}>
+                                {going.length}
+                              </span>
+                            )}
+                            <p className={`font-semibold text-[11px] leading-tight truncate ${pal.text} ${grouped ? 'pe-6' : ''}`}>
                               {appt.type.name}
                             </p>
                             {height > 42 && (
@@ -723,12 +750,28 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               </p>
                             )}
                             {height > 62 && (
-                              <div className="flex items-center gap-1.5 mt-1.5">
-                                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold ${pal.avatar}`}>
-                                  {ini}
+                              grouped ? (
+                                <div className="flex items-center gap-1.5 mt-1.5">
+                                  <div className="flex -space-s-1.5">
+                                    {going.slice(0, 3).map(person => (
+                                      <div key={person._id}
+                                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold ring-2 ring-white/70 dark:ring-gray-800/70 ${pal.avatar}`}>
+                                        {initials(person.name)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <span className={`text-[10px] truncate ${pal.sub}`}>
+                                    {t('appointments.session.participants', { count: going.length })}
+                                  </span>
                                 </div>
-                                <span className={`text-[10px] truncate ${pal.sub}`}>{appt.name}</span>
-                              </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5 mt-1.5">
+                                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold ${pal.avatar}`}>
+                                    {ini}
+                                  </div>
+                                  <span className={`text-[10px] truncate ${pal.sub}`}>{appt.name}</span>
+                                </div>
+                              )
                             )}
                           </motion.div>
                         );
@@ -744,6 +787,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       {/* ─────────────────────────────────────────────────────────────────
           EVENT DETAIL POPUP  — styled like the reference's form card
       ───────────────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {openSession && (
+          <SessionParticipants
+            session={openSession}
+            onClose={() => setOpenSession(null)}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {selectedAppt && popupPos && (
           <motion.div

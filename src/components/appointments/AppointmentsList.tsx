@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Card from '../ui/Card';
 import { Appointment } from '../../types';
 import { formatTime } from '../../utils/dateUtils';
@@ -10,6 +10,9 @@ import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import { Session, groupSessions, isGroupSession } from '../../utils/sessions';
+import SessionCard from './SessionCard';
+import SessionParticipants from './SessionParticipants';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -55,9 +58,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     }
   };
 
-  const sortedAppointments = [...appointments].sort(
-    (a, b) => parseInt(a.timestamp) - parseInt(b.timestamp)
-  );
+  const [openSession, setOpenSession] = useState<Session | null>(null);
+
+  // Bookings sharing a service and a start time are one session (LT-152). A
+  // one-to-one business has one participant per session, so every card below
+  // renders exactly as it did before.
+  const sessions = useMemo(() => groupSessions(appointments), [appointments]);
 
 
 
@@ -83,17 +89,28 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       </div>
 
       <div className="overflow-y-auto max-h-[calc(100vh-18.75rem)] scrollbar-thin">
-        {sortedAppointments.length > 0 ? (
+        {sessions.length > 0 ? (
           <div className="space-y-4">
-            {sortedAppointments.map((appointment, i) => (
+            {sessions.map((session, i) => {
+              const appointment = session.participants[0];
+              const grouped = isGroupSession(session);
+
+              return (
               <motion.div
-                key={appointment._id}
+                key={session.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => onAppointmentClick(appointment)}
-                className="group cursor-pointer"
+                onClick={grouped ? undefined : () => onAppointmentClick(appointment)}
+                className={grouped ? '' : 'group cursor-pointer'}
               >
+                {grouped ? (
+                  <SessionCard
+                    session={session}
+                    dateLabel={getDateDisplay(session.timestamp)}
+                    onOpen={setOpenSession}
+                  />
+                ) : (
                 <div className={`bg-light-surface p-4 rounded-xl border border-light-gray/10 shadow-sm
                   hover:shadow-md hover:border-primary/20 transition-all duration-200 transform hover:-translate-y-1
                   dark:shadow-none dark:hover:shadow-none dark:hover:bg-dark-surface/50
@@ -155,8 +172,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                     </div>
                   </div>
                 </div>
+                )}
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="py-12 text-center">
@@ -167,6 +186,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {openSession && (
+          <SessionParticipants session={openSession} onClose={() => setOpenSession(null)} />
+        )}
+      </AnimatePresence>
     </Card>
   );
 };

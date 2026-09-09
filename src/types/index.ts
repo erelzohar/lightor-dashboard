@@ -196,12 +196,22 @@ export interface NotificationPrefs {
   morningDigest: boolean;
 }
 
+/** One weekly slot of a group class (LT-152): 0 = Sunday, 'HH:MM' local. */
+export interface ClassSession {
+  weekday: number;
+  time: string;
+}
+
 export interface AppointmentType {
   _id: string;
   name: string;
   webConfig_id: string;
   price: string;
   durationMS: string;
+  /** Absent means an ordinary one-to-one appointment. */
+  kind?: 'appointment' | 'class';
+  capacity?: number;
+  sessions?: ClassSession[];
 }
 
 export interface Appointment {

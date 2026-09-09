@@ -187,7 +187,17 @@
     "updateSuccess": "Tipo de cita actualizado correctamente",
     "addSuccess": "Tipo de cita añadido correctamente",
     "saveError": "No se pudo guardar el tipo de cita",
-    "serviceLimit": "El plan gratuito está limitado a 3 servicios. Prueba Lightor+ gratis para servicios ilimitados — Cuenta → Suscripción."
+    "serviceLimit": "El plan gratuito está limitado a 3 servicios. Prueba Lightor+ gratis para servicios ilimitados — Cuenta → Suscripción.",
+    "class": {
+      "toggle": "Clase grupal",
+      "toggleHint": "Varias personas a una hora fija",
+      "capacity": "Plazas",
+      "sessions": "Horarios de la clase",
+      "addSession": "Añadir horario",
+      "removeSession": "Quitar este horario",
+      "noSessions": "Aún no hay horarios. Añádelos ahora o más tarde.",
+      "duplicate": "El mismo día y hora aparecen dos veces"
+    }
   },
   "appointments": {
     "title": "Citas",
@@ -212,7 +222,13 @@
     "updateSuccess": "Cita actualizada correctamente",
     "updateError": "No se pudo actualizar la cita",
     "calendarView": "Calendario",
-    "listView": "Lista"
+    "listView": "Lista",
+    "session": {
+      "title": "Sesión grupal",
+      "participants": "{{count}} participantes",
+      "cancelledCount": "{{count}} cancelados",
+      "close": "Cerrar"
+    }
   },
   "login": {
     "title": "Iniciar sesión",

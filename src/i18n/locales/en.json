@@ -187,7 +187,17 @@
     "updateSuccess": "Appointment type updated successfully",
     "addSuccess": "Appointment type added successfully",
     "saveError": "Failed to save appointment type",
-    "serviceLimit": "The free plan is limited to 3 services. Try Lightor+ free for unlimited services — Account → Subscription."
+    "serviceLimit": "The free plan is limited to 3 services. Try Lightor+ free for unlimited services — Account → Subscription.",
+    "class": {
+      "toggle": "Group class",
+      "toggleHint": "Several people at one fixed time",
+      "capacity": "Places",
+      "sessions": "Class times",
+      "addSession": "Add a time",
+      "removeSession": "Remove this time",
+      "noSessions": "No times yet. Add them now or later.",
+      "duplicate": "The same day and time is listed twice"
+    }
   },
   "appointments": {
     "title": "Appointments",
@@ -212,7 +222,13 @@
     "updateSuccess": "Appointment updated successfully",
     "updateError": "Failed to update appointment",
     "calendarView": "Calendar",
-    "listView": "List"
+    "listView": "List",
+    "session": {
+      "title": "Group session",
+      "participants": "{{count}} participants",
+      "cancelledCount": "{{count}} cancelled",
+      "close": "Close"
+    }
   },
   "login": {
     "title": "Login",

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X } from 'lucide-react';
-import { AppointmentType } from '../types';
+import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users } from 'lucide-react';
+import { AppointmentType, ClassSession } from '../types';
+
+/** The server refuses more than this (LT-152). */
+const MAX_SESSIONS = 14;
 import toast from 'react-hot-toast';
 import { formatDuration } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
@@ -57,7 +60,11 @@ const AppointmentTypes: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentType, setCurrentType] = useState<AppointmentType | null>(null);
   const [formData, setFormData] = useState({ name: '', price: '', durationMS: '1800000' });
-  const [onlineBooking, setOnlineBooking] = useState(true);
+  // Group classes (LT-152): a service sold to several people at one fixed
+  // time. Off by default, which is every service that existed before.
+  const [isClass, setIsClass] = useState(false);
+  const [capacity, setCapacity] = useState('12');
+  const [sessions, setSessions] = useState<ClassSession[]>([]);
   const { auth } = useAuth();
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
   const dispatch = useAppDispatch();
@@ -72,15 +79,23 @@ const AppointmentTypes: React.FC = () => {
     } else setIsLoading(false);
   }, [appointmentTypes]);
 
+  const resetClassFields = (type?: AppointmentType | null) => {
+    setIsClass(type?.kind === 'class');
+    setCapacity(type?.capacity ? String(type.capacity) : '12');
+    setSessions(type?.sessions ? type.sessions.map(s => ({ ...s })) : []);
+  };
+
   const openForNew = () => {
     setCurrentType(null);
     setFormData({ name: '', price: '', durationMS: '1800000' });
+    resetClassFields(null);
     setIsFormOpen(true);
   };
 
   const openForEdit = (type: AppointmentType) => {
     setCurrentType(type);
     setFormData({ name: type.name, price: type.price, durationMS: type.durationMS });
+    resetClassFields(type);
     setIsFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -90,6 +105,7 @@ const AppointmentTypes: React.FC = () => {
     setTimeout(() => {
       setCurrentType(null);
       setFormData({ name: '', price: '', durationMS: '1800000' });
+      resetClassFields(null);
     }, 300);
   };
 
@@ -127,11 +143,20 @@ const AppointmentTypes: React.FC = () => {
     try {
       // unwrap() matters: a bare dispatch(thunk) resolves even when the API
       // rejected, so failures used to toast "saved" while saving nothing.
+      // A class carries its seats and its timetable; an ordinary service sends
+      // `kind` only when it is switching back, so a service that was never a
+      // class is stored exactly as it always was.
+      const classPayload = isClass
+        ? { kind: 'class' as const, capacity: Number(capacity), sessions }
+        : currentType?.kind === 'class'
+          ? { kind: 'appointment' as const }
+          : {};
+
       if (currentType) {
-        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData } })).unwrap();
+        await dispatch(updateAppointmentType({ id: currentType._id, data: { ...formData, ...classPayload } })).unwrap();
         toast.success(t('appointmentTypes.updateSuccess'));
       } else {
-        await dispatch(createAppointmentType({ ...formData, webConfig_id: auth.user.webConfig_id })).unwrap();
+        await dispatch(createAppointmentType({ ...formData, ...classPayload, webConfig_id: auth.user.webConfig_id })).unwrap();
         toast.success(t('appointmentTypes.addSuccess'));
       }
       closeForm();
@@ -146,6 +171,22 @@ const AppointmentTypes: React.FC = () => {
   };
 
   const getDurationMinutes = () => Math.floor(parseInt(formData.durationMS) / 60000);
+
+  const dayNames = t('scheduleVacations.daysOfWeek', { returnObjects: true }) as string[];
+
+  const addSession = () =>
+    setSessions(prev => (prev.length >= MAX_SESSIONS ? prev : [...prev, { weekday: 0, time: '19:00' }]));
+
+  const updateSession = (index: number, patch: Partial<ClassSession>) =>
+    setSessions(prev => prev.map((session, i) => (i === index ? { ...session, ...patch } : session)));
+
+  const removeSession = (index: number) =>
+    setSessions(prev => prev.filter((_, i) => i !== index));
+
+  // The server refuses a duplicate slot; say so before the round trip.
+  const duplicateSession = sessions.some(
+    (session, i) => sessions.findIndex(other => other.weekday === session.weekday && other.time === session.time) !== i
+  );
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 max-w-3xl w-full mx-auto">
@@ -289,7 +330,89 @@ const AppointmentTypes: React.FC = () => {
                     />
                   </div>
 
-                  {/* Online Booking toggle + action buttons on same row */}
+                  {/* Seats and the weekly timetable — only for a class */}
+                  {isClass && (
+                    <div
+                      className="flex flex-col gap-4 px-4 py-4 rounded-xl"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(149,142,160,0.14)' }}
+                    >
+                      <InputField
+                        label={t('appointmentTypes.class.capacity')}
+                        icon={<Users size={16} />}
+                        inputProps={{
+                          name: 'capacity',
+                          type: 'number',
+                          min: '1',
+                          max: '200',
+                          step: '1',
+                          value: capacity,
+                          onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCapacity(e.target.value),
+                          required: true,
+                        }}
+                      />
+
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          {t('appointmentTypes.class.sessions')}
+                        </label>
+
+                        {sessions.length === 0 && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('appointmentTypes.class.noSessions')}
+                          </p>
+                        )}
+
+                        {sessions.map((session, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <select
+                              value={session.weekday}
+                              onChange={e => updateSession(index, { weekday: Number(e.target.value) })}
+                              className="flex-1 min-w-0 rounded-xl text-sm py-2.5 px-3 bg-transparent text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/50"
+                              style={GLASS_INPUT}
+                            >
+                              {dayNames.map((day, weekday) => (
+                                <option key={weekday} value={weekday}>{day}</option>
+                              ))}
+                            </select>
+                            <input
+                              type="time"
+                              value={session.time}
+                              onChange={e => updateSession(index, { time: e.target.value })}
+                              required
+                              className="rounded-xl text-sm py-2.5 px-3 bg-transparent text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/50"
+                              style={GLASS_INPUT}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeSession(index)}
+                              aria-label={t('appointmentTypes.class.removeSession')}
+                              title={t('appointmentTypes.class.removeSession')}
+                              className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        ))}
+
+                        {duplicateSession && (
+                          <p className="text-xs text-rose-500">{t('appointmentTypes.class.duplicate')}</p>
+                        )}
+
+                        {sessions.length < MAX_SESSIONS && (
+                          <button
+                            type="button"
+                            onClick={addSession}
+                            className="self-start inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:opacity-80 transition-opacity"
+                          >
+                            <Plus size={14} />
+                            {t('appointmentTypes.class.addSession')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Class toggle + action buttons on same row */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
                     {/* Toggle */}
                     <div
@@ -300,15 +423,15 @@ const AppointmentTypes: React.FC = () => {
                       }}
                     >
                       <div className="flex-grow">
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white">Online Booking</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Allow clients to book online.</p>
+                        <p className="text-xs font-semibold text-gray-900 dark:text-white">{t('appointmentTypes.class.toggle')}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('appointmentTypes.class.toggleHint')}</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
                           type="checkbox"
                           className="sr-only peer"
-                          checked={onlineBooking}
-                          onChange={() => setOnlineBooking(v => !v)}
+                          checked={isClass}
+                          onChange={() => setIsClass(v => !v)}
                         />
                         <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary" />
                       </label>

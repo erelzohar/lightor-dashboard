@@ -187,7 +187,17 @@
     "updateSuccess": "Type de rendez-vous mis à jour avec succès",
     "addSuccess": "Type de rendez-vous ajouté avec succès",
     "saveError": "Échec de l'enregistrement du type de rendez-vous",
-    "serviceLimit": "Le forfait gratuit est limité à 3 services. Essayez Lightor+ gratuitement pour des services illimités — Compte → Abonnement."
+    "serviceLimit": "Le forfait gratuit est limité à 3 services. Essayez Lightor+ gratuitement pour des services illimités — Compte → Abonnement.",
+    "class": {
+      "toggle": "Cours collectif",
+      "toggleHint": "Plusieurs personnes à une heure fixe",
+      "capacity": "Places",
+      "sessions": "Horaires du cours",
+      "addSession": "Ajouter un horaire",
+      "removeSession": "Retirer cet horaire",
+      "noSessions": "Aucun horaire pour l'instant. Ajoutez-les maintenant ou plus tard.",
+      "duplicate": "Le même jour et la même heure figurent deux fois"
+    }
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -212,7 +222,13 @@
     "updateSuccess": "Rendez-vous mis à jour avec succès",
     "updateError": "Échec de la mise à jour du rendez-vous",
     "calendarView": "Calendrier",
-    "listView": "Liste"
+    "listView": "Liste",
+    "session": {
+      "title": "Séance collective",
+      "participants": "{{count}} participants",
+      "cancelledCount": "{{count}} annulés",
+      "close": "Fermer"
+    }
   },
   "login": {
     "title": "Connexion",

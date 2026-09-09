@@ -187,7 +187,17 @@
     "updateSuccess": "تم تحديث نوع الموعد بنجاح",
     "addSuccess": "تمت إضافة نوع الموعد بنجاح",
     "saveError": "فشل حفظ نوع الموعد",
-    "serviceLimit": "الخطة المجانية محدودة بـ 3 خدمات. جرّب Lightor+ مجانًا لخدمات غير محدودة — الحساب ← الاشتراك."
+    "serviceLimit": "الخطة المجانية محدودة بـ 3 خدمات. جرّب Lightor+ مجانًا لخدمات غير محدودة — الحساب ← الاشتراك.",
+    "class": {
+      "toggle": "حصة جماعية",
+      "toggleHint": "عدة أشخاص في وقت ثابت واحد",
+      "capacity": "عدد الأماكن",
+      "sessions": "مواعيد الحصة",
+      "addSession": "إضافة موعد",
+      "removeSession": "إزالة الموعد",
+      "noSessions": "لا توجد مواعيد بعد. أضفها الآن أو لاحقًا.",
+      "duplicate": "نفس اليوم والوقت مُدرجان مرتين"
+    }
   },
   "appointments": {
     "title": "المواعيد",
@@ -212,7 +222,13 @@
     "updateSuccess": "تم تحديث الموعد بنجاح",
     "updateError": "فشل تحديث الموعد",
     "calendarView": "التقويم",
-    "listView": "القائمة"
+    "listView": "القائمة",
+    "session": {
+      "title": "حصة جماعية",
+      "participants": "{{count}} مشاركين",
+      "cancelledCount": "{{count}} ملغاة",
+      "close": "إغلاق"
+    }
   },
   "login": {
     "title": "تسجيل الدخول",

@@ -3,6 +3,7 @@ import { Hourglass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Appointment } from '../../types';
 import { useTranslation } from 'react-i18next';
+import { countSessions } from '../../utils/sessions';
 
 interface StatCardProps {
   title: string;
@@ -44,11 +45,16 @@ interface AppointmentStatsProps {
 const AppointmentStats: React.FC<AppointmentStatsProps> = ({ appointments }) => {
   const { t } = useTranslation();
 
-  const upcomingAppointments = appointments.filter(
-    (appointment) =>
-      appointment.status === 'scheduled' &&
-      parseInt(appointment.timestamp) > Date.now()
-  ).length;
+  // Sessions, not people (Erel, LT-152): a coach teaching two classes has two
+  // things on today, not twenty-four. Money and plan limits still count
+  // people, because that is what they are.
+  const upcomingAppointments = countSessions(
+    appointments.filter(
+      (appointment) =>
+        appointment.status === 'scheduled' &&
+        parseInt(appointment.timestamp) > Date.now()
+    )
+  );
 
   const stats = [
     {
