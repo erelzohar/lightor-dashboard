@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -12,7 +12,14 @@ import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 
+// Pages that deliberately bleed to the edges: they already cancel the
+// layout's own padding with negative margins and size themselves, so the
+// shared bottom padding would only add a dead gap under them.
+const FULL_BLEED_ROUTES = ['/ai'];
+
 const Layout: React.FC = () => {
+  const { pathname } = useLocation();
+  const fullBleed = FULL_BLEED_ROUTES.includes(pathname);
   const [welcomeLoading, setWelcomeLoading] = useState(false);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
@@ -147,7 +154,11 @@ const Layout: React.FC = () => {
               (and why content could slide under the phone tab bar). A growable
               min-h-full flex column keeps short pages filling the pane while the
               padding still renders below overflowing content. */}
-          <div className="container mx-auto min-h-full flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8">
+          <div
+            className={`container mx-auto min-h-full flex flex-col ${
+              fullBleed ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'
+            }`}
+          >
             <Outlet />
           </div>
         </motion.main>

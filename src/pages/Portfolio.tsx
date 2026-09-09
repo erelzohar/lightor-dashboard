@@ -327,7 +327,7 @@ const Portfolio: React.FC = () => {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 md:p-8 max-w-7xl mx-auto"
+            className="p-6 md:p-8 max-w-7xl w-full mx-auto"
         >
             {/* Header */}
             <div className="mb-10">
