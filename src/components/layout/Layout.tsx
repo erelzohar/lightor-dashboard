@@ -155,8 +155,15 @@ const Layout: React.FC = () => {
               min-h-full flex column keeps short pages filling the pane while the
               padding still renders below overflowing content. */}
           <div
-            className={`container mx-auto min-h-full flex flex-col ${
-              fullBleed ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'
+            className={`container mx-auto flex flex-col ${
+              // Full-bleed pages size themselves off this box (the AI builder is
+              // h-[calc(100%+3rem)] with negative margins), and a percentage
+              // height cannot resolve against an auto-height min-h-full parent —
+              // it collapses to nothing. They get a definite height; everyone
+              // else gets the growable box that makes the bottom padding render.
+              fullBleed
+                ? 'h-full'
+                : 'min-h-full pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'
             }`}
           >
             <Outlet />
