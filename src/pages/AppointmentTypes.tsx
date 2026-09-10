@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users } from 'lucide-react';
+import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
+import { uploadImage } from '../services/imagesApi';
+import globals from '../services/globals';
 import { AppointmentType, ClassSession } from '../types';
 
 /** The server refuses more than this (LT-152). */
@@ -17,6 +20,10 @@ import {
 } from '../store/slices/appointmentsSlice';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTranslation } from 'react-i18next';
+
+/** Bare names are S3 images served by the images API; full URLs pass through. */
+const resolveImage = (name: string): string =>
+  /^(https?:|data:|blob:)/.test(name) ? name : globals.imagesUrl + name;
 
 const GLASS: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)',
@@ -59,9 +66,10 @@ const AppointmentTypes: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentType, setCurrentType] = useState<AppointmentType | null>(null);
-  const [formData, setFormData] = useState({ name: '', price: '', durationMS: '1800000' });
+  const [formData, setFormData] = useState({ name: '', price: '', durationMS: '1800000', image: '' });
   // Group classes (LT-152): a service sold to several people at one fixed
   // time. Off by default, which is every service that existed before.
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [isClass, setIsClass] = useState(false);
   const [capacity, setCapacity] = useState('12');
   const [sessions, setSessions] = useState<ClassSession[]>([]);
@@ -87,14 +95,14 @@ const AppointmentTypes: React.FC = () => {
 
   const openForNew = () => {
     setCurrentType(null);
-    setFormData({ name: '', price: '', durationMS: '1800000' });
+    setFormData({ name: '', price: '', durationMS: '1800000', image: '' });
     resetClassFields(null);
     setIsFormOpen(true);
   };
 
   const openForEdit = (type: AppointmentType) => {
     setCurrentType(type);
-    setFormData({ name: type.name, price: type.price, durationMS: type.durationMS });
+    setFormData({ name: type.name, price: type.price, durationMS: type.durationMS, image: type.image ?? '' });
     resetClassFields(type);
     setIsFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -104,7 +112,7 @@ const AppointmentTypes: React.FC = () => {
     setIsFormOpen(false);
     setTimeout(() => {
       setCurrentType(null);
-      setFormData({ name: '', price: '', durationMS: '1800000' });
+      setFormData({ name: '', price: '', durationMS: '1800000', image: '' });
       resetClassFields(null);
     }, 300);
   };
@@ -138,8 +146,28 @@ const AppointmentTypes: React.FC = () => {
     }
   };
 
+  // Service picture (LT-157): uploaded straight away through the same pipeline
+  // as the portfolio, so the form only ever holds a finished image name.
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const compressed = await imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true });
+      const { imageName } = await uploadImage(compressed);
+      setFormData(prev => ({ ...prev, image: imageName }));
+    } catch {
+      toast.error(t('appointmentTypes.image.uploadError'));
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Saving mid-upload would store the service without the picture being chosen.
+    if (uploadingImage) return;
     try {
       // unwrap() matters: a bare dispatch(thunk) resolves even when the API
       // rejected, so failures used to toast "saved" while saving nothing.
@@ -292,6 +320,50 @@ const AppointmentTypes: React.FC = () => {
                       placeholder: 'e.g. Executive Haircut',
                     }}
                   />
+
+                  {/* Picture shown with the service on the booking site (LT-157) */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1">
+                      {t('appointmentTypes.image.label')}
+                    </span>
+                    <div className="flex items-center gap-3 rounded-xl p-2" style={GLASS_INPUT}>
+                      <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-black/5 dark:bg-white/5">
+                        {formData.image ? (
+                          <img src={resolveImage(formData.image)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImagePlus size={20} className="text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <label
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors bg-primary/10 text-primary hover:bg-primary/20 ${uploadingImage ? 'opacity-60 pointer-events-none' : ''}`}
+                        >
+                          {uploadingImage
+                            ? t('appointmentTypes.image.uploading')
+                            : formData.image
+                              ? t('appointmentTypes.image.replace')
+                              : t('appointmentTypes.image.upload')}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="sr-only"
+                            onChange={handleImagePick}
+                            disabled={uploadingImage}
+                          />
+                        </label>
+                        {formData.image && !uploadingImage && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-400 transition-colors"
+                          >
+                            {t('appointmentTypes.image.remove')}
+                          </button>
+                        )}
+                        <span className="w-full text-[11px] text-gray-400">{t('appointmentTypes.image.hint')}</span>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Price + Duration side by side */}
                   <div className="grid grid-cols-2 gap-4">
@@ -522,12 +594,20 @@ const AppointmentTypes: React.FC = () => {
                   onClick={() => openForEdit(type)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: 'rgba(139,92,246,0.13)' }}
-                    >
-                      <Tag size={16} className="text-primary" />
-                    </div>
+                    {type.image ? (
+                      <img
+                        src={resolveImage(type.image)}
+                        alt=""
+                        className="w-9 h-9 rounded-xl object-cover shrink-0"
+                      />
+                    ) : (
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(139,92,246,0.13)' }}
+                      >
+                        <Tag size={16} className="text-primary" />
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                         {type.name}

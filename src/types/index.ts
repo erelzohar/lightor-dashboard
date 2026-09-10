@@ -214,6 +214,8 @@ export interface AppointmentType {
   kind?: 'appointment' | 'class';
   capacity?: number;
   sessions?: ClassSession[];
+  /** Picture shown with the service on the booking site (LT-157): an uploaded image name or an https URL. */
+  image?: string;
 }
 
 export interface Appointment {

@@ -199,6 +199,15 @@
       "removeSession": "Retirer cet horaire",
       "noSessions": "Aucun horaire pour l'instant. Ajoutez-les maintenant ou plus tard.",
       "duplicate": "Le même jour et la même heure figurent deux fois"
+    },
+    "image": {
+      "label": "Image du service",
+      "upload": "Ajouter une image",
+      "replace": "Remplacer",
+      "remove": "Retirer",
+      "uploading": "Envoi…",
+      "uploadError": "Impossible d’envoyer l’image",
+      "hint": "Facultatif — affichée à côté du service sur votre site de réservation"
     }
   },
   "appointments": {

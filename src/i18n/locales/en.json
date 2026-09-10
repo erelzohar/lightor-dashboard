@@ -199,6 +199,15 @@
       "removeSession": "Remove this time",
       "noSessions": "No times yet. Add them now or later.",
       "duplicate": "The same day and time is listed twice"
+    },
+    "image": {
+      "label": "Service image",
+      "upload": "Upload image",
+      "replace": "Replace",
+      "remove": "Remove",
+      "uploading": "Uploading…",
+      "uploadError": "Could not upload the image",
+      "hint": "Optional — shown next to the service on your booking site"
     }
   },
   "appointments": {
