@@ -7,8 +7,11 @@ import { useTranslation } from 'react-i18next';
 interface UnsavedChangesBarProps {
   visible: boolean;
   onSave: () => void;
-  /** Omit to hide the discard button (a page may have no revert flow). */
-  onDiscard?: () => void;
+  /**
+   * Required: every page with this bar offers Cancel. It was optional, and
+   * Settings shipped without one while Schedule & Vacations had it.
+   */
+  onDiscard: () => void;
   saving?: boolean;
   /** Replaces the default message, renders red, and disables save. */
   errorMessage?: string | null;
@@ -46,14 +49,13 @@ const UnsavedChangesBar: React.FC<UnsavedChangesBarProps> = ({
                 : t('common.unsavedChanges')}
             </p>
             <div className="flex gap-2 justify-center sm:justify-end">
-              {onDiscard && (
-                <button
-                  onClick={onDiscard}
-                  className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all"
-                >
-                  {t('common.cancel')}
-                </button>
-              )}
+              <button
+                onClick={onDiscard}
+                disabled={saving}
+                className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-light-text dark:text-dark-text border border-black/10 dark:border-white/10 font-semibold text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {t('common.cancel')}
+              </button>
               <button
                 onClick={onSave}
                 disabled={saving || !!errorMessage}

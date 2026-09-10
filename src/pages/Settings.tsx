@@ -108,23 +108,26 @@ const Settings: React.FC = () => {
     }
   };
 
+  // One definition of "the form as saved" — used on first load AND by Cancel,
+  // so discarding can never leave behind a field the first load would have set.
+  const resetFromSaved = (saved: WebConfig) => {
+    setLocalWebConfig({
+      ...saved,
+      // The API omits `address` entirely for a business with no premises, but
+      // this form needs all four inputs to stay controlled. Give it an empty
+      // shape to edit rather than reading `.state` off undefined.
+      address: { state: '', city: '', street: '', other: '', ...(saved.address ?? {}) },
+      logoImageName: resolveLogoUrl(saved.logoImageName),
+    });
+    const isUrlLogo = !!saved.logoImageName?.startsWith('http');
+    setLogoInputMode(isUrlLogo ? 'url' : 'upload');
+    setLogoUrlValue(isUrlLogo ? saved.logoImageName : '');
+  };
+
   useEffect(() => {
     if (!webConfig) fetchWebConfigData();
     else setIsLoading(false);
-    if (!localWebConfig && webConfig) {
-      setLocalWebConfig({
-        ...webConfig,
-        // The API omits `address` entirely for a business with no premises, but
-        // this form needs all four inputs to stay controlled. Give it an empty
-        // shape to edit rather than reading `.state` off undefined.
-        address: { state: '', city: '', street: '', other: '', ...(webConfig.address ?? {}) },
-        logoImageName: resolveLogoUrl(webConfig.logoImageName),
-      });
-      if (webConfig.logoImageName?.startsWith('http')) {
-        setLogoInputMode('url');
-        setLogoUrlValue(webConfig.logoImageName);
-      }
-    }
+    if (!localWebConfig && webConfig) resetFromSaved(webConfig);
   }, [webConfig]);
 
   const cancelMinutes = [30, 60, 120, 180, 240, 360, 720, 1440, 2880, 4320, 10080];
@@ -190,6 +193,19 @@ const Settings: React.FC = () => {
 
     tiktok: (value) =>
       value && !value.startsWith("https://") ? t('validation.mustStartWithHttps') : null,
+  };
+
+  // Cancel on the unsaved-changes bar — same behaviour as Schedule & Vacations:
+  // the form returns to what is saved, including a picked-but-unsent logo file
+  // and any validation message the draft produced.
+  const handleDiscard = () => {
+    if (!webConfig) return;
+    resetFromSaved(webConfig);
+    setImageToUpload(null);
+    setLogoUrlError(null);
+    setLogoPreviewError(false);
+    setSubdomainError(null);
+    setErrors(null);
   };
 
   const handleSave = async () => {
@@ -788,6 +804,7 @@ const Settings: React.FC = () => {
       <UnsavedChangesBar
         visible={!!changesDetected}
         onSave={handleSave}
+        onDiscard={handleDiscard}
         saving={isSaving || isCheckingSubdomain}
         errorMessage={subdomainError}
       />
