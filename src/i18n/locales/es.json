@@ -167,7 +167,9 @@
       "contact": "Contacto"
     },
     "websiteLanguage": "Idioma del sitio",
-    "websiteLanguageTooltip": "El idioma predeterminado que tus clientes ven en tu sitio de reservas público."
+    "websiteLanguageTooltip": "El idioma predeterminado que tus clientes ven en tu sitio de reservas público.",
+    "bookingHorizon": "Con cuánta antelación pueden reservar los clientes",
+    "bookingHorizonTooltip": "La fecha más lejana que un cliente puede reservar en tu sitio. Tú puedes reservar cualquier fecha."
   },
   "appointmentTypes": {
     "title": "Tipos de servicio",

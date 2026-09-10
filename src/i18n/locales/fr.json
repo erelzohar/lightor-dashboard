@@ -167,7 +167,9 @@
       "contact": "Contact"
     },
     "websiteLanguage": "Langue du site",
-    "websiteLanguageTooltip": "La langue par défaut que vos clients voient sur votre site de réservation public."
+    "websiteLanguageTooltip": "La langue par défaut que vos clients voient sur votre site de réservation public.",
+    "bookingHorizon": "Jusqu'où les clients peuvent réserver",
+    "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même."
   },
   "appointmentTypes": {
     "title": "Types de services",

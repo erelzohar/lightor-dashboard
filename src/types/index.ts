@@ -142,6 +142,8 @@ export interface WebConfig {
   appointmentTypes:AppointmentType[]
   subDomain: string;
   minCancelTimeMS: number;
+  /** How many days ahead customers may book (LT-156). Absent means 60. */
+  bookingHorizonDays?: number;
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

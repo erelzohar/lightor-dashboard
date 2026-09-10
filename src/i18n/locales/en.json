@@ -167,7 +167,9 @@
       "contact": "Contact"
     },
     "websiteLanguage": "Website language",
-    "websiteLanguageTooltip": "The default language your clients see on your public booking site."
+    "websiteLanguageTooltip": "The default language your clients see on your public booking site.",
+    "bookingHorizon": "How far ahead customers can book",
+    "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself."
   },
   "appointmentTypes": {
     "title": "Service Types",

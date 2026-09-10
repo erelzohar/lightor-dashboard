@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -78,6 +78,7 @@ const Settings: React.FC = () => {
 
     const settingsChanged = meaningfulAddress(localWebConfig.address) !== meaningfulAddress(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
+      (localWebConfig.bookingHorizonDays ?? 60) !== (webConfig.bookingHorizonDays ?? 60) ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -142,6 +143,13 @@ const Settings: React.FC = () => {
 
   const cancellationOptions = buildOptions(cancelMinutes, true);
 
+  // How far ahead customers may book (LT-156), in whole days as the server
+  // stores them. Sixty is what every site behaved like before this existed.
+  const bookingHorizonOptions = [7, 14, 21, 30, 60, 90, 180].map((days) => ({
+    value: days,
+    label: `${days} ${t('time.days')}`,
+  }));
+
   const validationRules: Record<string, (value: any) => string | null> = {
     businessName: (value) =>
       value.length < 2 ? t('validation.businessNameMin') : null,
@@ -200,7 +208,7 @@ const Settings: React.FC = () => {
         if (!imgResponse) throw new Error("Failed to upload image");
       }
 
-      const { _id, businessName, subDomain, address, minCancelTimeMS, social, contact, defaultLanguage } = localWebConfig;
+      const { _id, businessName, subDomain, address, minCancelTimeMS, bookingHorizonDays, social, contact, defaultLanguage } = localWebConfig;
 
       const fixedSocials = { ...social };
       fixedSocials.facebook = social.facebook === "" ? null : social.facebook;
@@ -209,6 +217,9 @@ const Settings: React.FC = () => {
       fixedSocials.x = social.x === "" ? null : social.x;
 
       const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage };
+      // Sent only once the owner has a value, so an untouched form never
+      // writes the default over nothing (LT-156).
+      if (bookingHorizonDays !== undefined) payload.bookingHorizonDays = bookingHorizonDays;
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -552,6 +563,22 @@ const Settings: React.FC = () => {
                 options={cancellationOptions}
                 onChange={(e) => handleChange("root", "minCancelTimeMS", Number(e.target.value))}
                 error={errors?.minCancelTimeMS}
+              />
+
+              <Select
+                label={
+                  <>
+                    {t('settings.bookingHorizon')}
+                    <FieldTooltip
+                      title={t('settings.bookingHorizon')}
+                      description={t('settings.bookingHorizonTooltip')}
+                    />
+                  </>
+                }
+                leftIcon={<CalendarRange className="w-4 h-4 text-gray-400" />}
+                value={localWebConfig.bookingHorizonDays ?? 60}
+                options={bookingHorizonOptions}
+                onChange={(e) => handleChange("root", "bookingHorizonDays", Number(e.target.value))}
               />
 
               <Select
