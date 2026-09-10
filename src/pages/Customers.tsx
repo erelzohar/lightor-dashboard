@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { canOfferPurchases } from '../lib/platform';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -101,7 +102,18 @@ const Customers: React.FC = () => {
   const exportLocked = overview?.entitlements ? !overview.entitlements.export : false;
   const insightsLocked = overview?.entitlements ? !overview.entitlements.insights : false;
 
+  // In the app a locked export is hidden rather than shown with a lock that
+  // leads to the upgrade page — that would be a call to buy (LT-130, App Store
+  // 3.1.1). Top customers needs no check here: UpgradeCard renders nothing in
+  // the app on its own.
+  const showExport = !exportLocked || canOfferPurchases();
+
   const promptUpgrade = () => {
+    if (!canOfferPurchases()) {
+      // Only reachable if stats never loaded and the server refused the export.
+      toast.error(t('customers.export.failed'));
+      return;
+    }
     toast(t('customers.upgrade.exportToast'), { icon: '👑' });
     navigate('/account');
   };
@@ -188,16 +200,18 @@ const Customers: React.FC = () => {
             {t('customers.subtitle', { count: result?.pagination.total ?? 0 })}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          leftIcon={exportLocked ? <Lock size={15} /> : <Download size={15} />}
-          onClick={handleExport}
-          isLoading={exporting}
-          title={exportLocked ? t('customers.upgrade.exportToast') : undefined}
-        >
-          {t('customers.export.button')}
-        </Button>
+        {showExport && (
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={exportLocked ? <Lock size={15} /> : <Download size={15} />}
+            onClick={handleExport}
+            isLoading={exporting}
+            title={exportLocked ? t('customers.upgrade.exportToast') : undefined}
+          >
+            {t('customers.export.button')}
+          </Button>
+        )}
         <Button variant="primary" size="sm" leftIcon={<UserPlus size={15} />} onClick={() => setAdding(true)}>
           {t('customers.add.title')}
         </Button>

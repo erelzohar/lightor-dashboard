@@ -119,3 +119,40 @@ describe('Customers page', () => {
     expect(exportCustomersCsv).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * A locked CSV export is an upsell — a lock that leads to the upgrade page —
+ * so the app does not show it at all (LT-130, App Store 3.1.1). On the web the
+ * locked button stays as the prompt it was designed to be.
+ */
+describe('Customers purchase prompts inside the app', () => {
+  const lockedStats = {
+    totals: { customers: 0, newThisMonth: 0, returning: 0, blocked: 0 },
+    top: { byVisits: [] as unknown[], byRevenue: [] as unknown[] },
+    entitlements: { export: false, insights: false },
+  };
+  const emptyList = { data: [] as unknown[], count: 0, pagination: { total: 0, page: 1, limit: 20, pages: 1 } };
+
+  it('hides a locked export and the Plus prompt in the app', async () => {
+    vi.mocked(fetchCustomers).mockResolvedValue(emptyList as never);
+    vi.mocked(fetchCustomerStats).mockResolvedValue(lockedStats as never);
+    const w = window as unknown as { Capacitor?: unknown };
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
+    try {
+      render(<Customers />);
+      await waitFor(() => expect(fetchCustomerStats).toHaveBeenCalled());
+      await waitFor(() => expect(screen.queryByText('customers.export.button')).not.toBeInTheDocument());
+      expect(screen.queryByText('customers.upgrade.insightsTitle')).not.toBeInTheDocument();
+    } finally {
+      delete w.Capacitor;
+    }
+  });
+
+  it('keeps the locked export as a prompt on the web', async () => {
+    vi.mocked(fetchCustomers).mockResolvedValue(emptyList as never);
+    vi.mocked(fetchCustomerStats).mockResolvedValue(lockedStats as never);
+    render(<Customers />);
+    expect(await screen.findByText('customers.upgrade.insightsTitle')).toBeInTheDocument();
+    expect(screen.getByText('customers.export.button')).toBeInTheDocument();
+  });
+});

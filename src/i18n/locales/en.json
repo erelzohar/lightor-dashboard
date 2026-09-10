@@ -501,6 +501,7 @@
     "activeDesc": "Your subscription is active — unlimited appointments.",
     "nextBill": "Next billing date:",
     "freeDesc": "You are on the free plan, limited to a monthly number of appointments. Upgrade for unlimited bookings.",
+    "freeDescNative": "You are on the free plan, limited to a monthly number of appointments.",
     "loadingPlans": "Loading plans...",
     "plansUnavailable": "Plans are unavailable right now. Please try again later.",
     "upgrade": "Upgrade",

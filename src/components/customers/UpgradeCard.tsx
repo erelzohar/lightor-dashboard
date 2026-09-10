@@ -1,4 +1,5 @@
 import React from 'react';
+import { canOfferPurchases } from '../../lib/platform';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,11 @@ interface UpgradeCardProps {
 const UpgradeCard: React.FC<UpgradeCardProps> = ({ title, description, className = '' }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  // Inside the app this card is a call to buy, which App Store 3.1.1 forbids,
+  // so it renders nothing there. Checked here rather than at each call site so
+  // no future use of the card can put a purchase prompt in the app (LT-130).
+  if (!canOfferPurchases()) return null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={className}>

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { isNativeApp, nativePlatform } from '../../lib/platform';
+import { isNativeApp, nativePlatform, canOfferPurchases } from '../../lib/platform';
 
 const w = window as unknown as { Capacitor?: unknown };
 
@@ -23,5 +23,20 @@ describe('platform', () => {
     w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
     expect(isNativeApp()).toBe(true);
     expect(nativePlatform()).toBe('ios');
+  });
+});
+
+/**
+ * The App Store rule (LT-130): nothing that sells a plan may appear inside the
+ * app, while the website keeps every purchase path.
+ */
+describe('canOfferPurchases', () => {
+  it('allows purchases on the web', () => {
+    expect(canOfferPurchases()).toBe(true);
+  });
+
+  it('forbids them inside the app', () => {
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
+    expect(canOfferPurchases()).toBe(false);
   });
 });

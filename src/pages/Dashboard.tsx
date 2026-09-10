@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { canOfferPurchases } from '../lib/platform';
 import { motion } from 'framer-motion';
 import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2 } from 'lucide-react';
 import { Appointment } from '../types';
@@ -192,7 +193,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* ── Account notices: verify + upgrade share one row when both apply ── */}
-      {(!auth.user?.isVerified || auth.user?.subscription?.status === 'free') && (
+      {(!auth.user?.isVerified || (auth.user?.subscription?.status === 'free' && canOfferPurchases())) && (
         <div className="flex flex-col lg:flex-row gap-4 items-stretch">
           {/* Unverified Alert */}
           {!auth.user?.isVerified && (
@@ -232,8 +233,8 @@ const Dashboard: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Trial Bar */}
-          {auth.user?.subscription?.status === 'free' && (
+          {/* Trial Bar — never in the app: it is a call to buy (LT-130, App Store 3.1.1). */}
+          {auth.user?.subscription?.status === 'free' && canOfferPurchases() && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
               <div className="glass-card glass-tint-amber h-full rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">

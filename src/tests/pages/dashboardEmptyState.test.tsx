@@ -72,3 +72,27 @@ describe('Dashboard — new account with no bookings', () => {
     expect(lighty.compareDocumentPosition(verify) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
+
+/**
+ * The free-plan upgrade banner is a call to buy, so the app never shows it
+ * (LT-130, App Store 3.1.1). The verify-email notice beside it is not an
+ * offer and stays.
+ */
+describe('Dashboard purchase prompts inside the app', () => {
+  it('hides the upgrade banner in the app but keeps the verify notice', () => {
+    const w = window as unknown as { Capacitor?: unknown };
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
+    try {
+      render(<Dashboard />);
+      expect(screen.queryByText('common.upgradePlanTitle')).not.toBeInTheDocument();
+      expect(screen.getByText('common.notVerifiedTitle')).toBeInTheDocument();
+    } finally {
+      delete w.Capacitor;
+    }
+  });
+
+  it('still shows the upgrade banner on the web', () => {
+    render(<Dashboard />);
+    expect(screen.getByText('common.upgradePlanTitle')).toBeInTheDocument();
+  });
+});

@@ -29,3 +29,16 @@ export const nativePlatform = (): 'ios' | 'android' | 'web' => {
   const p = capacitor()?.getPlatform?.();
   return p === 'ios' || p === 'android' ? p : 'web';
 };
+
+/**
+ * May this build show anything that sells a plan? (LT-130, mobile plan phase 3)
+ *
+ * App Store guideline 3.1.1: inside an iOS app a digital subscription may be
+ * sold only through Apple's in-app purchase, and the app may not steer anyone
+ * towards another way to buy — no button, no link, not even "upgrade on our
+ * website". So in the app every purchase surface is removed outright and
+ * nothing is put in its place. A plan bought on the web still applies here,
+ * because the server decides what the account is entitled to; the app simply
+ * never offers to sell one.
+ */
+export const canOfferPurchases = (): boolean => !isNativeApp();

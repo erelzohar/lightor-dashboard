@@ -7,6 +7,7 @@ import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, resumeSubsc
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { canOfferPurchases } from '../../lib/platform';
 
 // Activation is webhook-driven, so after a completed checkout the server is
 // re-read on this cadence until the subscription flips. Sandbox webhooks
@@ -41,15 +42,22 @@ const BillingSection: React.FC = () => {
   const isPaid = status === 'active';
   const cancelScheduled = auth.user?.subscription?.cancelAtPeriodEnd === true;
   const nextBillDate = auth.user?.subscription?.nextBillDate;
+  // In the app this card only reports the plan (LT-130, App Store 3.1.1): no
+  // prices, no upgrade, and no cancel or resume either, since each of those is
+  // managing a purchase made outside Apple. The usage meter stays — it is the
+  // account's own usage, not an offer.
+  const canSell = canOfferPurchases();
 
   useEffect(() => {
     let cancelled = false;
-    fetchUpgradePlans().then((fetched) => {
-      if (!cancelled) {
-        setPlans(fetched);
-        setLoadingPlans(false);
-      }
-    });
+    if (canOfferPurchases()) {
+      fetchUpgradePlans().then((fetched) => {
+        if (!cancelled) {
+          setPlans(fetched);
+          setLoadingPlans(false);
+        }
+      });
+    }
     fetchMyEntitlements().then((data) => {
       if (!cancelled) setEntitlements(data);
     });
@@ -216,15 +224,17 @@ const BillingSection: React.FC = () => {
                       })
                     : t('billing.cancelScheduledDescNoDate')}
                 </p>
-                <div>
-                  <Button
-                    variant="primary"
-                    onClick={handleResumeSubscription}
-                    disabled={resuming}
-                  >
-                    {resuming ? t('billing.resuming') : t('billing.resumeCta')}
-                  </Button>
-                </div>
+                {canSell && (
+                  <div>
+                    <Button
+                      variant="primary"
+                      onClick={handleResumeSubscription}
+                      disabled={resuming}
+                    >
+                      {resuming ? t('billing.resuming') : t('billing.resumeCta')}
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -240,20 +250,22 @@ const BillingSection: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setCancelModalOpen(true)}
-                  className="text-xs text-gray-400 dark:text-gray-500 underline hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                >
-                  {t('billing.cancelCta')}
-                </button>
+                {canSell && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelModalOpen(true)}
+                    className="text-xs text-gray-400 dark:text-gray-500 underline hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  >
+                    {t('billing.cancelCta')}
+                  </button>
+                )}
               </>
             )}
           </div>
         ) : (
           <>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {t('billing.freeDesc')}
+              {canSell ? t('billing.freeDesc') : t('billing.freeDescNative')}
             </p>
 
             {appointmentCap !== null && (
@@ -283,7 +295,7 @@ const BillingSection: React.FC = () => {
               </div>
             )}
 
-            {awaitingWebhook ? (
+            {!canSell ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.processingHint')}

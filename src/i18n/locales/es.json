@@ -501,6 +501,7 @@
     "activeDesc": "Tu suscripción está activa — citas ilimitadas.",
     "nextBill": "Próxima fecha de facturación:",
     "freeDesc": "Estás en el plan gratuito, limitado a un número mensual de citas. Mejora para reservas ilimitadas.",
+    "freeDescNative": "Estás en el plan gratuito, limitado a un número mensual de citas.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
     "upgrade": "Mejorar",
