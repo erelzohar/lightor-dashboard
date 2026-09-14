@@ -3,6 +3,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import NotificationsCard from '../../components/account/NotificationsCard';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { getCurrentUser } from '../../services/authApi';
+import { setSessionHint } from '../../services/sessionHint';
 import { updateUserInfo } from '../../services/userApi';
 import { isNativeApp } from '../../lib/platform';
 import type { User } from '../../types';
@@ -54,6 +55,8 @@ const user = (overrides: Partial<User> = {}): User =>
 const EVENTS = ['newBooking', 'cancellation', 'reschedule', 'morningDigest'];
 
 const renderCard = async () => {
+  // A returning visitor: the hint makes the provider probe /auth/me (LT-164).
+  setSessionHint();
   render(
     <AuthProvider>
       <NotificationsCard />

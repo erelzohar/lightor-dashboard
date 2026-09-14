@@ -8,6 +8,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout as storeLogout } from '../store/slices/userSlice';
 import { setUnauthorizedHandler } from '../services/authInterceptor';
 import { loadSession, saveSession, clearSession } from '../services/nativeSession';
+import { hasSessionHint, setSessionHint, clearSessionHint } from '../services/sessionHint';
 import { registerForPush, unregisterPush } from '../services/pushClient';
 import { isNativeApp } from '../lib/platform';
 import i18n from '../i18n/config';
@@ -93,11 +94,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Native app (LT-128): hydrate the Bearer from @capacitor/preferences so
       // the probe below carries it. No-op (null) on the web.
-      await loadSession();
+      const nativeToken = await loadSession();
+
+      // LT-164: nothing suggests a session exists — no hint from an earlier
+      // login, no legacy token just traded, no native Bearer — so don't ask.
+      // The probe's only possible answer is a 401, and Login.tsx paints
+      // nothing until it lands. A stale hint still probes and fails as before.
+      if (!hasSessionHint() && !legacy && !nativeToken) {
+        setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false, error: null });
+        return;
+      }
 
       try {
         // The cookie (if any) rides along; no token handling in client code.
         const user = await getCurrentUser();
+        setSessionHint();
         setAuth({
           user,
           token: null,
@@ -107,6 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
       } catch (error) {
+        clearSessionHint();
         setAuth({
           user: null,
           token: null,
@@ -131,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { token } = await loginUser(email, password, isNativeApp() || staySignedIn);
       if (token) await saveSession(token);
       const user = await getCurrentUser();
+      setSessionHint();
 
       setAuth({
         user,
@@ -165,6 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { token } = await exchange();
       if (token) await saveSession(token);
       const user = await getCurrentUser();
+      setSessionHint();
 
       setAuth({
         user,
@@ -207,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { token } = await facebookLogin(accessToken);
       if (token) await saveSession(token);
       const user = await getCurrentUser();
+      setSessionHint();
 
       setAuth({
         user,
@@ -285,6 +300,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void unregisterPush().finally(() => void clearSession());
     pushRegisteredRef.current = false;
     localStorage.removeItem('lightor');
+    clearSessionHint();
     setAuth({
       user: null,
       token: null,

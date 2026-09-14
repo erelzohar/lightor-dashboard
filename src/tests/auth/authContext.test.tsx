@@ -12,6 +12,7 @@ import {
   changePassword,
 } from '../../services/authApi';
 import { updateUserInfo } from '../../services/userApi';
+import { hasSessionHint, setSessionHint, clearSessionHint } from '../../services/sessionHint';
 import i18n from '../../i18n/config';
 import type { User } from '../../types';
 
@@ -91,6 +92,10 @@ describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    // Most of this file describes a returning visitor: the hint an earlier
+    // login left behind is present, so the boot probe runs (LT-164). The
+    // first-ever visit, where nothing is asked, is pinned in its own block.
+    setSessionHint();
   });
 
   describe('on first load', () => {
@@ -135,6 +140,76 @@ describe('AuthContext', () => {
       await settled();
       expect(screen.getByTestId('token')).toHaveTextContent('null');
       expect(localStorage.getItem('lightor')).toBeNull();
+    });
+  });
+
+  describe('the session hint (LT-164)', () => {
+    // The cookie is HttpOnly, so the only way to know whether a session exists
+    // is to ask — and for a visitor who never signed in the answer is a 401
+    // that Chrome logs as an error, behind which Login.tsx painted nothing.
+    // The hint is that answer remembered, and only its absence is trusted.
+    it('does not ask the server when nothing suggests a session', async () => {
+      clearSessionHint();
+
+      renderAuth();
+
+      await settled();
+      expect(screen.getByTestId('state')).toHaveTextContent('out');
+      expect(getCurrentUser).not.toHaveBeenCalled();
+    });
+
+    it('still probes on a stale hint, and drops it when the server says no', async () => {
+      // The cookie expired or was cleared behind the flag's back: exactly the
+      // old behaviour, once, and then the flag is gone.
+      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Invalid token'));
+
+      renderAuth();
+
+      await settled();
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('state')).toHaveTextContent('out');
+      expect(hasSessionHint()).toBe(false);
+    });
+
+    it('is set by a login and skips nothing on the next load', async () => {
+      clearSessionHint();
+      vi.mocked(loginUser).mockResolvedValue({ token: 'jwt', user: user() });
+      vi.mocked(getCurrentUser).mockResolvedValue(user());
+
+      renderAuth();
+      await settled();
+      await userEvent.click(screen.getByText('login'));
+
+      await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
+      // No boot probe this time — the only call is the post-login read.
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(hasSessionHint()).toBe(true);
+    });
+
+    it('is cleared by signing out', async () => {
+      vi.mocked(getCurrentUser).mockResolvedValue(user());
+      vi.mocked(serverLogout).mockResolvedValue(undefined);
+
+      renderAuth();
+      await settled();
+      await userEvent.click(screen.getByText('logout'));
+
+      expect(hasSessionHint()).toBe(false);
+    });
+
+    it('is not needed when a legacy token or a native Bearer is present', async () => {
+      // The migration shim just traded a pre-cookie token for the cookie; that
+      // session predates the hint, so its absence proves nothing here.
+      clearSessionHint();
+      localStorage.setItem('lightor', 'legacy-jwt');
+      vi.mocked(cookieSync).mockResolvedValue(undefined);
+      vi.mocked(getCurrentUser).mockResolvedValue(user());
+
+      renderAuth();
+
+      await settled();
+      expect(screen.getByTestId('state')).toHaveTextContent('in');
+      expect(hasSessionHint()).toBe(true);
     });
   });
 
