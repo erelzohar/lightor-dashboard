@@ -73,7 +73,6 @@ export interface PortfolioItem {
 
 export interface PortfolioConfig {
   visible: boolean;
-  isGrid: boolean;
   title: string;
   description: string;
   items: PortfolioItem[];
