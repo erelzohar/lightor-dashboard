@@ -4,9 +4,17 @@ import { store } from './store/store';
 import App from './App.tsx';
 import './i18n/config';
 import './index.css';
+import RootErrorBoundary from './components/ui/RootErrorBoundary';
+import { installGlobalErrorHandlers } from './services/errorReporting';
+
+// Uncaught exceptions and unhandled rejections outside React's render path
+// (event handlers, timers, requests nobody awaited) — see errorReporting.ts.
+installGlobalErrorHandlers();
 
 createRoot(document.getElementById('root')!).render(
-  <Provider store={store}>
-    <App />
-  </Provider>
+  <RootErrorBoundary>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </RootErrorBoundary>
 );

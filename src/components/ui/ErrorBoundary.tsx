@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 
 
-import { reportError } from '../../services/messagingApi';
+import { reportClientError } from '../../services/errorReporting';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ErrorBoundaryProps {
@@ -45,20 +45,15 @@ class ErrorBoundaryClass extends Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     this.setState({ error, errorInfo });
 
-    // Report error to backend
+    // Report to the backend (LT-170). The reporter itself is production-only
+    // and de-duplicates, so a page that throws on every render is one email.
     const { user } = this.props;
-
-    if (process.env.NODE_ENV === "production") reportError({
+    void reportClientError({
       error: error.toString(),
       stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      userInfo: user ? {
-        id: user._id,
-        email: user.email || user.mail,
-      } : undefined,
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
+      componentStack: errorInfo.componentStack ?? undefined,
+      userInfo: user ? { id: String(user._id), email: user.email || user.mail } : undefined,
+      kind: 'boundary',
     });
   }
 
@@ -71,13 +66,15 @@ class ErrorBoundaryClass extends Component<
         title: 'Something went wrong...',
         description: 'If the problem persists, please contact support at',
         stackTrace: 'Stack trace',
-        supportEmail: 'ezwebsisr@gmail.com'
+        reload: 'Reload',
+        supportEmail: 'lightorapp@gmail.com'
       },
       he: {
         title: 'משהו השתבש...',
         description: 'אם הבעיה נמשכת, אנא צור קשר עם התמיכה בכתובת',
         stackTrace: 'מעקב שגיאה',
-        supportEmail: 'ezwebsisr@gmail.com'
+        reload: 'טעינה מחדש',
+        supportEmail: 'lightorapp@gmail.com'
       }
     };
 
@@ -112,10 +109,19 @@ class ErrorBoundaryClass extends Component<
               <h2 className="text-2xl font-heading font-semibold text-light-text dark:text-dark-text mb-3">
                 {t.title}
               </h2>
+              {/* A way out (LT-170): the page used to leave the owner staring
+                  at the title with nothing to press. */}
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-2 px-6 py-2.5 rounded-full border border-light-text/30 dark:border-dark-text/30 text-light-text dark:text-dark-text font-semibold hover:bg-light-text/5 dark:hover:bg-dark-text/5 transition-colors"
+              >
+                {t.reload}
+              </button>
               {/* <p className="text-light-text/80 dark:text-dark-text/80 mb-4">
                 {t.description}
               </p>
-              <a 
+              <a
                 href={`mailto:${t.supportEmail}`}
                 className="text-primary dark:text-primary-dark hover:underline"
               >
