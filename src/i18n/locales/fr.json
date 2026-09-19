@@ -169,7 +169,40 @@
     "websiteLanguage": "Langue du site",
     "websiteLanguageTooltip": "La langue par défaut que vos clients voient sur votre site de réservation public.",
     "bookingHorizon": "Jusqu'où les clients peuvent réserver",
-    "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même."
+    "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même.",
+    "bookingFields": {
+      "title": "Questions à la réservation",
+      "description": "Questions auxquelles le client répond en réservant, après le nom et le téléphone — une adresse pour une visite à domicile, un modèle de voiture, une déclaration de santé.",
+      "addQuestion": "Ajouter une question",
+      "label": "Question",
+      "labelPlaceholder": "ex. Adresse complète",
+      "type": "Type de réponse",
+      "types": {
+        "text": "Texte court",
+        "address": "Adresse",
+        "note": "Texte libre",
+        "choice": "Choix dans une liste",
+        "confirm": "Case à cocher"
+      },
+      "required": "Obligatoire",
+      "options": "Options",
+      "addOption": "Ajouter une option",
+      "removeOption": "Retirer l’option",
+      "optionPlaceholder": "Option {{n}}",
+      "appliesTo": "S’applique à :",
+      "allServices": "Tous les services",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "delete": "Supprimer la question",
+      "lengthNote": "Chaque question de plus vous fait perdre des clients en route. Ne demandez que l’indispensable — 8 au maximum.",
+      "rawNote": "Les questions sont affichées aux clients exactement comme vous les écrivez, sans traduction.",
+      "preview": "Ce que verra le client",
+      "empty": "Aucune question pour l’instant — on ne demande aux clients que le nom et le téléphone.",
+      "oneAddress": "Une seule question d’adresse est possible",
+      "labelRequired": "Écrivez la question (40 caractères maximum)",
+      "optionsInvalid": "Une liste doit avoir de 2 à 10 options différentes, de 30 caractères maximum chacune",
+      "limitReached": "Vous avez atteint le maximum de 8 questions"
+    }
   },
   "appointmentTypes": {
     "title": "Types de services",
@@ -225,6 +258,10 @@
     "minutes": "minutes",
     "call": "Appeler",
     "customerDetails": "Détails du client",
+    "answers": {
+      "title": "Détails",
+      "openInMaps": "Ouvrir dans Google Maps"
+    },
     "price": "Prix",
     "currencySymbol": "$",
     "markCompleted": "Marquer comme terminé",

@@ -13,6 +13,7 @@ import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import { Session, groupSessions, isGroupSession } from '../../utils/sessions';
 import SessionCard from './SessionCard';
 import SessionParticipants from './SessionParticipants';
+import AnswersList from './AnswersList';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -157,6 +158,9 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                       </a>
                     </div>
                   </div>
+
+                  {/* The address (or the first answer) — the owner needs it at a glance (LT-178). */}
+                  <AnswersList answers={appointment.answers} compact className="mt-3" />
 
                   <div className="mt-3 pt-3 border-t border-light-gray/10">
                     <div className="flex items-center justify-between text-sm">

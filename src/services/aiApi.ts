@@ -23,6 +23,8 @@ export interface AiSiteConfig {
     tiktok?: string;
     [k: string]: string | undefined;
   };
+  /** Booking questions the AI proposes (LT-178): no keys, no answers, `services` omitted. */
+  bookingFields?: { label: string; type: string; required?: boolean; options?: string[] }[];
   [k: string]: unknown;
 }
 

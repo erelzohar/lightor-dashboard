@@ -96,6 +96,11 @@ export interface CreateAppointmentBody {
   timestamp: string;
   user_id: string;
   channelType?: 'sms' | 'whatsapp';
+  /**
+   * Answers to the booking questions (LT-178): key + value only. The server
+   * takes label and type from the owner's catalog and drops unknown keys.
+   */
+  answers?: { key: string; value: string }[];
 }
 
 /**

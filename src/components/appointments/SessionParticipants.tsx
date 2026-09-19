@@ -12,6 +12,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import AnswersList from './AnswersList';
 
 interface SessionParticipantsProps {
   session: Session | null;
@@ -190,6 +191,9 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                       </span>
                     )}
                   </div>
+
+                  {/* This person's booking answers (LT-178). */}
+                  <AnswersList answers={participant.answers} className="mt-2.5 !bg-white/60 dark:!bg-gray-800/40" />
 
                   <div className="flex items-center gap-1.5 mt-2.5">
                     <a

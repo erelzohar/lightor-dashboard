@@ -23,6 +23,7 @@ import {
   Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus,
 } from '../../utils/sessions';
 import SessionParticipants from './SessionParticipants';
+import AnswersList from './AnswersList';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -805,8 +806,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             exit={{ opacity: 0, scale: 0.93 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
             onClick={e => e.stopPropagation()}
-            style={{ position: 'fixed', top: popupPos.y, left: popupPos.x, zIndex: 9999, width: 308 }}
-            className="glass-modal rounded-2xl overflow-hidden"
+            style={{ position: 'fixed', top: popupPos.y, left: popupPos.x, zIndex: 9999, width: 308, maxHeight: 'calc(100vh - 16px)' }}
+            className="glass-modal rounded-2xl overflow-hidden overflow-y-auto"
           >
             {/* Title row */}
             <div className="flex items-start justify-between px-5 pt-5 pb-3 gap-2">
@@ -869,6 +870,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                   {formatPhoneForDisplay(selectedAppt.phone)}
                 </a>
               </div>
+
+              {/* Booking answers (LT-178) — 308px wide, so these wrap rather than truncate. */}
+              <AnswersList answers={selectedAppt.answers} />
             </div>
 
             {/* Tags */}

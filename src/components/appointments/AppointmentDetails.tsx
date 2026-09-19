@@ -11,6 +11,7 @@ import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import AnswersList from './AnswersList';
 
 interface AppointmentDetailsProps {
   appointment: Appointment | null;
@@ -145,6 +146,9 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
               </a>
             </div>
           </div>
+
+          {/* Booking answers (LT-178) */}
+          <AnswersList answers={appointment.answers} />
         </div>
 
         {/* Tags */}

@@ -13,6 +13,11 @@ vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ language: 'en', direction: 'ltr' }),
 }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
+// AnswersList (LT-178) reads the booking-questions catalog off the saved config.
+vi.mock('../../hooks/useAppSelector', () => ({
+  useAppSelector: (selector: (s: { webConfig: { data: null } }) => unknown): unknown =>
+    selector({ webConfig: { data: null } }),
+}));
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn(() => ({ type: 'noop' })),
 }));

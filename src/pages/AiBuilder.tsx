@@ -17,6 +17,7 @@ import { deleteImage } from '../services/imagesApi';
 import { createVacation } from '../services/vacationsApi';
 import globals from '../services/globals';
 import { reconcileAppointmentTypes, removedStoredImages } from '../utils/aiReconcile';
+import { bookingFieldsFromAi } from '../utils/bookingFields';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 
@@ -213,10 +214,19 @@ const AiBuilder: React.FC = () => {
     if (!draftConfig) return;
     setIsSaving(true);
     try {
-      const { appointmentTypes, vacations, ...configToSave } = draftConfig as AiSiteConfig & {
+      const { appointmentTypes, vacations, bookingFields, ...configToSave } = draftConfig as AiSiteConfig & {
         appointmentTypes?: Omit<AppointmentType, '_id'>[];
         vacations?: Omit<Vacation, '_id' | 'webConfig_id'>[];
+        bookingFields?: unknown;
       };
+
+      // Booking questions (LT-178): the AI proposes label / type / required /
+      // options and never a key. When the draft carries an array it becomes
+      // the catalog (the server assigns keys, keeping any that name a stored
+      // question). When it carries none, the key stays off the request so an
+      // edit that never mentioned questions cannot wipe the stored ones.
+      const proposedFields = bookingFieldsFromAi(bookingFields);
+      if (proposedFields) (configToSave as Record<string, unknown>).bookingFields = proposedFields;
 
       const configId = webConfig?._id || auth.user?.webConfig_id;
       // Only an edit reconciles removals against the server. Onboarding has no

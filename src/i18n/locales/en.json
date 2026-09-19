@@ -169,7 +169,40 @@
     "websiteLanguage": "Website language",
     "websiteLanguageTooltip": "The default language your clients see on your public booking site.",
     "bookingHorizon": "How far ahead customers can book",
-    "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself."
+    "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself.",
+    "bookingFields": {
+      "title": "Booking questions",
+      "description": "Questions the customer answers when booking, after name and phone — an address for a home visit, a car model, a health declaration.",
+      "addQuestion": "Add a question",
+      "label": "Question",
+      "labelPlaceholder": "e.g. Full address",
+      "type": "Answer type",
+      "types": {
+        "text": "Short text",
+        "address": "Address",
+        "note": "Free text",
+        "choice": "Pick from a list",
+        "confirm": "Checkbox"
+      },
+      "required": "Required",
+      "options": "Options",
+      "addOption": "Add an option",
+      "removeOption": "Remove option",
+      "optionPlaceholder": "Option {{n}}",
+      "appliesTo": "Applies to:",
+      "allServices": "All services",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "delete": "Delete question",
+      "lengthNote": "Every extra question loses you customers on the way. Ask only what you truly need — up to 8.",
+      "rawNote": "Questions are shown to customers exactly as you write them, with no translation.",
+      "preview": "How customers will see it",
+      "empty": "No questions yet — customers are asked only for a name and phone.",
+      "oneAddress": "Only one address question is allowed",
+      "labelRequired": "Write the question (up to 40 characters)",
+      "optionsInvalid": "A list needs 2 to 10 different options, up to 30 characters each",
+      "limitReached": "You have reached the maximum of 8 questions"
+    }
   },
   "appointmentTypes": {
     "title": "Service Types",
@@ -225,6 +258,10 @@
     "minutes": "minutes",
     "call": "Call",
     "customerDetails": "Customer Details",
+    "answers": {
+      "title": "Details",
+      "openInMaps": "Open in Google Maps"
+    },
     "price": "Price",
     "currencySymbol": "$",
     "markCompleted": "Mark Completed",

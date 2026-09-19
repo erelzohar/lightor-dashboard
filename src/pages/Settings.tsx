@@ -11,6 +11,9 @@ import toast from 'react-hot-toast';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
+import { fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
+import BookingFieldsEditor from '../components/settings/BookingFieldsEditor';
+import { bookingFieldsValid, normaliseBookingFields } from '../utils/bookingFields';
 import { useAuth } from '../contexts/AuthContext';
 import globals from '../services/globals';
 import { uploadImage } from '../services/imagesApi';
@@ -54,12 +57,20 @@ const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector(state => state.webConfig.data);
+  // The booking-questions editor scopes questions per service (LT-178).
+  const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
 
   const resolveLogoUrl = (imgName: string): string => {
     if (!imgName) return '';
     if (imgName.startsWith('http') || imgName.startsWith('data:') || imgName.startsWith('blob:')) return imgName;
     return globals.imagesUrl + imgName;
   };
+
+  // Absent on a config saved before LT-178 and [] after clearing are the same
+  // catalog — compare them as such, or an untouched form would report changes.
+  const bookingFieldsChanged =
+    !!localWebConfig && !!webConfig &&
+    JSON.stringify(localWebConfig.bookingFields ?? []) !== JSON.stringify(webConfig.bookingFields ?? []);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -79,6 +90,7 @@ const Settings: React.FC = () => {
     const settingsChanged = meaningfulAddress(localWebConfig.address) !== meaningfulAddress(webConfig.address) ||
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       (localWebConfig.bookingHorizonDays ?? 60) !== (webConfig.bookingHorizonDays ?? 60) ||
+      bookingFieldsChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -129,6 +141,12 @@ const Settings: React.FC = () => {
     else setIsLoading(false);
     if (!localWebConfig && webConfig) resetFromSaved(webConfig);
   }, [webConfig]);
+
+  useEffect(() => {
+    if (!appointmentTypes.length && auth.user?.webConfig_id) {
+      dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
+    }
+  }, [appointmentTypes.length, auth.user?.webConfig_id, dispatch]);
 
   const cancelMinutes = [30, 60, 120, 180, 240, 360, 720, 1440, 2880, 4320, 10080];
 
@@ -211,7 +229,7 @@ const Settings: React.FC = () => {
   const handleSave = async () => {
     if (!localWebConfig) return;
 
-    if (errors) {
+    if (errors || !bookingFieldsValid(localWebConfig.bookingFields ?? [])) {
       toast.error(t('settings.formErrors'));
       return;
     }
@@ -236,6 +254,10 @@ const Settings: React.FC = () => {
       // Sent only once the owner has a value, so an untouched form never
       // writes the default over nothing (LT-156).
       if (bookingHorizonDays !== undefined) payload.bookingHorizonDays = bookingHorizonDays;
+      // The whole catalog, keys included, whenever it was touched (LT-178).
+      // Sending it untouched would be harmless, but a config that predates
+      // the field is left alone, same as the horizon above.
+      if (bookingFieldsChanged) payload.bookingFields = normaliseBookingFields(localWebConfig.bookingFields ?? []);
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -253,6 +275,13 @@ const Settings: React.FC = () => {
       if (updateWebConfig.rejected.match(res)) {
         toast.error(t('settings.saveFailed'));
         return;
+      }
+      // The server assigns a key to every new question. Adopt them into the
+      // draft, or the next save would send those questions keyless again and
+      // have them re-keyed (LT-178).
+      const saved = res.payload as WebConfig | undefined;
+      if (Array.isArray(saved?.bookingFields)) {
+        setLocalWebConfig(prev => (prev ? { ...prev, bookingFields: saved.bookingFields } : prev));
       }
       setImageToUpload(null);
       setLogoUrlValue('');
@@ -652,6 +681,13 @@ const Settings: React.FC = () => {
                 className="w-full bg-yellow-50/50 dark:bg-yellow-900/10 rounded-xl px-4 py-3 text-base sm:text-[0.9375rem] border border-yellow-200/60 dark:border-yellow-700/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[0.1875rem] focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition-all duration-300 resize-none shadow-sm"
               />
             </div>
+
+            {/* Booking questions (LT-178): what the booking form asks beyond name and phone. */}
+            <BookingFieldsEditor
+              value={localWebConfig.bookingFields ?? []}
+              onChange={(fields) => handleChange('root', 'bookingFields', fields)}
+              services={appointmentTypes}
+            />
 
           </motion.div>
         );

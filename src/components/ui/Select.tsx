@@ -3,6 +3,8 @@ import React, { forwardRef } from "react";
 export interface SelectOption {
   label: string | JSX.Element;
   value: string | number;
+  /** Shown but not selectable (LT-178: a second address question). */
+  disabled?: boolean;
 }
 
 interface SelectProps
@@ -67,7 +69,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
           <select ref={ref} className={selectClasses} {...props}>
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
                 {opt.label}
               </option>
             ))}
