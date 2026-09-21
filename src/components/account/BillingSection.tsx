@@ -27,7 +27,7 @@ const POLL_MAX_TRIES = 24;
  */
 const BillingSection: React.FC = () => {
   const { auth, refreshUser } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [plans, setPlans] = useState<UpgradePlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
@@ -70,6 +70,12 @@ const BillingSection: React.FC = () => {
   const appointmentCap = entitlements?.limits.monthlyAppointments ?? null;
   const appointmentsUsed = entitlements?.usage.appointmentsThisMonth ?? 0;
   const capRatio = appointmentCap ? Math.min(appointmentsUsed / appointmentCap, 1) : 0;
+  // Pilot grant (LT-187): the server says the account has Plus free until a
+  // date although the subscription still reads 'free'. Dated in the UI's
+  // language, as the Customers page formats its dates.
+  const pilot = entitlements?.pilot ?? null;
+  const dateLocale =
+    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
 
   // Payment confirmed on Paddle's side; now chase the webhook. Each round
   // re-reads /auth/me — the badge flips through context state the moment the
@@ -264,8 +270,16 @@ const BillingSection: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Under the pilot grant the free-plan copy would claim a cap the
+                account does not have, so the pilot line stands in for it. A
+                statement about the account, not an offer, so it shows in the
+                app as well (LT-130). */}
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {canSell ? t('billing.freeDesc') : t('billing.freeDescNative')}
+              {pilot
+                ? t('billing.pilotLine', { date: new Date(pilot.until).toLocaleDateString(dateLocale) })
+                : canSell
+                  ? t('billing.freeDesc')
+                  : t('billing.freeDescNative')}
             </p>
 
             {appointmentCap !== null && (

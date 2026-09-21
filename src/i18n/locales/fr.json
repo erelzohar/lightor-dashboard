@@ -548,6 +548,7 @@
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, limité à un nombre mensuel de rendez-vous. Passez à supérieur pour des réservations illimitées.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, limité à un nombre mensuel de rendez-vous.",
+    "pilotLine": "Pilote : toutes les fonctionnalités Plus sont gratuites jusqu’au {{date}}.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
     "upgrade": "Améliorer",

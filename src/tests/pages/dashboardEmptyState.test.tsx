@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import Dashboard from '../../pages/Dashboard';
+import { fetchMyEntitlements } from '../../services/entitlementsApi';
 
 /**
  * A brand-new account on the Dashboard (LT-144): Lighty greets first, the
@@ -12,6 +13,13 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../services/authApi', () => ({ resendVerification: vi.fn() }));
+// The upgrade banner keys off the plan the meter resolves (LT-187).
+const entitlementsState = vi.hoisted(() => ({ plan: 'free' as 'free' | 'plus' }));
+vi.mock('../../services/entitlementsApi', () => ({
+  fetchMyEntitlements: vi.fn(() =>
+    Promise.resolve({ plan: entitlementsState.plan, limits: {}, usage: {}, pilot: null })
+  ),
+}));
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', language: 'en', darkMode: false }),
 }));
@@ -52,7 +60,7 @@ vi.mock('../../components/dashboard/DashboardDonutChart', () => ({ default: () =
 vi.mock('../../components/appointments/AppointmentDetails', () => ({ default: (): null => null }));
 
 describe('Dashboard — new account with no bookings', () => {
-  it('shows Lighty first, both notices in one row, and no appointments list', () => {
+  it('shows Lighty first, both notices in one row, and no appointments list', async () => {
     render(<Dashboard />);
 
     const lighty = screen.getByAltText('Welcome');
@@ -63,7 +71,8 @@ describe('Dashboard — new account with no bookings', () => {
     expect(screen.queryByTestId('income')).not.toBeInTheDocument();
 
     const verify = screen.getByText('common.notVerifiedTitle');
-    const upgrade = screen.getByText('common.upgradePlanTitle');
+    // The banner waits for the meter (LT-187), so it is found rather than got.
+    const upgrade = await screen.findByText('common.upgradePlanTitle');
     const row = verify.closest('.lg\\:flex-row');
     expect(row).not.toBeNull();
     expect(row).toContainElement(upgrade);
@@ -79,11 +88,13 @@ describe('Dashboard — new account with no bookings', () => {
  * offer and stays.
  */
 describe('Dashboard purchase prompts inside the app', () => {
-  it('hides the upgrade banner in the app but keeps the verify notice', () => {
+  it('hides the upgrade banner in the app but keeps the verify notice', async () => {
     const w = window as unknown as { Capacitor?: unknown };
     w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
     try {
       render(<Dashboard />);
+      // Let the meter answer first — the banner is decided from it.
+      await act(async () => {});
       expect(screen.queryByText('common.upgradePlanTitle')).not.toBeInTheDocument();
       expect(screen.getByText('common.notVerifiedTitle')).toBeInTheDocument();
     } finally {
@@ -91,8 +102,33 @@ describe('Dashboard purchase prompts inside the app', () => {
     }
   });
 
-  it('still shows the upgrade banner on the web', () => {
+  it('still shows the upgrade banner on the web', async () => {
     render(<Dashboard />);
-    expect(screen.getByText('common.upgradePlanTitle')).toBeInTheDocument();
+    expect(await screen.findByText('common.upgradePlanTitle')).toBeInTheDocument();
+  });
+});
+
+/**
+ * Pilot grant (LT-187): the account has Plus although its subscription still
+ * reads 'free', so the banner follows the plan the meter resolves, and only
+ * falls back to the raw status when the meter cannot be read at all.
+ */
+describe('Dashboard upgrade banner under the pilot grant', () => {
+  it('hides the banner while the resolved plan is plus, keeping the verify notice', async () => {
+    entitlementsState.plan = 'plus';
+    try {
+      render(<Dashboard />);
+      await act(async () => {});
+      expect(screen.getByText('common.notVerifiedTitle')).toBeInTheDocument();
+      expect(screen.queryByText('common.upgradePlanTitle')).not.toBeInTheDocument();
+    } finally {
+      entitlementsState.plan = 'free';
+    }
+  });
+
+  it('falls back to the subscription status when the meter cannot be read', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce(null);
+    render(<Dashboard />);
+    expect(await screen.findByText('common.upgradePlanTitle')).toBeInTheDocument();
   });
 });

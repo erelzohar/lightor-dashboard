@@ -22,6 +22,7 @@ export interface PlanLimits {
 }
 
 export interface MyEntitlements {
+  /** The resolved plan: under the pilot grant 'plus' with a free subscription. */
   plan: 'free' | 'plus';
   limits: PlanLimits;
   usage: {
@@ -30,6 +31,13 @@ export interface MyEntitlements {
     aiGenerationsThisMonth: number;
     aiTokensThisMonth: number;
   };
+  /**
+   * Pilot grant (LT-187): while set, the account has every Plus feature free
+   * until this ISO date although nothing was bought — `plan` above already
+   * reflects it. Null on a paid plan, once the window lapses, or with the
+   * grant off. Optional so an API deployed before this build still parses.
+   */
+  pilot?: { until: string } | null;
 }
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {

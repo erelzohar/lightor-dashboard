@@ -3,8 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import BillingSection from '../../components/account/BillingSection';
 import { fetchUpgradePlans } from '../../services/paddleApi';
 
-const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
+const { t } = vi.hoisted(() => ({ t: vi.fn((key: string) => key) }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
 vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
 const authState = vi.hoisted(() => ({ subscription: { status: 'free' } as Record<string, unknown> }));
@@ -19,10 +19,17 @@ vi.mock('../../services/paddleApi', () => ({
   cancelSubscription: vi.fn(),
   resumeSubscription: vi.fn(),
 }));
+// What /entitlements/me answers: a free account with no pilot grant unless a
+// test says otherwise.
+const entitlementsState = vi.hoisted(() => ({ data: {} as Record<string, unknown> }));
+const freeEntitlements = (): Record<string, unknown> => ({
+  plan: 'free',
+  limits: { monthlyAppointments: 30 },
+  usage: { appointmentsThisMonth: 12 },
+  pilot: null,
+});
 vi.mock('../../services/entitlementsApi', () => ({
-  fetchMyEntitlements: vi.fn(() =>
-    Promise.resolve({ limits: { monthlyAppointments: 30 }, usage: { appointmentsThisMonth: 12 } })
-  ),
+  fetchMyEntitlements: vi.fn(() => Promise.resolve(entitlementsState.data)),
 }));
 
 const w = window as unknown as { Capacitor?: unknown };
@@ -33,6 +40,7 @@ const inApp = () => {
 beforeEach(() => {
   vi.mocked(fetchUpgradePlans).mockClear();
   authState.subscription = { status: 'free' };
+  entitlementsState.data = freeEntitlements();
 });
 afterEach(() => {
   delete w.Capacitor;
@@ -77,5 +85,51 @@ describe('BillingSection', () => {
     authState.subscription = { status: 'active', cancelAtPeriodEnd: true, nextBillDate: '2026-10-01' };
     render(<BillingSection />);
     expect(screen.queryByText('billing.resumeCta')).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Pilot grant (LT-187): the server resolves a fresh account to Plus and says
+ * until when. The card then states that in place of the free-plan copy —
+ * which would claim a cap the account does not have — dated in the UI's
+ * language. A statement about the account, not an offer, so it shows in the
+ * app as well.
+ */
+describe('BillingSection pilot grant', () => {
+  const PILOT_UNTIL = '2026-11-21T10:00:00.000Z';
+  const pilotEntitlements = (): Record<string, unknown> => ({
+    plan: 'plus',
+    limits: { monthlyAppointments: null },
+    usage: { appointmentsThisMonth: 12 },
+    pilot: { until: PILOT_UNTIL },
+  });
+
+  it('says nothing about a pilot when the server reports none', async () => {
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.usageMeter')).toBeInTheDocument();
+    expect(screen.getByText('billing.freeDesc')).toBeInTheDocument();
+    expect(screen.queryByText('billing.pilotLine')).not.toBeInTheDocument();
+  });
+
+  it('shows the dated pilot line instead of the free-plan copy while the grant applies', async () => {
+    entitlementsState.data = pilotEntitlements();
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.pilotLine', {
+      date: new Date(PILOT_UNTIL).toLocaleDateString('en-GB'),
+    });
+    expect(screen.queryByText('billing.freeDesc')).not.toBeInTheDocument();
+    // No cap under the grant, so no meter either.
+    expect(screen.queryByText('billing.usageMeter')).not.toBeInTheDocument();
+  });
+
+  it('shows the pilot line in the app too, still with nothing to buy', async () => {
+    inApp();
+    entitlementsState.data = pilotEntitlements();
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
+    expect(screen.queryByText('billing.freeDescNative')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.upgrade')).not.toBeInTheDocument();
+    expect(fetchUpgradePlans).not.toHaveBeenCalled();
   });
 });

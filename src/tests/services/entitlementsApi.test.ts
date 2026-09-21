@@ -40,6 +40,13 @@ describe('fetchMyEntitlements', () => {
     await expect(fetchMyEntitlements()).resolves.toEqual(entitlements);
   });
 
+  it('passes the pilot grant through untouched (LT-187)', async () => {
+    const underPilot = { ...entitlements, plan: 'plus', pilot: { until: '2026-11-21T10:00:00.000Z' } };
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: underPilot } } as never);
+
+    await expect(fetchMyEntitlements()).resolves.toEqual(underPilot);
+  });
+
   it('returns null when the request fails', async () => {
     vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('500'));
 

@@ -548,6 +548,7 @@
     "nextBill": "Next billing date:",
     "freeDesc": "You are on the free plan, limited to a monthly number of appointments. Upgrade for unlimited bookings.",
     "freeDescNative": "You are on the free plan, limited to a monthly number of appointments.",
+    "pilotLine": "Pilot: all Plus features are free until {{date}}.",
     "loadingPlans": "Loading plans...",
     "plansUnavailable": "Plans are unavailable right now. Please try again later.",
     "upgrade": "Upgrade",
