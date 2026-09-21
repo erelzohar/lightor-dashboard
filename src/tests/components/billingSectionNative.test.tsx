@@ -123,6 +123,15 @@ describe('BillingSection pilot grant', () => {
     expect(screen.queryByText('billing.usageMeter')).not.toBeInTheDocument();
   });
 
+  it('offers nothing to buy on the web either while the grant applies', async () => {
+    entitlementsState.data = pilotEntitlements();
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
+    expect(screen.queryByText('billing.upgrade')).not.toBeInTheDocument();
+    expect(screen.queryByText('₪49')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.loadingPlans')).not.toBeInTheDocument();
+  });
+
   it('shows the pilot line in the app too, still with nothing to buy', async () => {
     inApp();
     entitlementsState.data = pilotEntitlements();

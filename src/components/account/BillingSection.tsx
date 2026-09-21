@@ -309,7 +309,10 @@ const BillingSection: React.FC = () => {
               </div>
             )}
 
-            {!canSell ? null : awaitingWebhook ? (
+            {/* While the pilot grant applies there is nothing to sell either:
+                the plans grid would open a checkout for a plan the account
+                already has — and, during the pilot, a sandbox one. */}
+            {!canSell || pilot ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.processingHint')}
