@@ -3,7 +3,7 @@ import { Check, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentAnswer, BookingField, BookingFieldType } from '../../types';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { CONFIRM_YES, addressKeys, compactAnswer, mapsSearchUrl } from '../../utils/bookingFields';
+import { CONFIRM_YES, addressKeys, compactAnswer, mapsUrlFor } from '../../utils/bookingFields';
 
 interface AnswersListProps {
   answers?: AppointmentAnswer[];
@@ -40,9 +40,9 @@ const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = fa
     catalog?.find((f) => f.key === key)?.type;
   const isConfirm = (a: AppointmentAnswer) => typeOf(a.key) === 'confirm' && a.value === CONFIRM_YES;
 
-  const AddressLink: React.FC<{ value: string; className?: string }> = ({ value, className: cls = '' }) => (
+  const AddressLink: React.FC<{ answer: AppointmentAnswer; className?: string }> = ({ answer, className: cls = '' }) => (
     <a
-      href={mapsSearchUrl(value)}
+      href={mapsUrlFor(answer)}
       target="_blank"
       rel="noopener noreferrer"
       title={t('appointments.answers.openInMaps')}
@@ -50,7 +50,7 @@ const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = fa
       className={`inline-flex items-start gap-1.5 text-primary hover:underline ${WRAP} ${cls}`}
     >
       <MapPin size={13} className="shrink-0 mt-0.5" aria-hidden="true" />
-      <span className="min-w-0">{value}</span>
+      <span className="min-w-0">{answer.value}</span>
       <span className="sr-only">{t('appointments.answers.openInMaps')}</span>
     </a>
   );
@@ -61,7 +61,7 @@ const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = fa
     return (
       <div className={`text-sm text-light-text dark:text-dark-text min-w-0 ${className}`} data-testid="answers-compact">
         {addresses.has(pick.key) ? (
-          <AddressLink value={pick.value} />
+          <AddressLink answer={pick} />
         ) : isConfirm(pick) ? (
           <span className="inline-flex items-center gap-1.5">
             <Check size={13} className="text-emerald-600 shrink-0" aria-hidden="true" />
@@ -97,7 +97,7 @@ const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = fa
               <>
                 <span className="block text-xs text-gray-500 dark:text-gray-400 break-words">{answer.label}</span>
                 {addresses.has(answer.key) ? (
-                  <AddressLink value={answer.value} />
+                  <AddressLink answer={answer} />
                 ) : (
                   <span className={`block ${WRAP}`}>{answer.value}</span>
                 )}

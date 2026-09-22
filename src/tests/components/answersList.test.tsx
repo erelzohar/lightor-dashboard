@@ -42,6 +42,19 @@ describe('AnswersList', () => {
     expect(link).toHaveAttribute('title', 'appointments.answers.openInMaps');
   });
 
+  it('opens an address chosen from Google at its exact place (LT-191)', () => {
+    render(
+      <AnswersList
+        answers={[{ key: 'address', label: 'Address', value: ADDRESS, placeId: 'ChIJd8BlQ2BZ', lat: 32.0668, lng: 34.7778 }]}
+      />
+    );
+
+    expect(screen.getByRole('link', { name: /Herzl 12, Tel Aviv/ })).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/search/?api=1&query=32.0668,34.7778&query_place_id=ChIJd8BlQ2BZ'
+    );
+  });
+
   it('renders a ticked confirm as a tick and its label, and text as label + value', () => {
     render(
       <AnswersList

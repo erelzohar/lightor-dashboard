@@ -162,6 +162,24 @@ export const bookingFieldsFromAi = (input: unknown): BookingField[] | undefined 
 export const mapsSearchUrl = (address: string): string =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
+/**
+ * The Maps link for an address answer (LT-191): an address chosen from
+ * Google's suggestions opens at its exact place — coordinates plus the place
+ * id — while a typed address stays a text search. Both go through the same
+ * Maps URL, which works on the phone and the desktop alike.
+ */
+export const mapsUrlFor = (
+  answer: Pick<AppointmentAnswer, 'value' | 'placeId' | 'lat' | 'lng'>
+): string => {
+  const { value, placeId, lat, lng } = answer;
+  const query =
+    typeof lat === 'number' && typeof lng === 'number'
+      ? `${lat},${lng}`
+      : encodeURIComponent(value);
+  const place = placeId ? `&query_place_id=${encodeURIComponent(placeId)}` : '';
+  return `https://www.google.com/maps/search/?api=1&query=${query}${place}`;
+};
+
 /** Which answers are addresses, given the catalog they were asked from. */
 export const addressKeys = (catalog: BookingField[] | undefined): Set<string> =>
   new Set((catalog ?? []).filter((f) => f.type === 'address' && f.key).map((f) => f.key as string));

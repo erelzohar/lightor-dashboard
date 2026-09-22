@@ -5,6 +5,7 @@ import {
   compactAnswer,
   fieldsForService,
   mapsSearchUrl,
+  mapsUrlFor,
   normaliseBookingFields,
 } from '../../utils/bookingFields';
 import type { BookingField } from '../../types';
@@ -122,5 +123,17 @@ describe('answers helpers', () => {
     expect(compactAnswer(answers, new Set(['address']))?.key).toBe('address');
     expect(compactAnswer(answers, new Set())?.key).toBe('car');
     expect(compactAnswer([], new Set(['address']))).toBeUndefined();
+  });
+});
+
+describe('mapsUrlFor (LT-191)', () => {
+  it('opens a chosen address at its coordinates and place id, a typed one as a text search', () => {
+    expect(mapsUrlFor({ value: 'Herzl 12, Tel Aviv', placeId: 'ChIJx', lat: 32.0668, lng: 34.7778 })).toBe(
+      'https://www.google.com/maps/search/?api=1&query=32.0668,34.7778&query_place_id=ChIJx'
+    );
+    expect(mapsUrlFor({ value: 'Herzl 12, Tel Aviv', placeId: 'ChIJx' })).toBe(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Herzl 12, Tel Aviv')}&query_place_id=ChIJx`
+    );
+    expect(mapsUrlFor({ value: 'Herzl 12, Tel Aviv' })).toBe(mapsSearchUrl('Herzl 12, Tel Aviv'));
   });
 });

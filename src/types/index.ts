@@ -162,6 +162,10 @@ export interface AppointmentAnswer {
   label: string;
   /** confirm: 'yes' when ticked (an unticked optional confirm is absent). */
   value: string;
+  /** address chosen from Google's suggestions (LT-191): its place id and coordinates. */
+  placeId?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface WebConfig {
