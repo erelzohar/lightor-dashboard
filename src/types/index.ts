@@ -181,6 +181,8 @@ export interface WebConfig {
   bookingHorizonDays?: number;
   /** Custom booking questions (LT-178). Absent on configs saved before it. */
   bookingFields?: BookingField[];
+  /** The contact form's own questions (LT-197); same shape, never scoped to a service. */
+  leadFields?: BookingField[];
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */
@@ -233,6 +235,8 @@ export interface NotificationPrefs {
   cancellation: boolean;
   reschedule: boolean;
   morningDigest: boolean;
+  /** A visitor left a message through the contact form (LT-197). */
+  newLead?: boolean;
 }
 
 /** One weekly slot of a group class (LT-152): 0 = Sunday, 'HH:MM' local. */

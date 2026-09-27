@@ -23,8 +23,16 @@ interface BookingFieldsEditorProps {
   value: BookingField[];
   onChange: (fields: BookingField[]) => void;
   /** The business's services, for the applies-to picker and the preview. */
-  services: AppointmentType[];
+  services?: AppointmentType[];
+  /**
+   * 'lead' edits the contact form's questions (LT-197): the same shapes and
+   * rules, a separate list, no per-service scope, and a preview that ends
+   * with the optional message box.
+   */
+  variant?: 'booking' | 'lead';
 }
+
+const NO_SERVICES: AppointmentType[] = [];
 
 const ICON_BTN =
   'w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 ' +
@@ -50,8 +58,15 @@ const PREVIEW_BOX =
  * carries no `key` — the server assigns one on save and this editor sends it
  * back unchanged from then on.
  */
-const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChange, services }) => {
+const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChange, services: servicesProp, variant = 'booking' }) => {
   const { t } = useTranslation();
+  const isLead = variant === 'lead';
+  // A lead has no service: no applies-to chips, no preview-by-service.
+  const services = isLead ? NO_SERVICES : servicesProp ?? NO_SERVICES;
+  // Title, help and empty line are the lead form's own; everything else is shared.
+  const copy = (key: 'title' | 'description' | 'empty' | 'addQuestion') =>
+    t(isLead ? `settings.leadFields.${key}` : `settings.bookingFields.${key}`);
+  const testId = (suffix: string) => `${isLead ? 'lead' : 'booking'}-fields${suffix}`;
   const [previewService, setPreviewService] = useState('*');
 
   const fields = value ?? [];
@@ -130,13 +145,13 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
         <div className="flex items-center gap-2 min-w-0">
           <ClipboardList className="w-5 h-5 text-primary shrink-0" />
           <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
-            {t('settings.bookingFields.title')}
+            {copy('title')}
           </h3>
           <FieldTooltip
-            title={t('settings.bookingFields.title')}
-            description={t('settings.bookingFields.description')}
+            title={copy('title')}
+            description={copy('description')}
           />
-          <span className="text-xs text-gray-400 tabular-nums" data-testid="booking-fields-count">
+          <span className="text-xs text-gray-400 tabular-nums" data-testid={testId('-count')}>
             {fields.length}/{MAX_BOOKING_FIELDS}
           </span>
         </div>
@@ -148,7 +163,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-sm font-medium shadow-sm hover:bg-primary/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus size={14} />
-          {t('settings.bookingFields.addQuestion')}
+          {copy('addQuestion')}
         </button>
       </div>
 
@@ -166,9 +181,9 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
 
       {/* Questions */}
       {fields.length === 0 ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400 py-2">{t('settings.bookingFields.empty')}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 py-2">{copy('empty')}</p>
       ) : (
-        <ul className="space-y-3" data-testid="booking-fields-list">
+        <ul className="space-y-3" data-testid={testId('-list')}>
           {fields.map((field, index) => {
             const fieldProblems = problems.get(index) ?? [];
             const isChoice = field.type === 'choice';
@@ -178,7 +193,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
               <li
                 key={field.key ?? `new-${index}`}
                 className="rounded-xl border border-gray-200/70 dark:border-gray-700/60 bg-white dark:bg-dark-surface p-4 space-y-3"
-                data-testid="booking-field"
+                data-testid={isLead ? 'lead-field' : 'booking-field'}
               >
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-8">
@@ -307,6 +322,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                     </span>
                   </label>
 
+                  {!isLead && (
                   <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <span className="text-sm text-gray-500 dark:text-gray-400 me-1">
                       {t('settings.bookingFields.appliesTo')}
@@ -332,6 +348,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                       </button>
                     ))}
                   </div>
+                  )}
                 </div>
               </li>
             );
@@ -343,7 +360,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
       {fields.length > 0 && (
         <div
           className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-3"
-          data-testid="booking-fields-preview"
+          data-testid={testId('-preview')}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -408,6 +425,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                 </div>
               );
             })}
+            {isLead && <div className={`${PREVIEW_BOX} h-16`}>{t('settings.leadFields.messageBox')}</div>}
           </div>
         </div>
       )}

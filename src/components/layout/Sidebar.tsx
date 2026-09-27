@@ -18,6 +18,7 @@ import {
   CreditCard,
   Coins,
   ScrollText,
+  Inbox,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar from './BottomTabBar';
@@ -26,6 +27,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import globals from '../../services/globals';
+import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsCount';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -166,11 +168,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { auth } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  // New leads (LT-197), re-read on every navigation so the badge follows.
+  const newLeads = useNewLeadsCount(false);
 
   // Close the mobile drawer when the route changes.
   useEffect(() => {
     if (window.innerWidth < 768) setOpen(false);
-  }, [location.pathname]);
+    if (!isRestricted) void refreshNewLeadsCount();
+  }, [location.pathname, isRestricted]);
 
   const navSections = [
     {
@@ -185,6 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       label: t('sidebar.manage'),
       items: [
         { path: '/customers', Icon: UsersRound, name: t('common.customers') },
+        { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined },
         { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
         { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
         { path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') },
@@ -219,7 +225,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
             {navSections.map((section, sIdx) => (
               <React.Fragment key={section.label}>
                 <SectionLabel label={section.label} first={sIdx === 0} />
-                {section.items.map(({ path, Icon, name }) => {
+                {section.items.map(({ path, Icon, name, badge }: { path: string; Icon: typeof Inbox; name: string; badge?: number }) => {
                   if (isRestricted && !ALLOWED_WHEN_RESTRICTED.includes(path)) return null;
                   return (
                     <SidebarLink
@@ -229,6 +235,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                         label: name,
                         href: path,
                         icon: <Icon className={iconClasses} />,
+                        badge,
                       }}
                       className={linkClasses}
                       onClick={() => window.innerWidth < 768 && setOpen(false)}

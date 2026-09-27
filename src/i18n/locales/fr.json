@@ -44,7 +44,8 @@
     "completeSetupFirst": "Terminez d'abord la configuration de votre site",
     "search": "Rechercher",
     "adminPanel": "Panneau d'administration",
-    "customers": "Clients"
+    "customers": "Clients",
+    "leads": "Demandes"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -202,6 +203,13 @@
       "labelRequired": "Écrivez la question (40 caractères maximum)",
       "optionsInvalid": "Une liste doit avoir de 2 à 10 options différentes, de 30 caractères maximum chacune",
       "limitReached": "Vous avez atteint le maximum de 8 questions"
+    },
+    "leadFields": {
+      "title": "Questions du formulaire de contact",
+      "description": "Questions auxquelles le visiteur répond en vous laissant un message sur votre site, après le nom et le téléphone — le type de projet, une zone, un budget.",
+      "empty": "Aucune question pour le moment — les visiteurs laissent un nom, un téléphone et un message.",
+      "messageBox": "Message (facultatif)",
+      "addQuestion": "Ajouter une question"
     }
   },
   "appointmentTypes": {
@@ -488,7 +496,8 @@
       "reschedule": "Report",
       "morningDigest": "Résumé du matin",
       "saved": "Préférences enregistrées",
-      "saveFailed": "Échec de l’enregistrement"
+      "saveFailed": "Échec de l’enregistrement",
+      "newLead": "Nouvelle demande"
     }
   },
   "incomeStats": {
@@ -536,7 +545,13 @@
   "dashboard": {
     "emptyTitle": "Bienvenue sur Lightor !",
     "emptySubtitle": "Commencez à utiliser Lightor pour voir vos statistiques",
-    "emptyDesc": "Dès que vous recevrez votre premier rendez-vous, vos statistiques, graphiques et analyses apparaîtront ici."
+    "emptyDesc": "Dès que vous recevrez votre premier rendez-vous, vos statistiques, graphiques et analyses apparaîtront ici.",
+    "leadsNearTitle": "{{used}} demandes sur {{cap}} ce mois-ci",
+    "leadsNearDesc": "À la limite, le formulaire de contact de votre site laisse place aux boutons d'appel et WhatsApp jusqu'au mois prochain.",
+    "leadsFullTitle": "Limite mensuelle de demandes atteinte",
+    "leadsFullDesc": "Jusqu'au mois prochain, les visiteurs voient les boutons d'appel et WhatsApp au lieu du formulaire.",
+    "newLeadsTitle": "Nouvelles demandes : {{count}}",
+    "newLeadsDesc": "Des visiteurs vous ont laissé un message sur votre site"
   },
   "billing": {
     "title": "Abonnement",
@@ -582,7 +597,9 @@
     "trialNote": "Aucun frais pendant les {{days}} premiers jours · annulez en un clic",
     "usageMeter": "{{used}}/{{cap}} rendez-vous ce mois-ci",
     "usageNearCap": "Approche de la limite",
-    "usageFull": "Limite atteinte — les nouvelles réservations sont bloquées ce mois-ci"
+    "usageFull": "Limite atteinte — les nouvelles réservations sont bloquées ce mois-ci",
+    "leadsMeter": "{{used}}/{{cap}} demandes ce mois-ci",
+    "leadsFull": "Limite atteinte — le formulaire de contact est fermé ce mois-ci"
   },
   "danger": {
     "title": "Zone de danger",
@@ -1069,6 +1086,35 @@
       "insightsTitle": "Le top clients est une fonctionnalité Plus",
       "insightsDesc": "Voyez qui vient le plus souvent et qui rapporte le plus. Passez à Plus pour débloquer les statistiques clients et l’export CSV.",
       "exportToast": "L’export CSV est disponible avec l’offre Plus"
+    }
+  },
+  "leads": {
+    "title": "Demandes",
+    "subtitle": "Messages laissés par les visiteurs via le formulaire de contact de votre site",
+    "filter": {
+      "all": "Toutes",
+      "label": "Filtrer par statut"
+    },
+    "status": {
+      "new": "Nouvelle",
+      "contacted": "Contacté",
+      "closed": "Clôturée"
+    },
+    "statusLabel": "Statut",
+    "empty": "Aucune demande pour le moment",
+    "emptyFiltered": "Aucune demande avec ce statut",
+    "emptyHint": "Quand quelqu'un remplit le formulaire de contact de votre site, la demande apparaît ici.",
+    "whatsapp": "WhatsApp",
+    "delete": "Supprimer la demande",
+    "deleteTitle": "Supprimer cette demande ?",
+    "deleteMessage": "La demande de {{name}} sera supprimée définitivement.",
+    "deleted": "Demande supprimée",
+    "prevPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "errors": {
+      "loadFailed": "Impossible de charger les demandes",
+      "saveFailed": "Impossible de mettre à jour la demande",
+      "deleteFailed": "Impossible de supprimer la demande"
     }
   }
 }

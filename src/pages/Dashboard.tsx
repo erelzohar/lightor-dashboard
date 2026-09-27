@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { canOfferPurchases } from '../lib/platform';
 import { motion } from 'framer-motion';
-import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2 } from 'lucide-react';
+import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2, Inbox } from 'lucide-react';
 import { Appointment } from '../types';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import IncomeStats from '../components/dashboard/IncomeStats';
@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { resendVerification } from '../services/authApi';
 import { fetchMyEntitlements, MyEntitlements } from '../services/entitlementsApi';
 import toast from 'react-hot-toast';
+import { useNewLeadsCount } from '../hooks/useNewLeadsCount';
 
 const getGreeting = (t: any): string => {
   const hour = new Date().getHours();
@@ -61,6 +62,14 @@ const Dashboard: React.FC = () => {
   }, []);
   const onFreePlan =
     entitlements !== undefined && (entitlements?.plan ?? auth.user?.subscription?.status) === 'free';
+
+  // Contact-form leads (LT-197): the new ones wait on the home card, and a
+  // capped plan is warned from 80% of the month's leads.
+  const newLeads = useNewLeadsCount();
+  const leadsCap = entitlements?.limits.monthlyLeads ?? null;
+  const leadsUsed = entitlements?.usage.leadsThisMonth ?? 0;
+  const leadsNotice: 'near' | 'full' | null =
+    leadsCap ? (leadsUsed >= leadsCap ? 'full' : leadsUsed >= Math.ceil(leadsCap * 0.8) ? 'near' : null) : null;
 
   // Shared date range state — controls both the graph and the donut chart
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
@@ -277,6 +286,60 @@ const Dashboard: React.FC = () => {
           )}
 
         </div>
+      )}
+
+      {/* Leads cap notice (LT-197). A statement about the account: the upgrade
+          button only where purchases may be offered (LT-130). */}
+      {leadsNotice && leadsCap !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-testid="leads-cap-notice"
+          className={`glass-card ${leadsNotice === 'full' ? 'glass-tint-red' : 'glass-tint-amber'} p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-full shrink-0 ${leadsNotice === 'full' ? 'bg-red-100 dark:bg-red-800/40 text-red-600 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-400'}`}>
+              <Inbox className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className={`font-semibold text-sm ${leadsNotice === 'full' ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}`}>
+                {leadsNotice === 'full' ? t('dashboard.leadsFullTitle') : t('dashboard.leadsNearTitle', { used: leadsUsed, cap: leadsCap })}
+              </h3>
+              <p className={`text-xs mt-0.5 ${leadsNotice === 'full' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                {leadsNotice === 'full' ? t('dashboard.leadsFullDesc') : t('dashboard.leadsNearDesc')}
+              </p>
+            </div>
+          </div>
+          {canOfferPurchases() && (
+            <button
+              onClick={() => navigate('/account')}
+              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              {t('common.upgradePlanBtn')}
+            </button>
+          )}
+        </motion.div>
+      )}
+
+      {/* New leads (LT-197): the way in from home — the bottom bar has no free slot. */}
+      {!!newLeads && (
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate('/leads')}
+          data-testid="leads-home-card"
+          className="glass-card w-full p-4 rounded-2xl flex items-center gap-3 text-start hover:border-primary/40 transition-colors"
+        >
+          <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+            <Inbox className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-gray-800 dark:text-white">{t('dashboard.newLeadsTitle', { count: newLeads })}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('dashboard.newLeadsDesc')}</p>
+          </div>
+          {direction === 'rtl' ? <ArrowLeft className="w-4 h-4 text-gray-400 shrink-0" /> : <ArrowRight className="w-4 h-4 text-gray-400 shrink-0" />}
+        </motion.button>
       )}
 
       {/* Onboarding UI */}

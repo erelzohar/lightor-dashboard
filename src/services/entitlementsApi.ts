@@ -19,6 +19,8 @@ export interface PlanLimits {
   /** Customers page: top-customers ranking and CSV export are Plus (LT-125). */
   customerInsights: boolean;
   customerExport: boolean;
+  /** Contact-form leads per month (LT-197); null = unlimited. Absent on an older API. */
+  monthlyLeads?: number | null;
 }
 
 export interface MyEntitlements {
@@ -30,6 +32,8 @@ export interface MyEntitlements {
     servicesCount: number;
     aiGenerationsThisMonth: number;
     aiTokensThisMonth: number;
+    /** LT-197; absent on an older API. */
+    leadsThisMonth?: number;
   };
   /**
    * Pilot grant (LT-187): while set, the account has every Plus feature free

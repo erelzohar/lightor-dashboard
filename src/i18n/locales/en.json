@@ -44,7 +44,8 @@
     "completeSetupFirst": "Complete your website setup first",
     "search": "Search",
     "adminPanel": "Admin Panel",
-    "customers": "Customers"
+    "customers": "Customers",
+    "leads": "Inquiries"
   },
   "greetings": {
     "morning": "Good morning",
@@ -202,6 +203,13 @@
       "labelRequired": "Write the question (up to 40 characters)",
       "optionsInvalid": "A list needs 2 to 10 different options, up to 30 characters each",
       "limitReached": "You have reached the maximum of 8 questions"
+    },
+    "leadFields": {
+      "title": "Contact form questions",
+      "description": "Questions a visitor answers when leaving you a message on your site, after name and phone — the kind of project, an area, a budget.",
+      "empty": "No questions yet — visitors leave a name, a phone and a message.",
+      "messageBox": "Message (optional)",
+      "addQuestion": "Add a question"
     }
   },
   "appointmentTypes": {
@@ -488,7 +496,8 @@
       "reschedule": "Reschedule",
       "morningDigest": "Morning digest",
       "saved": "Preferences saved",
-      "saveFailed": "Could not save"
+      "saveFailed": "Could not save",
+      "newLead": "New inquiry"
     }
   },
   "incomeStats": {
@@ -536,7 +545,13 @@
   "dashboard": {
     "emptyTitle": "Welcome to Lightor!",
     "emptySubtitle": "Start using Lightor to see your statistics",
-    "emptyDesc": "Once you receive your first appointment, your stats, graphs, and insights will appear right here."
+    "emptyDesc": "Once you receive your first appointment, your stats, graphs, and insights will appear right here.",
+    "leadsNearTitle": "{{used}} of {{cap}} inquiries this month",
+    "leadsNearDesc": "At the limit, the contact form on your site gives way to call and WhatsApp buttons until next month.",
+    "leadsFullTitle": "Monthly inquiry limit reached",
+    "leadsFullDesc": "Visitors see call and WhatsApp buttons instead of the contact form until next month.",
+    "newLeadsTitle": "New inquiries: {{count}}",
+    "newLeadsDesc": "Visitors left you a message on your site"
   },
   "billing": {
     "title": "Subscription",
@@ -582,7 +597,9 @@
     "trialNote": "No charge for the first {{days}} days · cancel in one click",
     "usageMeter": "{{used}}/{{cap}} appointments this month",
     "usageNearCap": "Approaching the limit",
-    "usageFull": "Limit reached — new bookings are blocked this month"
+    "usageFull": "Limit reached — new bookings are blocked this month",
+    "leadsMeter": "{{used}}/{{cap}} inquiries this month",
+    "leadsFull": "Limit reached — the contact form is closed this month"
   },
   "danger": {
     "title": "Danger zone",
@@ -1069,6 +1086,35 @@
       "insightsTitle": "Top customers is a Plus feature",
       "insightsDesc": "See who visits most and who brings the most revenue. Upgrade to unlock customer insights and CSV export.",
       "exportToast": "CSV export is available on the Plus plan"
+    }
+  },
+  "leads": {
+    "title": "Inquiries",
+    "subtitle": "Messages visitors left through the contact form on your site",
+    "filter": {
+      "all": "All",
+      "label": "Filter by status"
+    },
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "closed": "Closed"
+    },
+    "statusLabel": "Status",
+    "empty": "No inquiries yet",
+    "emptyFiltered": "No inquiries with this status",
+    "emptyHint": "When someone fills in the contact form on your site, it shows up here.",
+    "whatsapp": "WhatsApp",
+    "delete": "Delete inquiry",
+    "deleteTitle": "Delete this inquiry?",
+    "deleteMessage": "The inquiry from {{name}} will be deleted for good.",
+    "deleted": "Inquiry deleted",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "errors": {
+      "loadFailed": "Could not load inquiries",
+      "saveFailed": "Could not update the inquiry",
+      "deleteFailed": "Could not delete the inquiry"
     }
   }
 }

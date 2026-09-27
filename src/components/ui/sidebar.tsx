@@ -16,6 +16,8 @@ interface Links {
   label: string;
   href: string;
   icon: React.JSX.Element | React.ReactNode;
+  /** A count beside the label (a dot on the icon while collapsed), e.g. new leads (LT-197). */
+  badge?: number;
 }
 
 interface SidebarContextProps {
@@ -201,7 +203,12 @@ export const SidebarLink = ({
         )
       }
     >
-      {link.icon}
+      <span className="relative inline-flex">
+        {link.icon}
+        {!!link.badge && animate && !open && (
+          <span className="absolute -top-1 -end-1 w-2 h-2 rounded-full bg-rose-500" aria-hidden="true" />
+        )}
+      </span>
       <motion.span
         animate={{
           display: animate ? (open ? 'inline-block' : 'none') : 'inline-block',
@@ -210,6 +217,14 @@ export const SidebarLink = ({
         className="text-sm group-hover/sidebar:translate-x-1 rtl:group-hover/sidebar:-translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
       >
         {link.label}
+        {!!link.badge && (
+          <span
+            className="ms-2 inline-flex min-w-[1.25rem] h-5 px-1.5 items-center justify-center rounded-full bg-rose-500 text-white text-[11px] font-bold tabular-nums"
+            data-testid="nav-badge"
+          >
+            {link.badge > 99 ? '99+' : link.badge}
+          </span>
+        )}
       </motion.span>
     </NavLink>
   );

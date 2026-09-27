@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import Settings from '../../pages/Settings';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import type { BookingField, WebConfig } from '../../types';
@@ -80,12 +80,17 @@ const sentPayload = (call: number) =>
 describe('Settings: booking questions', () => {
   beforeEach(() => {
     vi.mocked(updateWebConfig).mockClear();
-    dispatchMock.mockReset().mockImplementation((action: { type: string; payload?: { bookingFields?: BookingField[] } }) => {
+    dispatchMock.mockReset().mockImplementation((action: { type: string; payload?: { bookingFields?: BookingField[]; leadFields?: BookingField[] } }) => {
       if (action.type === 'webConfig/update') {
         const { payload } = action;
         return Promise.resolve({
           type: 'webConfig/update/fulfilled',
-          payload: { ...savedConfig, ...payload, bookingFields: keyed(payload?.bookingFields ?? []) },
+          payload: {
+            ...savedConfig,
+            ...payload,
+            bookingFields: keyed(payload?.bookingFields ?? []),
+            leadFields: keyed((payload as { leadFields?: BookingField[] })?.leadFields ?? []),
+          },
         });
       }
       return Promise.resolve(action);
@@ -150,5 +155,53 @@ describe('Settings: booking questions', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('settings.formErrors'));
     expect(updateWebConfig).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The contact form's questions (LT-197): a second editor on the same
+ * mechanism, sent as `leadFields` with no service scope, keys adopted like
+ * the booking list's.
+ */
+describe('Settings: contact form questions', () => {
+  beforeEach(() => {
+    vi.mocked(updateWebConfig).mockClear();
+    dispatchMock.mockReset().mockImplementation((action: { type: string; payload?: { leadFields?: BookingField[] } }) => {
+      if (action.type === 'webConfig/update') {
+        const { payload } = action;
+        return Promise.resolve({
+          type: 'webConfig/update/fulfilled',
+          payload: { ...savedConfig, ...payload, leadFields: keyed(payload?.leadFields ?? []) },
+        });
+      }
+      return Promise.resolve(action);
+    });
+  });
+
+  const leadEditor = () => {
+    const title = screen.getByText('settings.leadFields.title');
+    return within(title.closest('div.rounded-2xl') as HTMLElement);
+  };
+
+  it('adds a question with no per-service scope, sends it as leadFields, and adopts the key', async () => {
+    render(<Settings />);
+
+    fireEvent.click(screen.getByText('settings.leadFields.addQuestion'));
+    const editor = leadEditor();
+    // A lead has no service: no applies-to chips.
+    expect(editor.queryByText('settings.bookingFields.appliesTo')).toBeNull();
+    fireEvent.change(editor.getByLabelText('settings.bookingFields.label'), { target: { value: 'Project type' } });
+
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload(0).leadFields).toEqual([{ label: 'Project type', type: 'text', required: false, services: [] }]);
+    expect(sentPayload(0)).not.toHaveProperty('bookingFields');
+
+    fireEvent.change(leadEditor().getByLabelText('settings.bookingFields.label'), { target: { value: 'Kind of project' } });
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(2));
+    expect(sentPayload(1).leadFields).toEqual([
+      { key: 'key-0', label: 'Kind of project', type: 'text', required: false, services: [] },
+    ]);
   });
 });

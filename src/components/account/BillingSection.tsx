@@ -70,6 +70,10 @@ const BillingSection: React.FC = () => {
   const appointmentCap = entitlements?.limits.monthlyAppointments ?? null;
   const appointmentsUsed = entitlements?.usage.appointmentsThisMonth ?? 0;
   const capRatio = appointmentCap ? Math.min(appointmentsUsed / appointmentCap, 1) : 0;
+  // Contact-form leads (LT-197): the second meter on a capped plan.
+  const leadsCap = entitlements?.limits.monthlyLeads ?? null;
+  const leadsUsed = entitlements?.usage.leadsThisMonth ?? 0;
+  const leadsRatio = leadsCap ? Math.min(leadsUsed / leadsCap, 1) : 0;
   // Pilot grant (LT-187): the server says the account has Plus free until a
   // date although the subscription still reads 'free'. Dated in the UI's
   // language, as the Customers page formats its dates.
@@ -304,6 +308,34 @@ const BillingSection: React.FC = () => {
                           : 'bg-primary'
                     }`}
                     style={{ width: `${Math.round(capRatio * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Contact-form leads (LT-197). */}
+            {leadsCap !== null && (
+              <div className="space-y-1.5" data-testid="leads-meter">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700 dark:text-gray-200 font-medium">
+                    {t('billing.leadsMeter', { used: leadsUsed, cap: leadsCap })}
+                  </span>
+                  {leadsRatio >= 0.8 && (
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      {leadsRatio >= 1 ? t('billing.leadsFull') : t('billing.usageNearCap')}
+                    </span>
+                  )}
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      leadsRatio >= 1
+                        ? 'bg-red-500'
+                        : leadsRatio >= 0.8
+                          ? 'bg-amber-500'
+                          : 'bg-primary'
+                    }`}
+                    style={{ width: `${Math.round(leadsRatio * 100)}%` }}
                   />
                 </div>
               </div>

@@ -142,3 +142,25 @@ describe('BillingSection pilot grant', () => {
     expect(fetchUpgradePlans).not.toHaveBeenCalled();
   });
 });
+
+/** The leads meter (LT-197): a second meter on a capped plan, none on Plus. */
+describe('BillingSection leads meter', () => {
+  it('shows the month’s leads against the cap on a free plan', async () => {
+    entitlementsState.data = {
+      ...freeEntitlements(),
+      limits: { monthlyAppointments: 30, monthlyLeads: 15 },
+      usage: { appointmentsThisMonth: 12, leadsThisMonth: 15 },
+    };
+    render(<BillingSection />);
+    expect(await screen.findByTestId('leads-meter')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.leadsMeter', { used: 15, cap: 15 });
+    expect(screen.getByText('billing.leadsFull')).toBeInTheDocument();
+  });
+
+  it('hides it when leads are unlimited', async () => {
+    entitlementsState.data = { ...freeEntitlements(), limits: { monthlyAppointments: 30, monthlyLeads: null } };
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.usageMeter')).toBeInTheDocument();
+    expect(screen.queryByTestId('leads-meter')).not.toBeInTheDocument();
+  });
+});

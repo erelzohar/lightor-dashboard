@@ -71,6 +71,10 @@ const Settings: React.FC = () => {
   const bookingFieldsChanged =
     !!localWebConfig && !!webConfig &&
     JSON.stringify(localWebConfig.bookingFields ?? []) !== JSON.stringify(webConfig.bookingFields ?? []);
+  // The contact form's questions (LT-197), by the same rule.
+  const leadFieldsChanged =
+    !!localWebConfig && !!webConfig &&
+    JSON.stringify(localWebConfig.leadFields ?? []) !== JSON.stringify(webConfig.leadFields ?? []);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -91,6 +95,7 @@ const Settings: React.FC = () => {
       JSON.stringify(localWebConfig.minCancelTimeMS) !== JSON.stringify(webConfig.minCancelTimeMS) ||
       (localWebConfig.bookingHorizonDays ?? 60) !== (webConfig.bookingHorizonDays ?? 60) ||
       bookingFieldsChanged ||
+      leadFieldsChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -229,7 +234,7 @@ const Settings: React.FC = () => {
   const handleSave = async () => {
     if (!localWebConfig) return;
 
-    if (errors || !bookingFieldsValid(localWebConfig.bookingFields ?? [])) {
+    if (errors || !bookingFieldsValid(localWebConfig.bookingFields ?? []) || !bookingFieldsValid(localWebConfig.leadFields ?? [])) {
       toast.error(t('settings.formErrors'));
       return;
     }
@@ -258,6 +263,9 @@ const Settings: React.FC = () => {
       // Sending it untouched would be harmless, but a config that predates
       // the field is left alone, same as the horizon above.
       if (bookingFieldsChanged) payload.bookingFields = normaliseBookingFields(localWebConfig.bookingFields ?? []);
+      if (leadFieldsChanged) {
+        payload.leadFields = normaliseBookingFields(localWebConfig.leadFields ?? []).map((f) => ({ ...f, services: [] }));
+      }
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -282,6 +290,9 @@ const Settings: React.FC = () => {
       const saved = res.payload as WebConfig | undefined;
       if (Array.isArray(saved?.bookingFields)) {
         setLocalWebConfig(prev => (prev ? { ...prev, bookingFields: saved.bookingFields } : prev));
+      }
+      if (Array.isArray(saved?.leadFields)) {
+        setLocalWebConfig(prev => (prev ? { ...prev, leadFields: saved.leadFields } : prev));
       }
       setImageToUpload(null);
       setLogoUrlValue('');
@@ -687,6 +698,13 @@ const Settings: React.FC = () => {
               value={localWebConfig.bookingFields ?? []}
               onChange={(fields) => handleChange('root', 'bookingFields', fields)}
               services={appointmentTypes}
+            />
+
+            {/* Contact-form questions (LT-197): what the lead form asks beyond name and phone. */}
+            <BookingFieldsEditor
+              value={localWebConfig.leadFields ?? []}
+              onChange={(fields) => handleChange('root', 'leadFields', fields)}
+              variant="lead"
             />
 
           </motion.div>

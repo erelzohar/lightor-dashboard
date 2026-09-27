@@ -44,7 +44,8 @@
     "completeSetupFirst": "Completa primero la configuración de tu sitio",
     "search": "Buscar",
     "adminPanel": "Panel de administración",
-    "customers": "Clientes"
+    "customers": "Clientes",
+    "leads": "Consultas"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -202,6 +203,13 @@
       "labelRequired": "Escribe la pregunta (hasta 40 caracteres)",
       "optionsInvalid": "Una lista necesita de 2 a 10 opciones distintas, de hasta 30 caracteres cada una",
       "limitReached": "Has llegado al máximo de 8 preguntas"
+    },
+    "leadFields": {
+      "title": "Preguntas del formulario de contacto",
+      "description": "Preguntas que el visitante responde al dejarte un mensaje en tu sitio, después del nombre y el teléfono: el tipo de trabajo, una zona, un presupuesto.",
+      "empty": "Aún no hay preguntas: los visitantes dejan un nombre, un teléfono y un mensaje.",
+      "messageBox": "Mensaje (opcional)",
+      "addQuestion": "Añadir una pregunta"
     }
   },
   "appointmentTypes": {
@@ -488,7 +496,8 @@
       "reschedule": "Cambio de horario",
       "morningDigest": "Resumen matutino",
       "saved": "Preferencias guardadas",
-      "saveFailed": "No se pudo guardar"
+      "saveFailed": "No se pudo guardar",
+      "newLead": "Nueva consulta"
     }
   },
   "incomeStats": {
@@ -536,7 +545,13 @@
   "dashboard": {
     "emptyTitle": "¡Bienvenido a Lightor!",
     "emptySubtitle": "Empieza a usar Lightor para ver tus estadísticas",
-    "emptyDesc": "En cuanto recibas tu primera cita, tus estadísticas, gráficos y análisis aparecerán aquí."
+    "emptyDesc": "En cuanto recibas tu primera cita, tus estadísticas, gráficos y análisis aparecerán aquí.",
+    "leadsNearTitle": "{{used}} de {{cap}} consultas este mes",
+    "leadsNearDesc": "Al llegar al límite, el formulario de contacto de tu sitio se reemplaza por botones de llamada y WhatsApp hasta el mes que viene.",
+    "leadsFullTitle": "Límite mensual de consultas alcanzado",
+    "leadsFullDesc": "Hasta el mes que viene, los visitantes ven botones de llamada y WhatsApp en lugar del formulario.",
+    "newLeadsTitle": "Consultas nuevas: {{count}}",
+    "newLeadsDesc": "Visitantes te dejaron un mensaje en tu sitio"
   },
   "billing": {
     "title": "Suscripción",
@@ -582,7 +597,9 @@
     "trialNote": "Sin cargo durante los primeros {{days}} días · cancela con un clic",
     "usageMeter": "{{used}}/{{cap}} citas este mes",
     "usageNearCap": "Acercándose al límite",
-    "usageFull": "Límite alcanzado — las nuevas reservas están bloqueadas este mes"
+    "usageFull": "Límite alcanzado — las nuevas reservas están bloqueadas este mes",
+    "leadsMeter": "{{used}}/{{cap}} consultas este mes",
+    "leadsFull": "Límite alcanzado: el formulario de contacto está cerrado este mes"
   },
   "danger": {
     "title": "Zona de peligro",
@@ -1069,6 +1086,35 @@
       "insightsTitle": "Los mejores clientes son una función Plus",
       "insightsDesc": "Descubre quién visita más y quién genera más ingresos. Mejora tu plan para desbloquear las estadísticas de clientes y la exportación CSV.",
       "exportToast": "La exportación CSV está disponible en el plan Plus"
+    }
+  },
+  "leads": {
+    "title": "Consultas",
+    "subtitle": "Mensajes que los visitantes dejaron en el formulario de contacto de tu sitio",
+    "filter": {
+      "all": "Todas",
+      "label": "Filtrar por estado"
+    },
+    "status": {
+      "new": "Nueva",
+      "contacted": "Contactado",
+      "closed": "Cerrada"
+    },
+    "statusLabel": "Estado",
+    "empty": "Aún no hay consultas",
+    "emptyFiltered": "No hay consultas con este estado",
+    "emptyHint": "Cuando alguien complete el formulario de contacto de tu sitio, aparecerá aquí.",
+    "whatsapp": "WhatsApp",
+    "delete": "Eliminar consulta",
+    "deleteTitle": "¿Eliminar esta consulta?",
+    "deleteMessage": "La consulta de {{name}} se eliminará definitivamente.",
+    "deleted": "Consulta eliminada",
+    "prevPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "errors": {
+      "loadFailed": "No se pudieron cargar las consultas",
+      "saveFailed": "No se pudo actualizar la consulta",
+      "deleteFailed": "No se pudo eliminar la consulta"
     }
   }
 }

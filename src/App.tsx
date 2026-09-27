@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import Customers from './pages/Customers';
+import Leads from './pages/Leads';
 import Settings from './pages/Settings';
 import AppointmentTypes from './pages/AppointmentTypes';
 import Account from './pages/Account';
@@ -63,6 +64,7 @@ function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="customers" element={<Customers />} />
+                    <Route path="leads" element={<Leads />} />
                     <Route path="schedule-vacations" element={<ScheduleVacations />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="appointment-types" element={<AppointmentTypes />} />

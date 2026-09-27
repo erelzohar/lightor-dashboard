@@ -52,7 +52,7 @@ const user = (overrides: Partial<User> = {}): User =>
     ...overrides,
   }) as User;
 
-const EVENTS = ['newBooking', 'cancellation', 'reschedule', 'morningDigest'];
+const EVENTS = ['newBooking', 'cancellation', 'reschedule', 'morningDigest', 'newLead'];
 
 const renderCard = async () => {
   // A returning visitor: the hint makes the provider probe /auth/me (LT-164).
@@ -82,7 +82,7 @@ describe('NotificationsCard', () => {
 
     for (const e of EVENTS) expect(screen.getByText(`account.notifications.${e}`)).toBeInTheDocument();
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(4);
+    expect(switches).toHaveLength(5);
     for (const s of switches) expect(s).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -93,7 +93,8 @@ describe('NotificationsCard', () => {
     await renderCard();
     await screen.findByTestId('notification-prefs');
     const checked = screen.getAllByRole('switch').map((s) => s.getAttribute('aria-checked'));
-    expect(checked).toEqual(['true', 'false', 'true', 'false']);
+    // newLead absent on the stored prefs reads as on (LT-197).
+    expect(checked).toEqual(['true', 'false', 'true', 'false', 'true']);
   });
 
   it('saves the merged prefs object when a toggle flips', async () => {
@@ -105,7 +106,7 @@ describe('NotificationsCard', () => {
     fireEvent.click(screen.getAllByRole('switch')[1]); // cancellation
     await waitFor(() =>
       expect(updateUserInfo).toHaveBeenCalledWith('u1', {
-        notificationPrefs: { newBooking: true, cancellation: false, reschedule: true, morningDigest: true },
+        notificationPrefs: { newBooking: true, cancellation: false, reschedule: true, morningDigest: true, newLead: true },
       })
     );
     await waitFor(() => expect(screen.getAllByRole('switch')[1]).toHaveAttribute('aria-checked', 'false'));

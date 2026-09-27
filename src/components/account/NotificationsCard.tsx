@@ -23,9 +23,10 @@ const DEFAULT_PREFS: NotificationPrefs = {
   cancellation: true,
   reschedule: true,
   morningDigest: true,
+  newLead: true,
 };
 
-const EVENTS: (keyof NotificationPrefs)[] = ['newBooking', 'cancellation', 'reschedule', 'morningDigest'];
+const EVENTS: (keyof NotificationPrefs)[] = ['newBooking', 'cancellation', 'reschedule', 'morningDigest', 'newLead'];
 
 const NotificationsCard: React.FC = () => {
   const { auth, updateUser } = useAuth();
@@ -69,7 +70,7 @@ const NotificationsCard: React.FC = () => {
               {t(`account.notifications.${event}`)}
             </span>
             <ToggleSwitch
-              checked={prefs[event]}
+              checked={prefs[event] !== false}
               disabled={saving !== null}
               onChange={(value) => void toggle(event, value)}
             />
