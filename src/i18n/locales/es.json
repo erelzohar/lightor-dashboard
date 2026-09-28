@@ -588,7 +588,7 @@
     "nextBill": "Próxima fecha de facturación:",
     "freeDesc": "Estás en el plan gratuito, con límites mensuales de citas y consultas. Mejora tu plan para quitarlos.",
     "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
-    "pilotLine": "Piloto: todas las funciones Plus son gratis hasta el {{date}}.",
+    "pilotLine": "Prueba gratuita: todas las funciones Plus son gratis hasta el {{date}}.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
     "upgrade": "Mejorar",
