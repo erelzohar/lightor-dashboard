@@ -197,6 +197,12 @@ export interface WebConfig {
    * through `isLeadsSite` (utils/siteMode), never inline.
    */
   conversion?: 'book' | 'lead';
+  /**
+   * The owner's own words about the business (LT-202), at most 2000
+   * characters. The server writes it on every AI generation and the AI
+   * editor carries it unchanged, so the builder's save stores it as it is.
+   */
+  businessDescription?: string;
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

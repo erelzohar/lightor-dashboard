@@ -159,6 +159,26 @@ describe('AI builder save', () => {
     expect(screen.queryByText('aiBuilder.saved')).not.toBeInTheDocument();
   });
 
+  it("stores the owner's own description with a first site built here (LT-202)", async () => {
+    authValue.auth.user.webConfig_id = undefined;
+    state.webConfig.data = null;
+    vi.mocked(aiService.generateSite).mockResolvedValue({
+      config: aiDraft({ businessDescription: 'Renovations in Haifa, kitchens and bathrooms.' }) as never,
+      message: 'Built',
+    });
+    render(<AiBuilder />);
+
+    fireEvent.change(screen.getByPlaceholderText('aiBuilder.firstPromptPlaceholder'), { target: { value: 'Renovations in Haifa, kitchens and bathrooms.' } });
+    fireEvent.keyDown(screen.getByPlaceholderText('aiBuilder.firstPromptPlaceholder'), { key: 'Enter' });
+    const save = await screen.findByRole('button', { name: /aiBuilder\.save/ });
+    await waitFor(() => expect(save).not.toBeDisabled());
+    fireEvent.click(save);
+
+    expect(await screen.findByText('aiBuilder.saved')).toBeInTheDocument();
+    const payload = vi.mocked(createWebConfig).mock.calls[0][0] as unknown as Record<string, unknown>;
+    expect(payload.businessDescription).toBe('Renovations in Haifa, kitchens and bathrooms.');
+  });
+
   it('cleans the contact-form questions, keeps the mode and a trimmed button text, and re-creates no vacation', async () => {
     render(<AiBuilder />);
 
