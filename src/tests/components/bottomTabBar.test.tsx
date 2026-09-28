@@ -51,6 +51,63 @@ describe('BottomTabBar', () => {
     expect(screen.queryByText('common.appointments')).not.toBeInTheDocument();
   });
 
+  it('has no Leads tab on a booking site', () => {
+    render(
+      <MemoryRouter>
+        <BottomTabBar onMore={vi.fn()} newLeads={3} />
+      </MemoryRouter>
+    );
+    expect(screen.queryByText('common.leads')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tab-dot')).not.toBeInTheDocument();
+  });
+
+  /**
+   * A leads site (LT-199) has no calendar: Dashboard / Leads / Services /
+   * Hours, with no Appointments and no Customers.
+   */
+  it('shows Dashboard, Leads, Services and Hours on a leads site', () => {
+    render(
+      <MemoryRouter initialEntries={['/leads']}>
+        <BottomTabBar leadsSite onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['/', '/leads', '/appointment-types', '/schedule-vacations']);
+    for (const key of ['common.dashboard', 'common.leads', 'common.serviceTypes', 'common.openingHours']) {
+      expect(screen.getByText(key)).toBeInTheDocument();
+    }
+    expect(screen.queryByText('common.appointments')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.customers')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.scheduleVacations')).not.toBeInTheDocument();
+    expect(screen.getByText('common.leads').closest('a')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('sidebar.more')).toBeInTheDocument();
+  });
+
+  it('dots the Leads tab while new leads wait', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <BottomTabBar leadsSite newLeads={2} onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('common.leads').closest('a')).toContainElement(screen.getByTestId('tab-dot'));
+
+    rerender(
+      <MemoryRouter>
+        <BottomTabBar leadsSite newLeads={0} onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.queryByTestId('tab-dot')).not.toBeInTheDocument();
+  });
+
+  it('keeps a restricted account on Dashboard and the AI builder on a leads site too', () => {
+    render(
+      <MemoryRouter>
+        <BottomTabBar isRestricted leadsSite onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/ai']);
+  });
+
   it('clears the home indicator via the safe-area inset', () => {
     render(
       <MemoryRouter>

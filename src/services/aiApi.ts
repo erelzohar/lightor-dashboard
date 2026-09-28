@@ -25,6 +25,10 @@ export interface AiSiteConfig {
   };
   /** Booking questions the AI proposes (LT-178): no keys, no answers, `services` omitted. */
   bookingFields?: { label: string; type: string; required?: boolean; options?: string[] }[];
+  /** The contact form's questions (LT-197), same shape; the edit keeps stored keys (LT-199). */
+  leadFields?: { key?: string; label: string; type: string; required?: boolean; options?: string[] }[];
+  /** What the site converts to (LT-199); the AI classifies it, the owner can switch it. */
+  conversion?: 'book' | 'lead';
   [k: string]: unknown;
 }
 

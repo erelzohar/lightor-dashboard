@@ -16,8 +16,9 @@ import { createAppointmentType, updateAppointmentType, deleteAppointmentType } f
 import { deleteImage } from '../services/imagesApi';
 import { createVacation } from '../services/vacationsApi';
 import globals from '../services/globals';
-import { reconcileAppointmentTypes, removedStoredImages } from '../utils/aiReconcile';
+import { reconcileAppointmentTypes, removedStoredImages, vacationsToCreate } from '../utils/aiReconcile';
 import { bookingFieldsFromAi } from '../utils/bookingFields';
+import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 
@@ -214,10 +215,11 @@ const AiBuilder: React.FC = () => {
     if (!draftConfig) return;
     setIsSaving(true);
     try {
-      const { appointmentTypes, vacations, bookingFields, ...configToSave } = draftConfig as AiSiteConfig & {
+      const { appointmentTypes, vacations, bookingFields, leadFields, ...configToSave } = draftConfig as AiSiteConfig & {
         appointmentTypes?: Omit<AppointmentType, '_id'>[];
         vacations?: Omit<Vacation, '_id' | 'webConfig_id'>[];
         bookingFields?: unknown;
+        leadFields?: unknown;
       };
 
       // Booking questions (LT-178): the AI proposes label / type / required /
@@ -227,6 +229,26 @@ const AiBuilder: React.FC = () => {
       // edit that never mentioned questions cannot wipe the stored ones.
       const proposedFields = bookingFieldsFromAi(bookingFields);
       if (proposedFields) (configToSave as Record<string, unknown>).bookingFields = proposedFields;
+      // The contact form's questions (G3, LT-199) by the same rule — they
+      // used to go out raw, so one malformed question failed the whole save.
+      // A lead has no service, so none is ever scoped to one.
+      const proposedLeadFields = bookingFieldsFromAi(leadFields);
+      if (proposedLeadFields) {
+        (configToSave as Record<string, unknown>).leadFields = proposedLeadFields.map((f) => ({ ...f, services: [] }));
+      }
+      // The mode and the main button's text (LT-199): the server refuses a
+      // mode it does not know and a button text over the limit, which would
+      // fail the whole save. An unknown mode stays off the request (the
+      // stored one stands); an over-long text falls back to the default.
+      const draft = configToSave as Record<string, unknown> & { components?: { hero?: Record<string, unknown> } };
+      if (draft.conversion !== undefined && draft.conversion !== 'book' && draft.conversion !== 'lead') {
+        delete draft.conversion;
+      }
+      const hero = draft.components?.hero;
+      if (hero && hero.cta !== undefined) {
+        const cta = typeof hero.cta === 'string' ? hero.cta.trim() : '';
+        draft.components = { ...draft.components, hero: { ...hero, cta: cta.length > MAX_CTA_LENGTH ? '' : cta } };
+      }
 
       const configId = webConfig?._id || auth.user?.webConfig_id;
       // Only an edit reconciles removals against the server. Onboarding has no
@@ -235,8 +257,13 @@ const AiBuilder: React.FC = () => {
       const isEdit = !!configId;
       let savedConfigId: string;
 
+      // G3 (LT-199): a bare dispatch resolves when the server refuses too, and
+      // the save used to go on — services, vacations, "Saved!" and away —
+      // over a config that was never stored. A refusal stops here and lands
+      // in the catch below: the failure toast, and the owner stays.
       if (configId) {
-        await dispatch(updateWebConfig({ ...(configToSave as unknown as Partial<WebConfig>), _id: configId }));
+        const result = await dispatch(updateWebConfig({ ...(configToSave as unknown as Partial<WebConfig>), _id: configId }));
+        if (updateWebConfig.rejected.match(result)) throw new Error(result.error?.message ?? 'Web config update refused');
         savedConfigId = configId;
         if (auth.user?.boardingStatus === 'new') await updateUser({ boardingStatus: 'onboarded' });
       } else {
@@ -244,6 +271,7 @@ const AiBuilder: React.FC = () => {
           ...(configToSave as unknown as Partial<WebConfig>),
           user_id: auth.user?._id,
         }));
+        if (createWebConfig.rejected.match(result)) throw new Error(result.error?.message ?? 'Web config create refused');
         const newConf = result.payload as WebConfig;
         savedConfigId = newConf._id;
         await updateUser({ webConfig_id: newConf._id, boardingStatus: 'onboarded' });
@@ -291,14 +319,16 @@ const AiBuilder: React.FC = () => {
         await Promise.all(removedImages.map((name) => deleteImage(name)));
       }
 
-      if (vacations?.length) {
-        await Promise.all(vacations.map((v) => createVacation({ ...v, webConfig_id: savedConfigId })));
+      // Only the vacations that are new: the answer echoes the stored ones (G3).
+      const newVacations = vacationsToCreate(vacations ?? [], webConfig?.vacations ?? []);
+      if (newVacations.length) {
+        await Promise.all(newVacations.map((v) => createVacation({ ...v, webConfig_id: savedConfigId })));
       }
 
       setSaved(true);
       setTimeout(() => navigate('/'), 1200);
     } catch (err) {
-      toast.error('Failed to save website. Please try again.');
+      toast.error(t('aiBuilder.saveFailed'));
       console.error('Save failed:', err);
     } finally {
       setIsSaving(false);
@@ -312,12 +342,20 @@ const AiBuilder: React.FC = () => {
   const showPhoneShell = isMobilePreview && isLargeScreen;
   const hasUserMessage = messages.some((m) => m.role === 'user');
 
+  // Suggestions by what the site does (LT-199): a leads site's are about
+  // its inquiries and its button, not bookings.
   const suggestions = isEditMode
-    ? [
-        t('aiBuilder.suggestion_edit_1'),
-        t('aiBuilder.suggestion_edit_2'),
-        t('aiBuilder.suggestion_edit_3'),
-      ]
+    ? isLeadsSite(webConfig)
+      ? [
+          t('aiBuilder.suggestion_lead_1'),
+          t('aiBuilder.suggestion_lead_2'),
+          t('aiBuilder.suggestion_lead_3'),
+        ]
+      : [
+          t('aiBuilder.suggestion_edit_1'),
+          t('aiBuilder.suggestion_edit_2'),
+          t('aiBuilder.suggestion_edit_3'),
+        ]
     : [
         t('aiBuilder.suggestion_new_1'),
         t('aiBuilder.suggestion_new_2'),

@@ -27,8 +27,15 @@ const DEFAULT_PREFS: NotificationPrefs = {
 };
 
 const EVENTS: (keyof NotificationPrefs)[] = ['newBooking', 'cancellation', 'reschedule', 'morningDigest', 'newLead'];
+// A leads site (LT-199) takes no bookings: its phone only hears about new leads.
+const LEADS_SITE_EVENTS: (keyof NotificationPrefs)[] = ['newLead'];
 
-const NotificationsCard: React.FC = () => {
+interface NotificationsCardProps {
+  /** A leads site (LT-199, `isLeadsSite`). */
+  leadsSite?: boolean;
+}
+
+const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false }) => {
   const { auth, updateUser } = useAuth();
   const { t } = useTranslation();
   const [saving, setSaving] = useState<keyof NotificationPrefs | null>(null);
@@ -64,7 +71,7 @@ const NotificationsCard: React.FC = () => {
       </div>
 
       <ul className="divide-y divide-gray-200/60 dark:divide-gray-700/60" data-testid="notification-prefs">
-        {EVENTS.map((event) => (
+        {(leadsSite ? LEADS_SITE_EVENTS : EVENTS).map((event) => (
           <li key={event} className="flex items-center justify-between py-3 gap-4">
             <span className="text-sm text-light-text dark:text-dark-text">
               {t(`account.notifications.${event}`)}

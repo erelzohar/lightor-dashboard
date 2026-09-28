@@ -3,6 +3,7 @@ import {
   reconcileAppointmentTypes,
   removedStoredImages,
   storedImageName,
+  vacationsToCreate,
 } from '../../utils/aiReconcile';
 import type { AppointmentType } from '../../types';
 
@@ -121,5 +122,36 @@ describe('removedStoredImages', () => {
   it('deletes our image even when it was stored as a full url', () => {
     const original = [`${IMAGES_BASE}gone.webp`];
     expect(removedStoredImages(original, [], IMAGES_BASE)).toEqual(['gone.webp']);
+  });
+});
+
+/**
+ * G3 (LT-199): the AI answer echoes the stored vacations with every edit, and
+ * each save created them all again. Only a vacation that is really new may be
+ * created.
+ */
+describe('vacationsToCreate', () => {
+  const stored = [
+    { _id: 'v1', title: 'Summer', startDate: '1780000000000', endDate: '1780600000000', webConfig_id: 'wc1' },
+  ];
+
+  it('leaves out a vacation that already exists with the same start and end', () => {
+    const echoed = [{ title: 'Summer (renamed)', startDate: '1780000000000', endDate: '1780600000000' }];
+    expect(vacationsToCreate(echoed, stored)).toEqual([]);
+  });
+
+  it('matches an echo written as a date rather than epoch milliseconds', () => {
+    const echoed = [{ title: 'Summer', startDate: new Date(1780000000000).toISOString(), endDate: new Date(1780600000000).toISOString() }];
+    expect(vacationsToCreate(echoed, stored)).toEqual([]);
+  });
+
+  it('keeps a new vacation, once, even when the answer repeats it', () => {
+    const fresh = { title: 'Holiday', startDate: '1790000000000', endDate: '1790200000000' };
+    expect(vacationsToCreate([fresh, { ...fresh }], stored)).toEqual([fresh]);
+  });
+
+  it('keeps a vacation that shares only its start with a stored one', () => {
+    const longer = { title: 'Summer, longer', startDate: '1780000000000', endDate: '1780900000000' };
+    expect(vacationsToCreate([longer], stored)).toEqual([longer]);
   });
 });

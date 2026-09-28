@@ -25,7 +25,15 @@ const POLL_MAX_TRIES = 24;
  * why completing a checkout shows "processing" rather than flipping the badge
  * locally — the badge changes when the server's user record does.
  */
-const BillingSection: React.FC = () => {
+interface BillingSectionProps {
+  /**
+   * A leads site (LT-199, `isLeadsSite`): it takes no bookings, so its plan is
+   * measured by the leads meter alone.
+   */
+  leadsSite?: boolean;
+}
+
+const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) => {
   const { auth, refreshUser } = useAuth();
   const { t, i18n } = useTranslation();
   const [plans, setPlans] = useState<UpgradePlan[]>([]);
@@ -286,8 +294,9 @@ const BillingSection: React.FC = () => {
                   : t('billing.freeDescNative')}
             </p>
 
-            {appointmentCap !== null && (
-              <div className="space-y-1.5">
+            {/* A leads site has no bookings to count (LT-199). */}
+            {appointmentCap !== null && !leadsSite && (
+              <div className="space-y-1.5" data-testid="appointments-meter">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-700 dark:text-gray-200 font-medium">
                     {t('billing.usageMeter', { used: appointmentsUsed, cap: appointmentCap })}

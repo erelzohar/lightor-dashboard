@@ -13,6 +13,8 @@ import DangerZoneSection from '../components/account/DangerZoneSection';
 import NotificationsCard from '../components/account/NotificationsCard';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { isLeadsSite } from '../utils/siteMode';
 
 // Native names — a language selector should read in the language it selects.
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
@@ -27,6 +29,10 @@ const Account: React.FC = () => {
   const { auth, updateUser, updatePassword } = useAuth();
   const { changeLanguage } = useTheme();
   const { t } = useTranslation();
+  // A leads site (LT-199) takes no bookings: its billing card counts leads
+  // only, and its phone is notified of new leads only.
+  const webConfig = useAppSelector((state) => state.webConfig.data);
+  const leadsSite = isLeadsSite(webConfig);
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -221,9 +227,9 @@ const Account: React.FC = () => {
       </Card>
 
       {/* Push per-event toggles — renders nothing outside the native app (LT-129) */}
-      <NotificationsCard />
+      <NotificationsCard leadsSite={leadsSite} />
 
-      <BillingSection />
+      <BillingSection leadsSite={leadsSite} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

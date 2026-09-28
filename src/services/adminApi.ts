@@ -128,7 +128,13 @@ export interface AdminRecentAppointment {
 
 export interface AdminUserDetail {
   user: AdminUserRow;
-  webConfig: { businessName: string; subDomain: string; createdAt: string } | null;
+  webConfig: {
+    businessName: string;
+    subDomain: string;
+    createdAt: string;
+    /** What the site converts to (LT-199); absent on an older API or config = 'book'. */
+    conversion?: 'book' | 'lead';
+  } | null;
   plan: 'free' | 'plus';
   limits: PlanLimits;
   usage: {
@@ -136,8 +142,15 @@ export interface AdminUserDetail {
     servicesCount: number;
     aiGenerationsThisMonth: number;
     aiTokensThisMonth: number;
+    /** Contact-form leads this calendar month (LT-197); absent on an older API. */
+    leadsThisMonth?: number;
   };
-  counts: { appointmentsTotal: number; lastBookedAt: string | null };
+  counts: {
+    appointmentsTotal: number;
+    lastBookedAt: string | null;
+    /** Every lead the account holds (LT-199); absent on an older API. */
+    leadsTotal?: number;
+  };
   recentAppointments: AdminRecentAppointment[];
 }
 

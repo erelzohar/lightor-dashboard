@@ -54,12 +54,12 @@ const user = (overrides: Partial<User> = {}): User =>
 
 const EVENTS = ['newBooking', 'cancellation', 'reschedule', 'morningDigest', 'newLead'];
 
-const renderCard = async () => {
+const renderCard = async (props: { leadsSite?: boolean } = {}) => {
   // A returning visitor: the hint makes the provider probe /auth/me (LT-164).
   setSessionHint();
   render(
     <AuthProvider>
-      <NotificationsCard />
+      <NotificationsCard {...props} />
     </AuthProvider>
   );
   await waitFor(() => expect(getCurrentUser).toHaveBeenCalled());
@@ -122,6 +122,28 @@ describe('NotificationsCard', () => {
     await waitFor(() => expect(updateUserInfo).toHaveBeenCalled());
     await waitFor(() => expect(screen.getAllByRole('switch')[0]).not.toBeDisabled());
     expect(screen.getAllByRole('switch')[0]).toHaveAttribute('aria-checked', 'true');
+  });
+
+  // A leads site (LT-199) takes no bookings: its phone hears about new leads only.
+  it('offers a leads site the new-lead toggle only, and still saves the whole prefs object', async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue(user());
+    vi.mocked(updateUserInfo).mockImplementation(async (_id, data) => user(data));
+    await renderCard({ leadsSite: true });
+    await screen.findByTestId('notification-prefs');
+
+    expect(screen.getByText('account.notifications.newLead')).toBeInTheDocument();
+    for (const e of ['newBooking', 'cancellation', 'reschedule', 'morningDigest']) {
+      expect(screen.queryByText(`account.notifications.${e}`)).not.toBeInTheDocument();
+    }
+    const switches = screen.getAllByRole('switch');
+    expect(switches).toHaveLength(1);
+
+    fireEvent.click(switches[0]);
+    await waitFor(() =>
+      expect(updateUserInfo).toHaveBeenCalledWith('u1', {
+        notificationPrefs: { newBooking: true, cancellation: true, reschedule: true, morningDigest: true, newLead: false },
+      })
+    );
   });
 
   it('is not rendered on the web', async () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, UsersRound, Calendar, Menu, Sparkles } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, UsersRound, Calendar, Menu, Sparkles, Inbox, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
@@ -8,6 +8,13 @@ import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
 interface BottomTabBarProps {
   /** Not-yet-onboarded accounts only get the pages the drawer allows them. */
   isRestricted?: boolean;
+  /**
+   * A leads site (LT-199, `isLeadsSite`): no calendar, so the daily
+   * destinations are the leads, the services and the opening hours.
+   */
+  leadsSite?: boolean;
+  /** New leads (LT-197): a dot on the Leads tab while any wait. */
+  newLeads?: number | null;
   /** Opens the full drawer (the long tail of pages lives there). */
   onMore: () => void;
 }
@@ -26,7 +33,7 @@ interface BottomTabBarProps {
  * keyboard is up, otherwise it floats over the field being typed into.
  * Flex row + logical properties, so RTL just works.
  */
-const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMore }) => {
+const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
 
@@ -35,12 +42,19 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
         { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
         { path: '/ai', Icon: Sparkles, label: t('common.aiBuilder') },
       ]
-    : [
-        { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
-        { path: '/appointments', Icon: CalendarRange, label: t('common.appointments') },
-        { path: '/customers', Icon: UsersRound, label: t('common.customers') },
-        { path: '/schedule-vacations', Icon: Calendar, label: t('common.scheduleVacations') },
-      ];
+    : leadsSite
+      ? [
+          { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
+          { path: '/leads', Icon: Inbox, label: t('common.leads'), dot: !!newLeads },
+          { path: '/appointment-types', Icon: Tag, label: t('common.serviceTypes') },
+          { path: '/schedule-vacations', Icon: Calendar, label: t('common.openingHours') },
+        ]
+      : [
+          { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
+          { path: '/appointments', Icon: CalendarRange, label: t('common.appointments') },
+          { path: '/customers', Icon: UsersRound, label: t('common.customers') },
+          { path: '/schedule-vacations', Icon: Calendar, label: t('common.scheduleVacations') },
+        ];
 
   if (keyboardOpen) return null;
 
@@ -63,14 +77,24 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, onMor
       // the bar stayed light in dark mode. Solid surfaces on both themes.
       className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff] dark:bg-dark-surface py-[calc(env(safe-area-inset-bottom)/2)]"
     >
-      {tabs.map(({ path, Icon, label }) => (
+      {tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink
           key={path}
           to={path}
           end={path === '/'}
           className={({ isActive }) => cn(itemClasses, isActive ? activeClasses : idleClasses)}
         >
-          <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+          {/* The same dot the collapsed sidebar rail puts on the icon. */}
+          <span className="relative flex shrink-0">
+            <Icon className="h-6 w-6" aria-hidden="true" />
+            {dot && (
+              <span
+                className="absolute -top-0.5 -end-0.5 w-2 h-2 rounded-full bg-rose-500"
+                aria-hidden="true"
+                data-testid="tab-dot"
+              />
+            )}
+          </span>
           <span className="truncate max-w-full px-1">{label}</span>
         </NavLink>
       ))}

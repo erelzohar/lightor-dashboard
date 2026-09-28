@@ -10,6 +10,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { fetchAppointmentTypes } from '../../store/slices/appointmentsSlice';
 import { useAuth } from '../../contexts/AuthContext';
+import { isLeadsSite } from '../../utils/siteMode';
 
 interface Props {
   userName: string;
@@ -24,16 +25,19 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector(state => state.webConfig.data);
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
+  // A leads site (LT-199) is not asked for services: they are content there,
+  // and the checklist must be completable without any.
+  const leadsSite = isLeadsSite(webConfig);
 
   const firstName = userName.split(' ')[0];
 
   // Fetch appointment types if not loaded yet (needed for accurate progress)
   useEffect(() => {
-    if (isLightyMode) return;
+    if (isLightyMode || leadsSite) return;
     if (appointmentTypes.length === 0 && auth.user?.webConfig_id) {
       dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
     }
-  }, [auth.user?.webConfig_id, isLightyMode]);
+  }, [auth.user?.webConfig_id, isLightyMode, leadsSite]);
 
   const allSteps = [
     {
@@ -56,11 +60,15 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
       icon: Clock,
       done: !!(webConfig?.workingDays?.some(d => d !== null)),
     },
-    {
-      key: 'serviceTypes',
-      icon: Tag,
-      done: appointmentTypes.length > 0,
-    },
+    ...(leadsSite
+      ? []
+      : [
+          {
+            key: 'serviceTypes',
+            icon: Tag,
+            done: appointmentTypes.length > 0,
+          },
+        ]),
     {
       key: 'logo',
       icon: Image,

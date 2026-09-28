@@ -35,6 +35,8 @@ const state = {
     appointmentTypes: [
       { _id: 't1', name: 'Massage', webConfig_id: 'wc1', price: '100', durationMS: '3600000' },
       { _id: 't2', name: 'Home visit', webConfig_id: 'wc1', price: '200', durationMS: '3600000' },
+      // Saved on a leads site (LT-199): no duration, so it cannot be booked.
+      { _id: 't3', name: 'Kitchen renovation', webConfig_id: 'wc1', price: '' },
     ],
   },
   webConfig: { data: { workingDays: [] as (string | null)[], bookingFields: CATALOG } },
@@ -110,5 +112,19 @@ describe('OwnerBookingModal: booking questions', () => {
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody().answers).toEqual([]);
+  });
+});
+
+/**
+ * A service without a duration (LT-199) is content, not a time slot: the
+ * server refuses to book it, so the owner is not offered it.
+ */
+describe('OwnerBookingModal: services without a duration', () => {
+  it('offers only the services that can be booked', () => {
+    renderModal();
+
+    const options = Array.from(serviceSelect().querySelectorAll('option')).map((o) => o.value);
+    expect(options).toEqual(['t1', 't2']);
+    expect(serviceSelect().textContent).not.toContain('NaN');
   });
 });

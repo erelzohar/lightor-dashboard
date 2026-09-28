@@ -39,13 +39,14 @@
     "addTeamMemberBtn": "Ajouter un membre",
     "aiBuilder": "Assistant IA",
     "upgradePlanTitle": "Améliorez votre forfait",
-    "upgradePlanDesc": "Vous êtes sur le forfait gratuit. La mise à niveau lève la limite mensuelle de rendez-vous et retire la mention Lightor de votre site.",
+    "upgradePlanDesc": "Vous êtes sur le forfait gratuit. La mise à niveau lève les limites mensuelles de rendez-vous et de demandes et retire la mention Lightor de votre site.",
     "upgradePlanBtn": "Améliorer votre forfait",
     "completeSetupFirst": "Terminez d'abord la configuration de votre site",
     "search": "Rechercher",
     "adminPanel": "Panneau d'administration",
     "customers": "Clients",
-    "leads": "Demandes"
+    "leads": "Demandes",
+    "openingHours": "Horaires"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -59,17 +60,7 @@
     "more": "Plus",
     "navigation": "Navigation",
     "manage": "Gérer",
-    "newAppointment": "Nouveau rendez-vous",
-    "newAppointmentMsg": "Nouveau rendez-vous prévu pour {{time}}",
-    "appointmentCancelled": "Rendez-vous annulé",
-    "appointmentCancelledMsg": "Le rendez-vous de {{time}} a été annulé",
     "admin": "Administration"
-  },
-  "notifications": {
-    "newAppointment": "Nouveau rendez-vous",
-    "newAppointmentMsg": "Nouveau rendez-vous prévu pour {{time}}",
-    "appointmentCancelled": "Rendez-vous annulé",
-    "appointmentCancelledMsg": "Le rendez-vous de {{time}} a été annulé"
   },
   "topbar": {
     "switchToLight": "Passer en mode clair",
@@ -140,11 +131,11 @@
     "copyLink": "Copier le lien",
     "linkCopied": "Lien copié !",
     "businessName": "Nom de l'entreprise",
-    "businessNameTooltip": "Le nom qui apparaîtra en tête du site de réservation, du système de rendez-vous et des messages.",
+    "businessNameTooltip": "Le nom qui apparaît en haut de votre site, dans le système et dans les messages.",
     "minCancelTime": "Délai minimum d'annulation des rendez-vous",
     "minCancelTimeTooltip": "Choisissez le délai avant le rendez-vous pendant lequel les clients peuvent le modifier",
     "popupMessage": "Message contextuel",
-    "popupMessageDesc": "Un message affiché aux clients lorsqu'ils visitent votre site de réservation. Utile pour les avis de congés, les changements d'horaires, etc.",
+    "popupMessageDesc": "Un message affiché aux visiteurs lorsqu'ils ouvrent votre site. Utile pour les avis de congés, les changements d'horaires, etc.",
     "active": "Actif",
     "off": "Désactivé",
     "popupPlaceholder": "Rédigez le message à afficher aux clients...",
@@ -165,10 +156,11 @@
     "tabs": {
       "general": "Profil",
       "address": "Adresse",
-      "contact": "Contact"
+      "contact": "Contact",
+      "site": "Site"
     },
     "websiteLanguage": "Langue du site",
-    "websiteLanguageTooltip": "La langue par défaut que vos clients voient sur votre site de réservation public.",
+    "websiteLanguageTooltip": "La langue par défaut que les visiteurs voient sur votre site public.",
     "bookingHorizon": "Jusqu'où les clients peuvent réserver",
     "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même.",
     "bookingFields": {
@@ -210,6 +202,25 @@
       "empty": "Aucune question pour le moment — les visiteurs laissent un nom, un téléphone et un message.",
       "messageBox": "Message (facultatif)",
       "addQuestion": "Ajouter une question"
+    },
+    "site": {
+      "title": "Votre site",
+      "modeTitle": "Ce que fait le site",
+      "modeBook": "Réservations",
+      "modeBookDesc": "Les clients réservent un créneau dans votre agenda. Le formulaire de contact reste aussi.",
+      "modeLead": "Demandes",
+      "modeLeadDesc": "Sans agenda : les visiteurs laissent leurs coordonnées dans le formulaire de contact et vous les recontactez.",
+      "switchToLeadTitle": "Passer aux demandes ?",
+      "switchToLeadMessage": "L'agenda quitte votre site et le formulaire de contact devient son action principale : le bouton principal y mène.",
+      "switchToBookTitle": "Passer aux réservations ?",
+      "switchToBookMessage": "L'agenda revient sur votre site avec vos services. Un service sans durée reste affiché mais ne peut pas être réservé tant que vous ne lui en donnez pas une.",
+      "nothingDeleted": "Rien n'est supprimé : vos services, horaires, questions de réservation et rendez-vous restent enregistrés, et vous pouvez revenir en arrière à tout moment.",
+      "switchConfirm": "Changer",
+      "ctaLabel": "Texte du bouton principal",
+      "ctaHelp": "Le texte du bouton principal de votre site. Laissez vide pour utiliser le texte par défaut affiché dans le champ.",
+      "ctaDefaultBook": "Prendre RDV",
+      "ctaDefaultLead": "Contactez-nous",
+      "ctaTooLong": "{{max}} caractères au maximum"
     }
   },
   "appointmentTypes": {
@@ -225,11 +236,11 @@
     "noServices": "Aucun type de service à afficher",
     "addNewService": "Ajouter un nouveau service",
     "deleteConfirm": "Voulez-vous vraiment supprimer « {{name}} » ?",
-    "deleteSuccess": "Type de rendez-vous supprimé avec succès",
-    "deleteError": "Échec de la suppression du type de rendez-vous",
-    "updateSuccess": "Type de rendez-vous mis à jour avec succès",
-    "addSuccess": "Type de rendez-vous ajouté avec succès",
-    "saveError": "Échec de l'enregistrement du type de rendez-vous",
+    "deleteSuccess": "Service supprimé avec succès",
+    "deleteError": "Échec de la suppression du service",
+    "updateSuccess": "Service mis à jour avec succès",
+    "addSuccess": "Service ajouté avec succès",
+    "saveError": "Échec de l'enregistrement du service",
     "serviceLimit": "Le forfait gratuit est limité à 3 services. Essayez Lightor+ gratuitement pour des services illimités — Compte → Abonnement.",
     "class": {
       "toggle": "Cours collectif",
@@ -248,8 +259,10 @@
       "remove": "Retirer",
       "uploading": "Envoi…",
       "uploadError": "Impossible d’envoyer l’image",
-      "hint": "Facultatif — affichée à côté du service sur votre site de réservation"
-    }
+      "hint": "Facultatif — affichée à côté du service sur votre site"
+    },
+    "priceOptional": "Prix (facultatif)",
+    "noDuration": "Sans durée — pas encore réservable"
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -307,7 +320,6 @@
   "onboarding": {
     "welcomeTitle": "Bienvenue, {{name}} !",
     "welcomeSubtitle": "Configurons votre entreprise",
-    "welcomeDescription": "Avant de commencer à prendre des rendez-vous, effectuez une configuration rapide pour préparer votre profil pour les clients.",
     "reviewGeneratedDetails": "Lighty a généré les détails de votre site. Veuillez les vérifier et compléter les informations manquantes pour vous assurer que tout est correct.",
     "setupSteps": "Ce que nous allons configurer",
     "step_phone": "Numéro de téléphone de l'entreprise",
@@ -358,7 +370,11 @@
     "suggestion_edit_3": "Réécrire la page d'accueil avec un message plus fort",
     "togglePreview": "Aperçu",
     "hidePreview": "Masquer l'aperçu",
-    "aiDisclaimer": "L'IA peut se tromper. Vérifiez le site généré."
+    "aiDisclaimer": "L'IA peut se tromper. Vérifiez le site généré.",
+    "suggestion_lead_1": "Ajoute à mon formulaire de contact une question sur le type de travaux",
+    "suggestion_lead_2": "Remplace le bouton principal par « Demander un devis »",
+    "suggestion_lead_3": "Réécris la page d'accueil pour attirer plus de demandes",
+    "saveFailed": "Échec de l'enregistrement du site. Réessayez."
   },
   "verify": {
     "loading": "Vérification de votre e-mail...",
@@ -457,7 +473,9 @@
     "maxDateOverrides": "Jusqu'à 50 dates spéciales peuvent être définies",
     "duplicateDate": "Cette date a déjà des horaires spéciaux",
     "selectDate": "Veuillez choisir une date",
-    "pastDate": "Les dates passées ne peuvent pas être sélectionnées"
+    "pastDate": "Les dates passées ne peuvent pas être sélectionnées",
+    "openingHoursTitle": "Horaires d'ouverture",
+    "openingHoursDesc": "Les horaires que votre site affiche aux visiteurs"
   },
   "account": {
     "title": "Paramètres du compte",
@@ -545,13 +563,20 @@
   "dashboard": {
     "emptyTitle": "Bienvenue sur Lightor !",
     "emptySubtitle": "Commencez à utiliser Lightor pour voir vos statistiques",
-    "emptyDesc": "Dès que vous recevrez votre premier rendez-vous, vos statistiques, graphiques et analyses apparaîtront ici.",
+    "emptyDesc": "Dès que des clients vous contacteront via votre site, vos statistiques et analyses apparaîtront ici.",
     "leadsNearTitle": "{{used}} demandes sur {{cap}} ce mois-ci",
     "leadsNearDesc": "À la limite, le formulaire de contact de votre site laisse place aux boutons d'appel et WhatsApp jusqu'au mois prochain.",
     "leadsFullTitle": "Limite mensuelle de demandes atteinte",
     "leadsFullDesc": "Jusqu'au mois prochain, les visiteurs voient les boutons d'appel et WhatsApp au lieu du formulaire.",
     "newLeadsTitle": "Nouvelles demandes : {{count}}",
-    "newLeadsDesc": "Des visiteurs vous ont laissé un message sur votre site"
+    "newLeadsDesc": "Des visiteurs vous ont laissé un message sur votre site",
+    "emptyDescLeads": "Quand un visiteur laisse une demande sur votre site, elle apparaît ici, avec un bouton pour le rappeler.",
+    "leadsSummary": {
+      "new": "Nouvelles",
+      "thisMonth": "Ce mois-ci",
+      "latest": "Dernières demandes",
+      "viewAll": "Tout voir"
+    }
   },
   "billing": {
     "title": "Abonnement",
@@ -559,10 +584,10 @@
     "statusActive": "Actif",
     "statusPastDue": "Problème de paiement",
     "statusCanceled": "Annulé",
-    "activeDesc": "Votre abonnement est actif — rendez-vous illimités.",
+    "activeDesc": "Votre abonnement est actif — sans limites mensuelles.",
     "nextBill": "Prochaine date de facturation :",
-    "freeDesc": "Vous êtes sur le forfait gratuit, limité à un nombre mensuel de rendez-vous. Passez à supérieur pour des réservations illimitées.",
-    "freeDescNative": "Vous êtes sur le forfait gratuit, limité à un nombre mensuel de rendez-vous.",
+    "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
+    "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
     "pilotLine": "Pilote : toutes les fonctionnalités Plus sont gratuites jusqu’au {{date}}.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
@@ -578,8 +603,8 @@
     "stillProcessing": "Le paiement est toujours en cours — votre forfait sera mis à jour dans les prochaines minutes. Vous pourrez actualiser plus tard.",
     "cancelCta": "Annuler l'abonnement",
     "cancelModalTitle": "Annuler votre abonnement ?",
-    "cancelModalBody": "Votre forfait restera pleinement actif jusqu'au {{date}}. Après cela, vous passerez au forfait gratuit — votre site reste en ligne, avec la limite mensuelle de rendez-vous du forfait gratuit.",
-    "cancelModalBodyNoDate": "Votre forfait restera pleinement actif jusqu'à la fin de la période que vous avez payée, puis passera au forfait gratuit — votre site reste en ligne, avec la limite mensuelle de rendez-vous du forfait gratuit.",
+    "cancelModalBody": "Votre forfait restera pleinement actif jusqu'au {{date}}. Après cela, vous passerez au forfait gratuit — votre site reste en ligne, avec les limites mensuelles du forfait gratuit.",
+    "cancelModalBodyNoDate": "Votre forfait restera pleinement actif jusqu'à la fin de la période que vous avez payée, puis passera au forfait gratuit — votre site reste en ligne, avec les limites mensuelles du forfait gratuit.",
     "cancelModalKeep": "Conserver mon forfait",
     "cancelModalConfirm": "Annuler l'abonnement",
     "cancelling": "Annulation...",
@@ -603,11 +628,11 @@
   },
   "danger": {
     "title": "Zone de danger",
-    "desc": "La suppression de votre compte retire votre site de réservation, tous les rendez-vous et services, et annule tout abonnement actif. Cette action est irréversible.",
+    "desc": "La suppression de votre compte retire votre site, tous les rendez-vous, demandes et services, et annule tout abonnement actif. Cette action est irréversible.",
     "deleteCta": "Supprimer le compte",
     "modalTitle": "Supprimer définitivement votre compte ?",
-    "consequenceSite": "Votre site de réservation sera mis hors ligne immédiatement.",
-    "consequenceAppointments": "Tous les rendez-vous, services et données de l'entreprise seront définitivement supprimés.",
+    "consequenceSite": "Votre site sera mis hors ligne immédiatement.",
+    "consequenceAppointments": "Tous les rendez-vous, demandes, services et données de l'entreprise seront définitivement supprimés.",
     "consequenceSubscription": "Tout abonnement actif est annulé immédiatement — aucun frais supplémentaire.",
     "consequenceFinal": "Cette action est irréversible.",
     "passwordLabel": "Saisissez votre mot de passe pour confirmer",
@@ -774,19 +799,22 @@
         "created": "Inscrit le",
         "language": "Langue",
         "channel": "Canal",
-        "lastBooked": "Dernière réservation"
+        "lastBooked": "Dernière réservation",
+        "leadsTotal": "Demandes (total)"
       },
       "site": {
         "title": "Site public",
         "open": "Ouvrir le site",
-        "none": "Pas encore de site"
+        "none": "Pas encore de site",
+        "mode": "Type de site"
       },
       "usage": {
         "title": "Utilisation ce mois-ci — forfait {{plan}}",
         "appointments": "Réservations",
         "services": "Services",
         "aiGenerations": "Générations IA",
-        "aiTokens": "Jetons IA"
+        "aiTokens": "Jetons IA",
+        "leads": "Demandes"
       },
       "appointments": {
         "title": "Rendez-vous ({{count}} au total)",

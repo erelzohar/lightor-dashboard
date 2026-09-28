@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import globals from '../../services/globals';
 import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsCount';
+import { isLeadsSite } from '../../utils/siteMode';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -170,6 +171,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const [open, setOpen] = useState(false);
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
+  // A leads site (LT-199) has no calendar: no Appointments and no Customers
+  // (customers are booking-only), the leads are the daily destination, and
+  // the weekly hours are just the hours the site shows. The routes stay
+  // reachable by URL — a push tap for a lead opens /leads either way.
+  const webConfig = useAppSelector((state) => state.webConfig.data);
+  const leadsSite = isLeadsSite(webConfig);
+  const leadsLink = { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined };
 
   // Close the mobile drawer when the route changes.
   useEffect(() => {
@@ -180,18 +188,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const navSections = [
     {
       label: t('sidebar.navigation'),
-      items: [
-        { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
-        { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
-        { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
-      ],
+      items: leadsSite
+        ? [
+            { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
+            { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
+            leadsLink,
+          ]
+        : [
+            { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
+            { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
+            { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
+          ],
     },
     {
       label: t('sidebar.manage'),
       items: [
-        { path: '/customers', Icon: UsersRound, name: t('common.customers') },
-        { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined },
-        { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
+        ...(leadsSite
+          ? [{ path: '/schedule-vacations', Icon: Calendar, name: t('common.openingHours') }]
+          : [
+              { path: '/customers', Icon: UsersRound, name: t('common.customers') },
+              leadsLink,
+              { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
+            ]),
         { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
         { path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') },
         { path: '/settings', Icon: Settings, name: t('common.settings') },
@@ -223,7 +241,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
           <SidebarHeader />
           <div className="flex flex-col">
             {navSections.map((section, sIdx) => (
-              <React.Fragment key={section.label}>
+              // One group per section, named by its caption, so the grouping
+              // is announced and not only drawn.
+              <div key={section.label} role="group" aria-label={section.label} className="flex flex-col">
                 <SectionLabel label={section.label} first={sIdx === 0} />
                 {section.items.map(({ path, Icon, name, badge }: { path: string; Icon: typeof Inbox; name: string; badge?: number }) => {
                   if (isRestricted && !ALLOWED_WHEN_RESTRICTED.includes(path)) return null;
@@ -242,14 +262,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                     />
                   );
                 })}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
         <SidebarFooter />
       </SidebarBody>
       {/* Phone-only thumb bar (LT-127); "More" opens this same drawer. */}
-      <BottomTabBar isRestricted={isRestricted} onMore={() => setOpen(true)} />
+      <BottomTabBar
+        isRestricted={isRestricted}
+        leadsSite={leadsSite}
+        newLeads={newLeads}
+        onMore={() => setOpen(true)}
+      />
     </SidebarRoot>
   );
 };

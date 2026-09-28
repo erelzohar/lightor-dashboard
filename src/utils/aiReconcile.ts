@@ -1,4 +1,4 @@
-import type { AppointmentType } from '../types';
+import type { AppointmentType, Vacation } from '../types';
 
 /**
  * Reconciling an AI-edited config against what the server actually has.
@@ -110,4 +110,29 @@ export function removedStoredImages(
     removed.push(name);
   }
   return removed;
+}
+
+/** A vacation's start or end as epoch ms: stored as an epoch string, possibly echoed as a date. */
+const vacationMs = (value: string | number | undefined): number => {
+  const raw = String(value ?? '').trim();
+  return raw !== '' && Number.isFinite(Number(raw)) ? Number(raw) : new Date(raw).getTime();
+};
+
+/**
+ * The vacations an AI answer asks to create (G3, LT-199). The model echoes
+ * the stored vacations back with every edit, and each save used to create
+ * them all again. One that already exists with the same start and end — or
+ * that repeats one earlier in the same answer — is left out.
+ */
+export function vacationsToCreate<V extends Pick<Vacation, 'startDate' | 'endDate'>>(
+  proposed: V[],
+  existing: Pick<Vacation, 'startDate' | 'endDate'>[]
+): V[] {
+  const seen = new Set(existing.map((v) => `${vacationMs(v.startDate)}|${vacationMs(v.endDate)}`));
+  return proposed.filter((v) => {
+    const key = `${vacationMs(v.startDate)}|${vacationMs(v.endDate)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }

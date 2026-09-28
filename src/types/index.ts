@@ -46,6 +46,14 @@ export interface HeroConfig {
   subtitle: string;
   description: string;
   heroImageSrc: string;
+  /** The round stamp decor's own line (LT-174); absent on configs from before it. */
+  stamp?: string;
+  /**
+   * The site's main button text — hero, navbar and booking band (LT-199).
+   * The owner's own words, at most 24 characters; '' or absent = the mode's
+   * default ("Book" / "Contact us") on the public site.
+   */
+  cta?: string;
 }
 
 export interface FeatureItem {
@@ -183,6 +191,12 @@ export interface WebConfig {
   bookingFields?: BookingField[];
   /** The contact form's own questions (LT-197); same shape, never scoped to a service. */
   leadFields?: BookingField[];
+  /**
+   * What the site converts to (LT-199): 'book' = calendar + contact form,
+   * 'lead' = the contact form only, no calendar. Absent reads 'book'. Read it
+   * through `isLeadsSite` (utils/siteMode), never inline.
+   */
+  conversion?: 'book' | 'lead';
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */
@@ -250,7 +264,12 @@ export interface AppointmentType {
   name: string;
   webConfig_id: string;
   price: string;
-  durationMS: string;
+  /**
+   * Optional since LT-199: a leads site's services are content, not time
+   * slots. A service without a positive duration cannot be booked (the server
+   * refuses it) — see `isBookableService` in utils/siteMode.
+   */
+  durationMS?: string;
   /** Absent means an ordinary one-to-one appointment. */
   kind?: 'appointment' | 'class';
   capacity?: number;

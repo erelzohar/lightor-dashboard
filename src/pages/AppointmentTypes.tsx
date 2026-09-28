@@ -20,6 +20,7 @@ import {
 } from '../store/slices/appointmentsSlice';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTranslation } from 'react-i18next';
+import { isBookableService, isLeadsSite } from '../utils/siteMode';
 
 /** Bare names are S3 images served by the images API; full URLs pass through. */
 const resolveImage = (name: string): string =>
@@ -75,17 +76,35 @@ const AppointmentTypes: React.FC = () => {
   const [sessions, setSessions] = useState<ClassSession[]>([]);
   const { auth } = useAuth();
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
+  // A leads site's services are content (LT-199): a name, a picture and a
+  // price only when the owner wants one. No duration and no class fields —
+  // there is no calendar to book them in.
+  const webConfig = useAppSelector(state => state.webConfig.data);
+  const leadsSite = isLeadsSite(webConfig);
   const dispatch = useAppDispatch();
 
   document.title = t('appointmentTypes.title');
 
+  // Once per visit (G4, LT-199). The effect used to depend on the list itself,
+  // and every answer — an empty one too — stores a new array, so a business
+  // with no services refetched forever. Always read on arrival: the AI builder
+  // saves services straight through the API, past this store.
   useEffect(() => {
-    if (appointmentTypes.length === 0 && auth.user) {
-      dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id })).finally(() =>
-        setIsLoading(false)
-      );
-    } else setIsLoading(false);
-  }, [appointmentTypes]);
+    const webConfigId = auth.user?.webConfig_id;
+    if (!webConfigId) {
+      setIsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    dispatch(fetchAppointmentTypes({ webConfig_id: webConfigId })).finally(() => {
+      if (!cancelled) setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.user?.webConfig_id, dispatch]);
+  // The skeleton only stands in for a list we do not have yet.
+  const showSkeleton = isLoading && appointmentTypes.length === 0;
 
   const resetClassFields = (type?: AppointmentType | null) => {
     setIsClass(type?.kind === 'class');
@@ -169,6 +188,21 @@ const AppointmentTypes: React.FC = () => {
     // Saving mid-upload would store the service without the picture being chosen.
     if (uploadingImage) return;
     try {
+      if (leadsSite) {
+        // A leads site's service (LT-199): no duration and no class fields on
+        // the wire. An edit leaves a stored duration alone, so switching back
+        // to bookings finds the service bookable again.
+        const content = { name: formData.name, price: formData.price, image: formData.image };
+        if (currentType) {
+          await dispatch(updateAppointmentType({ id: currentType._id, data: content })).unwrap();
+          toast.success(t('appointmentTypes.updateSuccess'));
+        } else {
+          await dispatch(createAppointmentType({ ...content, webConfig_id: auth.user.webConfig_id })).unwrap();
+          toast.success(t('appointmentTypes.addSuccess'));
+        }
+        closeForm();
+        return;
+      }
       // unwrap() matters: a bare dispatch(thunk) resolves even when the API
       // rejected, so failures used to toast "saved" while saving nothing.
       // A class carries its seats and its timetable; an ordinary service sends
@@ -198,7 +232,12 @@ const AppointmentTypes: React.FC = () => {
     }
   };
 
-  const getDurationMinutes = () => Math.floor(parseInt(formData.durationMS) / 60000);
+  // A service saved on a leads site has no duration (LT-199): the field starts
+  // empty rather than showing NaN, and `required` asks for one.
+  const getDurationMinutes = () => {
+    const minutes = Math.floor(parseInt(formData.durationMS ?? '') / 60000);
+    return Number.isFinite(minutes) ? minutes : '';
+  };
 
   const dayNames = t('scheduleVacations.daysOfWeek', { returnObjects: true }) as string[];
 
@@ -365,14 +404,14 @@ const AppointmentTypes: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Price + Duration side by side */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Price + Duration side by side; a leads site's price stands alone and is optional */}
+                  {leadsSite ? (
                     <InputField
-                      label={t('appointmentTypes.price')}
-                      icon={<DollarSign size={16} />}
+                      label={t('appointmentTypes.priceOptional')}
+                      icon={<Tag size={16} />}
                       prefix={
                         <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
-                          $
+                          {t('appointments.currencySymbol')}
                         </span>
                       }
                       inputProps={{
@@ -382,28 +421,49 @@ const AppointmentTypes: React.FC = () => {
                         step: '1',
                         value: formData.price,
                         onChange: handleChange,
-                        required: true,
-                        placeholder: '0.00',
+                        placeholder: '0',
                       }}
                     />
-                    <InputField
-                      label={t('appointmentTypes.duration')}
-                      icon={<Timer size={16} />}
-                      inputProps={{
-                        name: 'durationMinutes',
-                        type: 'number',
-                        min: '5',
-                        step: '5',
-                        value: getDurationMinutes(),
-                        onChange: handleChange,
-                        required: true,
-                        placeholder: 'min',
-                      }}
-                    />
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField
+                        label={t('appointmentTypes.price')}
+                        icon={<DollarSign size={16} />}
+                        prefix={
+                          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
+                            $
+                          </span>
+                        }
+                        inputProps={{
+                          name: 'price',
+                          type: 'number',
+                          min: '0',
+                          step: '1',
+                          value: formData.price,
+                          onChange: handleChange,
+                          required: true,
+                          placeholder: '0.00',
+                        }}
+                      />
+                      <InputField
+                        label={t('appointmentTypes.duration')}
+                        icon={<Timer size={16} />}
+                        inputProps={{
+                          name: 'durationMinutes',
+                          type: 'number',
+                          min: '5',
+                          step: '5',
+                          value: getDurationMinutes(),
+                          onChange: handleChange,
+                          required: true,
+                          placeholder: 'min',
+                        }}
+                      />
+                    </div>
+                  )}
 
                   {/* Seats and the weekly timetable — only for a class */}
-                  {isClass && (
+                  {!leadsSite && isClass && (
                     <div
                       className="flex flex-col gap-4 px-4 py-4 rounded-xl"
                       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(149,142,160,0.14)' }}
@@ -484,30 +544,32 @@ const AppointmentTypes: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Class toggle + action buttons on same row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
+                  {/* Class toggle + action buttons on same row (no classes on a leads site) */}
+                  <div className={`flex flex-col sm:flex-row sm:items-center gap-4 pt-1 ${leadsSite ? 'sm:justify-end' : ''}`}>
                     {/* Toggle */}
-                    <div
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl flex-grow"
-                      style={{
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(149,142,160,0.14)',
-                      }}
-                    >
-                      <div className="flex-grow">
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white">{t('appointmentTypes.class.toggle')}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('appointmentTypes.class.toggleHint')}</p>
+                    {!leadsSite && (
+                      <div
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl flex-grow"
+                        style={{
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(149,142,160,0.14)',
+                        }}
+                      >
+                        <div className="flex-grow">
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">{t('appointmentTypes.class.toggle')}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('appointmentTypes.class.toggleHint')}</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={isClass}
+                            onChange={() => setIsClass(v => !v)}
+                          />
+                          <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary" />
+                        </label>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={isClass}
-                          onChange={() => setIsClass(v => !v)}
-                        />
-                        <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary" />
-                      </label>
-                    </div>
+                    )}
 
                     {/* Action buttons */}
                     <div className="flex gap-2 sm:shrink-0">
@@ -546,7 +608,7 @@ const AppointmentTypes: React.FC = () => {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             {t('appointmentTypes.services')}
           </h3>
-          {!isLoading && appointmentTypes.length > 0 && (
+          {!showSkeleton && appointmentTypes.length > 0 && (
             <span
               className="text-xs font-semibold px-2.5 py-1 rounded-full text-primary"
               style={{ background: 'rgba(139,92,246,0.12)' }}
@@ -558,7 +620,7 @@ const AppointmentTypes: React.FC = () => {
 
         {/* List body */}
         <div className="p-3">
-          {isLoading ? (
+          {showSkeleton ? (
             <div className="space-y-2 p-3">
               {[1, 2, 3].map(i => (
                 <div key={i} className="h-16 rounded-2xl animate-pulse bg-white/[0.04]" />
@@ -613,14 +675,33 @@ const AppointmentTypes: React.FC = () => {
                         {type.name}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                          <DollarSign size={11} className="text-green-400" />
-                          {t('appointments.currencySymbol')}{type.price}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                          <Timer size={11} className="text-blue-400" />
-                          {formatDuration(type.durationMS)}
-                        </span>
+                        {leadsSite ? (
+                          // Content only (LT-199): the price when there is one, no duration.
+                          !!type.price?.toString().trim() && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {t('appointments.currencySymbol')}{type.price}
+                            </span>
+                          )
+                        ) : (
+                          <>
+                            <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                              <DollarSign size={11} className="text-green-400" />
+                              {t('appointments.currencySymbol')}{type.price}
+                            </span>
+                            {isBookableService(type) ? (
+                              <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <Timer size={11} className="text-blue-400" />
+                                {formatDuration(type.durationMS)}
+                              </span>
+                            ) : (
+                              // Saved on a leads site (LT-199): listed, not bookable until it has a duration.
+                              <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                                <Timer size={11} />
+                                {t('appointmentTypes.noDuration')}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

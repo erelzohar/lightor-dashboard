@@ -23,7 +23,11 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
 
   return (
     <div className="flex justify-center w-full">
-      <div className="flex items-center justify-center p-1.5 bg-gray-100 dark:bg-dark-bg rounded-2xl overflow-hidden hide-scrollbar gap-1 sm:gap-2 shadow-inner border border-gray-200/60 dark:border-gray-700/60">
+      {/* On a narrow phone the row scrolls sideways instead of clipping its
+          last tab (LT-199 added a fourth), and the icons wait for `sm`. The
+          row itself is not centred: a centred row that overflows cuts off its
+          start, out of scroll reach; the outer flex centres it when it fits. */}
+      <div className="flex items-center max-w-full p-1.5 bg-gray-100 dark:bg-dark-bg rounded-2xl overflow-x-auto scrollbar-hide gap-1 sm:gap-2 shadow-inner border border-gray-200/60 dark:border-gray-700/60">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -31,7 +35,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`
-                relative flex items-center justify-center px-2.5 py-2.5 rounded-2xl whitespace-nowrap
+                relative shrink-0 flex items-center justify-center px-2.5 py-2.5 rounded-2xl whitespace-nowrap
                 transition-all duration-300 outline-none
                 ${isActive
                   ? 'text-primary dark:text-primary-dark font-semibold'
@@ -48,7 +52,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
                 />
               )}
               <span className="relative z-10 flex items-center text-[0.9375rem] tracking-wide">
-                {tab.icon && <span className="m-1.5 opacity-80">{tab.icon}</span>}
+                {tab.icon && <span className="hidden sm:inline-flex m-1.5 opacity-80">{tab.icon}</span>}
                 {tab.label}
               </span>
             </button>

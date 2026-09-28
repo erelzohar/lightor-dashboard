@@ -16,6 +16,7 @@ import {
   UserCog,
   CalendarRange,
   CreditCard,
+  Inbox,
 } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -35,6 +36,7 @@ import {
   deleteUser,
   AdminUserDetail as AdminUserDetailData,
 } from '../../services/adminApi';
+import { isLeadsSite } from '../../utils/siteMode';
 
 /**
  * Admin → user detail (LT-058): identity, site, usage-vs-limits, recent
@@ -154,6 +156,12 @@ const AdminUserDetail: React.FC = () => {
       used: usage.appointmentsThisMonth,
       limit: limits.monthlyAppointments,
     },
+    // Contact-form leads against the month's cap (LT-197/199); null = unlimited.
+    {
+      label: t('admin.userDetail.usage.leads'),
+      used: usage.leadsThisMonth ?? 0,
+      limit: limits.monthlyLeads ?? null,
+    },
     {
       label: t('admin.userDetail.usage.services'),
       used: usage.servicesCount,
@@ -263,6 +271,12 @@ const AdminUserDetail: React.FC = () => {
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.lastBooked')}</dt>
                 <dd className="mt-0.5 text-gray-800 dark:text-gray-200">{formatDate(counts.lastBookedAt)}</dd>
               </div>
+              <div>
+                <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.leadsTotal')}</dt>
+                <dd className="mt-0.5 text-gray-800 dark:text-gray-200 tabular-nums" data-testid="leads-total">
+                  {counts.leadsTotal ?? '—'}
+                </dd>
+              </div>
             </dl>
           </Card>
 
@@ -279,6 +293,14 @@ const AdminUserDetail: React.FC = () => {
                   </p>
                   <p className="text-sm text-gray-400" dir="ltr">
                     {webConfig.subDomain}.lightor.app
+                  </p>
+                  {/* What the site converts to (LT-199). */}
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400" data-testid="site-mode">
+                    {isLeadsSite(webConfig) ? <Inbox size={13} /> : <CalendarRange size={13} />}
+                    {t('admin.userDetail.site.mode')}:{' '}
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                      {isLeadsSite(webConfig) ? t('settings.site.modeLead') : t('settings.site.modeBook')}
+                    </span>
                   </p>
                 </div>
                 <a href={`https://${webConfig.subDomain}.lightor.app`} target="_blank" rel="noreferrer">

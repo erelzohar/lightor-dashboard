@@ -164,3 +164,32 @@ describe('BillingSection leads meter', () => {
     expect(screen.queryByTestId('leads-meter')).not.toBeInTheDocument();
   });
 });
+
+/**
+ * A leads site (LT-199) takes no bookings: its card measures the plan by the
+ * leads meter alone, in copy that fits either kind of site.
+ */
+describe('BillingSection on a leads site', () => {
+  const capped = (): Record<string, unknown> => ({
+    ...freeEntitlements(),
+    limits: { monthlyAppointments: 30, monthlyLeads: 15 },
+    usage: { appointmentsThisMonth: 12, leadsThisMonth: 4 },
+  });
+
+  it('shows the leads meter and no appointments meter', async () => {
+    entitlementsState.data = capped();
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByTestId('leads-meter')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.leadsMeter', { used: 4, cap: 15 });
+    expect(screen.queryByTestId('appointments-meter')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.usageMeter')).not.toBeInTheDocument();
+    expect(screen.getByText('billing.freeDesc')).toBeInTheDocument();
+  });
+
+  it('keeps both meters on a booking site', async () => {
+    entitlementsState.data = capped();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('leads-meter')).toBeInTheDocument();
+    expect(screen.getByTestId('appointments-meter')).toBeInTheDocument();
+  });
+});

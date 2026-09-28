@@ -16,6 +16,7 @@ import { apiErrorStatus } from '../../services/customersApi';
 import { generateSlots, localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, fieldsForService } from '../../utils/bookingFields';
+import { isBookableService } from '../../utils/siteMode';
 import type { BookingField } from '../../types';
 
 /**
@@ -40,7 +41,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
   const { t } = useTranslation();
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
-  const appointmentTypes = useAppSelector((s) => s.appointments.appointmentTypes);
+  const allTypes = useAppSelector((s) => s.appointments.appointmentTypes);
+  // A service saved on a leads site has no duration (LT-199): the server
+  // refuses to book it, so it is not offered here until it has one.
+  const appointmentTypes = useMemo(() => allTypes.filter(isBookableService), [allTypes]);
   const webConfig = useAppSelector((s) => s.webConfig.data);
 
   const [typeId, setTypeId] = useState('');
@@ -55,10 +59,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
   // Opening hours arrive with the web config; services with it or on demand.
   useEffect(() => {
     if (!open) return;
-    if (!appointmentTypes.length && auth.user?.webConfig_id) {
+    if (!allTypes.length && auth.user?.webConfig_id) {
       dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
     }
-  }, [open, appointmentTypes.length, auth.user?.webConfig_id, dispatch]);
+  }, [open, allTypes.length, auth.user?.webConfig_id, dispatch]);
 
   useEffect(() => {
     if (!open) return;

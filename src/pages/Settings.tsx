@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -21,8 +21,10 @@ import FieldTooltip from '../components/settings/FieldTooltip';
 import CalendarFeedCard from '../components/settings/CalendarFeedCard';
 import GoogleCalendarCard from '../components/settings/GoogleCalendarCard';
 import Select from '../components/ui/Select';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { useTranslation } from 'react-i18next';
+import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -59,6 +61,10 @@ const Settings: React.FC = () => {
   const webConfig = useAppSelector(state => state.webConfig.data);
   // The booking-questions editor scopes questions per service (LT-178).
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
+  // Switching what the site does asks first (LT-199). The target outlives the
+  // open flag, so the dialog keeps its words while it animates out.
+  const [switchTarget, setSwitchTarget] = useState<'book' | 'lead'>('lead');
+  const [switchOpen, setSwitchOpen] = useState(false);
 
   const resolveLogoUrl = (imgName: string): string => {
     if (!imgName) return '';
@@ -75,6 +81,17 @@ const Settings: React.FC = () => {
   const leadFieldsChanged =
     !!localWebConfig && !!webConfig &&
     JSON.stringify(localWebConfig.leadFields ?? []) !== JSON.stringify(webConfig.leadFields ?? []);
+
+  // What the site does (LT-199). The SAVED mode decides which booking-only
+  // controls this page shows, like every other page; the draft's mode is the
+  // one being chosen on the Site tab. Absent and 'book' are the same mode.
+  const leadsSite = isLeadsSite(webConfig);
+  const draftLeads = isLeadsSite(localWebConfig);
+  const conversionChanged = !!localWebConfig && !!webConfig && draftLeads !== leadsSite;
+  // The main button's text (LT-199): '' and absent both mean the mode's
+  // default, and only trimmed text is stored.
+  const ctaOf = (config: WebConfig | null) => (config?.components?.hero?.cta ?? '').trim();
+  const ctaChanged = !!localWebConfig && !!webConfig && ctaOf(localWebConfig) !== ctaOf(webConfig);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -96,6 +113,8 @@ const Settings: React.FC = () => {
       (localWebConfig.bookingHorizonDays ?? 60) !== (webConfig.bookingHorizonDays ?? 60) ||
       bookingFieldsChanged ||
       leadFieldsChanged ||
+      conversionChanged ||
+      ctaChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -130,6 +149,9 @@ const Settings: React.FC = () => {
   const resetFromSaved = (saved: WebConfig) => {
     setLocalWebConfig({
       ...saved,
+      // Always one of the two modes (LT-199): a config saved before the
+      // switch existed has none, and reads as a booking site.
+      conversion: isLeadsSite(saved) ? 'lead' : 'book',
       // The API omits `address` entirely for a business with no premises, but
       // this form needs all four inputs to stay controlled. Give it an empty
       // shape to edit rather than reading `.state` off undefined.
@@ -216,6 +238,10 @@ const Settings: React.FC = () => {
 
     tiktok: (value) =>
       value && !value.startsWith("https://") ? t('validation.mustStartWithHttps') : null,
+
+    // The main button's text (LT-199): the server refuses more than this once trimmed.
+    cta: (value) =>
+      (value ?? '').trim().length > MAX_CTA_LENGTH ? t('settings.site.ctaTooLong', { max: MAX_CTA_LENGTH }) : null,
   };
 
   // Cancel on the unsaved-changes bar — same behaviour as Schedule & Vacations:
@@ -229,12 +255,18 @@ const Settings: React.FC = () => {
     setLogoPreviewError(false);
     setSubdomainError(null);
     setErrors(null);
+    setSwitchOpen(false);
   };
 
   const handleSave = async () => {
     if (!localWebConfig) return;
 
-    if (errors || !bookingFieldsValid(localWebConfig.bookingFields ?? []) || !bookingFieldsValid(localWebConfig.leadFields ?? [])) {
+    if (
+      errors ||
+      ctaOf(localWebConfig).length > MAX_CTA_LENGTH ||
+      !bookingFieldsValid(localWebConfig.bookingFields ?? []) ||
+      !bookingFieldsValid(localWebConfig.leadFields ?? [])
+    ) {
       toast.error(t('settings.formErrors'));
       return;
     }
@@ -266,16 +298,27 @@ const Settings: React.FC = () => {
       if (leadFieldsChanged) {
         payload.leadFields = normaliseBookingFields(localWebConfig.leadFields ?? []).map((f) => ({ ...f, services: [] }));
       }
+      // The mode only when the owner switched it (LT-199). The server
+      // re-composes the page on this save and deletes nothing.
+      if (conversionChanged) payload.conversion = draftLeads ? 'lead' : 'book';
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
         payload.logoImageName = logoUrlValue;
       }
 
-      if (JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig?.components?.introPopup)) {
+      // `components` travels only when a section in it changed. The server
+      // replaces a section it is sent wholesale (LT-183), so each changed
+      // section goes whole: the intro popup as drafted, and the hero as
+      // stored with only its button text changed (LT-199) — never `{ cta }`
+      // alone, which would wipe the rest of the hero.
+      const introPopupChanged =
+        JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig?.components?.introPopup);
+      if (introPopupChanged || ctaChanged) {
         payload.components = {
           ...webConfig?.components,
-          introPopup: localWebConfig.components?.introPopup,
+          ...(introPopupChanged ? { introPopup: localWebConfig.components?.introPopup } : {}),
+          ...(ctaChanged ? { hero: { ...webConfig?.components?.hero, cta: ctaOf(localWebConfig) } } : {}),
         };
       }
 
@@ -293,6 +336,20 @@ const Settings: React.FC = () => {
       }
       if (Array.isArray(saved?.leadFields)) {
         setLocalWebConfig(prev => (prev ? { ...prev, leadFields: saved.leadFields } : prev));
+      }
+      // The mode and the sections as the server stored them (LT-199): the
+      // button text trimmed, and a leads site's contact section forced
+      // visible. Adopted, or the form would read as unsaved.
+      if (saved) {
+        setLocalWebConfig(prev =>
+          prev
+            ? {
+                ...prev,
+                conversion: isLeadsSite(saved) ? 'lead' : 'book',
+                ...(saved.components ? { components: saved.components } : {}),
+              }
+            : prev
+        );
       }
       setImageToUpload(null);
       setLogoUrlValue('');
@@ -604,38 +661,45 @@ const Settings: React.FC = () => {
                 onChange={(e) => handleChange('root', 'businessName', e.target.value)}
               />
 
-              <Select
-                label={
-                  <>
-                    {t('settings.minCancelTime')}
-                    <FieldTooltip
-                      title={t('settings.minCancelTime')}
-                      description={t('settings.minCancelTimeTooltip')}
-                    />
-                  </>
-                }
-                leftIcon={<Clock className="w-4 h-4 text-gray-400" />}
-                value={localWebConfig.minCancelTimeMS}
-                options={cancellationOptions}
-                onChange={(e) => handleChange("root", "minCancelTimeMS", Number(e.target.value))}
-                error={errors?.minCancelTimeMS}
-              />
+              {/* The cancellation window and the booking horizon govern the
+                  calendar, which a leads site does not have (LT-199). Their
+                  stored values stay for a switch back. */}
+              {!leadsSite && (
+                <>
+                  <Select
+                    label={
+                      <>
+                        {t('settings.minCancelTime')}
+                        <FieldTooltip
+                          title={t('settings.minCancelTime')}
+                          description={t('settings.minCancelTimeTooltip')}
+                        />
+                      </>
+                    }
+                    leftIcon={<Clock className="w-4 h-4 text-gray-400" />}
+                    value={localWebConfig.minCancelTimeMS}
+                    options={cancellationOptions}
+                    onChange={(e) => handleChange("root", "minCancelTimeMS", Number(e.target.value))}
+                    error={errors?.minCancelTimeMS}
+                  />
 
-              <Select
-                label={
-                  <>
-                    {t('settings.bookingHorizon')}
-                    <FieldTooltip
-                      title={t('settings.bookingHorizon')}
-                      description={t('settings.bookingHorizonTooltip')}
-                    />
-                  </>
-                }
-                leftIcon={<CalendarRange className="w-4 h-4 text-gray-400" />}
-                value={localWebConfig.bookingHorizonDays ?? 60}
-                options={bookingHorizonOptions}
-                onChange={(e) => handleChange("root", "bookingHorizonDays", Number(e.target.value))}
-              />
+                  <Select
+                    label={
+                      <>
+                        {t('settings.bookingHorizon')}
+                        <FieldTooltip
+                          title={t('settings.bookingHorizon')}
+                          description={t('settings.bookingHorizonTooltip')}
+                        />
+                      </>
+                    }
+                    leftIcon={<CalendarRange className="w-4 h-4 text-gray-400" />}
+                    value={localWebConfig.bookingHorizonDays ?? 60}
+                    options={bookingHorizonOptions}
+                    onChange={(e) => handleChange("root", "bookingHorizonDays", Number(e.target.value))}
+                  />
+                </>
+              )}
 
               <Select
                 label={
@@ -693,12 +757,15 @@ const Settings: React.FC = () => {
               />
             </div>
 
-            {/* Booking questions (LT-178): what the booking form asks beyond name and phone. */}
-            <BookingFieldsEditor
-              value={localWebConfig.bookingFields ?? []}
-              onChange={(fields) => handleChange('root', 'bookingFields', fields)}
-              services={appointmentTypes}
-            />
+            {/* Booking questions (LT-178): what the booking form asks beyond
+                name and phone. A leads site has no booking form (LT-199). */}
+            {!leadsSite && (
+              <BookingFieldsEditor
+                value={localWebConfig.bookingFields ?? []}
+                onChange={(fields) => handleChange('root', 'bookingFields', fields)}
+                services={appointmentTypes}
+              />
+            )}
 
             {/* Contact-form questions (LT-197): what the lead form asks beyond name and phone. */}
             <BookingFieldsEditor
@@ -822,6 +889,84 @@ const Settings: React.FC = () => {
           </div>
         );
 
+      case 'site': {
+        // What the site does and its main button (LT-199).
+        const modes = [
+          {
+            value: 'book' as const,
+            Icon: CalendarCheck,
+            title: t('settings.site.modeBook'),
+            desc: t('settings.site.modeBookDesc'),
+          },
+          {
+            value: 'lead' as const,
+            Icon: Inbox,
+            title: t('settings.site.modeLead'),
+            desc: t('settings.site.modeLeadDesc'),
+          },
+        ];
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <SectionHeader icon={Globe} title={t('settings.site.title')} />
+
+            <div className="space-y-3">
+              <h3 id="site-mode-title" className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                {t('settings.site.modeTitle')}
+              </h3>
+              <div role="radiogroup" aria-labelledby="site-mode-title" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {modes.map(({ value, Icon, title, desc }) => {
+                  const selected = (value === 'lead') === draftLeads;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      // Switching asks first; choosing the current mode is a no-op.
+                      onClick={() => {
+                        if (selected) return;
+                        setSwitchTarget(value);
+                        setSwitchOpen(true);
+                      }}
+                      className={`text-start p-4 rounded-2xl border transition-all ${
+                        selected
+                          ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20'
+                          : 'border-gray-200 dark:border-gray-700 bg-white/40 dark:bg-white/[0.02] hover:border-primary/40'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Icon className={`w-5 h-5 shrink-0 ${selected ? 'text-primary' : 'text-gray-400'}`} />
+                        <span className="font-semibold text-gray-900 dark:text-white">{title}</span>
+                        {selected && <Check className="w-4 h-4 text-primary ms-auto shrink-0" />}
+                      </span>
+                      <span className="block mt-1.5 text-sm text-gray-500 dark:text-gray-400">{desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="max-w-md">
+              <Input
+                id="site-cta"
+                label={t('settings.site.ctaLabel')}
+                value={localWebConfig.components?.hero?.cta ?? ''}
+                maxLength={MAX_CTA_LENGTH}
+                // The owner's own words in the site's language, whatever the
+                // dashboard's; the placeholder is the default the site shows.
+                dir="auto"
+                placeholder={t(draftLeads ? 'settings.site.ctaDefaultLead' : 'settings.site.ctaDefaultBook', {
+                  lng: localWebConfig.defaultLanguage || undefined,
+                })}
+                helperText={t('settings.site.ctaHelp')}
+                error={errors?.cta}
+                onChange={(e) => handleChange('components.hero', 'cta', e.target.value)}
+              />
+            </div>
+          </motion.div>
+        );
+      }
+
       default:
         return (
           <div className="py-8 text-center">
@@ -873,13 +1018,34 @@ const Settings: React.FC = () => {
         </Card>
       </motion.div>
 
-      {/* Calendar sync belongs with the business basics — general tab only. */}
-      {activeTab === 'general' && (
+      {/* Calendar sync belongs with the business basics — general tab only,
+          and a booking site's only: a leads site has no calendar (LT-199). */}
+      {activeTab === 'general' && !leadsSite && (
         <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }} className="mt-6 space-y-6">
           <GoogleCalendarCard />
           <CalendarFeedCard />
         </motion.div>
       )}
+
+      {/* Switching modes asks first and says nothing is deleted (LT-199). The
+          choice lands in the draft; the save bar commits it. */}
+      <ConfirmDialog
+        open={switchOpen}
+        title={switchTarget === 'lead' ? t('settings.site.switchToLeadTitle') : t('settings.site.switchToBookTitle')}
+        message={
+          <>
+            <p>{switchTarget === 'lead' ? t('settings.site.switchToLeadMessage') : t('settings.site.switchToBookMessage')}</p>
+            <p className="mt-2 font-medium text-gray-800 dark:text-gray-100">{t('settings.site.nothingDeleted')}</p>
+          </>
+        }
+        confirmLabel={t('settings.site.switchConfirm')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => {
+          handleChange('root', 'conversion', switchTarget);
+          setSwitchOpen(false);
+        }}
+        onClose={() => setSwitchOpen(false)}
+      />
     </motion.div>
   );
 };

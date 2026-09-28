@@ -1,5 +1,5 @@
 import React from 'react';
-import { Store, Compass, MessageSquare } from 'lucide-react';
+import { Store, Compass, MessageSquare, Globe } from 'lucide-react';
 import Tabs from '../ui/Tabs';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +26,12 @@ const WebConfigTabs: React.FC<WebConfigTabsProps> = ({ activeTab, onTabChange })
       id: 'contact',
       label: t('settings.tabs.contact'),
       icon: <MessageSquare size={18} />
+    },
+    // What the site does and its main button's text (LT-199).
+    {
+      id: 'site',
+      label: t('settings.tabs.site'),
+      icon: <Globe size={18} />
     },
   ];
 

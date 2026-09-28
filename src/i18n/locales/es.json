@@ -39,13 +39,14 @@
     "addTeamMemberBtn": "Añadir miembro",
     "aiBuilder": "Asistente de IA",
     "upgradePlanTitle": "Mejora tu plan",
-    "upgradePlanDesc": "Estás en el plan gratuito. Mejorar elimina el límite mensual de citas y quita el crédito de Lightor de tu sitio.",
+    "upgradePlanDesc": "Estás en el plan gratuito. Mejorar elimina los límites mensuales de citas y consultas y quita el crédito de Lightor de tu sitio.",
     "upgradePlanBtn": "Mejorar tu plan",
     "completeSetupFirst": "Completa primero la configuración de tu sitio",
     "search": "Buscar",
     "adminPanel": "Panel de administración",
     "customers": "Clientes",
-    "leads": "Consultas"
+    "leads": "Consultas",
+    "openingHours": "Horario"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -59,17 +60,7 @@
     "more": "Más",
     "navigation": "Navegación",
     "manage": "Gestionar",
-    "newAppointment": "Nueva cita",
-    "newAppointmentMsg": "Nueva cita programada para las {{time}}",
-    "appointmentCancelled": "Cita cancelada",
-    "appointmentCancelledMsg": "La cita de las {{time}} fue cancelada",
     "admin": "Administración"
-  },
-  "notifications": {
-    "newAppointment": "Nueva cita",
-    "newAppointmentMsg": "Nueva cita programada para las {{time}}",
-    "appointmentCancelled": "Cita cancelada",
-    "appointmentCancelledMsg": "La cita de las {{time}} fue cancelada"
   },
   "topbar": {
     "switchToLight": "Cambiar a modo claro",
@@ -140,11 +131,11 @@
     "copyLink": "Copiar enlace",
     "linkCopied": "¡Enlace copiado!",
     "businessName": "Nombre del negocio",
-    "businessNameTooltip": "El nombre que aparecerá en el encabezado del sitio de reservas, el sistema de citas y los mensajes.",
+    "businessNameTooltip": "El nombre que aparece en la parte superior de tu sitio, en el sistema y en los mensajes.",
     "minCancelTime": "Tiempo mínimo de cancelación de citas",
     "minCancelTimeTooltip": "Elige el tiempo antes de la cita durante el cual los clientes pueden modificarla",
     "popupMessage": "Mensaje emergente",
-    "popupMessageDesc": "Un mensaje que se muestra a los clientes cuando visitan tu sitio de reservas. Útil para avisos de vacaciones, cambios de horario, etc.",
+    "popupMessageDesc": "Un mensaje que se muestra a los visitantes cuando abren tu sitio. Útil para avisos de vacaciones, cambios de horario, etc.",
     "active": "Activo",
     "off": "Desactivado",
     "popupPlaceholder": "Escribe el mensaje para mostrar a los clientes...",
@@ -165,10 +156,11 @@
     "tabs": {
       "general": "Perfil",
       "address": "Dirección",
-      "contact": "Contacto"
+      "contact": "Contacto",
+      "site": "Sitio"
     },
     "websiteLanguage": "Idioma del sitio",
-    "websiteLanguageTooltip": "El idioma predeterminado que tus clientes ven en tu sitio de reservas público.",
+    "websiteLanguageTooltip": "El idioma predeterminado que los visitantes ven en tu sitio público.",
     "bookingHorizon": "Con cuánta antelación pueden reservar los clientes",
     "bookingHorizonTooltip": "La fecha más lejana que un cliente puede reservar en tu sitio. Tú puedes reservar cualquier fecha.",
     "bookingFields": {
@@ -210,6 +202,25 @@
       "empty": "Aún no hay preguntas: los visitantes dejan un nombre, un teléfono y un mensaje.",
       "messageBox": "Mensaje (opcional)",
       "addQuestion": "Añadir una pregunta"
+    },
+    "site": {
+      "title": "Tu sitio",
+      "modeTitle": "Qué hace el sitio",
+      "modeBook": "Reservas",
+      "modeBookDesc": "Los clientes reservan una hora en tu calendario. El formulario de contacto también se queda.",
+      "modeLead": "Consultas",
+      "modeLeadDesc": "Sin calendario: los visitantes dejan sus datos en el formulario de contacto y tú les respondes.",
+      "switchToLeadTitle": "¿Cambiar a consultas?",
+      "switchToLeadMessage": "El calendario sale de tu sitio y el formulario de contacto pasa a ser su acción principal: el botón principal lleva a él.",
+      "switchToBookTitle": "¿Cambiar a reservas?",
+      "switchToBookMessage": "El calendario vuelve a tu sitio con tus servicios. Un servicio sin duración se muestra, pero no se puede reservar hasta que le pongas una.",
+      "nothingDeleted": "No se borra nada: tus servicios, horarios, preguntas de reserva y citas quedan guardados, y puedes volver cuando quieras.",
+      "switchConfirm": "Cambiar",
+      "ctaLabel": "Texto del botón principal",
+      "ctaHelp": "El texto del botón principal de tu sitio. Déjalo vacío para usar el texto predeterminado que aparece en el campo.",
+      "ctaDefaultBook": "Reservar Cita",
+      "ctaDefaultLead": "Contáctanos",
+      "ctaTooLong": "Máximo {{max}} caracteres"
     }
   },
   "appointmentTypes": {
@@ -225,11 +236,11 @@
     "noServices": "No hay tipos de servicio para mostrar",
     "addNewService": "Añadir nuevo servicio",
     "deleteConfirm": "¿Seguro que quieres eliminar «{{name}}»?",
-    "deleteSuccess": "Tipo de cita eliminado correctamente",
-    "deleteError": "No se pudo eliminar el tipo de cita",
-    "updateSuccess": "Tipo de cita actualizado correctamente",
-    "addSuccess": "Tipo de cita añadido correctamente",
-    "saveError": "No se pudo guardar el tipo de cita",
+    "deleteSuccess": "Servicio eliminado correctamente",
+    "deleteError": "No se pudo eliminar el servicio",
+    "updateSuccess": "Servicio actualizado correctamente",
+    "addSuccess": "Servicio añadido correctamente",
+    "saveError": "No se pudo guardar el servicio",
     "serviceLimit": "El plan gratuito está limitado a 3 servicios. Prueba Lightor+ gratis para servicios ilimitados — Cuenta → Suscripción.",
     "class": {
       "toggle": "Clase grupal",
@@ -248,8 +259,10 @@
       "remove": "Quitar",
       "uploading": "Subiendo…",
       "uploadError": "No se pudo subir la imagen",
-      "hint": "Opcional — se muestra junto al servicio en tu sitio de reservas"
-    }
+      "hint": "Opcional — se muestra junto al servicio en tu sitio"
+    },
+    "priceOptional": "Precio (opcional)",
+    "noDuration": "Sin duración — aún no se puede reservar"
   },
   "appointments": {
     "title": "Citas",
@@ -307,7 +320,6 @@
   "onboarding": {
     "welcomeTitle": "¡Bienvenido, {{name}}!",
     "welcomeSubtitle": "Configuremos tu negocio",
-    "welcomeDescription": "Antes de empezar a recibir citas, completa una configuración rápida para dejar tu perfil listo para los clientes.",
     "reviewGeneratedDetails": "Lighty ha generado los detalles de tu sitio. Revísalos y completa la información que falte para asegurarte de que todo esté correcto.",
     "setupSteps": "Lo que configuraremos",
     "step_phone": "Número de teléfono del negocio",
@@ -358,7 +370,11 @@
     "suggestion_edit_3": "Reescribir la página de inicio con un mensaje más fuerte",
     "togglePreview": "Vista previa",
     "hidePreview": "Ocultar vista previa",
-    "aiDisclaimer": "La IA puede equivocarse. Revisa el sitio generado."
+    "aiDisclaimer": "La IA puede equivocarse. Revisa el sitio generado.",
+    "suggestion_lead_1": "Añade a mi formulario de contacto una pregunta sobre el tipo de trabajo",
+    "suggestion_lead_2": "Cambia el botón principal a «Pedir presupuesto»",
+    "suggestion_lead_3": "Reescribe la página principal para atraer más consultas",
+    "saveFailed": "No se pudo guardar el sitio. Inténtalo de nuevo."
   },
   "verify": {
     "loading": "Verificando tu correo...",
@@ -457,7 +473,9 @@
     "maxDateOverrides": "Se pueden definir hasta 50 fechas especiales",
     "duplicateDate": "Esta fecha ya tiene horarios especiales",
     "selectDate": "Elige una fecha",
-    "pastDate": "No se pueden seleccionar fechas pasadas"
+    "pastDate": "No se pueden seleccionar fechas pasadas",
+    "openingHoursTitle": "Horario de atención",
+    "openingHoursDesc": "El horario que tu sitio muestra a los visitantes"
   },
   "account": {
     "title": "Configuración de la cuenta",
@@ -545,13 +563,20 @@
   "dashboard": {
     "emptyTitle": "¡Bienvenido a Lightor!",
     "emptySubtitle": "Empieza a usar Lightor para ver tus estadísticas",
-    "emptyDesc": "En cuanto recibas tu primera cita, tus estadísticas, gráficos y análisis aparecerán aquí.",
+    "emptyDesc": "En cuanto los clientes empiecen a llegarte a través de tu sitio, tus estadísticas y análisis aparecerán aquí.",
     "leadsNearTitle": "{{used}} de {{cap}} consultas este mes",
     "leadsNearDesc": "Al llegar al límite, el formulario de contacto de tu sitio se reemplaza por botones de llamada y WhatsApp hasta el mes que viene.",
     "leadsFullTitle": "Límite mensual de consultas alcanzado",
     "leadsFullDesc": "Hasta el mes que viene, los visitantes ven botones de llamada y WhatsApp en lugar del formulario.",
     "newLeadsTitle": "Consultas nuevas: {{count}}",
-    "newLeadsDesc": "Visitantes te dejaron un mensaje en tu sitio"
+    "newLeadsDesc": "Visitantes te dejaron un mensaje en tu sitio",
+    "emptyDescLeads": "Cuando un visitante deje una consulta en tu sitio, aparecerá aquí, con un botón para llamarle.",
+    "leadsSummary": {
+      "new": "Nuevas",
+      "thisMonth": "Este mes",
+      "latest": "Últimas consultas",
+      "viewAll": "Ver todas"
+    }
   },
   "billing": {
     "title": "Suscripción",
@@ -559,10 +584,10 @@
     "statusActive": "Activo",
     "statusPastDue": "Problema de pago",
     "statusCanceled": "Cancelado",
-    "activeDesc": "Tu suscripción está activa — citas ilimitadas.",
+    "activeDesc": "Tu suscripción está activa — sin límites mensuales.",
     "nextBill": "Próxima fecha de facturación:",
-    "freeDesc": "Estás en el plan gratuito, limitado a un número mensual de citas. Mejora para reservas ilimitadas.",
-    "freeDescNative": "Estás en el plan gratuito, limitado a un número mensual de citas.",
+    "freeDesc": "Estás en el plan gratuito, con límites mensuales de citas y consultas. Mejora tu plan para quitarlos.",
+    "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
     "pilotLine": "Piloto: todas las funciones Plus son gratis hasta el {{date}}.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
@@ -578,8 +603,8 @@
     "stillProcessing": "El pago aún se está procesando — tu plan se actualizará en los próximos minutos. Puedes actualizar más tarde.",
     "cancelCta": "Cancelar suscripción",
     "cancelModalTitle": "¿Cancelar tu suscripción?",
-    "cancelModalBody": "Tu plan seguirá totalmente activo hasta el {{date}}. Después pasarás al plan gratuito — tu sitio sigue en línea, con el límite mensual de citas del plan gratuito.",
-    "cancelModalBodyNoDate": "Tu plan seguirá totalmente activo hasta el final del período que has pagado, luego pasará al plan gratuito — tu sitio sigue en línea, con el límite mensual de citas del plan gratuito.",
+    "cancelModalBody": "Tu plan seguirá totalmente activo hasta el {{date}}. Después pasarás al plan gratuito — tu sitio sigue en línea, con los límites mensuales del plan gratuito.",
+    "cancelModalBodyNoDate": "Tu plan seguirá totalmente activo hasta el final del período que has pagado, luego pasará al plan gratuito — tu sitio sigue en línea, con los límites mensuales del plan gratuito.",
     "cancelModalKeep": "Mantener mi plan",
     "cancelModalConfirm": "Cancelar suscripción",
     "cancelling": "Cancelando...",
@@ -603,11 +628,11 @@
   },
   "danger": {
     "title": "Zona de peligro",
-    "desc": "Eliminar tu cuenta retira tu sitio de reservas, todas las citas y servicios, y cancela cualquier suscripción activa. Esto no se puede deshacer.",
+    "desc": "Eliminar tu cuenta retira tu sitio, todas las citas, consultas y servicios, y cancela cualquier suscripción activa. Esto no se puede deshacer.",
     "deleteCta": "Eliminar cuenta",
     "modalTitle": "¿Eliminar tu cuenta permanentemente?",
-    "consequenceSite": "Tu sitio de reservas se desconectará de inmediato.",
-    "consequenceAppointments": "Todas las citas, servicios y datos del negocio se eliminarán permanentemente.",
+    "consequenceSite": "Tu sitio se desconectará de inmediato.",
+    "consequenceAppointments": "Todas las citas, consultas, servicios y datos del negocio se eliminarán permanentemente.",
     "consequenceSubscription": "Cualquier suscripción activa se cancela de inmediato — sin más cargos.",
     "consequenceFinal": "Esta acción no se puede deshacer.",
     "passwordLabel": "Introduce tu contraseña para confirmar",
@@ -774,19 +799,22 @@
         "created": "Registrado",
         "language": "Idioma",
         "channel": "Canal",
-        "lastBooked": "Última reserva"
+        "lastBooked": "Última reserva",
+        "leadsTotal": "Consultas (total)"
       },
       "site": {
         "title": "Sitio público",
         "open": "Abrir sitio",
-        "none": "Aún sin sitio"
+        "none": "Aún sin sitio",
+        "mode": "Tipo de sitio"
       },
       "usage": {
         "title": "Uso este mes — plan {{plan}}",
         "appointments": "Reservas",
         "services": "Servicios",
         "aiGenerations": "Generaciones de IA",
-        "aiTokens": "Tokens de IA"
+        "aiTokens": "Tokens de IA",
+        "leads": "Consultas"
       },
       "appointments": {
         "title": "Citas ({{count}} en total)",

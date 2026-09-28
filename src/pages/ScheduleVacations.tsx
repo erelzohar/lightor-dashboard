@@ -20,6 +20,7 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import { Vacation } from '../types';
 import { createVacation, deleteVacation, updateVacation } from '../store/slices/vacationsSlice';
 import { useTranslation } from 'react-i18next';
+import { isLeadsSite } from '../utils/siteMode';
 
 interface DayHours {
   startTime: string;
@@ -149,8 +150,12 @@ const ScheduleVacations: React.FC = () => {
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector(state => state.webConfig);
   const isLoading = useAppSelector(state => state.webConfig.loading);
+  // A leads site (LT-199) has no calendar: the weekly hours are only what the
+  // site shows visitors, so this page is "Opening hours" with no date
+  // overrides and no vacations. Both stay stored, untouched, for a switch back.
+  const leadsSite = isLeadsSite(webConfig.data);
 
-  document.title = t('scheduleVacations.title');
+  document.title = leadsSite ? t('scheduleVacations.openingHoursTitle') : t('scheduleVacations.title');
 
   const dayNames = t('scheduleVacations.daysOfWeek', { returnObjects: true }) as string[];
 
@@ -184,7 +189,7 @@ const ScheduleVacations: React.FC = () => {
   const overrideErrors: Record<string, string | null> = {};
   dateOverrides.forEach(override => { overrideErrors[override.date] = validateDayHours(override.hours); });
   const hasValidationErrors =
-    workingDayErrors.some(Boolean) || Object.values(overrideErrors).some(Boolean);
+    workingDayErrors.some(Boolean) || (!leadsSite && Object.values(overrideErrors).some(Boolean));
 
   const handleSave = async () => {
     if (!webConfigLocalState) return;
@@ -194,11 +199,18 @@ const ScheduleVacations: React.FC = () => {
     }
     setIsSaving(true);
     try {
-      await dispatch(updateWebConfig({
+      const res = await dispatch(updateWebConfig({
         _id: webConfigLocalState._id,
         workingDays: webConfigLocalState.workingDays,
-        dateOverrides: webConfigLocalState.dateOverrides ?? [],
+        // A leads site edits the weekly hours only; its stored dates stay as they are.
+        ...(leadsSite ? {} : { dateOverrides: webConfigLocalState.dateOverrides ?? [] }),
       }));
+      // G6 (LT-199): a bare dispatch resolves when the server refuses too, so
+      // a refused save used to say "saved" and adopt the draft as the baseline.
+      if (updateWebConfig.rejected.match(res)) {
+        toast.error(t('scheduleVacations.saveError'));
+        return;
+      }
       setOriginalConfig(JSON.parse(JSON.stringify(webConfigLocalState)));
       toast.success(t('scheduleVacations.saveSuccess'));
     } catch (error) {
@@ -296,16 +308,17 @@ const ScheduleVacations: React.FC = () => {
     }
     const start = new Date(newVacation.startDate).getTime().toString();
     const end = new Date(newVacation.endDate).getTime().toString();
-    newVacation.startDate = start;
-    newVacation.endDate = end;
-    newVacation.webConfig_id = webConfig.data._id;
     if (+start > +end) {
       toast.error(t('scheduleVacations.dateError'));
       return;
     }
+    // A copy, not the form's own state: a refused save must leave the form as
+    // the owner typed it, not holding epoch strings.
+    const vacation: Vacation = { ...newVacation, startDate: start, endDate: end, webConfig_id: webConfig.data._id };
     try {
-      await dispatch(createVacation(newVacation));
-      setVacations(prev => [...prev, newVacation]);
+      // unwrap(): a refused create must not add a vacation or say "added" (as G6).
+      const created = await dispatch(createVacation(vacation)).unwrap();
+      setVacations(prev => [...prev, created ?? vacation]);
       setNewVacation({ title: '', startDate: '', endDate: '', webConfig_id: '' });
       toast.success(t('scheduleVacations.addSuccess'));
     } catch (error) {
@@ -330,7 +343,7 @@ const ScheduleVacations: React.FC = () => {
       const start = new Date(updatedVacation.startDate).getTime().toString();
       const end = new Date(updatedVacation.endDate).getTime().toString();
       updatedVacation._id = id;
-      await dispatch(updateVacation({ ...updatedVacation, startDate: start, endDate: end }));
+      await dispatch(updateVacation({ ...updatedVacation, startDate: start, endDate: end })).unwrap();
       setVacations(prev => prev.map(vacation =>
         vacation._id === id ? { ...updatedVacation, id } : vacation
       ));
@@ -347,7 +360,7 @@ const ScheduleVacations: React.FC = () => {
   const handleDeleteVacation = async (id: string) => {
     try {
       if (!window.confirm(t('scheduleVacations.deleteConfirm'))) return;
-      await dispatch(deleteVacation(id));
+      await dispatch(deleteVacation(id)).unwrap();
       setVacations(prev => prev.filter(vacation => vacation._id !== id));
       toast.success(t('scheduleVacations.deleteSuccess'));
     } catch (error) {
@@ -400,18 +413,18 @@ const ScheduleVacations: React.FC = () => {
         <div className="flex items-center gap-3 mb-2">
           <CalendarClock className="text-primary w-6 h-6 shrink-0" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-            {t('scheduleVacations.title')}
+            {leadsSite ? t('scheduleVacations.openingHoursTitle') : t('scheduleVacations.title')}
           </h1>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {t('scheduleVacations.description')}
+          {leadsSite ? t('scheduleVacations.openingHoursDesc') : t('scheduleVacations.description')}
         </p>
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
 
         {/* ── Working Hours Panel ── */}
-        <div className="xl:col-span-7 glass-panel rounded-3xl p-8 lg:p-10 flex flex-col gap-8">
+        <div className={`${leadsSite ? 'xl:col-span-12' : 'xl:col-span-7'} glass-panel rounded-3xl p-8 lg:p-10 flex flex-col gap-8`}>
           <div className="flex items-center gap-4 border-b border-black/10 dark:border-white/5 pb-6">
             <div>
               <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
@@ -503,140 +516,142 @@ const ScheduleVacations: React.FC = () => {
             })}
           </div>
 
-          {/* ── Special hours (per-date overrides) ── */}
-          <div className="pt-6 border-t border-black/10 dark:border-white/5 flex flex-col gap-5">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text tracking-tight">
-                  {t('scheduleVacations.specialHours')}
-                </h3>
-                <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
-                  {t('scheduleVacations.specialHoursDesc')}
-                </p>
+          {/* ── Special hours (per-date overrides) — a booking site's only ── */}
+          {!leadsSite && (
+            <div className="pt-6 border-t border-black/10 dark:border-white/5 flex flex-col gap-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-light-text dark:text-dark-text tracking-tight">
+                    {t('scheduleVacations.specialHours')}
+                  </h3>
+                  <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
+                    {t('scheduleVacations.specialHoursDesc')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAddingOverride(prev => !prev)}
+                  title={t('scheduleVacations.addDate')}
+                  className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
+                    isAddingOverride
+                      ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
+                      : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
+                  }`}
+                >
+                  <motion.div
+                    animate={{ rotate: isAddingOverride ? 45 : 0 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                  >
+                    <Plus size={20} />
+                  </motion.div>
+                </button>
               </div>
-              <button
-                onClick={() => setIsAddingOverride(prev => !prev)}
-                title={t('scheduleVacations.addDate')}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
-                  isAddingOverride
-                    ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
-                    : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
-                }`}
-              >
-                <motion.div
-                  animate={{ rotate: isAddingOverride ? 45 : 0 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 22 }}
-                >
-                  <Plus size={20} />
-                </motion.div>
-              </button>
-            </div>
 
-            {/* Add date form */}
-            <AnimatePresence>
-              {isAddingOverride && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                  exit={{ opacity: 0, height: 0, scale: 0.97 }}
-                  transition={{
-                    height: { type: 'spring', stiffness: 320, damping: 30 },
-                    opacity: { duration: 0.22 },
-                    scale: { type: 'spring', stiffness: 380, damping: 26 },
-                  }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
-                    <h4 className="font-semibold text-sm text-light-text dark:text-dark-text mb-5">
-                      {t('scheduleVacations.addDate')}
-                    </h4>
-                    <div className="space-y-4">
-                      <Input
-                        label={t('scheduleVacations.dateLabel')}
-                        type="date"
-                        fullWidth={false}
-                        className="w-5/6 self-auto"
-                        value={newOverrideDate}
-                        min={todayString}
-                        onChange={(e) => setNewOverrideDate(e.target.value)}
-                      />
-                      <div className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}>
-                        <Button variant="secondary" size="sm" onClick={() => { setIsAddingOverride(false); setNewOverrideDate(''); }}>
-                          {t('common.cancel')}
-                        </Button>
-                        <Button variant="primary" size="sm" onClick={handleAddOverride}>
-                          {t('common.add')}
-                        </Button>
+              {/* Add date form */}
+              <AnimatePresence>
+                {isAddingOverride && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.97 }}
+                    transition={{
+                      height: { type: 'spring', stiffness: 320, damping: 30 },
+                      opacity: { duration: 0.22 },
+                      scale: { type: 'spring', stiffness: 380, damping: 26 },
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
+                      <h4 className="font-semibold text-sm text-light-text dark:text-dark-text mb-5">
+                        {t('scheduleVacations.addDate')}
+                      </h4>
+                      <div className="space-y-4">
+                        <Input
+                          label={t('scheduleVacations.dateLabel')}
+                          type="date"
+                          fullWidth={false}
+                          className="w-5/6 self-auto"
+                          value={newOverrideDate}
+                          min={todayString}
+                          onChange={(e) => setNewOverrideDate(e.target.value)}
+                        />
+                        <div className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}>
+                          <Button variant="secondary" size="sm" onClick={() => { setIsAddingOverride(false); setNewOverrideDate(''); }}>
+                            {t('common.cancel')}
+                          </Button>
+                          <Button variant="primary" size="sm" onClick={handleAddOverride}>
+                            {t('common.add')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {sortedOverrides.length === 0 && !isAddingOverride ? (
-              <p className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
-                {t('scheduleVacations.noSpecialHours')}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {sortedOverrides.map((override, index) => {
-                  const isOpen = override.hours !== null;
-                  const parsedOverride = isOpen ? parseDayHours(override.hours as string) : null;
+              {sortedOverrides.length === 0 && !isAddingOverride ? (
+                <p className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
+                  {t('scheduleVacations.noSpecialHours')}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {sortedOverrides.map((override, index) => {
+                    const isOpen = override.hours !== null;
+                    const parsedOverride = isOpen ? parseDayHours(override.hours as string) : null;
 
-                  return (
-                    <motion.div
-                      key={override.date}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.03 * index }}
-                      className={`flex flex-col p-5 rounded-2xl gap-4 ${
-                        isOpen ? '' : 'bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5'
-                      }`}
-                      style={isOpen ? getActiveDayStyle(darkMode) : undefined}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-5 min-w-0">
-                          <span className={`font-bold text-sm truncate ${isOpen ? 'text-primary' : 'text-light-gray dark:text-dark-gray'}`}>
-                            {formatOverrideDate(override.date)}
+                    return (
+                      <motion.div
+                        key={override.date}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.03 * index }}
+                        className={`flex flex-col p-5 rounded-2xl gap-4 ${
+                          isOpen ? '' : 'bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5'
+                        }`}
+                        style={isOpen ? getActiveDayStyle(darkMode) : undefined}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-5 min-w-0">
+                            <span className={`font-bold text-sm truncate ${isOpen ? 'text-primary' : 'text-light-gray dark:text-dark-gray'}`}>
+                              {formatOverrideDate(override.date)}
+                            </span>
+                            {parsedOverride?.kind !== 'complex' && (
+                              <ToggleSwitch
+                                checked={isOpen}
+                                onChange={(checked) => handleOverrideToggle(override.date, checked)}
+                              />
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDeleteOverride(override.date)}
+                            className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors flex-shrink-0"
+                            title={t('common.delete')}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+
+                        {!isOpen ? (
+                          <span className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
+                            {t('scheduleVacations.closedOnDate')}
                           </span>
-                          {parsedOverride?.kind !== 'complex' && (
-                            <ToggleSwitch
-                              checked={isOpen}
-                              onChange={(checked) => handleOverrideToggle(override.date, checked)}
+                        ) : parsedOverride!.kind === 'complex' ? (
+                          <ComplexHoursView ranges={parsedOverride!.ranges} />
+                        ) : (
+                          <div className="flex justify-center md:justify-end">
+                            <HoursEditor
+                              value={override.hours as string}
+                              onChange={(value) => handleOverrideHoursChange(override.date, value)}
+                              error={overrideErrors[override.date]}
                             />
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDeleteOverride(override.date)}
-                          className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors flex-shrink-0"
-                          title={t('common.delete')}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-
-                      {!isOpen ? (
-                        <span className="text-sm text-light-gray/60 dark:text-dark-gray/50 italic">
-                          {t('scheduleVacations.closedOnDate')}
-                        </span>
-                      ) : parsedOverride!.kind === 'complex' ? (
-                        <ComplexHoursView ranges={parsedOverride!.ranges} />
-                      ) : (
-                        <div className="flex justify-center md:justify-end">
-                          <HoursEditor
-                            value={override.hours as string}
-                            onChange={(value) => handleOverrideHoursChange(override.date, value)}
-                            error={overrideErrors[override.date]}
-                          />
-                        </div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
 
@@ -650,207 +665,209 @@ const ScheduleVacations: React.FC = () => {
           isRtl={isRtl}
         />
 
-        {/* ── Vacations Panel ── */}
-        <div className="xl:col-span-5 flex flex-col gap-6">
-          <div className="glass-panel rounded-3xl p-8 lg:p-10 flex flex-col group">
+        {/* ── Vacations Panel — a booking site's only (LT-199) ── */}
+        {!leadsSite && (
+          <div className="xl:col-span-5 flex flex-col gap-6">
+            <div className="glass-panel rounded-3xl p-8 lg:p-10 flex flex-col group">
 
-            {/* Panel header */}
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5">
-              <div>
-                <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
-                  {t('scheduleVacations.vacationManagement')}
-                </h2>
-                <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
-                  {t('scheduleVacations.vacationManagementDesc')}
-                </p>
+              {/* Panel header */}
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5">
+                <div>
+                  <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
+                    {t('scheduleVacations.vacationManagement')}
+                  </h2>
+                  <p className="text-sm text-light-gray dark:text-dark-gray mt-1">
+                    {t('scheduleVacations.vacationManagementDesc')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAddingVacation(prev => !prev)}
+                  className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
+                    isAddingVacation
+                      ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
+                      : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
+                  }`}
+                >
+                  <motion.div
+                    animate={{ rotate: isAddingVacation ? 45 : 0 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                  >
+                    <Plus size={20} />
+                  </motion.div>
+                </button>
               </div>
-              <button
-                onClick={() => setIsAddingVacation(prev => !prev)}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
-                  isAddingVacation
-                    ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
-                    : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-light-text dark:text-dark-text hover:bg-primary/20 hover:text-primary hover:border-primary/40'
-                }`}
-              >
-                <motion.div
-                  animate={{ rotate: isAddingVacation ? 45 : 0 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 22 }}
-                >
-                  <Plus size={20} />
-                </motion.div>
-              </button>
-            </div>
 
-            {/* Add vacation form */}
-            <AnimatePresence>
-              {isAddingVacation && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                  exit={{ opacity: 0, height: 0, scale: 0.97 }}
-                  transition={{
-                    height: { type: 'spring', stiffness: 320, damping: 30 },
-                    opacity: { duration: 0.22 },
-                    scale: { type: 'spring', stiffness: 380, damping: 26 },
-                  }}
-                  className="mb-6 overflow-hidden"
-                >
-                  <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
-                    <motion.h4
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.08, duration: 0.2 }}
-                      className="font-semibold text-sm text-light-text dark:text-dark-text mb-5"
-                    >
-                      {t('scheduleVacations.newVacation')}
-                    </motion.h4>
-
-                    <div className="space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
+              {/* Add vacation form */}
+              <AnimatePresence>
+                {isAddingVacation && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.97 }}
+                    transition={{
+                      height: { type: 'spring', stiffness: 320, damping: 30 },
+                      opacity: { duration: 0.22 },
+                      scale: { type: 'spring', stiffness: 380, damping: 26 },
+                    }}
+                    className="mb-6 overflow-hidden"
+                  >
+                    <div className="p-5 border border-primary/25 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-inner shadow-primary/5">
+                      <motion.h4
+                        initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.12, type: 'spring', stiffness: 400, damping: 28 }}
+                        transition={{ delay: 0.08, duration: 0.2 }}
+                        className="font-semibold text-sm text-light-text dark:text-dark-text mb-5"
                       >
-                        <Input
-                          label={t('scheduleVacations.titleLabel')}
-                          value={newVacation.title}
-                          onChange={(e) => setNewVacation(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder={t('scheduleVacations.vacationPlaceholder')}
-                        />
-                      </motion.div>
+                        {t('scheduleVacations.newVacation')}
+                      </motion.h4>
 
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.18, type: 'spring', stiffness: 400, damping: 28 }}
-                        className="grid grid-cols-1 gap-4"
-                      >
-                        <Input
-                          label={t('scheduleVacations.startDateTime')}
-                          type="datetime-local"
-                          fullWidth={false}
-                          className="w-5/6 self-auto"
-                          value={newVacation.startDate}
-                          min={new Date().toISOString().slice(0, 16)}
-                          onChange={(e) => setNewVacation(prev => ({ ...prev, startDate: e.target.value }))}
-                        />
-                        <Input
-                          fullWidth={false}
-                          className="w-5/6 self-auto"
-                          label={t('scheduleVacations.endDateTime')}
-                          type="datetime-local"
-                          value={newVacation.endDate}
-                          min={new Date().toISOString().slice(0, 16)}
-                          onChange={(e) => setNewVacation(prev => ({ ...prev, endDate: e.target.value }))}
-                        />
-                      </motion.div>
+                      <div className="space-y-4">
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.12, type: 'spring', stiffness: 400, damping: 28 }}
+                        >
+                          <Input
+                            label={t('scheduleVacations.titleLabel')}
+                            value={newVacation.title}
+                            onChange={(e) => setNewVacation(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder={t('scheduleVacations.vacationPlaceholder')}
+                          />
+                        </motion.div>
 
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.24, type: 'spring', stiffness: 400, damping: 28 }}
-                        className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}
-                      >
-                        <Button variant="secondary" size="sm" onClick={() => setIsAddingVacation(false)}>
-                          {t('common.cancel')}
-                        </Button>
-                        <Button variant="primary" size="sm" onClick={handleAddVacation}>
-                          {t('common.add')}
-                        </Button>
-                      </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.18, type: 'spring', stiffness: 400, damping: 28 }}
+                          className="grid grid-cols-1 gap-4"
+                        >
+                          <Input
+                            label={t('scheduleVacations.startDateTime')}
+                            type="datetime-local"
+                            fullWidth={false}
+                            className="w-5/6 self-auto"
+                            value={newVacation.startDate}
+                            min={new Date().toISOString().slice(0, 16)}
+                            onChange={(e) => setNewVacation(prev => ({ ...prev, startDate: e.target.value }))}
+                          />
+                          <Input
+                            fullWidth={false}
+                            className="w-5/6 self-auto"
+                            label={t('scheduleVacations.endDateTime')}
+                            type="datetime-local"
+                            value={newVacation.endDate}
+                            min={new Date().toISOString().slice(0, 16)}
+                            onChange={(e) => setNewVacation(prev => ({ ...prev, endDate: e.target.value }))}
+                          />
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.24, type: 'spring', stiffness: 400, damping: 28 }}
+                          className={`flex gap-2 pt-1 ${isRtl ? 'justify-start' : 'justify-end'}`}
+                        >
+                          <Button variant="secondary" size="sm" onClick={() => setIsAddingVacation(false)}>
+                            {t('common.cancel')}
+                          </Button>
+                          <Button variant="primary" size="sm" onClick={handleAddVacation}>
+                            {t('common.add')}
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Empty state */}
+              {vacations.length === 0 && !isAddingVacation ? (
+                <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-primary/10 blur-[30px] rounded-full transform scale-150" />
+                    <div className="w-20 h-20 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center relative z-10 shadow-lg rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                      <Calendar size={36} className="text-primary/70" />
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Empty state */}
-            {vacations.length === 0 && !isAddingVacation ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-primary/10 blur-[30px] rounded-full transform scale-150" />
-                  <div className="w-20 h-20 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center relative z-10 shadow-lg rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                    <Calendar size={36} className="text-primary/70" />
-                  </div>
+                  <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-2">
+                    {t('scheduleVacations.noVacations')}
+                  </h3>
+                  <p className="text-light-gray dark:text-dark-gray text-sm max-w-[240px] leading-relaxed">
+                    {t('scheduleVacations.noVacationsDesc')}
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-2">
-                  {t('scheduleVacations.noVacations')}
-                </h3>
-                <p className="text-light-gray dark:text-dark-gray text-sm max-w-[240px] leading-relaxed">
-                  {t('scheduleVacations.noVacationsDesc')}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3 overflow-y-auto">
-                {vacations.map((vacation, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.03] border border-black/10 dark:border-white/5 hover:bg-black/[0.07] dark:hover:bg-white/5 transition-colors"
-                  >
-                    {editingVacation === vacation._id ? (
-                      <VacationEditForm
-                        vacation={vacation}
-                        onSave={(updatedVacation) => handleEditVacation(vacation._id, updatedVacation)}
-                        onCancel={() => setEditingVacation(null)}
-                        isSaving={isEditingVacation}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                            <h4 className="font-semibold text-light-text dark:text-dark-text truncate text-sm">
-                              {vacation.title}
-                            </h4>
+              ) : (
+                <div className="space-y-3 overflow-y-auto">
+                  {vacations.map((vacation, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.03] border border-black/10 dark:border-white/5 hover:bg-black/[0.07] dark:hover:bg-white/5 transition-colors"
+                    >
+                      {editingVacation === vacation._id ? (
+                        <VacationEditForm
+                          vacation={vacation}
+                          onSave={(updatedVacation) => handleEditVacation(vacation._id, updatedVacation)}
+                          onCancel={() => setEditingVacation(null)}
+                          isSaving={isEditingVacation}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                              <h4 className="font-semibold text-light-text dark:text-dark-text truncate text-sm">
+                                {vacation.title}
+                              </h4>
+                            </div>
+                            <p className="text-xs text-light-gray dark:text-dark-gray">
+                              {t('scheduleVacations.from')}{formatVacationDateTime(vacation.startDate)}
+                            </p>
+                            <p className="text-xs text-light-gray dark:text-dark-gray">
+                              {t('scheduleVacations.to')}{formatVacationDateTime(vacation.endDate)}
+                            </p>
+                            <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                              {calculateVacationDuration(vacation.startDate, vacation.endDate)} {t('scheduleVacations.days')}
+                            </span>
                           </div>
-                          <p className="text-xs text-light-gray dark:text-dark-gray">
-                            {t('scheduleVacations.from')}{formatVacationDateTime(vacation.startDate)}
-                          </p>
-                          <p className="text-xs text-light-gray dark:text-dark-gray">
-                            {t('scheduleVacations.to')}{formatVacationDateTime(vacation.endDate)}
-                          </p>
-                          <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                            {calculateVacationDuration(vacation.startDate, vacation.endDate)} {t('scheduleVacations.days')}
-                          </span>
+                          <div className={`flex items-center gap-1 ${isRtl ? 'mr-2' : 'ml-2'}`}>
+                            <button
+                              onClick={() => setEditingVacation(vacation._id)}
+                              disabled={editingVacation !== null}
+                              className="p-2 text-light-gray dark:text-dark-gray hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-40"
+                              title={t('common.edit')}
+                            >
+                              <Edit3 size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteVacation(vacation._id)}
+                              className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                              title={t('common.delete')}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
                         </div>
-                        <div className={`flex items-center gap-1 ${isRtl ? 'mr-2' : 'ml-2'}`}>
-                          <button
-                            onClick={() => setEditingVacation(vacation._id)}
-                            disabled={editingVacation !== null}
-                            className="p-2 text-light-gray dark:text-dark-gray hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-40"
-                            title={t('common.edit')}
-                          >
-                            <Edit3 size={15} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteVacation(vacation._id)}
-                            className="p-2 text-light-gray dark:text-dark-gray hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
-                            title={t('common.delete')}
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            )}
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
-            {/* Info box */}
-            <div className="mt-6 p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5">
-              <div className="flex items-start gap-3">
-                <Info size={15} className="text-primary/70 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-light-gray dark:text-dark-gray leading-relaxed">
-                  {t('scheduleVacations.vacationInfoBox')}
-                </p>
+              {/* Info box */}
+              <div className="mt-6 p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5">
+                <div className="flex items-start gap-3">
+                  <Info size={15} className="text-primary/70 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-light-gray dark:text-dark-gray leading-relaxed">
+                    {t('scheduleVacations.vacationInfoBox')}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
       </div>
     </motion.div>

@@ -8,6 +8,7 @@ import IncomeStats from '../components/dashboard/IncomeStats';
 import AppointmentsGraph, { TimeRange } from '../components/dashboard/AppointmentsGraph';
 import DashboardDonutChart from '../components/dashboard/DashboardDonutChart';
 import DashboardAppointmentsList from '../components/dashboard/DashboardAppointmentsList';
+import LeadsSummary from '../components/dashboard/LeadsSummary';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -22,7 +23,9 @@ import { useNavigate } from 'react-router-dom';
 import { resendVerification } from '../services/authApi';
 import { fetchMyEntitlements, MyEntitlements } from '../services/entitlementsApi';
 import toast from 'react-hot-toast';
-import { useNewLeadsCount } from '../hooks/useNewLeadsCount';
+import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
+import { fetchLeads, LeadsPage } from '../services/leadsApi';
+import { isLeadsSite } from '../utils/siteMode';
 
 const getGreeting = (t: any): string => {
   const hour = new Date().getHours();
@@ -63,9 +66,16 @@ const Dashboard: React.FC = () => {
   const onFreePlan =
     entitlements !== undefined && (entitlements?.plan ?? auth.user?.subscription?.status) === 'free';
 
+  const webConfig = useAppSelector(state => state.webConfig.data);
+  // A leads site (LT-199) has no calendar: its home is the leads summary, not
+  // the income, graph, donut and appointments list, and nothing polls the
+  // appointments.
+  const leadsSite = isLeadsSite(webConfig);
+
   // Contact-form leads (LT-197): the new ones wait on the home card, and a
-  // capped plan is warned from 80% of the month's leads.
-  const newLeads = useNewLeadsCount();
+  // capped plan is warned from 80% of the month's leads. On a leads site the
+  // summary below reads the count itself and feeds the shared badge.
+  const newLeads = useNewLeadsCount(!leadsSite);
   const leadsCap = entitlements?.limits.monthlyLeads ?? null;
   const leadsUsed = entitlements?.usage.leadsThisMonth ?? 0;
   const leadsNotice: 'near' | 'full' | null =
@@ -77,8 +87,31 @@ const Dashboard: React.FC = () => {
 
   const { language, direction } = useTheme();
   const navigate = useNavigate();
-  const webConfig = useAppSelector(state => state.webConfig.data);
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
+
+  // The leads summary (LT-199): the newest five, and the counts beside them.
+  // `undefined` while it loads — the home shows neither Lighty's empty state
+  // nor the summary until it knows which one applies.
+  const [leadsPage, setLeadsPage] = useState<LeadsPage | null | undefined>(undefined);
+  useEffect(() => {
+    if (!leadsSite) return;
+    let cancelled = false;
+    fetchLeads({ limit: 5 })
+      .then((page) => {
+        if (cancelled) return;
+        setLeadsPage(page);
+        setNewLeadsCount(page.counts?.new ?? 0);
+      })
+      .catch(() => {
+        if (!cancelled) setLeadsPage(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [leadsSite]);
+  const leadsTotal = leadsPage
+    ? (leadsPage.counts?.new ?? 0) + (leadsPage.counts?.contacted ?? 0) + (leadsPage.counts?.closed ?? 0)
+    : undefined;
 
   const setupSteps = [
     { key: 'businessName', label: t('onboarding.step_businessName'), done: !!(webConfig?.businessName?.trim()), icon: Briefcase, tab: '/settings' },
@@ -89,15 +122,23 @@ const Dashboard: React.FC = () => {
     // (LT-026), so merely having services is not "done" — the owner has to go
     // in and price them. Otherwise the checklist would tick itself and the
     // booking page would offer services with no price.
-    {
-      key: 'serviceTypes',
-      label: appointmentTypes.length > 0 && appointmentTypes.some(type => !type.price?.toString().trim())
-        ? t('onboarding.step_serviceTypesPricing')
-        : t('onboarding.step_serviceTypes'),
-      done: appointmentTypes.length > 0 && appointmentTypes.every(type => !!type.price?.toString().trim()),
-      icon: Tag,
-      tab: '/appointment-types',
-    },
+    // A leads site (LT-199) lists its services as content and prices them
+    // only when the owner wants to, so the step is not asked there: "All set"
+    // is the only way to boardingStatus 'active', and a leads account with no
+    // services must still reach it.
+    ...(leadsSite
+      ? []
+      : [
+          {
+            key: 'serviceTypes',
+            label: appointmentTypes.length > 0 && appointmentTypes.some(type => !type.price?.toString().trim())
+              ? t('onboarding.step_serviceTypesPricing')
+              : t('onboarding.step_serviceTypes'),
+            done: appointmentTypes.length > 0 && appointmentTypes.every(type => !!type.price?.toString().trim()),
+            icon: Tag,
+            tab: '/appointment-types',
+          },
+        ]),
     { key: 'logo', label: t('onboarding.step_logo'), done: !!(webConfig?.logoImageName?.trim()), icon: Image, tab: '/settings' },
   ];
   const doneCount = setupSteps.filter(s => s.done).length;
@@ -113,7 +154,8 @@ const Dashboard: React.FC = () => {
   const isLoading = useAppSelector(state => state.appointments.loading);
   document.title = t('common.dashboard');
 
-  useAppointmentsAutoRefresh(auth.user?._id);
+  // No calendar on a leads site, so no 4-minute appointments poll (LT-199).
+  useAppointmentsAutoRefresh(leadsSite ? undefined : auth.user?._id);
 
   useEffect(() => {
     if (!showOnboarding || !auth.user) return;
@@ -152,7 +194,7 @@ const Dashboard: React.FC = () => {
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
 
-  if (isLoading) {
+  if (isLoading && !leadsSite) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -192,8 +234,9 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ── New account, no bookings yet: Lighty says hello first ── */}
-      {appointments.length === 0 && (
+      {/* ── New account, no bookings (or, on a leads site, no inquiries) yet:
+          Lighty says hello first ── */}
+      {(leadsSite ? leadsTotal === 0 : appointments.length === 0) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -213,7 +256,7 @@ const Dashboard: React.FC = () => {
               {t('dashboard.emptySubtitle')}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {t('dashboard.emptyDesc')}
+              {leadsSite ? t('dashboard.emptyDescLeads') : t('dashboard.emptyDesc')}
             </p>
           </div>
         </motion.div>
@@ -321,8 +364,9 @@ const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* New leads (LT-197): the way in from home — the bottom bar has no free slot. */}
-      {!!newLeads && (
+      {/* New leads (LT-197): the way in from home — the bottom bar has no free
+          slot. A leads site's summary below carries the count and the way in. */}
+      {!leadsSite && !!newLeads && (
         <motion.button
           type="button"
           initial={{ opacity: 0, y: 10 }}
@@ -454,7 +498,16 @@ const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {appointments.length > 0 && (
+      {/* ── A leads site's home (LT-199): the summary replaces every booking widget ── */}
+      {leadsSite && leadsPage !== undefined && !!(leadsTotal || leadsPage === null) && (
+        <ErrorBoundaryWithLanguage
+          fallback={<DashboardFallback language={language} title={t('leads.errors.loadFailed')} />}
+        >
+          <LeadsSummary page={leadsPage} thisMonth={entitlements?.usage.leadsThisMonth} direction={direction} />
+        </ErrorBoundaryWithLanguage>
+      )}
+
+      {!leadsSite && appointments.length > 0 && (
         <>
           {/* ── Row 1: Income Stats ── */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -496,7 +549,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* ── Appointments List — hidden until the first booking (the empty card said nothing) ── */}
-      {appointments.length > 0 && (
+      {!leadsSite && appointments.length > 0 && (
         <ErrorBoundaryWithLanguage
           fallback={<DashboardFallback language={language} title={t('common.errorLoadingAppointments')} />}
         >
