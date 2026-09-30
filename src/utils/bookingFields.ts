@@ -195,3 +195,22 @@ export const compactAnswer = (
   if (!answers?.length) return undefined;
   return answers.find((a) => addresses.has(a.key)) ?? answers[0];
 };
+
+/**
+ * An address chosen from Google's suggestions (LT-206, as on the public form,
+ * LT-191): the line the owner saw plus the place it stands for. Typing again
+ * drops back to a plain string, because the place is no longer vouched for.
+ */
+export interface AddressAnswer {
+  text: string;
+  placeId: string;
+  lat: number;
+  lng: number;
+}
+
+export const isAddressAnswer = (value: unknown): value is AddressAnswer =>
+  typeof value === 'object' && value !== null && typeof (value as AddressAnswer).text === 'string' && typeof (value as AddressAnswer).placeId === 'string';
+
+/** The text of an answer whatever its shape. */
+export const answerText = (value: string | AddressAnswer | undefined): string =>
+  typeof value === 'string' ? value : isAddressAnswer(value) ? value.text : '';

@@ -1104,7 +1104,9 @@
       "submit": "Book",
       "success": "Appointment booked",
       "slotTaken": "That time is already taken — pick another",
-      "failed": "Could not book the appointment"
+      "failed": "Could not book the appointment",
+      "addressSuggestions": "Address suggestions",
+      "noAddresses": "No matching addresses"
     },
     "errors": {
       "loadFailed": "Could not load customers",

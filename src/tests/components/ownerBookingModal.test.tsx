@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import OwnerBookingModal from '../../components/customers/OwnerBookingModal';
 import { createAppointment } from '../../services/appointmentsApi';
+import { fetchAddressSuggestions, loadPlaces, resolveAddressSuggestion } from '../../services/places';
 import type { BookingField } from '../../types';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -15,6 +16,14 @@ vi.mock('../../store/slices/appointmentsSlice', () => ({
   fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
 }));
 vi.mock('../../services/appointmentsApi', () => ({ createAppointment: vi.fn() }));
+// Google's side of the address suggestions (LT-206); the key stays real, so
+// the widget is off unless a test stubs VITE_GOOGLE_MAPS_KEY.
+vi.mock('../../services/places', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/places')>()),
+  loadPlaces: vi.fn(),
+  fetchAddressSuggestions: vi.fn(),
+  resolveAddressSuggestion: vi.fn(),
+}));
 vi.mock('../../services/customersApi', () => ({ apiErrorStatus: (): undefined => undefined }));
 // Opening hours are not under test: two slots, always in the future.
 vi.mock('../../utils/bookingSlots', () => ({
@@ -126,5 +135,87 @@ describe('OwnerBookingModal: services without a duration', () => {
     const options = Array.from(serviceSelect().querySelectorAll('option')).map((o) => o.value);
     expect(options).toEqual(['t1', 't2']);
     expect(serviceSelect().textContent).not.toContain('NaN');
+  });
+});
+
+
+/**
+ * LT-206: the address question offers Google's suggestions, as the public
+ * form does (LT-191); a chosen one sends the place it stands for. Without a
+ * key, or with Google failing, it is the plain field it always was.
+ */
+describe('OwnerBookingModal: address suggestions', () => {
+  const SUGGESTION = {
+    placeId: 'ChIJ-herzl-12',
+    text: 'הרצל 12, תל אביב-יפו',
+    mainText: 'הרצל 12',
+    secondaryText: 'תל אביב-יפו',
+    prediction: {},
+  };
+
+  beforeEach(() => {
+    vi.mocked(createAppointment).mockReset().mockResolvedValue({} as never);
+    vi.mocked(loadPlaces).mockReset().mockResolvedValue(undefined as never);
+    vi.mocked(fetchAddressSuggestions).mockReset().mockResolvedValue([SUGGESTION] as never);
+    vi.mocked(resolveAddressSuggestion).mockReset().mockResolvedValue({ placeId: 'ChIJ-herzl-12', lat: 32.06, lng: 34.77 });
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const book = async () => {
+    fireEvent.change(screen.getByTestId('slot-select'), { target: { value: '10:00' } });
+    fireEvent.click(screen.getByText('customers.booking.submit'));
+    await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
+    return sentBody().answers?.find((a) => a.key === 'address');
+  };
+
+  it('sends the chosen suggestion with its place, credited to Google Maps', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
+    renderModal();
+    const input = screen.getByLabelText(/Address/);
+    await waitFor(() => expect(input).toHaveAttribute('role', 'combobox'));
+
+    fireEvent.change(input, { target: { value: 'הרצ' } });
+    const option = await screen.findByRole('option', { name: /הרצל 12/ });
+    expect(screen.getByRole('img', { name: 'Google Maps' })).toBeTruthy();
+    fireEvent.click(option);
+    await waitFor(() => expect(resolveAddressSuggestion).toHaveBeenCalled());
+    await waitFor(() => expect((input as HTMLInputElement).value).toBe('הרצל 12, תל אביב-יפו'));
+
+    expect(await book()).toEqual({ key: 'address', value: 'הרצל 12, תל אביב-יפו', placeId: 'ChIJ-herzl-12', lat: 32.06, lng: 34.77 });
+  });
+
+  it('typing after a choice sends plain text again', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
+    renderModal();
+    const input = screen.getByLabelText(/Address/);
+    await waitFor(() => expect(input).toHaveAttribute('role', 'combobox'));
+    fireEvent.change(input, { target: { value: 'הרצ' } });
+    fireEvent.click(await screen.findByRole('option', { name: /הרצל 12/ }));
+    await waitFor(() => expect(resolveAddressSuggestion).toHaveBeenCalled());
+
+    fireEvent.change(input, { target: { value: 'הרצל 12, דירה 4' } });
+    expect(await book()).toEqual({ key: 'address', value: 'הרצל 12, דירה 4' });
+  });
+
+  it('without a key it never loads Google, and the field is plain text', async () => {
+    renderModal();
+    const input = screen.getByLabelText(/Address/);
+    expect(input).not.toHaveAttribute('role', 'combobox');
+    fireEvent.change(input, { target: { value: 'Herzl 12' } });
+    expect(loadPlaces).not.toHaveBeenCalled();
+    expect(await book()).toEqual({ key: 'address', value: 'Herzl 12' });
+  });
+
+  it('when Google cannot be reached, typed text is accepted', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
+    vi.mocked(loadPlaces).mockRejectedValue(new Error('blocked'));
+    renderModal();
+    const input = screen.getByLabelText(/Address/);
+    await waitFor(() => expect(loadPlaces).toHaveBeenCalled());
+    fireEvent.change(input, { target: { value: 'Herzl 12' } });
+    expect(fetchAddressSuggestions).not.toHaveBeenCalled();
+    expect(await book()).toEqual({ key: 'address', value: 'Herzl 12' });
   });
 });

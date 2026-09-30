@@ -97,10 +97,11 @@ export interface CreateAppointmentBody {
   user_id: string;
   channelType?: 'sms' | 'whatsapp';
   /**
-   * Answers to the booking questions (LT-178): key + value only. The server
-   * takes label and type from the owner's catalog and drops unknown keys.
+   * Answers to the booking questions (LT-178): key + value. The server takes
+   * label and type from the owner's catalog and drops unknown keys. An
+   * address chosen from Google's suggestions adds its place (LT-206).
    */
-  answers?: { key: string; value: string }[];
+  answers?: { key: string; value: string; placeId?: string; lat?: number; lng?: number }[];
 }
 
 /**

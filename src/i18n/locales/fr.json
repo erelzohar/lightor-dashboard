@@ -1104,7 +1104,9 @@
       "submit": "Réserver",
       "success": "Rendez-vous réservé",
       "slotTaken": "Ce créneau est déjà pris — choisissez-en un autre",
-      "failed": "Impossible de réserver le rendez-vous"
+      "failed": "Impossible de réserver le rendez-vous",
+      "addressSuggestions": "Suggestions d'adresses",
+      "noAddresses": "Aucune adresse correspondante"
     },
     "errors": {
       "loadFailed": "Impossible de charger les clients",

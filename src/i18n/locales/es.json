@@ -1104,7 +1104,9 @@
       "submit": "Reservar",
       "success": "Cita reservada",
       "slotTaken": "Esa hora ya está ocupada — elige otra",
-      "failed": "No se pudo reservar la cita"
+      "failed": "No se pudo reservar la cita",
+      "addressSuggestions": "Sugerencias de direcciones",
+      "noAddresses": "No hay direcciones que coincidan"
     },
     "errors": {
       "loadFailed": "No se pudieron cargar los clientes",

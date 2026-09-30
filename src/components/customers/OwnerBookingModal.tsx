@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CalendarPlus, MapPin } from 'lucide-react';
+import { CalendarPlus } from 'lucide-react';
 import Input from '../ui/Input';
+import AddressAutocomplete from './AddressAutocomplete';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,7 +16,7 @@ import { createAppointment } from '../../services/appointmentsApi';
 import { apiErrorStatus } from '../../services/customersApi';
 import { generateSlots, localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { formatPhoneForDisplay } from '../../utils/phone';
-import { ANSWER_MAX_LENGTH, CONFIRM_YES, fieldsForService } from '../../utils/bookingFields';
+import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
 import { isBookableService } from '../../utils/siteMode';
 import type { BookingField } from '../../types';
 
@@ -27,7 +28,8 @@ import type { BookingField } from '../../types';
  * booking lands in their history and their reminders go to the right number.
  *
  * Asks the owner's own booking questions for the chosen service (LT-178), the
- * same ones a customer sees, so a walk-in arrives with its address too.
+ * same ones a customer sees, so a walk-in arrives with its address too —
+ * with Google's suggestions under it, as on the public form (LT-206).
  * Required is marked but never enforced here: the server spares the owner.
  */
 interface OwnerBookingModalProps {
@@ -54,7 +56,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
   // Keyed by the question's key, not by service: switching service re-scopes
   // which questions show, and what was typed for a question that still
   // applies is still there.
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  // An address chosen from Google's suggestions carries its place (LT-206).
+  const [answers, setAnswers] = useState<Record<string, string | AddressAnswer>>({});
 
   // Opening hours arrive with the web config; services with it or on demand.
   useEffect(() => {
@@ -99,14 +102,20 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
     [webConfig?.bookingFields, typeId]
   );
 
-  const setAnswer = (key: string, value: string) => setAnswers((prev) => ({ ...prev, [key]: value }));
+  const setAnswer = (key: string, value: string | AddressAnswer) => setAnswers((prev) => ({ ...prev, [key]: value }));
 
   // Key + value only, for the questions in scope; the server rebuilds label
-  // and type from the catalog. An unticked confirm is simply absent.
+  // and type from the catalog. An unticked confirm is simply absent. A chosen
+  // address also sends the place it stands for, as the public form does.
   const answersPayload = () =>
     questions.flatMap((q) => {
-      const raw = answers[q.key] ?? '';
-      const value = q.type === 'confirm' ? (raw === CONFIRM_YES ? CONFIRM_YES : '') : raw.trim();
+      const raw = answers[q.key];
+      if (q.type === 'address' && isAddressAnswer(raw)) {
+        const text = raw.text.trim();
+        return text ? [{ key: q.key, value: text, placeId: raw.placeId, lat: raw.lat, lng: raw.lng }] : [];
+      }
+      const typed = answerText(raw);
+      const value = q.type === 'confirm' ? (typed === CONFIRM_YES ? CONFIRM_YES : '') : typed.trim();
       return value ? [{ key: q.key, value }] : [];
     });
 
@@ -209,7 +218,20 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
                         {q.required && <span className="text-red-500 ms-0.5" aria-hidden="true">*</span>}
                       </>
                     );
-                    const value = answers[q.key] ?? '';
+                    const value = answerText(answers[q.key]);
+
+                    if (q.type === 'address') {
+                      return (
+                        <AddressAutocomplete
+                          key={q.key}
+                          id={id}
+                          label={label}
+                          value={answers[q.key]}
+                          maxLength={ANSWER_MAX_LENGTH.address}
+                          onChange={(next) => setAnswer(q.key, next)}
+                        />
+                      );
+                    }
 
                     if (q.type === 'confirm') {
                       return (
@@ -267,7 +289,6 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
                         label={label}
                         value={value}
                         maxLength={ANSWER_MAX_LENGTH[q.type]}
-                        leftIcon={q.type === 'address' ? <MapPin className="w-4 h-4 text-gray-400" /> : undefined}
                         onChange={(e) => setAnswer(q.key, e.target.value)}
                       />
                     );
