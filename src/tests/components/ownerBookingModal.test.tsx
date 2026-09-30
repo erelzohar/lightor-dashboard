@@ -196,7 +196,8 @@ describe('OwnerBookingModal: address suggestions', () => {
 
     fireEvent.change(input, { target: { value: 'הרצ' } });
     const option = await screen.findByRole('option', { name: /הרצל 12/ });
-    expect(screen.getByRole('img', { name: 'Google Maps' })).toBeTruthy();
+    // Google's attribution (LT-207): the logo from Google's asset pack.
+    expect(screen.getByRole('img', { name: 'Google Maps' }).tagName.toLowerCase()).toBe('svg');
     fireEvent.click(option);
     await waitFor(() => expect(resolveAddressSuggestion).toHaveBeenCalled());
     await waitFor(() => expect((input as HTMLInputElement).value).toBe('הרצל 12, תל אביב-יפו'));

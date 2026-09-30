@@ -259,7 +259,7 @@ const AddressAutocomplete = ({ id, label, value, onChange, maxLength }: AddressA
               ))
             )}
           </ul>
-          <div className="flex justify-end border-t border-gray-100 dark:border-gray-700/60 px-4 py-1.5">
+          <div className="flex justify-end border-t border-gray-100 dark:border-gray-700/60 px-4 pt-2.5 pb-1.5">
             <GoogleMapsLogo />
           </div>
         </div>
