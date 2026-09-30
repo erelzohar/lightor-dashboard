@@ -1103,6 +1103,7 @@
     },
     "booking": {
       "title": "حجز موعد",
+      "back": "رجوع",
       "service": "الخدمة",
       "date": "التاريخ",
       "prevMonth": "الشهر السابق",
@@ -1127,6 +1128,7 @@
       "session": "الحصة",
       "pickSession": "اختر حصة",
       "noSessions": "لا توجد حصص في هذا التاريخ",
+      "noTimetable": "لا يوجد جدول لهذه الحصة بعد",
       "loadingSessions": "جارٍ تحميل الحصص…",
       "sessionsFailed": "تعذّر تحميل الحصص",
       "classFull": "هذه الحصة ممتلئة — اختر حصة أخرى",

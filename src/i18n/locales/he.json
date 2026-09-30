@@ -1103,6 +1103,7 @@
     },
     "booking": {
       "title": "קביעת תור",
+      "back": "חזרה",
       "service": "שירות",
       "date": "תאריך",
       "prevMonth": "החודש הקודם",
@@ -1127,6 +1128,7 @@
       "session": "מפגש",
       "pickSession": "בחר מפגש",
       "noSessions": "אין מפגשים בתאריך זה",
+      "noTimetable": "לשיעור אין עדיין מועדים",
       "loadingSessions": "טוען מפגשים…",
       "sessionsFailed": "לא ניתן לטעון את המפגשים",
       "classFull": "המפגש הזה מלא — בחר מפגש אחר",

@@ -99,11 +99,28 @@ const renderModal = (props: Partial<React.ComponentProps<typeof OwnerBookingModa
     />
   );
 
-const serviceSelect = () => screen.getAllByRole('combobox')[0];
 const sentBody = () => vi.mocked(createAppointment).mock.calls[0][0];
-/** A free time on the chosen day, once the month's availability is in. */
-const pickTime = async (time: string) => fireEvent.click(await screen.findByRole('button', { name: time }));
+const submitButton = () => screen.getByText('customers.booking.submit').closest('button') as HTMLButtonElement;
 const dayButton = (day: number) => within(screen.getByTestId('booking-days')).getByText(String(day)).closest('button') as HTMLButtonElement;
+
+/**
+ * The site's flow, a step at a time (LT-211): a service card, then a day,
+ * then a time, then who and the owner's questions.
+ */
+const chooseService = (name: string) =>
+  fireEvent.click(within(screen.getByTestId('booking-services')).getByRole('button', { name: new RegExp(`^${name}`) }));
+/** A day once the month's availability is in (a day's dot is in its label then). */
+const chooseDay = async (day: number) => {
+  await waitFor(() => expect(dayButton(day).getAttribute('aria-label')).toContain('customers.booking.day.'));
+  fireEvent.click(dayButton(day));
+};
+const chooseTime = async (time: string) => fireEvent.click(await screen.findByRole('button', { name: time }));
+const toDetails = async (service = 'Massage', day = 4, time = '10:00') => {
+  chooseService(service);
+  await chooseDay(day);
+  await chooseTime(time);
+};
+const back = () => fireEvent.click(screen.getByRole('button', { name: 'customers.booking.back' }));
 
 /**
  * The owner's manual booking asks the same questions a customer sees
@@ -114,8 +131,9 @@ describe('OwnerBookingModal: booking questions', () => {
     vi.mocked(createAppointment).mockReset().mockResolvedValue({} as never);
   });
 
-  it('asks the questions in scope for the chosen service, with required marked', () => {
+  it('asks the questions in scope for the chosen service, with required marked', async () => {
     renderModal();
+    await toDetails();
 
     expect(screen.getByLabelText(/Address/)).toBeTruthy();
     expect(screen.getByLabelText(/Car model/)).toBeTruthy();
@@ -127,19 +145,22 @@ describe('OwnerBookingModal: booking questions', () => {
 
   it('sends answers as key + value, re-scoped to the service picked, keeping what still applies', async () => {
     renderModal();
+    await toDetails();
 
     fireEvent.change(screen.getByLabelText(/Address/), { target: { value: '  Herzl 12, Tel Aviv ' } });
     fireEvent.change(screen.getByLabelText(/Car model/), { target: { value: 'Mazda 3' } });
 
-    // Switching service: the address stays, the car question leaves, parking arrives.
-    fireEvent.change(serviceSelect(), { target: { value: 't2' } });
+    // Back to the services for another one: the address stays, the car
+    // question leaves, parking arrives.
+    back();
+    back();
+    back();
+    await toDetails('Home visit');
     expect((screen.getByLabelText(/Address/) as HTMLInputElement).value).toBe('  Herzl 12, Tel Aviv ');
     expect(screen.queryByLabelText(/Car model/)).toBeNull();
     fireEvent.click(screen.getByLabelText(/I have parking/));
     fireEvent.change(screen.getByLabelText(/Floor/), { target: { value: 'Upstairs' } });
-
-    await pickTime('10:00');
-    fireEvent.click(screen.getByText('customers.booking.submit'));
+    fireEvent.click(submitButton());
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody()).toMatchObject({ name: 'Dana', phone: '0501234567', type_id: 't2', user_id: 'u1', timestamp: at(4, 10) });
@@ -152,10 +173,8 @@ describe('OwnerBookingModal: booking questions', () => {
 
   it('does not block on a required question left blank, and omits an unticked confirm', async () => {
     renderModal();
-
-    fireEvent.change(serviceSelect(), { target: { value: 't2' } });
-    await pickTime('11:00');
-    fireEvent.click(screen.getByText('customers.booking.submit'));
+    await toDetails('Home visit', 4, '11:00');
+    fireEvent.click(submitButton());
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody().answers).toEqual([]);
@@ -163,16 +182,47 @@ describe('OwnerBookingModal: booking questions', () => {
 });
 
 /**
- * A service without a duration (LT-199) is content, not a time slot: the
- * server refuses to book it, so the owner is not offered it.
+ * The services come first, as cards (LT-211). A service without a duration
+ * (LT-199) is content, not a time slot: the server refuses to book it, so the
+ * owner is not offered it.
  */
-describe('OwnerBookingModal: services without a duration', () => {
-  it('offers only the services that can be booked', () => {
+describe('OwnerBookingModal: the services', () => {
+  it('offers the bookable services as cards, each with its length and price', () => {
     renderModal();
 
-    const options = Array.from(serviceSelect().querySelectorAll('option')).map((o) => o.value);
-    expect(options).toEqual(['t1', 't2', 'c1']);
-    expect(serviceSelect().textContent).not.toContain('NaN');
+    const cards = within(screen.getByTestId('booking-services')).getAllByRole('button');
+    expect(cards.map((card) => card.textContent)).toEqual([
+      'Massage60 appointments.minutes · appointments.currencySymbol100',
+      'Home visit60 appointments.minutes · appointments.currencySymbol200',
+      'Yoga60 appointments.minutes · appointments.currencySymbol50 · appointmentTypes.class.toggle',
+    ]);
+    // Nothing is picked for the owner, and nothing is booked from here.
+    expect(screen.queryByTestId('booking-calendar')).toBeNull();
+    expect(screen.queryByText('customers.booking.submit')).toBeNull();
+  });
+
+  it('shows a class with no timetable but does not offer it', () => {
+    state.appointments.appointmentTypes.push({
+      _id: 'c9', name: 'Pilates', webConfig_id: 'wc1', price: '60', durationMS: '3600000', kind: 'class', capacity: 8, sessions: [],
+    });
+    renderModal();
+    const pilates = within(screen.getByTestId('booking-services')).getByRole('button', { name: /^Pilates/ });
+    expect(pilates).toBeDisabled();
+    expect(pilates.textContent).toContain('customers.booking.noTimetable');
+    state.appointments.appointmentTypes.pop();
+  });
+
+  it('goes back a step at a time', async () => {
+    renderModal();
+    chooseService('Massage');
+    await chooseDay(4);
+    expect(await screen.findByTestId('booking-times')).toBeTruthy();
+
+    back();
+    expect(screen.getByTestId('booking-calendar')).toBeTruthy();
+    back();
+    expect(screen.getByTestId('booking-services')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'customers.booking.back' })).toBeNull();
   });
 });
 
@@ -202,8 +252,7 @@ describe('OwnerBookingModal: address suggestions', () => {
   });
 
   const book = async () => {
-    await pickTime('10:00');
-    fireEvent.click(screen.getByText('customers.booking.submit'));
+    fireEvent.click(submitButton());
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     return sentBody().answers?.find((a) => a.key === 'address');
   };
@@ -211,6 +260,7 @@ describe('OwnerBookingModal: address suggestions', () => {
   it('sends the chosen suggestion with its place, credited to Google Maps', async () => {
     vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
     renderModal();
+    await toDetails();
     const input = screen.getByLabelText(/Address/);
     await waitFor(() => expect(input).toHaveAttribute('role', 'combobox'));
 
@@ -228,6 +278,7 @@ describe('OwnerBookingModal: address suggestions', () => {
   it('typing after a choice sends plain text again', async () => {
     vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
     renderModal();
+    await toDetails();
     const input = screen.getByLabelText(/Address/);
     await waitFor(() => expect(input).toHaveAttribute('role', 'combobox'));
     fireEvent.change(input, { target: { value: 'הרצ' } });
@@ -240,6 +291,7 @@ describe('OwnerBookingModal: address suggestions', () => {
 
   it('without a key it never loads Google, and the field is plain text', async () => {
     renderModal();
+    await toDetails();
     const input = screen.getByLabelText(/Address/);
     expect(input).not.toHaveAttribute('role', 'combobox');
     fireEvent.change(input, { target: { value: 'Herzl 12' } });
@@ -251,6 +303,7 @@ describe('OwnerBookingModal: address suggestions', () => {
     vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
     vi.mocked(loadPlaces).mockRejectedValue(new Error('blocked'));
     renderModal();
+    await toDetails();
     const input = screen.getByLabelText(/Address/);
     await waitFor(() => expect(loadPlaces).toHaveBeenCalled());
     fireEvent.change(input, { target: { value: 'Herzl 12' } });
@@ -278,9 +331,9 @@ describe('OwnerBookingModal: a group class', () => {
     { type_id: 'c2', timestamp: OTHER_CLASS, durationMS: '3600000', capacity: 8, booked: 1 },
   ];
 
-  const submitButton = () => screen.getByText('customers.booking.submit').closest('button') as HTMLButtonElement;
   const pickYoga = async () => {
-    fireEvent.change(serviceSelect(), { target: { value: 'c1' } });
+    chooseService('Yoga');
+    await chooseDay(4);
     return screen.findByRole('button', { name: '19:00 · 3/12' });
   };
   const refusal = (status: number, data: Record<string, string>) => ({ response: { status, data } });
@@ -293,9 +346,6 @@ describe('OwnerBookingModal: a group class', () => {
 
   it("lists that day's sessions of the class with their seats, a full one shown but not offered", async () => {
     renderModal();
-    const yoga = Array.from(serviceSelect().querySelectorAll('option')).find((o) => o.value === 'c1');
-    expect(yoga?.textContent).toBe('Yoga · appointmentTypes.class.toggle · 60 appointments.minutes');
-
     await pickYoga();
 
     // The month on show, first to last millisecond, addressed by subdomain.
@@ -310,9 +360,9 @@ describe('OwnerBookingModal: a group class', () => {
     expect(offered).toEqual(['07:00 · 12/12', '19:00 · 3/12']);
     expect(screen.getByRole('button', { name: '07:00 · 12/12' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '19:00 · 3/12' })).not.toBeDisabled();
-    // Opening hours play no part in a class.
+    // Opening hours play no part in a class, and nothing is booked yet.
     expect(screen.queryByRole('button', { name: '10:00' })).toBeNull();
-    expect(submitButton()).toBeDisabled();
+    expect(screen.queryByText('customers.booking.submit')).toBeNull();
   });
 
   it("books the session with the server's own timestamp", async () => {
@@ -342,7 +392,7 @@ describe('OwnerBookingModal: a group class', () => {
       ],
     });
     renderModal();
-    fireEvent.change(serviceSelect(), { target: { value: 'c1' } });
+    chooseService('Yoga');
 
     await waitFor(() => expect(dayButton(5).getAttribute('aria-label')).toContain('customers.booking.day.full'));
     expect(dayButton(6).getAttribute('aria-label')).toContain('customers.booking.day.limited');
@@ -352,16 +402,11 @@ describe('OwnerBookingModal: a group class', () => {
     expect(await screen.findByRole('button', { name: '19:00 · 10/12' })).toBeTruthy();
   });
 
-  it('says when the class has no session that day, or the sessions could not be read', async () => {
-    vi.mocked(getAvailability).mockResolvedValue(FREE);
-    const { unmount } = renderModal();
-    fireEvent.change(serviceSelect(), { target: { value: 'c1' } });
-    expect(await screen.findByText('customers.booking.noSessions')).toBeTruthy();
-    unmount();
-
+  it('says so when the sessions could not be read, rather than showing a closed month', async () => {
     vi.mocked(getAvailability).mockRejectedValue(new Error('offline'));
     renderModal();
-    fireEvent.change(serviceSelect(), { target: { value: 'c1' } });
+    chooseService('Yoga');
+
     expect(await screen.findByText('customers.booking.sessionsFailed')).toBeTruthy();
   });
 
@@ -369,7 +414,7 @@ describe('OwnerBookingModal: a group class', () => {
     ['CLASS_FULL', 'customers.booking.classFull'],
     ['ALREADY_BOOKED', 'customers.booking.alreadyBooked'],
     ['NOT_A_SESSION', 'customers.booking.notASession'],
-  ])('answers the refusal %s in its own words and reads the seats again', async (code, message) => {
+  ])('answers the refusal %s in its own words, reads the seats again and goes back to them', async (code, message) => {
     vi.mocked(createAppointment).mockRejectedValue(refusal(409, { code, error: 'Refused' }));
     renderModal();
     fireEvent.click(await pickYoga());
@@ -379,18 +424,21 @@ describe('OwnerBookingModal: a group class', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message));
     await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(fetches + 1));
+    expect(await screen.findByRole('button', { name: '19:00 · 3/12' })).toBeTruthy();
   });
 
-  it('keeps "slot taken" for an ordinary appointment refused with a 409, and reads the day again', async () => {
+  it('keeps "slot taken" for an ordinary appointment refused with a 409, back to the day read again', async () => {
     vi.mocked(createAppointment).mockRejectedValue(refusal(409, { code: 'CLASS_IN_THE_WAY', error: 'Teaching a class then' }));
+    vi.mocked(getAvailability).mockResolvedValue(FREE);
     renderModal();
-    await pickTime('10:00');
+    await toDetails();
     const fetches = vi.mocked(getAvailability).mock.calls.length;
 
     fireEvent.click(submitButton());
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('customers.booking.slotTaken'));
     await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(fetches + 1));
+    expect(await screen.findByRole('button', { name: '09:00' })).toBeTruthy();
   });
 });
 
@@ -408,23 +456,25 @@ describe("OwnerBookingModal: the site's calendar", () => {
     state.webConfig.data.workingDays = Array<string | null>(7).fill('09:00-12:00');
   });
 
-  it('opens on today and offers only what is free: a booking and a class take their hours', async () => {
+  it('offers only what is free on the day: a booking and a class take their hours', async () => {
     vi.mocked(getAvailability).mockResolvedValue({
       busy: [{ timestamp: at(4, 10), durationMS: '3600000' }],
       classes: [{ type_id: 'c1', timestamp: at(4, 11), durationMS: '3600000', capacity: 12, booked: 0 }],
     });
     renderModal();
+    chooseService('Massage');
+    await chooseDay(4);
 
-    expect(dayButton(4)).toHaveAttribute('aria-pressed', 'true');
     expect(await screen.findByRole('button', { name: '09:00' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: '10:00' })).toBeNull();
     expect(screen.queryByRole('button', { name: '11:00' })).toBeNull();
   });
 
-  it("marks each day as the site does: closed, on vacation, past, open", async () => {
+  it('marks each day as the site does — closed, on vacation, past, open — with its legend', async () => {
     state.webConfig.data.workingDays = ['09:00-12:00', ...Array<string | null>(5).fill('09:00-12:00'), null];
     state.webConfig.data.vacations = [{ startDate: at(6, 0), endDate: at(6, 23) }];
     renderModal();
+    chooseService('Massage');
 
     await waitFor(() => expect(dayButton(5).getAttribute('aria-label')).toContain('customers.booking.day.full'));
     // Saturday the 9th is closed, the 6th is a vacation, the 3rd is past.
@@ -432,17 +482,22 @@ describe("OwnerBookingModal: the site's calendar", () => {
     expect(dayButton(6)).toBeDisabled();
     expect(dayButton(6).getAttribute('aria-label')).toContain('customers.booking.day.vacation');
     expect(dayButton(3)).toBeDisabled();
+    for (const status of ['full', 'limited', 'vacation', 'none']) {
+      expect(within(screen.getByTestId('booking-calendar')).getByText(`customers.booking.day.${status}`)).toBeTruthy();
+    }
 
     fireEvent.click(dayButton(5));
-    fireEvent.click(await screen.findByRole('button', { name: '11:00' }));
-    fireEvent.click(screen.getByText('customers.booking.submit'));
+    await chooseTime('11:00');
+    fireEvent.click(submitButton());
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody()).toMatchObject({ type_id: 't1', timestamp: at(5, 11) });
   });
 
-  it('turns the month, reads that month, and lets the chosen day go', async () => {
+  it('turns the month and reads that month', async () => {
     renderModal();
-    await screen.findByRole('button', { name: '09:00' });
+    chooseService('Massage');
+    await chooseDay(4);
+    back();
 
     fireEvent.click(screen.getByRole('button', { name: 'customers.booking.nextMonth' }));
 
@@ -453,15 +508,33 @@ describe("OwnerBookingModal: the site's calendar", () => {
         String(new Date(2030, 4, 1).valueOf() - 1)
       )
     );
-    expect(screen.queryByTestId('booking-times')).toBeNull();
     expect(screen.getByRole('button', { name: 'customers.booking.prevMonth' })).not.toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'customers.booking.prevMonth' }));
     expect(screen.getByRole('button', { name: 'customers.booking.prevMonth' })).toBeDisabled();
   });
 
+  it('moves to next month by itself when this one has no day left, and lets the owner turn back', async () => {
+    vi.setSystemTime(new Date(2030, 2, 31, 20, 0));
+    renderModal();
+    chooseService('Massage');
+
+    await waitFor(() =>
+      expect(getAvailability).toHaveBeenLastCalledWith(
+        'studio',
+        String(new Date(2030, 3, 1).valueOf()),
+        String(new Date(2030, 4, 1).valueOf() - 1)
+      )
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'customers.booking.prevMonth' }));
+    await waitFor(() => expect(dayButton(31).getAttribute('aria-label')).toContain('customers.booking.day.none'));
+    expect(within(screen.getByTestId('booking-days')).getByText('31')).toBeTruthy();
+  });
+
   it('falls back to the opening hours when the day cannot be read — degrade, never block', async () => {
     vi.mocked(getAvailability).mockRejectedValue(new Error('offline'));
     renderModal();
+    chooseService('Massage');
+    await chooseDay(4);
 
     expect(await screen.findByRole('button', { name: '09:00' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '10:00' })).toBeTruthy();
@@ -478,7 +551,6 @@ describe("OwnerBookingModal: the site's calendar", () => {
  */
 describe('OwnerBookingModal: a walk-in', () => {
   const TOMORROW = at(5, 19, 123);
-  const submitButton = () => screen.getByText('customers.booking.submit').closest('button') as HTMLButtonElement;
 
   beforeEach(() => {
     vi.mocked(createAppointment).mockReset().mockResolvedValue({} as never);
@@ -488,7 +560,7 @@ describe('OwnerBookingModal: a walk-in', () => {
     renderModal({ customer: undefined });
     expect(screen.queryByText(/0501234567/)).toBeNull();
 
-    await pickTime('10:00');
+    await toDetails();
     expect(submitButton()).toBeDisabled();
     fireEvent.change(screen.getByLabelText('customers.add.name'), { target: { value: '  Walk In ' } });
     fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '   ' } });
@@ -506,11 +578,12 @@ describe('OwnerBookingModal: a walk-in', () => {
 
     expect(screen.getByText('appointments.session.addParticipant')).toBeTruthy();
     // The session the owner clicked, shown rather than picked again.
-    const summary = screen.getByTestId('preset-session');
+    const summary = screen.getByTestId('booking-summary');
     expect(within(summary).getByText('Yoga')).toBeTruthy();
     expect(within(summary).getByText('19:00 – 20:00')).toHaveAttribute('dir', 'ltr');
+    expect(screen.queryByTestId('booking-services')).toBeNull();
     expect(screen.queryByTestId('booking-calendar')).toBeNull();
-    expect(screen.queryByText('customers.booking.service')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'customers.booking.back' })).toBeNull();
     expect(getAvailability).not.toHaveBeenCalled();
     expect(submitButton()).toBeDisabled();
 
@@ -533,5 +606,7 @@ describe('OwnerBookingModal: a walk-in', () => {
     fireEvent.click(submitButton());
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('customers.booking.classFull'));
+    // Still on the one session: there is nothing to go back to.
+    expect(screen.getByTestId('booking-summary')).toBeTruthy();
   });
 });

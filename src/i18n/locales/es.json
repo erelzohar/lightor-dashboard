@@ -1103,6 +1103,7 @@
     },
     "booking": {
       "title": "Reservar una cita",
+      "back": "Atrás",
       "service": "Servicio",
       "date": "Fecha",
       "prevMonth": "Mes anterior",
@@ -1127,6 +1128,7 @@
       "session": "Sesión",
       "pickSession": "Elige una sesión",
       "noSessions": "No hay sesiones en esta fecha",
+      "noTimetable": "Esta clase aún no tiene horario",
       "loadingSessions": "Cargando sesiones…",
       "sessionsFailed": "No se pudieron cargar las sesiones",
       "classFull": "Esta sesión está completa — elige otra",

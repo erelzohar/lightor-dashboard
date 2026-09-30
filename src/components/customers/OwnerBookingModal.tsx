@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CalendarPlus } from 'lucide-react';
+import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Input from '../ui/Input';
 import AddressAutocomplete from './AddressAutocomplete';
 import Select from '../ui/Select';
@@ -17,23 +17,23 @@ import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay } from '../../utils/phone';
-import { formatTime } from '../../utils/dateUtils';
 import { useTheme } from '../../contexts/ThemeContext';
-import BookingCalendar from './BookingCalendar';
+import { ChoiceSummary, DayTimes, MonthDays, ServicePicker } from './BookingSteps';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
 import { isBookableService } from '../../utils/siteMode';
 import type { AppointmentType, BookingField } from '../../types';
 
 /**
  * Book an appointment FOR a customer from the dashboard (LT-122) — the first
- * owner-made booking UI. Service → a day on the site's own booking calendar
- * → one of its free times (LT-211): the opening hours less the vacations,
+ * owner-made booking UI. The site's own flow, a step at a time (LT-211):
+ * the services as cards with their pictures → a day on the site's booking
+ * calendar → one of its free times (the opening hours less the vacations,
  * the bookings and the classes, as the site works them out, so the owner is
- * offered what a customer would be, bar the customers' booking window. The
- * server's overlap check stays the authority: a slot taken meanwhile comes
- * back as 409 → toast, and the day is read again. Name and phone are the
- * customer's, so the booking lands in their history and their reminders go
- * to the right number.
+ * offered what a customer would be, bar the customers' booking window) →
+ * who and the owner's questions. The server's overlap check stays the
+ * authority: a slot taken meanwhile comes back as 409 → toast, back to the
+ * times, read again. Name and phone are the customer's, so the booking lands
+ * in their history and their reminders go to the right number.
  *
  * A group class (LT-204) offers its sessions on that day instead, with the
  * seats the server counts, and books the session's own timestamp exactly as
@@ -63,6 +63,7 @@ interface OwnerBookingModalProps {
 const MONTHS_AHEAD = 12;
 
 const monthOf = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), 1);
+const monthIndexOf = (date: Date): number => date.getFullYear() * 12 + date.getMonth();
 
 // A class's refusals (LT-152), each in its own words. Any other 409 is an
 // ordinary appointment whose slot is taken.
@@ -72,6 +73,8 @@ const CLASS_REFUSALS: Record<string, string> = {
   NOT_A_SESSION: 'customers.booking.notASession',
 };
 
+type Step = 'service' | 'date' | 'time' | 'details';
+
 interface FetchedMonth extends Availability {
   /** What it was fetched for: the month and the refetch count. */
   key: string;
@@ -80,7 +83,7 @@ interface FetchedMonth extends Availability {
 
 const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, preset, onClose, onBooked }) => {
   const { t } = useTranslation();
-  const { language } = useTheme();
+  const { direction } = useTheme();
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
   const allTypes = useAppSelector((s) => s.appointments.appointmentTypes);
@@ -89,6 +92,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const appointmentTypes = useMemo(() => allTypes.filter(isBookableService), [allTypes]);
   const webConfig = useAppSelector((s) => s.webConfig.data);
 
+  const [step, setStep] = useState<Step>('service');
+  // The calendar turns to next month by itself once per service when this
+  // one has no day left with room (the last days of a month).
+  const [autoTurned, setAutoTurned] = useState(false);
   const [typeId, setTypeId] = useState('');
   const [month, setMonth] = useState(() => monthOf(new Date()));
   const [dateKey, setDateKey] = useState(localDateKey(new Date()));
@@ -128,12 +135,14 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     // "Add participant" on a roster (LT-204) opens on its session: that
     // service, that session's date, that session.
     const presetType = presetTypeId && appointmentTypes.some((ty) => ty._id === presetTypeId) ? presetTypeId : '';
-    setTypeId(presetType || (appointmentTypes[0]?._id ?? ''));
+    // Nothing chosen for the owner: the first step is the services (LT-211).
+    setTypeId(presetType);
     const day = presetType && presetTimestamp ? new Date(Number(presetTimestamp)) : new Date();
     setMonth(monthOf(day));
-    setDateKey(localDateKey(day));
+    setDateKey(presetType ? localDateKey(day) : '');
     setTime('');
     setSessionTs(presetType ? presetTimestamp ?? '' : '');
+    setStep(presetType && presetTimestamp ? 'details' : 'service');
     setName('');
     setPhone('');
     setAnswers({});
@@ -270,12 +279,16 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
       onClose();
     } catch (error) {
       const refusal = Object.keys(CLASS_REFUSALS).find((code) => isApiErrorCode(error, code));
+      // Refused for its time: back to the day's times, read again — unless
+      // the time was the roster's own session, which is all there is.
       if (refusal) {
         toast.error(t(CLASS_REFUSALS[refusal]));
         setAvailabilityVersion((version) => version + 1);
+        if (!fixedSession) setStep('time');
       } else if (apiErrorStatus(error) === 409) {
         toast.error(t('customers.booking.slotTaken'));
         setAvailabilityVersion((version) => version + 1);
+        if (!fixedSession) setStep('time');
       } else {
         const serverMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
         toast.error(serverMessage || t('customers.booking.failed'));
@@ -283,18 +296,6 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     } finally {
       setSaving(false);
     }
-  };
-
-  // A class says so, and a label never reads "NaN min" (LT-204).
-  const serviceLabel = (ty: AppointmentType) => {
-    const minutes = Math.round(Number(ty.durationMS) / 60_000);
-    return [
-      ty.name,
-      ty.kind === 'class' ? t('appointmentTypes.class.toggle') : '',
-      minutes > 0 ? `${minutes} ${t('appointments.minutes')}` : '',
-    ]
-      .filter(Boolean)
-      .join(' · ');
   };
 
   // Back to this month (a class's walk-in may still go to one that began
@@ -309,11 +310,56 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     setTime('');
     setSessionTs('');
   };
+  // Each choice is its own step, as on the site (LT-211).
+  const pickService = (service: AppointmentType) => {
+    setTypeId(service._id);
+    setAutoTurned(false);
+    setDateKey('');
+    setTime('');
+    setSessionTs('');
+    setStep('date');
+  };
   const pickDay = (key: string) => {
     setDateKey(key);
     setTime('');
     setSessionTs('');
+    setStep('time');
   };
+  const pickTime = (slot: string) => {
+    setTime(slot);
+    setStep('details');
+  };
+  const pickSession = (timestamp: string) => {
+    setSessionTs(timestamp);
+    setStep('details');
+  };
+  const back = () => setStep(step === 'details' ? 'time' : step === 'time' ? 'date' : 'service');
+
+  // Nothing left this month (its last days, say): show the next one, as the
+  // site offers the next month's first days near a month's end — once, so
+  // the owner can still turn back.
+  useEffect(() => {
+    if (step !== 'date' || autoTurned || loading || !selectedType) return;
+    if (monthIndexOf(month) !== monthIndexOf(thisMonth)) return;
+    const anyOpen = Array.from(statuses.values()).some((status) => status === 'full' || status === 'limited');
+    if (anyOpen || statuses.size === 0) return;
+    setAutoTurned(true);
+    turnMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, autoTurned, loading, selectedType, month, statuses]);
+  const canGoBack = !fixedSession && step !== 'service';
+
+  // The service and, once picked, its start — for the summary over each step.
+  const summaryService = presetService ?? selectedType;
+  const startMs = fixedSession
+    ? Number(presetTimestamp)
+    : isClass
+      ? chosenSession
+        ? Number(chosenSession.timestamp)
+        : undefined
+      : time
+        ? slotTimestamp(date, time)
+        : undefined;
 
   return createPortal(
     <AnimatePresence>
@@ -331,10 +377,21 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-lg glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
             <h3 className={`text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 ${customer ? 'mb-1' : 'mb-5'}`}>
-              <CalendarPlus size={18} className="text-primary" />
+              {canGoBack ? (
+                <button
+                  type="button"
+                  onClick={back}
+                  aria-label={t('customers.booking.back')}
+                  className="w-8 h-8 -ms-1 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors"
+                >
+                  {direction === 'rtl' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                </button>
+              ) : (
+                <CalendarPlus size={18} className="text-primary" />
+              )}
               {preset ? t('appointments.session.addParticipant') : t('customers.booking.title')}
             </h3>
             {customer && (
@@ -344,25 +401,51 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
             )}
 
             <form onSubmit={submit} className="space-y-4">
-              {presetService && (
-                <div
-                  data-testid="preset-session"
-                  className="rounded-xl border border-gray-200 dark:border-gray-700/80 bg-white/70 dark:bg-dark-surface/60 px-4 py-3"
-                >
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{presetService.name}</p>
-                  <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">
-                    {new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
-                      new Date(Number(presetTimestamp))
-                    )}
-                    {' · '}
-                    <span dir="ltr">
-                      {formatTime(Number(presetTimestamp))} –{' '}
-                      {formatTime(Number(presetTimestamp) + (Number(presetService.durationMS) || 0))}
-                    </span>
-                  </p>
-                </div>
+              {step === 'service' && <ServicePicker services={appointmentTypes} onPick={pickService} />}
+
+              {step !== 'service' && summaryService && (
+                <ChoiceSummary
+                  service={summaryService}
+                  startMs={step === 'details' ? startMs : undefined}
+                  day={step === 'time' && dateKey ? date : undefined}
+                />
               )}
-              {walkIn && (
+
+              {step === 'date' && selectedType && (
+                <>
+                  {/* A class's days come from its sessions: unread, the
+                      calendar would look closed with no reason given. */}
+                  {isClass && current?.failed && (
+                    <p className="text-sm text-amber-700 dark:text-amber-300 ms-0.5">{t('customers.booking.sessionsFailed')}</p>
+                  )}
+                  <MonthDays
+                    month={month}
+                    minMonth={thisMonth}
+                    maxMonth={lastMonth}
+                    onMonthChange={turnMonth}
+                    dateKey={dateKey}
+                    onPickDay={pickDay}
+                    statusOf={(day) => statuses.get(localDateKey(day))}
+                  />
+                </>
+              )}
+
+              {step === 'time' && selectedType && dateKey && (
+                <DayTimes
+                  day={date}
+                  mode={isClass ? 'sessions' : 'times'}
+                  loading={loading}
+                  failed={!!current?.failed}
+                  slots={slots}
+                  time={time}
+                  onPickTime={pickTime}
+                  sessions={daySessions}
+                  sessionTs={chosenSession?.timestamp ?? ''}
+                  onPickSession={pickSession}
+                />
+              )}
+
+              {step === 'details' && walkIn && (
                 <>
                   <Input
                     id="booking-name"
@@ -387,43 +470,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   />
                 </>
               )}
-              {!fixedSession && (
-              <Select
-                label={t('customers.booking.service')}
-                value={typeId}
-                onChange={(e) => setTypeId(e.target.value)}
-                options={appointmentTypes.map((ty) => ({ value: ty._id, label: serviceLabel(ty) }))}
-                disabled={!appointmentTypes.length}
-                helperText={appointmentTypes.length ? undefined : t('customers.booking.noServices')}
-              />
-              )}
-              {selectedType && !fixedSession && (
-                <div>
-                  <p className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
-                    {t('customers.booking.date')}
-                  </p>
-                  <BookingCalendar
-                    month={month}
-                    minMonth={thisMonth}
-                    maxMonth={lastMonth}
-                    onMonthChange={turnMonth}
-                    dateKey={dateKey}
-                    onPickDay={pickDay}
-                    statusOf={(day) => statuses.get(localDateKey(day))}
-                    mode={isClass ? 'sessions' : 'times'}
-                    loading={loading}
-                    failed={!!current?.failed}
-                    slots={slots}
-                    time={time}
-                    onPickTime={setTime}
-                    sessions={daySessions}
-                    sessionTs={chosenSession?.timestamp ?? ''}
-                    onPickSession={setSessionTs}
-                  />
-                </div>
-              )}
 
-              {questions.length > 0 && (
+              {step === 'details' && questions.length > 0 && (
                 <div className="pt-3 border-t border-gray-200/70 dark:border-gray-700/60 space-y-4" data-testid="booking-questions">
                   {questions.map((q) => {
                     const id = `booking-q-${q.key}`;
@@ -515,9 +563,11 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                 <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={saving}>
                   {t('customers.block.cancel')}
                 </Button>
-                <Button type="submit" variant="primary" size="sm" isLoading={saving} disabled={!ready}>
-                  {t('customers.booking.submit')}
-                </Button>
+                {step === 'details' && (
+                  <Button type="submit" variant="primary" size="sm" isLoading={saving} disabled={!ready}>
+                    {t('customers.booking.submit')}
+                  </Button>
+                )}
               </div>
             </form>
           </motion.div>

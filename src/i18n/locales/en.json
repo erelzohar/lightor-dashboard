@@ -1103,6 +1103,7 @@
     },
     "booking": {
       "title": "Book an appointment",
+      "back": "Back",
       "service": "Service",
       "date": "Date",
       "prevMonth": "Previous month",
@@ -1127,6 +1128,7 @@
       "session": "Session",
       "pickSession": "Choose a session",
       "noSessions": "No sessions on this date",
+      "noTimetable": "This class has no timetable yet",
       "loadingSessions": "Loading sessions…",
       "sessionsFailed": "Could not load the sessions",
       "classFull": "This session is full — pick another",

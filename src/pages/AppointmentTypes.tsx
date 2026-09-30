@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { uploadImage } from '../services/imagesApi';
-import globals from '../services/globals';
 import { AppointmentType, ClassSession } from '../types';
 
 /** The server refuses more than this (LT-152). */
@@ -21,10 +20,8 @@ import {
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTranslation } from 'react-i18next';
 import { isBookableService, isLeadsSite } from '../utils/siteMode';
+import { resolveImage } from '../utils/images';
 
-/** Bare names are S3 images served by the images API; full URLs pass through. */
-const resolveImage = (name: string): string =>
-  /^(https?:|data:|blob:)/.test(name) ? name : globals.imagesUrl + name;
 
 const GLASS: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)',

@@ -1103,6 +1103,7 @@
     },
     "booking": {
       "title": "Prendre un rendez-vous",
+      "back": "Retour",
       "service": "Service",
       "date": "Date",
       "prevMonth": "Mois précédent",
@@ -1127,6 +1128,7 @@
       "session": "Séance",
       "pickSession": "Choisir une séance",
       "noSessions": "Aucune séance à cette date",
+      "noTimetable": "Ce cours n'a pas encore d'horaires",
       "loadingSessions": "Chargement des séances…",
       "sessionsFailed": "Impossible de charger les séances",
       "classFull": "Cette séance est complète — choisissez-en une autre",
