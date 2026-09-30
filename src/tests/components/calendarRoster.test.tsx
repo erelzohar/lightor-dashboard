@@ -121,8 +121,12 @@ describe('a class nobody has booked yet, on the calendar', () => {
 
     const block = await screen.findByTestId('empty-session');
     expect(within(block).getByText('Group training')).toBeTruthy();
-    expect(within(block).getByText('0/12')).toBeTruthy();
     expect(within(block).getByText('appointments.session.empty')).toBeTruthy();
+    // The badge takes the block's direction, so in Hebrew it sits at the
+    // end, clear of the name (an own dir="ltr" put it over the name); the
+    // time range reads left to right in any language.
+    expect(within(block).getByText('0/12').hasAttribute('dir')).toBe(false);
+    expect(within(block).getByText('10:00 – 11:00').getAttribute('dir')).toBe('ltr');
 
     const [subdomain, from, to] = vi.mocked(getClassSessions).mock.calls[0];
     const today = new Date();

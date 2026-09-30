@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { X, CalendarDays, Clock, Users, Phone, Check, XCircle, UserPlus } from 'lucide-react';
+import { X, CalendarDays, Clock, Users, Phone, Check, XCircle, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
@@ -93,12 +93,13 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   // A walk-in (LT-204): a class only, since an ordinary service has no seats,
   // and only while the server still lists the session. A full class says so
   // rather than opening a booking the server would refuse.
-  const canSeat = session.type?.kind === 'class' && session.startMs > Date.now() - WALK_IN_WINDOW_MS;
+  const isClass = session.type?.kind === 'class';
+  const canSeat = isClass && session.startMs > Date.now() - WALK_IN_WINDOW_MS;
   const capacity = Number(session.type?.capacity) || 0;
   const full = capacity > 0 && going.length >= capacity;
 
-  const setStatus = (appointment: Appointment, next: 'completed' | 'cancelled') => {
-    if (next === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
+  const setStatus = (appointment: Appointment, next: 'completed' | 'cancelled', confirmText?: string) => {
+    if (next === 'cancelled' && !window.confirm(confirmText ?? t('appointments.cancelConfirm'))) return;
     try {
       dispatch(updateAppointmentStatus({ id: appointment._id, status: next }));
       toast.success(t('appointments.updateSuccess'));
@@ -159,7 +160,8 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
           </span>
           <span className="inline-flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg text-xs text-gray-700 dark:text-gray-200 tabular-nums">
             <Clock size={13} className="text-gray-400 shrink-0" />
-            {format(start, 'HH:mm')} – {format(end, 'HH:mm')}
+            {/* Left to right in Hebrew too (LT-211): "19:00 – 19:30". */}
+            <span dir="ltr">{format(start, 'HH:mm')} – {format(end, 'HH:mm')}</span>
           </span>
           <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-medium">
             <Users size={13} className="shrink-0" />
@@ -221,7 +223,9 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                       </a>
                     </div>
 
-                    {rowStatus !== 'scheduled' && (
+                    {/* In a class the session's own badge says how it runs; a
+                        person's row says only that they left (LT-211). */}
+                    {rowStatus !== 'scheduled' && (!isClass || cancelled) && (
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${badgeClass(rowStatus)}`}>
                         {t(`appointments.${rowStatus}`)}
                       </span>
@@ -255,25 +259,45 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
 
                     <span className="flex-1" />
 
-                    {!cancelled && rowStatus !== 'completed' && (
-                      <button
-                        onClick={() => setStatus(participant, 'completed')}
-                        title={t('appointments.markCompleted')}
-                        aria-label={t('appointments.markCompleted')}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
-                      >
-                        <Check size={14} />
-                      </button>
-                    )}
-                    {!cancelled && (
-                      <button
-                        onClick={() => setStatus(participant, 'cancelled')}
-                        title={t('appointments.cancelAppointment')}
-                        aria-label={t('appointments.cancelAppointment')}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors"
-                      >
-                        <XCircle size={14} />
-                      </button>
+                    {isClass ? (
+                      // A class has no "completed" per person and no
+                      // appointment to cancel: its one action is taking
+                      // someone out of it — the cancel underneath (LT-211).
+                      !cancelled && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setStatus(participant, 'cancelled', t('appointments.session.removeConfirm', { name: participant.name }))
+                          }
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors"
+                        >
+                          <UserMinus size={14} className="shrink-0" />
+                          {t('appointments.session.remove')}
+                        </button>
+                      )
+                    ) : (
+                      <>
+                        {!cancelled && rowStatus !== 'completed' && (
+                          <button
+                            onClick={() => setStatus(participant, 'completed')}
+                            title={t('appointments.markCompleted')}
+                            aria-label={t('appointments.markCompleted')}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
+                          >
+                            <Check size={14} />
+                          </button>
+                        )}
+                        {!cancelled && (
+                          <button
+                            onClick={() => setStatus(participant, 'cancelled')}
+                            title={t('appointments.cancelAppointment')}
+                            aria-label={t('appointments.cancelAppointment')}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors"
+                          >
+                            <XCircle size={14} />
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </motion.li>

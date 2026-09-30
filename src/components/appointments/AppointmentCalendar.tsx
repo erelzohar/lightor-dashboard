@@ -382,7 +382,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           <div className="mx-4 mb-4 rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg,#1f2035,#252840)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs" style={{ color: '#6b7280' }}>
+              {/* A range reads left to right in Hebrew too (LT-211): "19:00 – 19:30". */}
+              <span className="text-xs" style={{ color: '#6b7280' }} dir="ltr">
                 {format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}
                 {' – '}
                 {format(new Date(parseInt(nextAppt.timestamp) + Number(nextAppt.type.durationMS)), 'HH:mm')}
@@ -766,18 +767,27 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                           >
                             {/* A headcount that survives a half-hour block, where
                                 there is no room for the roster row below; a
-                                class's against its seats. */}
+                                class's against its seats. No dir of its own: an
+                                element's dir sets which side its `end` is, and an
+                                "ltr" badge sat on the right in Hebrew, over the
+                                start of the name (LT-211). */}
                             {grouped && (
-                              <span dir="ltr" className={`absolute top-1 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums ${pal.avatar}`}>
+                              <span className={`absolute top-1 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums ${pal.avatar}`}>
                                 {seats ? `${going.length}/${seats}` : going.length}
                               </span>
                             )}
-                            <p className={`font-semibold text-[11px] leading-tight truncate ${pal.text} ${grouped ? 'pe-9' : ''}`}>
-                              {session.type.name}
-                            </p>
+                            {/* The name takes its own direction (LT-211): an English
+                                name in a Hebrew calendar is cut at its end ("full
+                                body wo…"), not its start. The room for the badge
+                                is the block's, on the wrapper. */}
+                            <div className={grouped ? 'pe-9' : ''}>
+                              <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text}`}>
+                                {session.type.name}
+                              </p>
+                            </div>
                             {height > 42 && (
                               <p className={`text-[10px] mt-0.5 ${pal.sub}`}>
-                                {format(ts, 'HH:mm')} – {format(endTs, 'HH:mm')}
+                                <span dir="ltr">{format(ts, 'HH:mm')} – {format(endTs, 'HH:mm')}</span>
                               </p>
                             )}
                             {height > 62 && (

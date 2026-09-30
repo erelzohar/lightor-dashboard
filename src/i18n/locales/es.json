@@ -301,6 +301,8 @@
       "cancelledCount": "{{count}} cancelados",
       "close": "Cerrar",
       "addParticipant": "Añadir participante",
+      "remove": "Quitar de la clase",
+      "removeConfirm": "¿Quitar a {{name}} de la clase?",
       "full": "Clase completa",
       "empty": "Aún no hay participantes"
     }

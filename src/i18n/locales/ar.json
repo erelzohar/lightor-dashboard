@@ -301,6 +301,8 @@
       "cancelledCount": "{{count}} ملغاة",
       "close": "إغلاق",
       "addParticipant": "إضافة مشارك",
+      "remove": "إزالة من الحصة",
+      "removeConfirm": "إزالة {{name}} من الحصة؟",
       "full": "الحصة ممتلئة",
       "empty": "لا يوجد مشاركون بعد"
     }

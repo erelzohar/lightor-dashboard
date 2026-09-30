@@ -301,6 +301,8 @@
       "cancelledCount": "{{count}} annulés",
       "close": "Fermer",
       "addParticipant": "Ajouter un participant",
+      "remove": "Retirer du cours",
+      "removeConfirm": "Retirer {{name}} du cours ?",
       "full": "Cours complet",
       "empty": "Aucun participant pour l'instant"
     }

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, within, waitFor } from '@testing-library/rea
 import AppointmentsList from '../../components/appointments/AppointmentsList';
 import { Appointment, AppointmentType } from '../../types';
 import { getClassSessions } from '../../services/appointmentsApi';
+import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -136,6 +137,32 @@ describe('the appointments list with a class in it', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it("offers one action per person in a class: taking them out of it, the cancel underneath (LT-211)", () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(updateAppointmentStatus).mockClear();
+    render(
+      <AppointmentsList
+        appointments={[...klass, attendee('d', 'Gone Away', '+972500000004', 'cancelled')]}
+        onAppointmentClick={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByText('Group training'));
+    const dialog = screen.getByRole('dialog');
+
+    // Three people in, three buttons; the one who left has none.
+    const removes = within(dialog).getAllByRole('button', { name: 'appointments.session.remove' });
+    expect(removes).toHaveLength(3);
+    expect(within(dialog).queryByRole('button', { name: 'appointments.markCompleted' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'appointments.cancelAppointment' })).toBeNull();
+
+    const avi = within(dialog).getByText('Avi Levi').closest('li') as HTMLElement;
+    fireEvent.click(within(avi).getByRole('button', { name: 'appointments.session.remove' }));
+
+    expect(confirm).toHaveBeenCalledWith('appointments.session.removeConfirm');
+    expect(updateAppointmentStatus).toHaveBeenCalledWith({ id: 'b', status: 'cancelled' });
+    confirm.mockRestore();
+  });
+
   it('counts a cancelled attendee out of the headcount', () => {
     render(
       <AppointmentsList
@@ -217,6 +244,9 @@ describe('adding a walk-in from a class roster', () => {
     );
     fireEvent.click(screen.getByText('Haircut'));
     expect(addButton()).toBeNull();
+    // Not a class: each booking keeps its own complete and cancel.
+    expect(within(screen.getByRole('dialog')).getAllByRole('button', { name: 'appointments.markCompleted' })).toHaveLength(3);
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'appointments.session.remove' })).toBeNull();
     unmount();
 
     const lastWeek = String(Date.now() - 30 * HOUR);

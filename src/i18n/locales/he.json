@@ -301,6 +301,8 @@
       "cancelledCount": "{{count}} ביטולים",
       "close": "סגירה",
       "addParticipant": "הוספת משתתף",
+      "remove": "הסרה מהשיעור",
+      "removeConfirm": "להסיר את {{name}} מהשיעור?",
       "full": "השיעור מלא",
       "empty": "אין עדיין משתתפים"
     }
