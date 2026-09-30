@@ -220,7 +220,9 @@
       "ctaHelp": "El texto del botón principal de tu sitio. Déjalo vacío para usar el texto predeterminado que aparece en el campo.",
       "ctaDefaultBook": "Reservar Cita",
       "ctaDefaultLead": "Contáctanos",
-      "ctaTooLong": "Máximo {{max}} caracteres"
+      "ctaTooLong": "Máximo {{max}} caracteres",
+      "hideFromSearch": "Ocultar mi sitio de los buscadores",
+      "hideFromSearchHelp": "Tu sitio sigue en línea, y cualquiera con el enlace puede abrirlo. Google puede tardar unos días en quitarlo de sus resultados."
     }
   },
   "appointmentTypes": {
@@ -296,7 +298,9 @@
       "title": "Sesión grupal",
       "participants": "{{count}} participantes",
       "cancelledCount": "{{count}} cancelados",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "addParticipant": "Añadir participante",
+      "full": "Clase completa"
     }
   },
   "login": {
@@ -1106,7 +1110,15 @@
       "slotTaken": "Esa hora ya está ocupada — elige otra",
       "failed": "No se pudo reservar la cita",
       "addressSuggestions": "Sugerencias de direcciones",
-      "noAddresses": "No hay direcciones que coincidan"
+      "noAddresses": "No hay direcciones que coincidan",
+      "session": "Sesión",
+      "pickSession": "Elige una sesión",
+      "noSessions": "No hay sesiones en esta fecha",
+      "loadingSessions": "Cargando sesiones…",
+      "sessionsFailed": "No se pudieron cargar las sesiones",
+      "classFull": "Esta sesión está completa — elige otra",
+      "alreadyBooked": "Este número de teléfono ya está inscrito en esta sesión",
+      "notASession": "La clase no se da a esa hora — elige una sesión de la lista"
     },
     "errors": {
       "loadFailed": "No se pudieron cargar los clientes",

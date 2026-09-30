@@ -1,6 +1,7 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { X, CalendarDays, Clock, Users, Phone, Check, XCircle } from 'lucide-react';
+import { X, CalendarDays, Clock, Users, Phone, Check, XCircle, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
+import OwnerBookingModal from '../customers/OwnerBookingModal';
 
 interface SessionParticipantsProps {
   session: Session | null;
@@ -55,17 +57,25 @@ const STATUS_BADGE: Record<string, string> = {
 const badgeClass = (status: string): string =>
   STATUS_BADGE[status] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
 
+// The server lists a session to its owner until a day after it began
+// (LT-204), so that is how long a walk-in can still be seated from here.
+const WALK_IN_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 /**
- * The roster behind a session card (LT-152). One panel serves both the
- * calendar and the list: everyone booked into this service at this time, with
- * the per-person actions the owner used to reach through the single-booking
- * popup.
+ * The roster behind a session card (LT-152). One panel serves the calendar,
+ * the list and the home list: everyone booked into this service at this time,
+ * with the per-person actions the owner used to reach through the
+ * single-booking popup, and a way to seat a walk-in in a class (LT-204).
+ *
+ * Its parent passes the session as it is now, looked up by id in the store
+ * (`findSession`), so the walk-in shows here once the list is fetched again.
  */
 const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onClose, onUpdate }) => {
   const { language } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const locale = language === 'he' ? he : undefined;
+  const [adding, setAdding] = React.useState(false);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -80,6 +90,12 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   const going = activeParticipants(session);
   const cancelledCount = session.participants.length - going.length;
   const status = sessionDisplayStatus(session);
+  // A walk-in (LT-204): a class only, since an ordinary service has no seats,
+  // and only while the server still lists the session. A full class says so
+  // rather than opening a booking the server would refuse.
+  const canSeat = session.type?.kind === 'class' && session.startMs > Date.now() - WALK_IN_WINDOW_MS;
+  const capacity = Number(session.type?.capacity) || 0;
+  const full = capacity > 0 && going.length >= capacity;
 
   const setStatus = (appointment: Appointment, next: 'completed' | 'cancelled') => {
     if (next === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
@@ -92,7 +108,10 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
     }
   };
 
-  return (
+  // On document.body (LT-204): a card's backdrop-filter (.glass-card) is the
+  // containing block of anything fixed inside it, so a roster opened from a
+  // list would otherwise be trapped in, and clipped by, that card.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-safe">
       <motion.div
         initial={{ opacity: 0 }}
@@ -149,6 +168,17 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
           <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${badgeClass(status)}`}>
             {t(`appointments.${status}`)}
           </span>
+          {canSeat && (
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              disabled={full}
+              className="ms-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <UserPlus size={13} className="shrink-0" />
+              {full ? t('appointments.session.full') : t('appointments.session.addParticipant')}
+            </button>
+          )}
         </div>
 
         {/* Roster */}
@@ -251,8 +281,21 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
             </p>
           )}
         </div>
+
+        {/* The walk-in's booking (LT-204): no customer yet, this session
+            preset. It fetches the appointments again on success. Inside the
+            dialog so its clicks stop here, whatever the roster sits in. */}
+        {canSeat && (
+          <OwnerBookingModal
+            open={adding}
+            preset={{ typeId: session.type._id, timestamp: session.timestamp }}
+            onClose={() => setAdding(false)}
+            onBooked={() => onUpdate?.()}
+          />
+        )}
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

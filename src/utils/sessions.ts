@@ -86,6 +86,15 @@ export const groupSessions = (appointments: Appointment[]): Session[] => {
 };
 
 /**
+ * The session with this id, rebuilt from the bookings as they are now
+ * (LT-204). A roster keeps the id of what it shows, never a copy, so a walk-in
+ * seated from it — or anyone cancelled in it — appears as soon as the store
+ * has the change. Null when no booking carries the id (any more).
+ */
+export const findSession = (appointments: Appointment[], id: string | null): Session | null =>
+  id ? groupSessions(appointments.filter((appointment) => sessionKeyOf(appointment) === id))[0] ?? null : null;
+
+/**
  * How many things are on the owner's plate. Erel's call (2026-09-09): a
  * counter means sessions, not people — a coach teaching two classes has two
  * things today, not twenty-four. Money and plan limits keep counting people,

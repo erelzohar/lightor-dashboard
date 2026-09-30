@@ -92,6 +92,9 @@ const Settings: React.FC = () => {
   // default, and only trimmed text is stored.
   const ctaOf = (config: WebConfig | null) => (config?.components?.hero?.cta ?? '').trim();
   const ctaChanged = !!localWebConfig && !!webConfig && ctaOf(localWebConfig) !== ctaOf(webConfig);
+  // Hidden from search engines (LT-208): absent and false are the same.
+  const hideFromSearchChanged =
+    !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -115,6 +118,7 @@ const Settings: React.FC = () => {
       leadFieldsChanged ||
       conversionChanged ||
       ctaChanged ||
+      hideFromSearchChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -301,6 +305,8 @@ const Settings: React.FC = () => {
       // The mode only when the owner switched it (LT-199). The server
       // re-composes the page on this save and deletes nothing.
       if (conversionChanged) payload.conversion = draftLeads ? 'lead' : 'book';
+      // Only when the owner flipped it (LT-208), as the mode above.
+      if (hideFromSearchChanged) payload.hideFromSearch = !!localWebConfig.hideFromSearch;
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -339,13 +345,15 @@ const Settings: React.FC = () => {
       }
       // The mode and the sections as the server stored them (LT-199): the
       // button text trimmed, and a leads site's contact section forced
-      // visible. Adopted, or the form would read as unsaved.
+      // visible. Adopted, or the form would read as unsaved. So is the
+      // search-engine switch (LT-208), which shows what the server stored.
       if (saved) {
         setLocalWebConfig(prev =>
           prev
             ? {
                 ...prev,
                 conversion: isLeadsSite(saved) ? 'lead' : 'book',
+                hideFromSearch: !!saved.hideFromSearch,
                 ...(saved.components ? { components: saved.components } : {}),
               }
             : prev
@@ -963,6 +971,39 @@ const Settings: React.FC = () => {
                 onChange={(e) => handleChange('components.hero', 'cta', e.target.value)}
               />
             </div>
+
+            {/* Out of search engines (LT-208): the edge serves the site with
+                noindex and leaves it out of the sitemaps and lightor.app/sites.
+                A draft like the rest; the save bar commits it. */}
+            <label
+              htmlFor="site-hide-from-search"
+              className="max-w-2xl flex items-start justify-between gap-4 p-4 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gray-50/30 dark:bg-gray-800/20 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+            >
+              <span className="min-w-0">
+                <span id="site-hide-from-search-label" className="block font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                  {t('settings.site.hideFromSearch')}
+                </span>
+                <span id="site-hide-from-search-help" className="block mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {t('settings.site.hideFromSearchHelp')}
+                </span>
+              </span>
+              <span className="relative inline-flex items-center shrink-0 mt-0.5">
+                <input
+                  id="site-hide-from-search"
+                  type="checkbox"
+                  role="switch"
+                  className="sr-only peer"
+                  checked={!!localWebConfig.hideFromSearch}
+                  aria-labelledby="site-hide-from-search-label"
+                  aria-describedby="site-hide-from-search-help"
+                  onChange={(e) => handleChange('root', 'hideFromSearch', e.target.checked)}
+                />
+                <span
+                  aria-hidden="true"
+                  className="block w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"
+                />
+              </span>
+            </label>
           </motion.div>
         );
       }

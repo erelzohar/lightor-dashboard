@@ -220,7 +220,9 @@
       "ctaHelp": "הטקסט של הכפתור הראשי באתר. השאר ריק כדי להציג את הטקסט שבתיבה.",
       "ctaDefaultBook": "קביעת תור",
       "ctaDefaultLead": "צור קשר",
-      "ctaTooLong": "עד {{max}} תווים"
+      "ctaTooLong": "עד {{max}} תווים",
+      "hideFromSearch": "הסתר את האתר שלי ממנועי חיפוש",
+      "hideFromSearchHelp": "האתר ממשיך לפעול, וכל מי שיש לו את הקישור יכול להיכנס אליו. ייתכן שיעברו כמה ימים עד שגוגל יסיר אותו מתוצאות החיפוש."
     }
   },
   "appointmentTypes": {
@@ -296,7 +298,9 @@
       "title": "מפגש קבוצתי",
       "participants": "{{count}} משתתפים",
       "cancelledCount": "{{count}} ביטולים",
-      "close": "סגירה"
+      "close": "סגירה",
+      "addParticipant": "הוספת משתתף",
+      "full": "השיעור מלא"
     }
   },
   "login": {
@@ -1106,7 +1110,15 @@
       "slotTaken": "השעה הזו כבר תפוסה — בחר אחרת",
       "failed": "לא ניתן לקבוע את התור",
       "addressSuggestions": "הצעות לכתובת",
-      "noAddresses": "לא נמצאו כתובות מתאימות"
+      "noAddresses": "לא נמצאו כתובות מתאימות",
+      "session": "מפגש",
+      "pickSession": "בחר מפגש",
+      "noSessions": "אין מפגשים בתאריך זה",
+      "loadingSessions": "טוען מפגשים…",
+      "sessionsFailed": "לא ניתן לטעון את המפגשים",
+      "classFull": "המפגש הזה מלא — בחר מפגש אחר",
+      "alreadyBooked": "מספר הטלפון הזה כבר רשום למפגש הזה",
+      "notASession": "השיעור לא מתקיים בשעה הזו — בחר מפגש מהרשימה"
     },
     "errors": {
       "loadFailed": "לא ניתן לטעון את הלקוחות",

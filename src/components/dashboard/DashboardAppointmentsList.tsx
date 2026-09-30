@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Phone, Clock, Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Phone, Clock, Calendar, ChevronRight, ChevronLeft, Users } from 'lucide-react';
 import Card from '../ui/Card';
 import { Appointment } from '../../types';
 import { formatTime } from '../../utils/dateUtils';
@@ -10,6 +10,9 @@ import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import { Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus } from '../../utils/sessions';
+import { useOpenSession } from '../../hooks/useOpenSession';
+import SessionParticipants from '../appointments/SessionParticipants';
 
 interface DashboardAppointmentsListProps {
   appointments: Appointment[];
@@ -71,13 +74,21 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
 
 
 
-  const sorted = [...appointments].sort(
-    (a, b) => parseInt(a.timestamp) - parseInt(b.timestamp)
-  );
+  // One row per session (LT-204), as on the calendar and the list (LT-152): a
+  // class of twelve is one thing on the owner's plate, not twelve rows with
+  // twelve call buttons. A one-to-one booking is a session of one, so its row
+  // is exactly what it was. Sessions come ordered by start time.
+  const sessions = useMemo(() => groupSessions(appointments), [appointments]);
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments);
 
-  const filtered = sorted.filter(a => {
+  // The calendar's rule: a class reads as its session's status.
+  const statusOf = (session: Session) =>
+    isGroupSession(session) ? sessionDisplayStatus(session) : getDisplayStatus(session.participants[0]);
+
+  // Filtered and counted after grouping: a session counts once.
+  const filtered = sessions.filter(session => {
     if (statusFilter === 'all') return true;
-    return getDisplayStatus(a) === statusFilter;
+    return statusOf(session) === statusFilter;
   });
 
   const filterOptions: { value: StatusFilter; label: string }[] = [
@@ -144,14 +155,30 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
         {/* List */}
         <div className="mt-2 divide-y divide-light-gray/10 max-h-[26rem] overflow-y-auto scrollbar-thin">
           {filtered.length > 0 ? (
-            filtered.map((appointment, i) => {
-              const status = getDisplayStatus(appointment);
+            filtered.map((session, i) => {
+              const status = statusOf(session);
               const statusConfig = STATUS_COLORS[status] || STATUS_COLORS.scheduled;
+
+              if (isGroupSession(session)) {
+                return (
+                  <SessionRow
+                    key={session.id}
+                    session={session}
+                    index={i}
+                    statusConfig={statusConfig}
+                    avatarColor={SEGMENT_BG_COLORS[status] || '#3b82f6'}
+                    dateLabel={getDateDisplay(session.timestamp)}
+                    onOpen={openRoster}
+                  />
+                );
+              }
+
+              const appointment = session.participants[0];
               const durationMin = Math.round(Number(appointment.type.durationMS) / 60000);
 
               return (
                 <motion.div
-                  key={appointment._id}
+                  key={session.id}
                   initial={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
@@ -272,6 +299,128 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
           )}
         </div>
       </Card>
+
+      {/* The roster renders on document.body: this card's backdrop-filter
+          would trap a fixed panel inside it. */}
+      <AnimatePresence>
+        {openSession && <SessionParticipants session={openSession} onClose={closeRoster} />}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+interface SessionRowProps {
+  session: Session;
+  index: number;
+  statusConfig: { badge: string; label: string };
+  avatarColor: string;
+  dateLabel: string;
+  onOpen: (session: Session) => void;
+}
+
+/**
+ * A class session's row on the home list (LT-204): the service, the
+ * headcount, the date, the duration, the status and what the session brings
+ * in (price × people still booked, as on the list's session card). No call
+ * or WhatsApp button — there are several people; the roster has one each.
+ */
+const SessionRow: React.FC<SessionRowProps> = ({ session, index, statusConfig, avatarColor, dateLabel, onOpen }) => {
+  const { direction } = useTheme();
+  const { t } = useTranslation();
+  const ArrowIcon = direction === 'rtl' ? ChevronLeft : ChevronRight;
+
+  const going = activeParticipants(session);
+  const participants = t('appointments.session.participants', { count: going.length });
+  const durationMin = Math.round(session.durationMS / 60000);
+  const perHead = Number(session.type?.price);
+  const revenue = Number.isFinite(perHead) ? perHead * going.length : null;
+  const revenueLabel = revenue !== null ? `${t('appointments.currencySymbol')}${revenue}` : null;
+
+  const avatar = (size: string) => (
+    <div
+      className={`${size} rounded-full flex items-center justify-center text-white shrink-0 shadow-sm`}
+      style={{ backgroundColor: avatarColor }}
+    >
+      <Users size={16} />
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.04 }}
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(session)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen(session);
+        }
+      }}
+      className="group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      {/* Desktop row */}
+      <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-center px-3 py-3.5 rounded-xl hover:bg-light-gray/5 dark:hover:bg-white/3 transition-colors">
+        <div className="flex items-center gap-3 min-w-0">
+          {avatar('w-9 h-9')}
+          <div className="min-w-0">
+            <p className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+              {session.type?.name}
+            </p>
+            <p className="text-xs text-primary font-medium truncate">{participants}</p>
+          </div>
+        </div>
+
+        <div className="w-28 text-center">
+          <span className="text-xs font-medium text-light-gray flex items-center justify-center gap-1">
+            <Calendar size={11} />
+            {dateLabel}
+          </span>
+        </div>
+
+        <div className="w-24 text-center">
+          <span className="text-xs text-light-gray flex items-center justify-center gap-1">
+            <Clock size={11} />
+            {durationMin} {t('appointments.minutes')}
+          </span>
+        </div>
+
+        <div className="w-24 flex justify-center">
+          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusConfig.badge}`}>
+            {t(statusConfig.label)}
+          </span>
+        </div>
+
+        <div className="w-28 flex items-center justify-end">
+          {revenueLabel && <span className="text-sm font-bold text-primary tabular-nums">{revenueLabel}</span>}
+        </div>
+      </div>
+
+      {/* Mobile card row */}
+      <div className="md:hidden flex items-start gap-3 py-3.5 px-1 rounded-xl hover:bg-light-gray/5 dark:hover:bg-white/3 transition-colors">
+        {avatar('w-10 h-10')}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-semibold text-sm truncate">{session.type?.name}</p>
+              <p className="text-xs text-primary font-medium">{participants}</p>
+            </div>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${statusConfig.badge}`}>
+              {t(statusConfig.label)}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 mt-1.5">
+            <span className="text-xs text-light-gray flex items-center gap-1">
+              <Calendar size={10} />
+              {dateLabel}
+            </span>
+            {revenueLabel && <span className="text-xs font-bold text-primary tabular-nums">{revenueLabel}</span>}
+          </div>
+        </div>
+        <ArrowIcon size={16} className="text-light-gray/50 shrink-0 mt-1" />
+      </div>
     </motion.div>
   );
 };

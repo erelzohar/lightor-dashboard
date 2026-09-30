@@ -220,7 +220,9 @@
       "ctaHelp": "نص الزر الرئيسي في موقعك. اتركه فارغًا لاستخدام النص الافتراضي الظاهر في الحقل.",
       "ctaDefaultBook": "حجز موعد",
       "ctaDefaultLead": "اتصل بنا",
-      "ctaTooLong": "{{max}} حرفًا كحد أقصى"
+      "ctaTooLong": "{{max}} حرفًا كحد أقصى",
+      "hideFromSearch": "إخفاء موقعي عن محركات البحث",
+      "hideFromSearchHelp": "يبقى موقعك متاحًا، ويمكن لأي شخص لديه الرابط فتحه. قد يستغرق Google بضعة أيام لإزالته من نتائج البحث."
     }
   },
   "appointmentTypes": {
@@ -296,7 +298,9 @@
       "title": "حصة جماعية",
       "participants": "{{count}} مشاركين",
       "cancelledCount": "{{count}} ملغاة",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "addParticipant": "إضافة مشارك",
+      "full": "الحصة ممتلئة"
     }
   },
   "login": {
@@ -1106,7 +1110,15 @@
       "slotTaken": "هذا الوقت محجوز — اختر وقتًا آخر",
       "failed": "تعذّر حجز الموعد",
       "addressSuggestions": "اقتراحات العناوين",
-      "noAddresses": "لا توجد عناوين مطابقة"
+      "noAddresses": "لا توجد عناوين مطابقة",
+      "session": "الحصة",
+      "pickSession": "اختر حصة",
+      "noSessions": "لا توجد حصص في هذا التاريخ",
+      "loadingSessions": "جارٍ تحميل الحصص…",
+      "sessionsFailed": "تعذّر تحميل الحصص",
+      "classFull": "هذه الحصة ممتلئة — اختر حصة أخرى",
+      "alreadyBooked": "رقم الهاتف هذا مسجّل بالفعل في هذه الحصة",
+      "notASession": "لا تُقام الحصة في هذا الوقت — اختر حصة من القائمة"
     },
     "errors": {
       "loadFailed": "تعذّر تحميل العملاء",

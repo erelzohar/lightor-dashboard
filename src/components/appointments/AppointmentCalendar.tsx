@@ -24,6 +24,7 @@ import {
 } from '../../utils/sessions';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
+import { useOpenSession } from '../../hooks/useOpenSession';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -87,7 +88,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [catSecOpen,  setCatSecOpen]            = useState(true);
   const [sidebarOpen, setSidebarOpen]           = useState(false);
   const [laterApptId, setLaterApptId]           = useState<string | null>(null);
-  const [openSession, setOpenSession]           = useState<Session | null>(null);
+  // The open roster follows every booking, whatever the filters show (LT-204):
+  // a walk-in seated from it appears once the appointments are fetched again.
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
@@ -126,10 +129,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   // ── Close popup on Escape ─────────────────────────────────────────────
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') { setSelectedAppt(null); setOpenSession(null); } };
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') { setSelectedAppt(null); closeRoster(); } };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, []);
+  }, [closeRoster]);
 
   // ── Derived ───────────────────────────────────────────────────────────
   const miniCalDays = useMemo(() => eachDayOfInterval({
@@ -227,7 +230,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const handleSessionClick = (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedAppt(null);
-    setOpenSession(session);
+    openRoster(session);
   };
 
   const handleStatus = async (status: 'completed' | 'cancelled') => {
@@ -792,7 +795,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         {openSession && (
           <SessionParticipants
             session={openSession}
-            onClose={() => setOpenSession(null)}
+            onClose={closeRoster}
           />
         )}
       </AnimatePresence>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Card from '../ui/Card';
@@ -10,7 +10,8 @@ import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
-import { Session, groupSessions, isGroupSession } from '../../utils/sessions';
+import { groupSessions, isGroupSession } from '../../utils/sessions';
+import { useOpenSession } from '../../hooks/useOpenSession';
 import SessionCard from './SessionCard';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
@@ -59,12 +60,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     }
   };
 
-  const [openSession, setOpenSession] = useState<Session | null>(null);
-
   // Bookings sharing a service and a start time are one session (LT-152). A
   // one-to-one business has one participant per session, so every card below
   // renders exactly as it did before.
   const sessions = useMemo(() => groupSessions(appointments), [appointments]);
+  // The open roster follows these bookings (LT-204): a walk-in seated from it
+  // shows once the list is fetched again.
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments);
 
 
 
@@ -109,7 +111,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   <SessionCard
                     session={session}
                     dateLabel={getDateDisplay(session.timestamp)}
-                    onOpen={setOpenSession}
+                    onOpen={openRoster}
                   />
                 ) : (
                 <div className={`bg-light-surface p-4 rounded-xl border border-light-gray/10 shadow-sm
@@ -193,7 +195,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
       <AnimatePresence>
         {openSession && (
-          <SessionParticipants session={openSession} onClose={() => setOpenSession(null)} />
+          <SessionParticipants session={openSession} onClose={closeRoster} />
         )}
       </AnimatePresence>
     </Card>

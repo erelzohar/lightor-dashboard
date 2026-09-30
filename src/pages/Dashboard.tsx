@@ -194,7 +194,9 @@ const Dashboard: React.FC = () => {
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
 
-  if (isLoading && !leadsSite) {
+  // First load only (LT-204): a refetch keeps the page, and any roster open
+  // on it, mounted.
+  if (isLoading && !leadsSite && appointments.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />

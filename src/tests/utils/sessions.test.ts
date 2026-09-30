@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   countSessions,
+  findSession,
   groupSessions,
   isGroupSession,
   sessionKeyOf,
@@ -119,5 +120,22 @@ describe('grouping bookings into sessions', () => {
   it('keys a session on its service and its start', () => {
     const at = String(Date.now());
     expect(sessionKeyOf(appt({ _id: 'a', timestamp: at }))).toBe(`t1|${at}`);
+  });
+
+  it('finds a session again by its id, as the bookings are now (LT-204)', () => {
+    const at = String(Date.now() + 24 * HOUR);
+    const before = [
+      appt({ _id: 'a', name: 'Dana', timestamp: at }),
+      appt({ _id: 'b', name: 'Avi', timestamp: at }),
+      appt({ _id: 'other', timestamp: at, type: type('t2') }),
+    ];
+    const id = groupSessions(before)[0].id;
+
+    const after = findSession([...before, appt({ _id: 'c', name: 'Walk In', timestamp: at })], id);
+
+    expect(after?.id).toBe(id);
+    expect(after?.participants.map(p => p.name)).toEqual(['Avi', 'Dana', 'Walk In']);
+    expect(findSession(before, 't9|0')).toBeNull();
+    expect(findSession(before, null)).toBeNull();
   });
 });

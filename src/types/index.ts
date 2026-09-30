@@ -203,6 +203,12 @@ export interface WebConfig {
    * editor carries it unchanged, so the builder's save stores it as it is.
    */
   businessDescription?: string;
+  /**
+   * The owner keeps the site out of search engines (LT-208): the edge serves
+   * it with noindex and leaves it out of the sitemaps and lightor.app/sites.
+   * It stays up for anyone with the link. Absent reads false.
+   */
+  hideFromSearch?: boolean;
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

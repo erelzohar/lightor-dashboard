@@ -220,7 +220,9 @@
       "ctaHelp": "The text of your site's main button. Leave it empty to use the default shown in the box.",
       "ctaDefaultBook": "Book Appointment",
       "ctaDefaultLead": "Contact Us",
-      "ctaTooLong": "At most {{max}} characters"
+      "ctaTooLong": "At most {{max}} characters",
+      "hideFromSearch": "Hide my site from search engines",
+      "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results."
     }
   },
   "appointmentTypes": {
@@ -296,7 +298,9 @@
       "title": "Group session",
       "participants": "{{count}} participants",
       "cancelledCount": "{{count}} cancelled",
-      "close": "Close"
+      "close": "Close",
+      "addParticipant": "Add participant",
+      "full": "Class full"
     }
   },
   "login": {
@@ -1106,7 +1110,15 @@
       "slotTaken": "That time is already taken — pick another",
       "failed": "Could not book the appointment",
       "addressSuggestions": "Address suggestions",
-      "noAddresses": "No matching addresses"
+      "noAddresses": "No matching addresses",
+      "session": "Session",
+      "pickSession": "Choose a session",
+      "noSessions": "No sessions on this date",
+      "loadingSessions": "Loading sessions…",
+      "sessionsFailed": "Could not load the sessions",
+      "classFull": "This session is full — pick another",
+      "alreadyBooked": "This phone number is already booked into this session",
+      "notASession": "The class doesn't run at that time — pick a session from the list"
     },
     "errors": {
       "loadFailed": "Could not load customers",

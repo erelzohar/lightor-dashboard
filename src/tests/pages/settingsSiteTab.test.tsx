@@ -243,6 +243,66 @@ describe('Settings: the Site tab', () => {
 });
 
 /**
+ * Settings → Site (LT-208): the owner keeps the site out of search engines.
+ * A draft like every other setting: flipping it marks the form unsaved, the
+ * save sends it only when it changed, and the server's answer is adopted.
+ */
+describe('Settings: hiding the site from search engines', () => {
+  const searchSwitch = () => screen.getByRole('switch', { name: 'settings.site.hideFromSearch' });
+
+  it('marks the form unsaved and sends hideFromSearch on save', async () => {
+    render(<Settings />);
+    openSiteTab();
+
+    expect(searchSwitch()).not.toBeChecked();
+    expect(searchSwitch()).toHaveAccessibleDescription('settings.site.hideFromSearchHelp');
+    expect(screen.queryByText('common.save')).toBeNull();
+
+    fireEvent.click(searchSwitch());
+    expect(searchSwitch()).toBeChecked();
+
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().hideFromSearch).toBe(true);
+    // Nothing else on the tab changed, so nothing else of it travels.
+    expect(sentPayload()).not.toHaveProperty('conversion');
+    expect(sentPayload()).not.toHaveProperty('components');
+
+    // Stored and adopted: the switch stays on and nothing is left unsaved.
+    await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
+    expect(searchSwitch()).toBeChecked();
+  });
+
+  it('shows a hidden site as hidden, and sends false to bring it back', async () => {
+    state.webConfig.data = { ...baseConfig(), hideFromSearch: true };
+    render(<Settings />);
+    openSiteTab();
+
+    expect(searchSwitch()).toBeChecked();
+    fireEvent.click(searchSwitch());
+
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().hideFromSearch).toBe(false);
+  });
+
+  it('is not sent when untouched, and flipped back it is no change', async () => {
+    render(<Settings />);
+    openSiteTab();
+
+    fireEvent.click(searchSwitch());
+    fireEvent.click(searchSwitch());
+    // (The bar animates out.)
+    await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
+
+    fireEvent.change(screen.getByLabelText('settings.site.ctaLabel'), { target: { value: 'Get a quote' } });
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload()).not.toHaveProperty('hideFromSearch');
+  });
+});
+
+/**
  * A leads site's Settings (LT-199): no cancellation window, booking horizon,
  * booking questions, or calendar sync — there is no calendar. The contact
  * form's questions stay: they are the site's conversion.

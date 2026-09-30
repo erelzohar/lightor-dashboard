@@ -40,7 +40,11 @@ const Appointments: React.FC = () => {
     )
     .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
 
-  if (isLoading) {
+  // The spinner is for the first load only (LT-204). A refetch — the
+  // 4-minute refresh, or the one after the owner seats a walk-in from a class
+  // roster — keeps the page mounted: tearing it down closed the open roster
+  // and threw the calendar back to this week.
+  if (isLoading && appointments.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>

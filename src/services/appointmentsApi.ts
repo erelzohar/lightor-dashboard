@@ -108,11 +108,43 @@ export interface CreateAppointmentBody {
  * Owner-made booking (LT-122). A signed-in business books into its own
  * calendar without an OTP; the server refuses a foreign user_id and answers
  * 409 when the slot overlaps an existing appointment — callers turn that
- * into a message rather than an error.
+ * into a message rather than an error. A class answers 409 with a `code`
+ * (LT-152): CLASS_FULL, ALREADY_BOOKED, NOT_A_SESSION.
  */
 export const createAppointment = async (body: CreateAppointmentBody): Promise<Appointment> => {
   const res = await apiClient.post(APPOINTMENTS_URL, body);
   return res.data.data;
+};
+
+/** One session of a group class, as the availability endpoint counts it (LT-152). */
+export interface ClassSessionAvailability {
+  type_id: string;
+  /**
+   * Epoch ms as a string, computed by the server on the Asia/Jerusalem wall
+   * clock. Booked back exactly as received — never rebuilt in the browser.
+   */
+  timestamp: string;
+  durationMS: string;
+  capacity: number;
+  /** Seats taken: bookings not cancelled. */
+  booked: number;
+}
+
+/**
+ * The class sessions in a window, with their seats (LT-204). The public
+ * availability endpoint, addressed by subdomain; signed in as the site's
+ * owner it also lists sessions that already started (up to a day back) and
+ * ones past the customers' booking window, so a walk-in can still be seated.
+ */
+export const getClassSessions = async (
+  subdomain: string,
+  startDate: string,
+  endDate: string
+): Promise<ClassSessionAvailability[]> => {
+  const res = await apiClient.get(`${APPOINTMENTS_URL}availability`, {
+    params: { subdomain, startDate, endDate },
+  });
+  return res.data.classes ?? [];
 };
 
 export const updateAppointmentStatus = async (
