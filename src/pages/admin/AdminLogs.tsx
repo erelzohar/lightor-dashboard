@@ -227,7 +227,7 @@ const AdminLogs: React.FC = () => {
 
       {selected &&
         createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-safe">
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelected(null)} />
             <div className="relative w-full max-w-2xl glass-modal rounded-2xl p-6 max-h-[80dvh] overflow-y-auto">
               <div className="flex items-start justify-between gap-3 mb-4">

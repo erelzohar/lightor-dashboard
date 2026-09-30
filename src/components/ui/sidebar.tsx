@@ -1,7 +1,7 @@
 import React, { useState, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
@@ -122,25 +122,10 @@ export const MobileSidebar = ({
   const offscreen = rtl ? '100%' : '-100%';
   return (
     <>
-      <div
-        className={cn(
-          // pt-[env()]: status-bar clearance inside the Capacitor shell
-          // (LT-127); zero in a browser, whose chrome sits above the page.
-          'min-h-14 px-2 pt-[env(safe-area-inset-top)] flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full flex-shrink-0'
-        )}
-        {...props}
-      >
-        <div className="flex justify-end z-20 w-full">
-          <button
-            type="button"
-            aria-label={open ? t('sidebar.closeSidebar') : t('sidebar.openSidebar')}
-            aria-expanded={open}
-            className="w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
-            onClick={() => setOpen(!open)}
-          >
-            <Menu aria-hidden="true" />
-          </button>
-        </div>
+      {/* No phone top bar (LT-210): it held only a menu button, and the
+          bottom tab bar's "More" opens this same drawer. What is left is the
+          drawer itself, which is fixed and takes no room in the page. */}
+      <div className="md:hidden" {...props}>
         <AnimatePresence>
           {open && (
             <motion.div

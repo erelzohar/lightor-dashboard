@@ -8,9 +8,14 @@ const URL = globals.imagesUrl;
  * @param file The image file (from input)
  * @returns Uploaded image data (e.g., { url, name, id })
  */
-export const uploadImage = async (file: File): Promise<{ imageName: string }> => {
+/**
+ * `photo` keeps the picture's own shape (gallery, service pictures). Left out,
+ * the server contains it in a transparent square, which logos need (LT-210).
+ */
+export const uploadImage = async (file: File, shape?: 'photo'): Promise<{ imageName: string }> => {
     try {
         const formData = new FormData();
+        if (shape) formData.append('shape', shape);
         formData.append('image', file);
 
         const res = await apiClient.post(URL, formData, {

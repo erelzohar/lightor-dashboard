@@ -101,7 +101,9 @@ const Layout: React.FC = () => {
 
   return (
     <div
-      className={`h-[100dvh] w-full flex flex-col md:flex-row bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
+      // pt: the status bar. The app draws under it (LT-210), and on phones
+      // there is no top bar any more to hold that space; zero in a browser.
+      className={`h-[100dvh] w-full flex flex-col md:flex-row pt-[env(safe-area-inset-top)] bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >

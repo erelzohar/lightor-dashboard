@@ -448,7 +448,7 @@ const AiBuilder: React.FC = () => {
         <section
           className={`bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl flex-col overflow-hidden shadow-sm ${
             isPreviewFullscreen
-              ? 'fixed inset-0 z-50 flex rounded-none border-0'
+              ? 'fixed inset-0 z-50 flex rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'
               : `flex-1 ${activeTab === 'preview' ? 'flex' : 'hidden'} ${showPreview ? 'md:flex' : 'md:hidden'}`
           }`}
         >

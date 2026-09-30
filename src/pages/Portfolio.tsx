@@ -250,7 +250,7 @@ const Portfolio: React.FC = () => {
             const options = { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true, alwaysKeepResolution: true };
             const compressedFile = await imageCompression(file, options);
 
-            const imgResponse = await uploadImage(compressedFile);
+            const imgResponse = await uploadImage(compressedFile, 'photo');
             if (!imgResponse) throw new Error("Failed to upload image");
 
             const newItem: PortfolioItem = { url: imgResponse.imageName, title: '', description: '' };

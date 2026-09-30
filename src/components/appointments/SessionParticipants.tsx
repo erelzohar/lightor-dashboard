@@ -93,7 +93,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-safe">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

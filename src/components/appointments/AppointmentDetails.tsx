@@ -55,7 +55,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   }[s] ?? 'bg-gray-100 text-gray-700');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-safe">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}

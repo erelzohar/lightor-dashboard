@@ -148,7 +148,7 @@ const Login: React.FC = () => {
           {/* ── Right panel: sign-in form (full width on mobile, half on desktop) ── */}
           <div
             className="
-              flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8
+              flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 overlay-safe
               bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-900
             "
           >

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import imageCompression from 'browser-image-compression';
+import { uploadImage } from '../../services/imagesApi';
 import Portfolio from '../../pages/Portfolio';
 
 /**
@@ -75,5 +77,20 @@ describe('Portfolio', () => {
         render(<Portfolio />);
 
         expect(screen.getByTestId('item')).toHaveTextContent('a.jpg');
+    });
+
+    // LT-210: without `photo` the server contains the picture in a transparent
+    // square, and the card's crop turned a portrait photo into a narrow strip.
+    it('uploads a new picture as a photo, so it keeps its own shape', async () => {
+        state = { webConfig: { data: loaded, loading: false } };
+        const compressed = new File(['x'], 'p.jpg', { type: 'image/jpeg' });
+        vi.mocked(imageCompression).mockResolvedValue(compressed);
+        vi.mocked(uploadImage).mockResolvedValue({ imageName: 'new.webp' });
+        const { container } = render(<Portfolio />);
+
+        const input = container.querySelector('#portfolio-image-upload') as HTMLInputElement;
+        fireEvent.change(input, { target: { files: [new File(['y'], 'IMG_0001.jpg', { type: 'image/jpeg' })] } });
+
+        await waitFor(() => expect(uploadImage).toHaveBeenCalledWith(compressed, 'photo'));
     });
 });

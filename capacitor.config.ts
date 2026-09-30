@@ -26,12 +26,16 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
     androidScheme: 'https',
   },
-  // Whatever sits behind the web view shows through during overscroll bounce
-  // and keyboard transitions. Left unset it is black, which reads as bars at
-  // the top and bottom of the app; match the page instead.
+  // Whatever sits behind the web view shows through during keyboard
+  // transitions. Left unset it is black; match the page instead.
   backgroundColor: '#ffffff',
   ios: {
-    contentInset: 'automatic',
+    // The page draws edge to edge and keeps clear of the notch and the home
+    // indicator itself, with env(safe-area-inset-*) (LT-210). 'automatic'
+    // inset the whole web view as well, so the safe areas were counted twice:
+    // a white native band above the page's own status-bar padding and another
+    // below the tab bar's home-indicator padding.
+    contentInset: 'never',
     backgroundColor: '#ffffff',
   },
   plugins: {

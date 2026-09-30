@@ -143,7 +143,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, o
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 overlay-safe">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

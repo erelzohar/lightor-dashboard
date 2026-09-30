@@ -30,7 +30,7 @@ const VerifyEmail: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-center p-4 bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
+      className={`min-h-screen flex flex-col items-center justify-center p-4 overlay-safe bg-light-bg dark:bg-dark-bg transition-colors duration-200 ${
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >

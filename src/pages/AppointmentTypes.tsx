@@ -174,7 +174,7 @@ const AppointmentTypes: React.FC = () => {
     setUploadingImage(true);
     try {
       const compressed = await imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true });
-      const { imageName } = await uploadImage(compressed);
+      const { imageName } = await uploadImage(compressed, 'photo');
       setFormData(prev => ({ ...prev, image: imageName }));
     } catch {
       toast.error(t('appointmentTypes.image.uploadError'));

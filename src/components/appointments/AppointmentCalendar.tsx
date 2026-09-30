@@ -523,7 +523,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               animate={{ x: 0 }}
               exit={{ x: direction === 'rtl' ? '100%' : '-100%' }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-              className={`fixed top-0 ${direction === 'rtl' ? 'right-0' : 'left-0'} h-full w-[300px] z-50 overflow-y-auto flex flex-col`}
+              className={`fixed top-0 ${direction === 'rtl' ? 'right-0' : 'left-0'} h-full w-[300px] z-50 overflow-y-auto flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]`}
               style={{ background: '#1a1b26' }}
               onClick={e => e.stopPropagation()}
             >
