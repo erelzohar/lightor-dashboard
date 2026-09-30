@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import AppointmentCalendar from '../../components/appointments/AppointmentCalendar';
 import { Appointment, AppointmentType } from '../../types';
+import { getClassSessions } from '../../services/appointmentsApi';
 
 const { t } = vi.hoisted(() => ({
   t: (key: string, vars?: Record<string, unknown>) => (vars && 'count' in vars ? `${key}:${vars.count}` : key),
@@ -14,12 +15,21 @@ vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ auth: { user: { _id: 'u1', name: 'Coach Owner' } } }),
 }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
-vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (selector: (s: { webConfig: { data: null } }) => unknown): unknown =>
-    selector({ webConfig: { data: null } }),
+// The grid asks the server for the week's class sessions (LT-211) once the
+// store knows a class and the site's subdomain.
+const store = vi.hoisted(() => ({
+  state: {
+    webConfig: { data: null as null | { _id: string; subDomain: string } },
+    appointments: { appointmentTypes: [] as unknown[] },
+  },
 }));
+vi.mock('../../hooks/useAppSelector', () => ({
+  useAppSelector: (selector: (s: typeof store.state) => unknown): unknown => selector(store.state),
+}));
+vi.mock('../../services/appointmentsApi', () => ({ getClassSessions: vi.fn() }));
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn(() => ({ type: 'noop' })),
+  fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 // The walk-in's booking (LT-204) is tested with OwnerBookingModal itself.
@@ -83,5 +93,66 @@ describe('the calendar roster of a class', () => {
     const roster = screen.getByRole('dialog');
     expect(within(roster).getByText('Walk In')).toBeTruthy();
     expect(within(roster).getByText('appointments.session.participants:4')).toBeTruthy();
+  });
+});
+
+/**
+ * A class nobody has booked into holds no appointment (LT-211): the grid
+ * draws it from the server's list of the week's sessions, and its roster is
+ * where the first participant is added.
+ */
+describe('a class nobody has booked yet, on the calendar', () => {
+  const at = tomorrowAtTen();
+  const listing = { type_id: 'c1', timestamp: at, durationMS: String(HOUR), capacity: 12, booked: 0 };
+
+  beforeEach(() => {
+    store.state.webConfig.data = { _id: 'w1', subDomain: 'studio' };
+    store.state.appointments.appointmentTypes = [yoga];
+    vi.mocked(getClassSessions).mockReset().mockResolvedValue([listing]);
+  });
+
+  afterEach(() => {
+    store.state.webConfig.data = null;
+    store.state.appointments.appointmentTypes = [];
+  });
+
+  it('draws the empty session for the week on show, seats counted', async () => {
+    render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} />);
+
+    const block = await screen.findByTestId('empty-session');
+    expect(within(block).getByText('Group training')).toBeTruthy();
+    expect(within(block).getByText('0/12')).toBeTruthy();
+    expect(within(block).getByText('appointments.session.empty')).toBeTruthy();
+
+    const [subdomain, from, to] = vi.mocked(getClassSessions).mock.calls[0];
+    const today = new Date();
+    expect(subdomain).toBe('studio');
+    expect(Number(from)).toBe(new Date(today.getFullYear(), today.getMonth(), today.getDate()).valueOf());
+    expect(Number(to)).toBe(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7).valueOf() - 1);
+  });
+
+  it('opens its roster, empty, with "Add participant"', async () => {
+    render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} />);
+
+    fireEvent.click(await screen.findByTestId('empty-session'));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getAllByText('appointments.session.empty').length).toBeGreaterThan(0);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'appointments.session.addParticipant' }));
+    expect(screen.getByTestId('booking-modal')).toBeTruthy();
+  });
+
+  it('becomes the booked session, not a second block, once its first booking arrives', async () => {
+    const first: Appointment = {
+      _id: '1', name: 'Dana Cohen', type: yoga, phone: '+972500000001', status: 'scheduled', user_id: 'u1', timestamp: at,
+    };
+    const { rerender } = render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} />);
+    fireEvent.click(await screen.findByTestId('empty-session'));
+
+    rerender(<AppointmentCalendar appointments={[first]} onAppointmentClick={vi.fn()} />);
+
+    expect(screen.queryByTestId('empty-session')).toBeNull();
+    expect(screen.getAllByTestId('session-block')).toHaveLength(1);
+    expect(within(screen.getByRole('dialog')).getByText('Dana Cohen')).toBeTruthy();
   });
 });

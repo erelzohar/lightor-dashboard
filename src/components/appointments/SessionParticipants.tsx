@@ -183,6 +183,12 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
 
         {/* Roster */}
         <div className="px-5 pb-5 overflow-y-auto scrollbar-thin">
+          {/* A class nobody has booked yet (LT-211): the button above seats the first. */}
+          {session.participants.length === 0 && (
+            <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              {t('appointments.session.empty')}
+            </p>
+          )}
           <ul className="grid sm:grid-cols-2 gap-2.5">
             {session.participants.map((participant, index) => {
               const cancelled = participant.status === 'cancelled';

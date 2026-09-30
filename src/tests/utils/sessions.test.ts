@@ -4,9 +4,11 @@ import {
   findSession,
   groupSessions,
   isGroupSession,
+  listedSessions,
   sessionKeyOf,
   sessionDisplayStatus,
   activeParticipants,
+  withListedSessions,
 } from '../../utils/sessions';
 import { Appointment, AppointmentType } from '../../types';
 
@@ -137,5 +139,63 @@ describe('grouping bookings into sessions', () => {
     expect(after?.participants.map(p => p.name)).toEqual(['Avi', 'Dana', 'Walk In']);
     expect(findSession(before, 't9|0')).toBeNull();
     expect(findSession(before, null)).toBeNull();
+  });
+});
+
+/**
+ * A class nobody has booked into holds no appointment (LT-211): the server's
+ * list of its sessions puts it on the page, and its roster is where its
+ * participants — the first and the only one included — are added.
+ */
+describe('class sessions nobody has booked yet', () => {
+  const yoga: AppointmentType = { ...type('c1'), name: 'Yoga', kind: 'class', capacity: 12 };
+  const at = String(Date.now() + 24 * HOUR);
+  const listing = (timestamp: string, typeId = 'c1') => ({
+    type_id: typeId,
+    timestamp,
+    durationMS: String(HOUR),
+    capacity: 12,
+    booked: 0,
+  });
+
+  it('turns listed sessions into empty sessions keyed as their bookings will be', () => {
+    const [session] = listedSessions([listing(at), listing(at, 'unknown')], [yoga]);
+
+    expect(session).toMatchObject({ id: `c1|${at}`, timestamp: at, startMs: Number(at), durationMS: HOUR, participants: [] });
+    expect(session.type.name).toBe('Yoga');
+    expect(sessionKeyOf(appt({ _id: 'a', timestamp: at, type: yoga }))).toBe(session.id);
+  });
+
+  it('adds the empty ones to the booked, never a second copy of a booked one', () => {
+    const later = String(Number(at) + 2 * HOUR);
+    const booked = groupSessions([appt({ _id: 'a', timestamp: at, type: yoga })]);
+    const merged = withListedSessions(booked, listedSessions([listing(later), listing(at)], [yoga]));
+
+    expect(merged.map(s => [s.id, s.participants.length])).toEqual([[`c1|${at}`, 1], [`c1|${later}`, 0]]);
+  });
+
+  it('shows a class as a session even with one participant or none', () => {
+    expect(isGroupSession(groupSessions([appt({ _id: 'a', timestamp: at, type: yoga })])[0])).toBe(true);
+    expect(isGroupSession(listedSessions([listing(at)], [yoga])[0])).toBe(true);
+    expect(isGroupSession(groupSessions([appt({ _id: 'a', timestamp: at })])[0])).toBe(false);
+  });
+
+  it('reads an empty class by the clock, not as cancelled', () => {
+    expect(sessionDisplayStatus(listedSessions([listing(at)], [yoga])[0])).toBe('scheduled');
+    const started = String(Date.now() - 10 * 60_000);
+    expect(sessionDisplayStatus(listedSessions([listing(started)], [yoga])[0])).toBe('ongoing');
+    // Everyone dropped out: the class still runs.
+    const dropped = groupSessions([appt({ _id: 'a', status: 'cancelled', timestamp: at, type: yoga })]);
+    expect(sessionDisplayStatus(dropped[0])).toBe('scheduled');
+  });
+
+  it('finds an empty session by its id until its first booking arrives', () => {
+    const listed = listedSessions([listing(at)], [yoga]);
+    const id = listed[0].id;
+
+    expect(findSession([], id, listed)?.participants).toEqual([]);
+    const first = appt({ _id: 'a', name: 'Dana', timestamp: at, type: yoga });
+    expect(findSession([first], id, listed)?.participants.map(p => p.name)).toEqual(['Dana']);
+    expect(findSession([], id, [])).toBeNull();
   });
 });

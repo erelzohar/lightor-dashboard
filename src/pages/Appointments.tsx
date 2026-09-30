@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, CalendarRange, List } from 'lucide-react';
+import { Calendar, CalendarPlus, CalendarRange, List } from 'lucide-react';
 import { Appointment } from '../types';
 import AppointmentCalendar from '../components/appointments/AppointmentCalendar';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import AppointmentsList from '../components/appointments/AppointmentsList';
+import OwnerBookingModal from '../components/customers/OwnerBookingModal';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -20,6 +21,9 @@ const Appointments: React.FC = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>(() => {
     return (localStorage.getItem('appointments_view_mode') as 'calendar' | 'list') || 'calendar';
   });
+  // The owner books from here too (LT-211), on the site's own calendar; the
+  // booking window fetches the appointments again when it books.
+  const [booking, setBooking] = useState(false);
 
   document.title = t('appointments.title');
 
@@ -73,28 +77,40 @@ const Appointments: React.FC = () => {
           </p>
         </div>
 
-        {/* View toggle */}
-        <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => { setViewMode('calendar'); localStorage.setItem('appointments_view_mode', 'calendar'); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-              ${viewMode === 'calendar'
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            type="button"
+            onClick={() => setBooking(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition-colors"
           >
-            <Calendar size={15} />
-            <span className="hidden sm:inline">{t('appointments.calendarView') || 'Calendar'}</span>
+            <CalendarPlus size={15} className="shrink-0" />
+            <span className="hidden sm:inline">{t('appointments.newAppointment')}</span>
+            <span className="sr-only sm:hidden">{t('appointments.newAppointment')}</span>
           </button>
-          <button
-            onClick={() => { setViewMode('list'); localStorage.setItem('appointments_view_mode', 'list'); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-              ${viewMode === 'list'
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-          >
-            <List size={15} />
-            <span className="hidden sm:inline">{t('appointments.listView') || 'List'}</span>
-          </button>
+
+          {/* View toggle */}
+          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shrink-0">
+            <button
+              onClick={() => { setViewMode('calendar'); localStorage.setItem('appointments_view_mode', 'calendar'); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                ${viewMode === 'calendar'
+                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            >
+              <Calendar size={15} />
+              <span className="hidden sm:inline">{t('appointments.calendarView') || 'Calendar'}</span>
+            </button>
+            <button
+              onClick={() => { setViewMode('list'); localStorage.setItem('appointments_view_mode', 'list'); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                ${viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            >
+              <List size={15} />
+              <span className="hidden sm:inline">{t('appointments.listView') || 'List'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -126,6 +142,8 @@ const Appointments: React.FC = () => {
           />
         </motion.div>
       )}
+
+      <OwnerBookingModal open={booking} onClose={() => setBooking(false)} onBooked={() => undefined} />
 
       {/* Details modal — triggered only from sidebar "next appointment" card */}
       {selectedAppointment && (

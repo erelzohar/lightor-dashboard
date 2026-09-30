@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Card from '../ui/Card';
@@ -10,8 +10,9 @@ import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
-import { groupSessions, isGroupSession } from '../../utils/sessions';
+import { groupSessions, isGroupSession, withListedSessions } from '../../utils/sessions';
 import { useOpenSession } from '../../hooks/useOpenSession';
+import { useClassSessions } from '../../hooks/useClassSessions';
 import SessionCard from './SessionCard';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
@@ -20,6 +21,11 @@ interface AppointmentsListProps {
   appointments: Appointment[];
   onAppointmentClick: (appointment: Appointment) => void;
 }
+
+const DAY_MS = 86_400_000;
+// How far ahead a class nobody has booked yet joins the list (LT-211): the
+// coming week. The calendar shows any week, empty classes included.
+const EMPTY_CLASSES_DAYS = 7;
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
   appointments,
@@ -60,13 +66,22 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     }
   };
 
+  // The coming week's class sessions nobody has booked yet (LT-211), from the
+  // moment the list opened: it lists what is ahead.
+  const [openedAt] = useState(() => Date.now());
+  const listed = useClassSessions(openedAt, openedAt + EMPTY_CLASSES_DAYS * DAY_MS);
+  const upcomingListed = useMemo(() => listed.filter((session) => session.startMs > openedAt), [listed, openedAt]);
+
   // Bookings sharing a service and a start time are one session (LT-152). A
   // one-to-one business has one participant per session, so every card below
   // renders exactly as it did before.
-  const sessions = useMemo(() => groupSessions(appointments), [appointments]);
+  const sessions = useMemo(
+    () => withListedSessions(groupSessions(appointments), upcomingListed),
+    [appointments, upcomingListed]
+  );
   // The open roster follows these bookings (LT-204): a walk-in seated from it
   // shows once the list is fetched again.
-  const { openSession, openRoster, closeRoster } = useOpenSession(appointments);
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments, upcomingListed);
 
 
 

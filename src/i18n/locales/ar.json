@@ -269,6 +269,7 @@
   "appointments": {
     "title": "المواعيد",
     "description": "عرض وإدارة",
+    "newAppointment": "موعد جديد",
     "all": "الكل",
     "scheduled": "مجدولة",
     "completed": "مكتملة",
@@ -300,7 +301,8 @@
       "cancelledCount": "{{count}} ملغاة",
       "close": "إغلاق",
       "addParticipant": "إضافة مشارك",
-      "full": "الحصة ممتلئة"
+      "full": "الحصة ممتلئة",
+      "empty": "لا يوجد مشاركون بعد"
     }
   },
   "login": {
@@ -1101,9 +1103,18 @@
       "title": "حجز موعد",
       "service": "الخدمة",
       "date": "التاريخ",
+      "prevMonth": "الشهر السابق",
+      "nextMonth": "الشهر التالي",
+      "day": {
+        "full": "متاح بالكامل",
+        "limited": "توفر محدود",
+        "none": "غير متاح",
+        "vacation": "إجازة"
+      },
       "time": "الوقت",
       "pickTime": "اختر وقتًا",
-      "noSlots": "مغلق في هذا التاريخ",
+      "noSlots": "لا توجد أوقات متاحة في هذا اليوم",
+      "loadingTimes": "جارٍ تحميل الأوقات المتاحة…",
       "noServices": "أضف خدمة أولًا",
       "submit": "حجز",
       "success": "تم حجز الموعد",

@@ -269,6 +269,7 @@
   "appointments": {
     "title": "ניהול התורים שלך",
     "description": "צפייה וניהול",
+    "newAppointment": "תור חדש",
     "all": "הכל",
     "scheduled": "ממתינים",
     "completed": "הושלמו",
@@ -300,7 +301,8 @@
       "cancelledCount": "{{count}} ביטולים",
       "close": "סגירה",
       "addParticipant": "הוספת משתתף",
-      "full": "השיעור מלא"
+      "full": "השיעור מלא",
+      "empty": "אין עדיין משתתפים"
     }
   },
   "login": {
@@ -1101,9 +1103,18 @@
       "title": "קביעת תור",
       "service": "שירות",
       "date": "תאריך",
+      "prevMonth": "החודש הקודם",
+      "nextMonth": "החודש הבא",
+      "day": {
+        "full": "זמינות מלאה",
+        "limited": "זמינות מוגבלת",
+        "none": "לא זמין",
+        "vacation": "חופשה"
+      },
       "time": "שעה",
       "pickTime": "בחר שעה",
-      "noSlots": "סגור בתאריך זה",
+      "noSlots": "אין שעות פנויות ביום הזה",
+      "loadingTimes": "טוען שעות פנויות…",
       "noServices": "הוסף שירות קודם",
       "submit": "קבע",
       "success": "התור נקבע",

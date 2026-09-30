@@ -147,6 +147,35 @@ export const getClassSessions = async (
   return res.data.classes ?? [];
 };
 
+/** A booking a new one must keep clear of: its start and length, nothing more. */
+export interface BusySlot {
+  /** Epoch ms as a string. */
+  timestamp: string;
+  durationMS: string;
+}
+
+export interface Availability {
+  busy: BusySlot[];
+  classes: ClassSessionAvailability[];
+}
+
+/**
+ * The business's calendar in a window, as the site's booking calendar reads
+ * it (LT-211): the times already taken and the class sessions with their
+ * seats — the same endpoint, so the owner's booking calendar offers exactly
+ * what a customer's would, bar the customers' booking window.
+ */
+export const getAvailability = async (
+  subdomain: string,
+  startDate: string,
+  endDate: string
+): Promise<Availability> => {
+  const res = await apiClient.get(`${APPOINTMENTS_URL}availability`, {
+    params: { subdomain, startDate, endDate },
+  });
+  return { busy: res.data.data ?? [], classes: res.data.classes ?? [] };
+};
+
 export const updateAppointmentStatus = async (
   id: string,
   status: 'scheduled' | 'completed' | 'cancelled'

@@ -12,26 +12,33 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { fetchAppointments, fetchAppointmentTypes } from '../../store/slices/appointmentsSlice';
-import { createAppointment, getClassSessions, type ClassSessionAvailability } from '../../services/appointmentsApi';
+import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
-import { generateSlots, localDateKey, slotTimestamp } from '../../utils/bookingSlots';
+import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
+import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay } from '../../utils/phone';
-import { formatTime } from '../../utils/dateUtils';
+import BookingCalendar from './BookingCalendar';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
 import { isBookableService } from '../../utils/siteMode';
 import type { AppointmentType, BookingField } from '../../types';
 
 /**
  * Book an appointment FOR a customer from the dashboard (LT-122) — the first
- * owner-made booking UI. Service → date → a time from the business's opening
- * hours (advisory; the server's overlap check is the authority and a taken
- * slot comes back as 409 → toast). Name and phone are the customer's, so the
- * booking lands in their history and their reminders go to the right number.
+ * owner-made booking UI. Service → a day on the site's own booking calendar
+ * → one of its free times (LT-211): the opening hours less the vacations,
+ * the bookings and the classes, as the site works them out, so the owner is
+ * offered what a customer would be, bar the customers' booking window. The
+ * server's overlap check stays the authority: a slot taken meanwhile comes
+ * back as 409 → toast, and the day is read again. Name and phone are the
+ * customer's, so the booking lands in their history and their reminders go
+ * to the right number.
  *
- * A group class (LT-204) offers its sessions on that date instead, with the
+ * A group class (LT-204) offers its sessions on that day instead, with the
  * seats the server counts, and books the session's own timestamp exactly as
  * the server listed it. From a class roster it seats a walk-in: the session
  * comes preset and, with no customer yet, the owner types a name and phone.
+ * Opened with no customer at all ("New appointment" on the appointments
+ * page, LT-211), it is a walk-in for any service.
  *
  * Asks the owner's own booking questions for the chosen service (LT-178), the
  * same ones a customer sees, so a walk-in arrives with its address too —
@@ -48,7 +55,10 @@ interface OwnerBookingModalProps {
   onBooked: () => void;
 }
 
-const DAY_MS = 86_400_000;
+// As far ahead as the server expands a class's sessions for the owner.
+const MONTHS_AHEAD = 12;
+
+const monthOf = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), 1);
 
 // A class's refusals (LT-152), each in its own words. Any other 409 is an
 // ordinary appointment whose slot is taken.
@@ -58,10 +68,9 @@ const CLASS_REFUSALS: Record<string, string> = {
   NOT_A_SESSION: 'customers.booking.notASession',
 };
 
-interface FetchedSessions {
-  /** What the list was fetched for: service, date and refetch count. */
+interface FetchedMonth extends Availability {
+  /** What it was fetched for: the month and the refetch count. */
   key: string;
-  sessions: ClassSessionAvailability[];
   failed: boolean;
 }
 
@@ -76,6 +85,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const webConfig = useAppSelector((s) => s.webConfig.data);
 
   const [typeId, setTypeId] = useState('');
+  const [month, setMonth] = useState(() => monthOf(new Date()));
   const [dateKey, setDateKey] = useState(localDateKey(new Date()));
   const [time, setTime] = useState('');
   // A class's session is the server's own timestamp string (LT-204).
@@ -90,13 +100,12 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // applies is still there.
   // An address chosen from Google's suggestions carries its place (LT-206).
   const [answers, setAnswers] = useState<Record<string, string | AddressAnswer>>({});
-  // The chosen class's sessions on the chosen date (LT-204), tagged with what
-  // they were fetched for: a list for another service or date never passes
-  // for this one's, it reads as loading until the answer arrives. Opening
-  // again fetches again; the list meanwhile is the last one for that day.
-  const [fetchedSessions, setFetchedSessions] = useState<FetchedSessions | null>(null);
-  // Bumped after a class refusal, so the seats shown are the server's again.
-  const [sessionsVersion, setSessionsVersion] = useState(0);
+  // The month's taken times and class sessions (LT-211), tagged with what
+  // they were fetched for: another month's never passes for this one's, it
+  // reads as loading until the answer arrives.
+  const [fetched, setFetched] = useState<FetchedMonth | null>(null);
+  // Bumped after a refusal, so what is shown is the server's again.
+  const [availabilityVersion, setAvailabilityVersion] = useState(0);
 
   // Opening hours arrive with the web config; services with it or on demand.
   useEffect(() => {
@@ -115,7 +124,9 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     // service, that session's date, that session.
     const presetType = presetTypeId && appointmentTypes.some((ty) => ty._id === presetTypeId) ? presetTypeId : '';
     setTypeId(presetType || (appointmentTypes[0]?._id ?? ''));
-    setDateKey(localDateKey(presetType && presetTimestamp ? new Date(Number(presetTimestamp)) : new Date()));
+    const day = presetType && presetTimestamp ? new Date(Number(presetTimestamp)) : new Date();
+    setMonth(monthOf(day));
+    setDateKey(localDateKey(day));
     setTime('');
     setSessionTs(presetType ? presetTimestamp ?? '' : '');
     setName('');
@@ -125,66 +136,75 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
 
   const selectedType = appointmentTypes.find((ty) => ty._id === typeId);
   const isClass = selectedType?.kind === 'class';
+  const durationMS = Number(selectedType?.durationMS) || 30 * 60_000;
   const date = useMemo(() => {
     const [y, m, d] = dateKey.split('-').map(Number);
     return new Date(y, (m || 1) - 1, d || 1);
   }, [dateKey]);
 
-  // A class runs on its timetable, not on the opening hours (LT-204).
-  const slots = useMemo(() => {
-    if (!webConfig || !selectedType || selectedType.kind === 'class') return [];
-    const all = generateSlots(
-      { workingDays: webConfig.workingDays, dateOverrides: webConfig.dateOverrides },
-      date,
-      Number(selectedType.durationMS) || 30 * 60_000
-    );
-    // Today: only what is still ahead of us.
-    const now = Date.now();
-    return all.filter((hhmm) => slotTimestamp(date, hhmm) > now);
-  }, [webConfig, selectedType, date]);
+  // The month on show, from the site's own endpoint (LT-211): the times
+  // taken, and each class's sessions with their seats — expanded, vacations
+  // and all, by the server. Signed in as the owner, the sessions also include
+  // those that began up to a day ago and those past the customers' window.
+  const subDomain = webConfig?.subDomain;
+  const monthStart = month.valueOf();
+  const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 1).valueOf() - 1;
+  const availabilityKey = `${monthStart}|${availabilityVersion}`;
+  useEffect(() => {
+    if (!open || !subDomain) return;
+    let cancelled = false;
+    getAvailability(subDomain, String(monthStart), String(monthEnd))
+      .then((availability) => {
+        if (!cancelled) setFetched({ key: availabilityKey, ...availability, failed: false });
+      })
+      .catch(() => {
+        if (!cancelled) setFetched({ key: availabilityKey, busy: [], classes: [], failed: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, subDomain, monthStart, monthEnd, availabilityKey]);
+
+  const current = fetched?.key === availabilityKey ? fetched : null;
+  // Unread yet. Without a subdomain there is nothing to read, and a service
+  // falls back to its opening hours — degrade, never block (LT-098).
+  const loading = !!subDomain && !current;
+  const facts = useMemo<ScheduleFacts>(
+    () => ({
+      workingDays: webConfig?.workingDays ?? [],
+      dateOverrides: webConfig?.dateOverrides,
+      vacations: webConfig?.vacations,
+      busy: current?.busy ?? [],
+      classes: current?.classes ?? [],
+    }),
+    [webConfig?.workingDays, webConfig?.dateOverrides, webConfig?.vacations, current]
+  );
+
+  const slots = useMemo(
+    () => (isClass || loading || !dateKey ? [] : freeSlots(facts, date, durationMS)),
+    [isClass, loading, dateKey, facts, date, durationMS]
+  );
 
   useEffect(() => {
     if (time && !slots.includes(time)) setTime('');
   }, [slots, time]);
 
-  // A class's sessions on the chosen local day, from the server (LT-204): it
-  // expands the timetable, knows the vacations and counts the seats. Signed
-  // in as the owner, the list also holds sessions that began up to a day ago.
-  const subDomain = webConfig?.subDomain;
-  const sessionsKey = `${typeId}|${dateKey}|${sessionsVersion}`;
-  useEffect(() => {
-    if (!open || !isClass || !subDomain) return;
-    let cancelled = false;
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    getClassSessions(subDomain, String(date.valueOf()), String(nextDay.valueOf() - 1))
-      .then((all) => {
-        if (cancelled) return;
-        const sessions = all
-          .filter((session) => session.type_id === typeId)
-          .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-        setFetchedSessions({ key: sessionsKey, sessions, failed: false });
-      })
-      .catch(() => {
-        if (!cancelled) setFetchedSessions({ key: sessionsKey, sessions: [], failed: true });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, isClass, subDomain, typeId, date, sessionsKey]);
+  // Each day's dot for the month on show, worked out once per answer.
+  const statuses = useMemo(() => {
+    const byDay = new Map<string, DayStatus>();
+    if (loading) return byDay;
+    const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= count; d++) {
+      const day = new Date(month.getFullYear(), month.getMonth(), d);
+      byDay.set(localDateKey(day), isClass ? classDayStatus(facts.classes, typeId, day) : dayStatus(facts, day, durationMS));
+    }
+    return byDay;
+  }, [loading, month, isClass, facts, typeId, durationMS]);
 
-  const currentSessions = fetchedSessions?.key === sessionsKey ? fetchedSessions : null;
-  const daySessions = currentSessions?.sessions ?? [];
+  const daySessions = isClass && dateKey ? sessionsOnDay(facts.classes, typeId, date) : [];
   // The session picked, while the list still offers it: one that filled up
   // or left the timetable reads as no choice at all.
   const chosenSession = daySessions.find((session) => session.timestamp === sessionTs && session.booked < session.capacity);
-  const sessionPrompt = !currentSessions
-    ? t('customers.booking.loadingSessions')
-    : currentSessions.failed
-      ? t('customers.booking.sessionsFailed')
-      : daySessions.length
-        ? t('customers.booking.pickSession')
-        : t('customers.booking.noSessions');
 
   const walkIn = !customer;
   const bookingName = walkIn ? name.trim() : customer.name;
@@ -236,9 +256,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
       const refusal = Object.keys(CLASS_REFUSALS).find((code) => isApiErrorCode(error, code));
       if (refusal) {
         toast.error(t(CLASS_REFUSALS[refusal]));
-        setSessionsVersion((version) => version + 1);
+        setAvailabilityVersion((version) => version + 1);
       } else if (apiErrorStatus(error) === 409) {
         toast.error(t('customers.booking.slotTaken'));
+        setAvailabilityVersion((version) => version + 1);
       } else {
         const serverMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
         toast.error(serverMessage || t('customers.booking.failed'));
@@ -260,9 +281,23 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
       .join(' · ');
   };
 
-  // A class may seat a walk-in in a session that began up to a day ago
-  // (LT-204): the server lists those to the owner.
-  const minDateKey = localDateKey(isClass ? new Date(Date.now() - DAY_MS) : new Date());
+  // Back to this month (a class's walk-in may still go to one that began
+  // yesterday, LT-204), ahead a year.
+  const thisMonth = monthOf(new Date());
+  const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + MONTHS_AHEAD, 1);
+  const turnMonth = (next: Date) => {
+    setMonth(next);
+    // A day is read against its own month's bookings: turning the page
+    // lets it go.
+    setDateKey('');
+    setTime('');
+    setSessionTs('');
+  };
+  const pickDay = (key: string) => {
+    setDateKey(key);
+    setTime('');
+    setSessionTs('');
+  };
 
   return createPortal(
     <AnimatePresence>
@@ -326,46 +361,30 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                 disabled={!appointmentTypes.length}
                 helperText={appointmentTypes.length ? undefined : t('customers.booking.noServices')}
               />
-              <Input
-                label={t('customers.booking.date')}
-                type="date"
-                dir="ltr"
-                value={dateKey}
-                min={minDateKey}
-                onChange={(e) => setDateKey(e.target.value || localDateKey(new Date()))}
-                required
-              />
-              {isClass ? (
-                <Select
-                  label={t('customers.booking.session')}
-                  value={chosenSession?.timestamp ?? ''}
-                  onChange={(e) => setSessionTs(e.target.value)}
-                  disabled={!daySessions.length}
-                  options={[
-                    { value: '', label: sessionPrompt },
-                    ...daySessions.map((session) => ({
-                      value: session.timestamp,
-                      // Display only: the time is read off the server's
-                      // timestamp in the owner's browser; the booking sends
-                      // the timestamp itself.
-                      label: `${formatTime(Number(session.timestamp))} · ${session.booked}/${session.capacity}`,
-                      disabled: session.booked >= session.capacity,
-                    })),
-                  ]}
-                  data-testid="session-select"
-                />
-              ) : (
-                <Select
-                  label={t('customers.booking.time')}
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  disabled={!slots.length}
-                  options={[
-                    { value: '', label: slots.length ? t('customers.booking.pickTime') : t('customers.booking.noSlots') },
-                    ...slots.map((s) => ({ value: s, label: s })),
-                  ]}
-                  data-testid="slot-select"
-                />
+              {selectedType && (
+                <div>
+                  <p className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
+                    {t('customers.booking.date')}
+                  </p>
+                  <BookingCalendar
+                    month={month}
+                    minMonth={thisMonth}
+                    maxMonth={lastMonth}
+                    onMonthChange={turnMonth}
+                    dateKey={dateKey}
+                    onPickDay={pickDay}
+                    statusOf={(day) => statuses.get(localDateKey(day))}
+                    mode={isClass ? 'sessions' : 'times'}
+                    loading={loading}
+                    failed={!!current?.failed}
+                    slots={slots}
+                    time={time}
+                    onPickTime={setTime}
+                    sessions={daySessions}
+                    sessionTs={chosenSession?.timestamp ?? ''}
+                    onPickSession={setSessionTs}
+                  />
+                </div>
               )}
 
               {questions.length > 0 && (

@@ -48,7 +48,10 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, dateLabel, onOpen })
   const overflow = going.length - faces.length;
   const minutes = Math.round(session.durationMS / 60000);
   const perHead = Number(session.type?.price);
-  const revenue = Number.isFinite(perHead) ? perHead * going.length : null;
+  const revenue = Number.isFinite(perHead) && going.length > 0 ? perHead * going.length : null;
+  // A class nobody has booked yet (LT-211): its card is the way to its roster.
+  const empty = going.length === 0;
+  const seats = Number(session.type?.capacity) || 0;
 
   return (
     <div
@@ -61,10 +64,11 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, dateLabel, onOpen })
           onOpen(session);
         }
       }}
-      className="group cursor-pointer bg-light-surface p-4 rounded-xl border border-light-gray/10 shadow-sm
+      className={`group cursor-pointer bg-light-surface p-4 rounded-xl border shadow-sm
         hover:shadow-md hover:border-primary/20 transition-all duration-200 transform hover:-translate-y-1
         dark:shadow-none dark:hover:shadow-none dark:hover:bg-dark-surface/50 text-start
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+        ${empty ? 'border-dashed border-gray-300 dark:border-gray-600' : 'border-light-gray/10'}`}
     >
       <div className="flex justify-between items-start mb-3 gap-2">
         <div className="min-w-0">
@@ -104,7 +108,12 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, dateLabel, onOpen })
           </div>
           <span className="inline-flex items-center gap-1.5 text-sm text-primary font-medium truncate">
             <Users size={14} className="shrink-0" />
-            {t('appointments.session.participants', { count: going.length })}
+            {empty ? t('appointments.session.empty') : t('appointments.session.participants', { count: going.length })}
+            {seats > 0 && (
+              <span dir="ltr" className="text-xs text-light-gray font-normal tabular-nums">
+                {going.length}/{seats}
+              </span>
+            )}
           </span>
         </div>
       </div>

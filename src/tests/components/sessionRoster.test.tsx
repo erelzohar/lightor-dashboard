@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import AppointmentsList from '../../components/appointments/AppointmentsList';
 import { Appointment, AppointmentType } from '../../types';
+import { getClassSessions } from '../../services/appointmentsApi';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -13,13 +14,22 @@ vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ language: 'en', direction: 'ltr' }),
 }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
-// AnswersList (LT-178) reads the booking-questions catalog off the saved config.
-vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (selector: (s: { webConfig: { data: null } }) => unknown): unknown =>
-    selector({ webConfig: { data: null } }),
+// AnswersList (LT-178) reads the booking-questions catalog off the saved
+// config; the list asks the server for the class sessions nobody has booked
+// yet (LT-211) only when the store knows a class and the site's subdomain.
+const store = vi.hoisted(() => ({
+  state: {
+    webConfig: { data: null as null | { _id: string; subDomain: string } },
+    appointments: { appointmentTypes: [] as unknown[] },
+  },
 }));
+vi.mock('../../hooks/useAppSelector', () => ({
+  useAppSelector: (selector: (s: typeof store.state) => unknown): unknown => selector(store.state),
+}));
+vi.mock('../../services/appointmentsApi', () => ({ getClassSessions: vi.fn() }));
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn(() => ({ type: 'noop' })),
+  fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 // The walk-in's booking (LT-204) is OwnerBookingModal's own business, tested
@@ -99,9 +109,23 @@ describe('the appointments list with a class in it', () => {
     expect(within(dialog).getByText('Noa Bar')).toBeTruthy();
   });
 
-  it('does not open a roster for a lone booking, and still selects it', () => {
+  it("opens the roster for a class's only participant too (LT-211): that is where the next is added", () => {
     const onAppointmentClick = vi.fn();
-    const solo = [attendee('solo', 'Single Client', '+972500000009')];
+    render(<AppointmentsList appointments={[attendee('solo', 'Single Client', '+972500000009')]} onAppointmentClick={onAppointmentClick} />);
+
+    expect(screen.getByText('appointments.session.participants:1')).toBeTruthy();
+    fireEvent.click(screen.getByText('Group training'));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Single Client')).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: 'appointments.session.addParticipant' })).toBeTruthy();
+    expect(onAppointmentClick).not.toHaveBeenCalled();
+  });
+
+  it('does not open a roster for a lone ordinary booking, and still selects it', () => {
+    const onAppointmentClick = vi.fn();
+    const haircut: AppointmentType = { _id: 't2', name: 'Haircut', webConfig_id: 'w1', price: '80', durationMS: String(HOUR) };
+    const solo = [{ ...attendee('solo', 'Single Client', '+972500000009'), type: haircut }];
 
     render(<AppointmentsList appointments={solo} onAppointmentClick={onAppointmentClick} />);
 
@@ -220,5 +244,68 @@ describe('adding a walk-in from a class roster', () => {
     rerender(<AppointmentsList appointments={klass()} onAppointmentClick={vi.fn()} />);
 
     return waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+});
+
+/**
+ * A class nobody has booked into holds no appointment, so it used to show
+ * nowhere — and its roster, the one place to add a participant, could not
+ * be opened (LT-211). The list now asks the server for the coming week's
+ * sessions and shows the empty ones too.
+ */
+describe('a class nobody has booked yet', () => {
+  const listing = (timestamp: string) => ({
+    type_id: 't1',
+    timestamp,
+    durationMS: String(HOUR),
+    capacity: 12,
+    booked: 0,
+  });
+
+  beforeEach(() => {
+    bookingModal.last = null;
+    store.state.webConfig.data = { _id: 'w1', subDomain: 'studio' };
+    store.state.appointments.appointmentTypes = [type];
+    vi.mocked(getClassSessions).mockReset().mockResolvedValue([listing(AT)]);
+  });
+
+  afterEach(() => {
+    store.state.webConfig.data = null;
+    store.state.appointments.appointmentTypes = [];
+  });
+
+  it("shows the coming week's empty session and seats its first participant from the roster", async () => {
+    render(<AppointmentsList appointments={[]} onAppointmentClick={vi.fn()} />);
+
+    expect(await screen.findByText('appointments.session.empty')).toBeTruthy();
+    const [, from, to] = vi.mocked(getClassSessions).mock.calls[0];
+    expect(Number(to) - Number(from)).toBe(7 * 24 * HOUR);
+
+    fireEvent.click(screen.getByText('Group training'));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getAllByText('appointments.session.empty').length).toBeGreaterThan(0);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'appointments.session.addParticipant' }));
+
+    expect(bookingModal.last?.open).toBe(true);
+    expect(bookingModal.last?.preset).toEqual({ typeId: 't1', timestamp: AT });
+  });
+
+  it('shows a booked session once, with its people, not beside an empty copy', async () => {
+    const later = String(Number(AT) + 24 * HOUR);
+    vi.mocked(getClassSessions).mockResolvedValue([listing(AT), listing(later)]);
+    render(<AppointmentsList appointments={[attendee('a', 'Dana Cohen', '+972500000001')]} onAppointmentClick={vi.fn()} />);
+
+    // The later session, empty, arrives; the booked one stays one card.
+    expect(await screen.findByText('appointments.session.empty')).toBeTruthy();
+    expect(screen.getAllByText('Group training')).toHaveLength(2);
+    expect(screen.getByText('appointments.session.participants:1')).toBeTruthy();
+  });
+
+  it('asks nothing of the server when the business teaches no class', () => {
+    store.state.appointments.appointmentTypes = [{ ...type, kind: undefined }];
+    render(<AppointmentsList appointments={[]} onAppointmentClick={vi.fn()} />);
+
+    expect(getClassSessions).not.toHaveBeenCalled();
+    expect(screen.getByText('appointments.noAppointments')).toBeTruthy();
   });
 });

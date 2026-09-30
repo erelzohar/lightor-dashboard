@@ -269,6 +269,7 @@
   "appointments": {
     "title": "Citas",
     "description": "Ver y gestionar",
+    "newAppointment": "Nueva cita",
     "all": "Todas",
     "scheduled": "Programadas",
     "completed": "Completadas",
@@ -300,7 +301,8 @@
       "cancelledCount": "{{count}} cancelados",
       "close": "Cerrar",
       "addParticipant": "Añadir participante",
-      "full": "Clase completa"
+      "full": "Clase completa",
+      "empty": "Aún no hay participantes"
     }
   },
   "login": {
@@ -1101,9 +1103,18 @@
       "title": "Reservar una cita",
       "service": "Servicio",
       "date": "Fecha",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "day": {
+        "full": "Totalmente disponible",
+        "limited": "Disponibilidad limitada",
+        "none": "No disponible",
+        "vacation": "Vacaciones"
+      },
       "time": "Hora",
       "pickTime": "Elige una hora",
-      "noSlots": "Cerrado en esta fecha",
+      "noSlots": "No hay horarios libres este día",
+      "loadingTimes": "Cargando horarios libres…",
       "noServices": "Añade un servicio primero",
       "submit": "Reservar",
       "success": "Cita reservada",

@@ -269,6 +269,7 @@
   "appointments": {
     "title": "Appointments",
     "description": "View and manage",
+    "newAppointment": "New appointment",
     "all": "All",
     "scheduled": "Scheduled",
     "completed": "Completed",
@@ -300,7 +301,8 @@
       "cancelledCount": "{{count}} cancelled",
       "close": "Close",
       "addParticipant": "Add participant",
-      "full": "Class full"
+      "full": "Class full",
+      "empty": "No participants yet"
     }
   },
   "login": {
@@ -1101,9 +1103,18 @@
       "title": "Book an appointment",
       "service": "Service",
       "date": "Date",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "day": {
+        "full": "Fully available",
+        "limited": "Limited availability",
+        "none": "Not available",
+        "vacation": "Vacation"
+      },
       "time": "Time",
       "pickTime": "Choose a time",
-      "noSlots": "Closed on this date",
+      "noSlots": "No free times on this day",
+      "loadingTimes": "Loading free times…",
       "noServices": "Add a service first",
       "submit": "Book",
       "success": "Appointment booked",

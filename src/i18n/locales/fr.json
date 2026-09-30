@@ -269,6 +269,7 @@
   "appointments": {
     "title": "Rendez-vous",
     "description": "Consulter et gérer",
+    "newAppointment": "Nouveau rendez-vous",
     "all": "Tous",
     "scheduled": "Planifiés",
     "completed": "Terminés",
@@ -300,7 +301,8 @@
       "cancelledCount": "{{count}} annulés",
       "close": "Fermer",
       "addParticipant": "Ajouter un participant",
-      "full": "Cours complet"
+      "full": "Cours complet",
+      "empty": "Aucun participant pour l'instant"
     }
   },
   "login": {
@@ -1101,9 +1103,18 @@
       "title": "Prendre un rendez-vous",
       "service": "Service",
       "date": "Date",
+      "prevMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "day": {
+        "full": "Entièrement disponible",
+        "limited": "Disponibilité limitée",
+        "none": "Indisponible",
+        "vacation": "Vacances"
+      },
       "time": "Heure",
       "pickTime": "Choisir une heure",
-      "noSlots": "Fermé à cette date",
+      "noSlots": "Aucun créneau libre ce jour-là",
+      "loadingTimes": "Chargement des créneaux libres…",
       "noServices": "Ajoutez d’abord un service",
       "submit": "Réserver",
       "success": "Rendez-vous réservé",

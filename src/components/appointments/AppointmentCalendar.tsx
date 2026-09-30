@@ -8,6 +8,7 @@ import {
   format, addDays, isToday, isSameDay, getHours, getMinutes,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, subMonths, eachDayOfInterval, isSameMonth,
+  startOfDay, endOfDay,
 } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Appointment, AppointmentType } from '../../types';
@@ -20,11 +21,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import {
-  Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus,
+  Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus, withListedSessions,
 } from '../../utils/sessions';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
 import { useOpenSession } from '../../hooks/useOpenSession';
+import { useClassSessions } from '../../hooks/useClassSessions';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -48,8 +50,9 @@ const hashStr = (s: string): number => {
   for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return Math.abs(h);
 };
-const getPalette = (appt: Appointment) =>
-  EVENT_PALETTES[hashStr(appt.type._id || appt.type.name) % EVENT_PALETTES.length];
+const paletteOf = (type: AppointmentType) =>
+  EVENT_PALETTES[hashStr(type._id || type.name) % EVENT_PALETTES.length];
+const getPalette = (appt: Appointment) => paletteOf(appt.type);
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const HOUR_START = 6;
@@ -88,9 +91,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [catSecOpen,  setCatSecOpen]            = useState(true);
   const [sidebarOpen, setSidebarOpen]           = useState(false);
   const [laterApptId, setLaterApptId]           = useState<string | null>(null);
+
+  const weekDays    = useMemo(() => Array.from({ length: visibleDays }, (_, i) => addDays(currentDate, i)), [currentDate, visibleDays]);
+
+  // The classes on show, booked or not (LT-211): a class nobody has booked
+  // into holds no appointment, so the server's list of its sessions is what
+  // puts it on the grid, with its roster one click away.
+  const rangeStart = startOfDay(weekDays[0]).valueOf();
+  const rangeEnd   = endOfDay(weekDays[weekDays.length - 1]).valueOf();
+  const listed     = useClassSessions(rangeStart, rangeEnd);
   // The open roster follows every booking, whatever the filters show (LT-204):
   // a walk-in seated from it appears once the appointments are fetched again.
-  const { openSession, openRoster, closeRoster } = useOpenSession(appointments);
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments, listed);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
@@ -140,7 +152,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     end:   endOfWeek(endOfMonth(miniCalMonth), { weekStartsOn: 0 }),
   }), [miniCalMonth]);
 
-  const weekDays    = useMemo(() => Array.from({ length: visibleDays }, (_, i) => addDays(currentDate, i)), [currentDate, visibleDays]);
   const hours       = useMemo(() => Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i), []);
   const totalHeight = (HOUR_END - HOUR_START) * HOUR_PX;
   const nowVisible  = nowPx >= 0 && nowPx <= totalHeight;
@@ -151,8 +162,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       const e = map.get(a.type._id);
       if (e) e.count++; else map.set(a.type._id, { type: a.type, count: 1 });
     });
+    // A class on show with nobody booked yet can be hidden too (LT-211).
+    listed.forEach(s => { if (!map.has(s.type._id)) map.set(s.type._id, { type: s.type, count: 0 }); });
     return Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 5);
-  }, [appointments]);
+  }, [appointments, listed]);
 
   const statusCounts = useMemo(() => {
     const total = appointments.length || 1;
@@ -178,8 +191,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   // Bookings sharing a service and a start time draw as ONE block (LT-152).
   // Before this the grid pinned every booking to the full column width with no
   // lane splitting, so a class of twelve stacked twelve deep and only the last
-  // one was clickable.
-  const getDaySessions = (day: Date) => groupSessions(getDayAppts(day));
+  // one was clickable. A class session nobody has booked joins them (LT-211),
+  // under the same filters: its service shown, its status by the clock.
+  const getDaySessions = (day: Date) => withListedSessions(
+    groupSessions(getDayAppts(day)),
+    listed.filter(s =>
+      isSameDay(new Date(s.startMs), day)
+      && !hiddenTypeIds.has(s.type._id)
+      && (activeFilter === 'all' || sessionDisplayStatus(s) === activeFilter)),
+  );
 
   const miniHasAppts = (day: Date) =>
     appointments.some(a => isSameDay(new Date(parseInt(a.timestamp)), day));
@@ -198,10 +218,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
   }, [nextAppt, nowPx]);
 
-  const getApptPos = (a: Appointment) => {
-    const ts   = new Date(parseInt(a.timestamp));
+  const getSessionPos = (session: Session) => {
+    const ts   = new Date(session.startMs);
     const h    = getHours(ts) + getMinutes(ts) / 60;
-    const durH = Number(a.type.durationMS) / 3_600_000;
+    const durH = session.durationMS / 3_600_000;
     return { top: Math.max(0, (h - HOUR_START) * HOUR_PX), height: Math.max(durH * HOUR_PX, 36) };
   };
 
@@ -711,15 +731,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                     {/* Event cards */}
                     <AnimatePresence>
                       {daySessions.map((session, idx) => {
+                        // Absent only for a class nobody has booked yet (LT-211),
+                        // which is always a group session.
                         const appt    = session.participants[0];
                         const grouped = isGroupSession(session);
                         const going   = activeParticipants(session);
-                        const { top, height } = getApptPos(appt);
-                        const pal    = getPalette(appt);
+                        const empty   = grouped && going.length === 0;
+                        const seats   = Number(session.type?.capacity) || 0;
+                        const { top, height } = getSessionPos(session);
+                        const pal    = paletteOf(session.type);
                         const status = grouped ? sessionDisplayStatus(session) : getDisplayStatus(appt);
-                        const ts     = new Date(parseInt(appt.timestamp));
-                        const endTs  = new Date(parseInt(appt.timestamp) + Number(appt.type.durationMS));
-                        const ini    = initials(appt.name);
+                        const ts     = new Date(session.startMs);
+                        const endTs  = new Date(session.startMs + session.durationMS);
+                        const ini    = appt ? initials(appt.name) : '';
 
                         return (
                           <motion.div
@@ -734,19 +758,22 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                             style={{ position: 'absolute', top, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 10 }}
                             className={`
                               rounded-xl cursor-pointer overflow-hidden select-none
-                              border-s-[3px] ${pal.border} ${pal.bg}
+                              border-s-[3px] ${pal.border}
+                              ${empty ? 'bg-white/90 dark:bg-gray-800/90 border border-dashed border-gray-300 dark:border-gray-600' : pal.bg}
                               px-2.5 py-2 shadow-sm hover:shadow-md transition-shadow duration-150
                             `}
+                            data-testid={empty ? 'empty-session' : 'session-block'}
                           >
                             {/* A headcount that survives a half-hour block, where
-                                there is no room for the roster row below. */}
+                                there is no room for the roster row below; a
+                                class's against its seats. */}
                             {grouped && (
-                              <span className={`absolute top-1 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${pal.avatar}`}>
-                                {going.length}
+                              <span dir="ltr" className={`absolute top-1 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full tabular-nums ${pal.avatar}`}>
+                                {seats ? `${going.length}/${seats}` : going.length}
                               </span>
                             )}
-                            <p className={`font-semibold text-[11px] leading-tight truncate ${pal.text} ${grouped ? 'pe-6' : ''}`}>
-                              {appt.type.name}
+                            <p className={`font-semibold text-[11px] leading-tight truncate ${pal.text} ${grouped ? 'pe-9' : ''}`}>
+                              {session.type.name}
                             </p>
                             {height > 42 && (
                               <p className={`text-[10px] mt-0.5 ${pal.sub}`}>
@@ -754,7 +781,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               </p>
                             )}
                             {height > 62 && (
-                              grouped ? (
+                              empty ? (
+                                <p className={`text-[10px] mt-1.5 truncate ${pal.sub}`}>
+                                  {t('appointments.session.empty')}
+                                </p>
+                              ) : grouped ? (
                                 <div className="flex items-center gap-1.5 mt-1.5">
                                   <div className="flex -space-s-1.5">
                                     {going.slice(0, 3).map(person => (

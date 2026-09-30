@@ -1,13 +1,9 @@
 import type { DateOverride } from '../types';
 
 /**
- * Candidate start times for an owner-made booking (LT-122).
- *
- * Derived from the business's opening hours — a per-date override first
- * (`dateOverrides`, `null` = closed that day), else the weekday's entry in
- * `workingDays` — stepping through each "HH:MM-HH:MM" range in the service's
- * duration. Advisory only: the server's overlap check is authoritative, and a
- * taken slot comes back as a 409 the modal turns into a toast.
+ * Dates and opening hours for an owner-made booking (LT-122). The start
+ * times themselves come from ownerSchedule.ts (LT-211), the site's own
+ * calculation: these hours less the vacations, the bookings and the classes.
  */
 
 interface OpeningHours {
@@ -27,30 +23,15 @@ const toMinutes = (hhmm: string): number | null => {
   return Number(m[1]) * 60 + Number(m[2]);
 };
 
-const fromMinutes = (total: number): string => `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
-
-/** The "HH:MM-HH:MM" ranges that apply on this date, or [] when closed. */
+/**
+ * The "HH:MM-HH:MM" ranges that apply on this date, or null when closed: a
+ * per-date override first (`dateOverrides`, `null` = closed that day), else
+ * the weekday's entry in `workingDays`.
+ */
 export const hoursForDate = (hours: OpeningHours, date: Date): string | null => {
   const override = hours.dateOverrides?.find((o) => o.date === localDateKey(date));
   if (override) return override.hours;
   return hours.workingDays[date.getDay()] ?? null;
-};
-
-export const generateSlots = (hours: OpeningHours, date: Date, durationMs: number): string[] => {
-  const spec = hoursForDate(hours, date);
-  if (!spec) return [];
-  const step = Math.max(Math.round(durationMs / 60_000), 5);
-  const slots: string[] = [];
-
-  for (const range of spec.split(',')) {
-    const [startRaw, endRaw] = range.split('-');
-    if (!startRaw || !endRaw) continue;
-    const start = toMinutes(startRaw);
-    const end = toMinutes(endRaw);
-    if (start === null || end === null) continue;
-    for (let t = start; t + step <= end; t += step) slots.push(fromMinutes(t));
-  }
-  return slots;
 };
 
 /** Combine a calendar date and "HH:MM" into an epoch-ms timestamp (local time). */

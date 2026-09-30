@@ -101,18 +101,17 @@ describe('the home list with a class in it', () => {
     expect(screen.getAllByText('appointments.session.participants:13').length).toBeGreaterThan(0);
   });
 
-  it('keeps a lone booking of a class as a single row that opens the booking', () => {
+  it("shows a class's lone booking as its session, whose roster adds the next (LT-211)", () => {
     const onAppointmentClick = vi.fn();
-    const solo = booking('1', 'Solo Trainee');
-    renderList([solo], onAppointmentClick);
+    renderList([booking('1', 'Solo Trainee')], onAppointmentClick);
 
     expect(screen.getByText('1 dashboardList.total')).toBeTruthy();
-    expect(screen.getAllByText('Solo Trainee')).toHaveLength(2);
-    expect(screen.queryByText(/appointments\.session\.participants/)).toBeNull();
+    expect(screen.getAllByText('appointments.session.participants:1')).toHaveLength(2);
+    expect(screen.queryByText('Solo Trainee')).toBeNull();
 
-    fireEvent.click(screen.getAllByText('Solo Trainee')[0]);
-    expect(onAppointmentClick).toHaveBeenCalledWith(solo);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getAllByText('appointments.session.participants:1')[0]);
+    expect(within(screen.getByRole('dialog')).getByText('Solo Trainee')).toBeTruthy();
+    expect(onAppointmentClick).not.toHaveBeenCalled();
   });
 
   it('leaves ordinary appointments as they were: one row each, with their call buttons', () => {
