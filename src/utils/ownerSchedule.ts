@@ -136,15 +136,26 @@ export const dayStatus = (facts: ScheduleFacts, date: Date, durationMS: number, 
   return free.length > Math.floor(possible * 0.55) ? 'full' : 'limited';
 };
 
-/** One class's sessions on one day, soonest first, full ones included: "full" is worth knowing. */
+/**
+ * One class's sessions on one day, soonest first, full ones included: "full"
+ * is worth knowing. Once each: a server that lists a session twice (LT-211:
+ * the day the clock went back) must not draw two buttons with one key.
+ */
 export const sessionsOnDay = (
   classes: ClassSessionAvailability[],
   typeId: string,
   date: Date
-): ClassSessionAvailability[] =>
-  classes
+): ClassSessionAvailability[] => {
+  const seen = new Set<string>();
+  return classes
     .filter((session) => session.type_id === typeId && sameDay(Number(session.timestamp), date))
+    .filter((session) => {
+      if (seen.has(session.timestamp)) return false;
+      seen.add(session.timestamp);
+      return true;
+    })
     .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+};
 
 /**
  * A class day's dot (LT-155): open while a session has a seat, "limited" when

@@ -122,14 +122,17 @@ export const findSession = (
  * one in them yet: an empty class holds no booking, so without these the
  * calendar had nothing to show for it and nowhere to add its first
  * participant. The id is the one its bookings will carry. A session of a
- * service the page does not know is left out.
+ * service the page does not know is left out, and one listed twice is one.
  */
-export const listedSessions = (listed: ClassSessionAvailability[], types: AppointmentType[]): Session[] =>
-  listed.flatMap((occurrence) => {
+export const listedSessions = (listed: ClassSessionAvailability[], types: AppointmentType[]): Session[] => {
+  const seen = new Set<string>();
+  return listed.flatMap((occurrence) => {
     const type = types.find((candidate) => candidate._id === occurrence.type_id);
-    if (!type) return [];
+    const id = `${occurrence.type_id}|${occurrence.timestamp}`;
+    if (!type || seen.has(id)) return [];
+    seen.add(id);
     return [{
-      id: `${occurrence.type_id}|${occurrence.timestamp}`,
+      id,
       type,
       timestamp: occurrence.timestamp,
       startMs: parseInt(occurrence.timestamp, 10) || 0,
@@ -137,6 +140,7 @@ export const listedSessions = (listed: ClassSessionAvailability[], types: Appoin
       participants: [],
     }];
   });
+};
 
 /**
  * The booked sessions with the listed ones nobody has booked into added

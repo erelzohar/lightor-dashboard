@@ -110,6 +110,8 @@ describe("a class's days", () => {
       [String(at(SUNDAY, 19)), 3],
     ]);
     expect(sessionsOnDay(classes, 'c1', MONDAY)).toEqual([]);
+    // Listed twice (LT-211: the day the clock went back), drawn once.
+    expect(sessionsOnDay([session(19, 3), session(19, 3)], 'c1', SUNDAY)).toHaveLength(1);
   });
 
   it('is open while a session has a seat, limited with three or fewer left', () => {

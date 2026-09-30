@@ -17,6 +17,8 @@ import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay } from '../../utils/phone';
+import { formatTime } from '../../utils/dateUtils';
+import { useTheme } from '../../contexts/ThemeContext';
 import BookingCalendar from './BookingCalendar';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
 import { isBookableService } from '../../utils/siteMode';
@@ -36,7 +38,9 @@ import type { AppointmentType, BookingField } from '../../types';
  * A group class (LT-204) offers its sessions on that day instead, with the
  * seats the server counts, and books the session's own timestamp exactly as
  * the server listed it. From a class roster it seats a walk-in: the session
- * comes preset and, with no customer yet, the owner types a name and phone.
+ * comes preset and, with no customer yet, the owner types a name and phone —
+ * nothing else (LT-211): the owner chose the class and its time by clicking
+ * it, so the window shows that session instead of a calendar to pick it again.
  * Opened with no customer at all ("New appointment" on the appointments
  * page, LT-211), it is a walk-in for any service.
  *
@@ -76,6 +80,7 @@ interface FetchedMonth extends Availability {
 
 const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, preset, onClose, onBooked }) => {
   const { t } = useTranslation();
+  const { language } = useTheme();
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
   const allTypes = useAppSelector((s) => s.appointments.appointmentTypes);
@@ -137,6 +142,11 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const selectedType = appointmentTypes.find((ty) => ty._id === typeId);
   const isClass = selectedType?.kind === 'class';
   const durationMS = Number(selectedType?.durationMS) || 30 * 60_000;
+  // Opened on one session: nothing left to pick (LT-211). Read off the
+  // preset itself, not the chosen service, so not even the first render
+  // asks for a month to pick from.
+  const presetService = presetTimestamp ? appointmentTypes.find((ty) => ty._id === presetTypeId) : undefined;
+  const fixedSession = !!presetService;
   const date = useMemo(() => {
     const [y, m, d] = dateKey.split('-').map(Number);
     return new Date(y, (m || 1) - 1, d || 1);
@@ -151,7 +161,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 1).valueOf() - 1;
   const availabilityKey = `${monthStart}|${availabilityVersion}`;
   useEffect(() => {
-    if (!open || !subDomain) return;
+    if (!open || !subDomain || fixedSession) return;
     let cancelled = false;
     getAvailability(subDomain, String(monthStart), String(monthEnd))
       .then((availability) => {
@@ -163,7 +173,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     return () => {
       cancelled = true;
     };
-  }, [open, subDomain, monthStart, monthEnd, availabilityKey]);
+  }, [open, subDomain, fixedSession, monthStart, monthEnd, availabilityKey]);
 
   const current = fetched?.key === availabilityKey ? fetched : null;
   // Unread yet. Without a subdomain there is nothing to read, and a service
@@ -209,7 +219,9 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const walkIn = !customer;
   const bookingName = walkIn ? name.trim() : customer.name;
   const bookingPhone = walkIn ? phone.trim() : customer.phone;
-  const ready = !!selectedType && (isClass ? !!chosenSession : !!time) && !!bookingName && !!bookingPhone;
+  // A preset session is the server's to refuse if it filled meanwhile (CLASS_FULL).
+  const ready =
+    !!selectedType && (fixedSession || (isClass ? !!chosenSession : !!time)) && !!bookingName && !!bookingPhone;
 
   const questions = useMemo(
     () => fieldsForService(webConfig?.bookingFields, typeId).filter((f): f is BookingField & { key: string } => !!f.key),
@@ -243,7 +255,11 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
         phone: bookingPhone,
         type_id: selectedType._id,
         // A class session goes back exactly as the server listed it (LT-204).
-        timestamp: isClass ? chosenSession.timestamp : String(slotTimestamp(date, time)),
+        timestamp: fixedSession
+          ? String(presetTimestamp)
+          : isClass
+            ? chosenSession.timestamp
+            : String(slotTimestamp(date, time)),
         user_id: auth.user._id,
         channelType: customer?.channelType ?? 'sms',
         ...(questions.length ? { answers: answersPayload() } : {}),
@@ -328,6 +344,24 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
             )}
 
             <form onSubmit={submit} className="space-y-4">
+              {presetService && (
+                <div
+                  data-testid="preset-session"
+                  className="rounded-xl border border-gray-200 dark:border-gray-700/80 bg-white/70 dark:bg-dark-surface/60 px-4 py-3"
+                >
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{presetService.name}</p>
+                  <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">
+                    {new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+                      new Date(Number(presetTimestamp))
+                    )}
+                    {' · '}
+                    <span dir="ltr">
+                      {formatTime(Number(presetTimestamp))} –{' '}
+                      {formatTime(Number(presetTimestamp) + (Number(presetService.durationMS) || 0))}
+                    </span>
+                  </p>
+                </div>
+              )}
               {walkIn && (
                 <>
                   <Input
@@ -353,6 +387,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   />
                 </>
               )}
+              {!fixedSession && (
               <Select
                 label={t('customers.booking.service')}
                 value={typeId}
@@ -361,7 +396,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                 disabled={!appointmentTypes.length}
                 helperText={appointmentTypes.length ? undefined : t('customers.booking.noServices')}
               />
-              {selectedType && (
+              )}
+              {selectedType && !fixedSession && (
                 <div>
                   <p className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
                     {t('customers.booking.date')}

@@ -159,7 +159,10 @@ describe('class sessions nobody has booked yet', () => {
   });
 
   it('turns listed sessions into empty sessions keyed as their bookings will be', () => {
-    const [session] = listedSessions([listing(at), listing(at, 'unknown')], [yoga]);
+    const all = listedSessions([listing(at), listing(at, 'unknown'), listing(at)], [yoga]);
+    // A service the page does not know is left out; one listed twice is one.
+    expect(all).toHaveLength(1);
+    const [session] = all;
 
     expect(session).toMatchObject({ id: `c1|${at}`, timestamp: at, startMs: Number(at), durationMS: HOUR, participants: [] });
     expect(session.type.name).toBe('Yoga');

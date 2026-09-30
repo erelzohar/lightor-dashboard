@@ -324,6 +324,14 @@ describe('OwnerBookingModal: a group class', () => {
     expect(sentBody()).toMatchObject({ name: 'Dana', phone: '0501234567', type_id: 'c1', timestamp: EVENING });
   });
 
+  it('draws a session the server listed twice once (LT-211: the day the clock went back)', async () => {
+    vi.mocked(getAvailability).mockResolvedValue({ busy: [], classes: [...SESSIONS, SESSIONS[0], SESSIONS[0]] });
+    renderModal();
+    await pickYoga();
+
+    expect(screen.getAllByRole('button', { name: '19:00 · 3/12' })).toHaveLength(1);
+  });
+
   it('marks the days a session still has a seat, and closes the rest', async () => {
     vi.mocked(getAvailability).mockResolvedValue({
       busy: [],
@@ -493,36 +501,37 @@ describe('OwnerBookingModal: a walk-in', () => {
     expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '050-123 4567', type_id: 't1', channelType: 'sms' });
   });
 
-  it("opens on the roster's session: its class, its day, that session", async () => {
-    vi.mocked(getAvailability).mockResolvedValue({
-      busy: [],
-      classes: [{ type_id: 'c1', timestamp: TOMORROW, durationMS: '3600000', capacity: 12, booked: 5 }],
-    });
+  it("opens on the roster's session and asks only who: no service, no calendar, no time (LT-211)", async () => {
     renderModal({ customer: undefined, preset: { typeId: 'c1', timestamp: TOMORROW } });
 
     expect(screen.getByText('appointments.session.addParticipant')).toBeTruthy();
-    expect((serviceSelect() as HTMLSelectElement).value).toBe('c1');
-    expect(dayButton(5)).toHaveAttribute('aria-pressed', 'true');
-    await waitFor(() => expect(screen.getByRole('button', { name: '19:00 · 5/12' })).toHaveAttribute('aria-pressed', 'true'));
+    // The session the owner clicked, shown rather than picked again.
+    const summary = screen.getByTestId('preset-session');
+    expect(within(summary).getByText('Yoga')).toBeTruthy();
+    expect(within(summary).getByText('19:00 – 20:00')).toHaveAttribute('dir', 'ltr');
+    expect(screen.queryByTestId('booking-calendar')).toBeNull();
+    expect(screen.queryByText('customers.booking.service')).toBeNull();
+    expect(getAvailability).not.toHaveBeenCalled();
+    expect(submitButton()).toBeDisabled();
 
     fireEvent.change(screen.getByLabelText('customers.add.name'), { target: { value: 'Walk In' } });
     fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '0529876543' } });
+    expect(submitButton()).not.toBeDisabled();
     fireEvent.click(submitButton());
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '0529876543', type_id: 'c1', timestamp: TOMORROW });
   });
 
-  it('does not choose a preset session that has filled up', async () => {
-    vi.mocked(getAvailability).mockResolvedValue({
-      busy: [],
-      classes: [{ type_id: 'c1', timestamp: TOMORROW, durationMS: '3600000', capacity: 12, booked: 12 }],
-    });
+  it('leaves a preset session that filled meanwhile to the server to refuse, in its words', async () => {
+    vi.mocked(toast.error).mockClear();
+    vi.mocked(createAppointment).mockRejectedValue({ response: { status: 409, data: { code: 'CLASS_FULL', error: 'Full' } } });
     renderModal({ customer: undefined, preset: { typeId: 'c1', timestamp: TOMORROW } });
 
-    const full = await screen.findByRole('button', { name: '19:00 · 12/12' });
-    expect(full).toBeDisabled();
-    expect(full).toHaveAttribute('aria-pressed', 'false');
-    expect(submitButton()).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('customers.add.name'), { target: { value: 'Walk In' } });
+    fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '0529876543' } });
+    fireEvent.click(submitButton());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('customers.booking.classFull'));
   });
 });
