@@ -10,6 +10,7 @@ import Button from '../ui/Button';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { createUser, AdminUserRow } from '../../services/adminApi';
 import { updateUserInfo } from '../../services/userApi';
+import type { OwnerChannel } from '../../types';
 
 /**
  * Create / edit a user from the admin panel (LT-058 follow-up).
@@ -50,7 +51,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
     password: '',
     phone: '',
     defaultLanguage: 'he',
-    channelType: 'sms' as 'sms' | 'whatsapp',
+    channelType: 'email' as OwnerChannel,
     isVerified: true,
   });
 
@@ -62,7 +63,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
       password: '',
       phone: user?.phone ?? '',
       defaultLanguage: user?.defaultLanguage ?? 'he',
-      channelType: user?.channelType ?? 'sms',
+      channelType: user?.channelType ?? 'email',
       isVerified: true,
     });
   }, [open, user]);
@@ -198,8 +199,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
                 <Select
                   label={t('admin.userForm.channel')}
                   value={form.channelType}
-                  onChange={(e) => set('channelType', e.target.value as 'sms' | 'whatsapp')}
+                  onChange={(e) => set('channelType', e.target.value as OwnerChannel)}
                   options={[
+                    { value: 'email', label: 'Email' },
                     { value: 'sms', label: 'SMS' },
                     { value: 'whatsapp', label: 'WhatsApp' },
                   ]}

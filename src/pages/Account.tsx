@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, KeyRound, Eye, EyeOff, MessageSquare, Languages } from 'lucide-react';
+import { User, Phone, KeyRound, Eye, EyeOff, Languages } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -30,7 +30,7 @@ const Account: React.FC = () => {
   const { changeLanguage } = useTheme();
   const { t } = useTranslation();
   // A leads site (LT-199) takes no bookings: its billing card counts leads
-  // only, and its phone is notified of new leads only.
+  // only, and its owner is notified of new leads only.
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const [isEditing, setIsEditing] = useState(false);
@@ -43,8 +43,6 @@ const Account: React.FC = () => {
     phone: auth.user?.phone || '',
     defaultLanguage: auth.user?.defaultLanguage || 'he'
   });
-  const [channelType, setChannelType] = useState<'sms' | 'whatsapp'>(auth.user?.channelType ?? 'sms');
-  const [isSavingChannel, setIsSavingChannel] = useState(false);
   const [language, setLanguage] = useState<SupportedLanguage>((auth.user?.defaultLanguage as SupportedLanguage) ?? 'he');
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
 
@@ -62,7 +60,6 @@ const Account: React.FC = () => {
         phone: auth.user.phone || '',
         defaultLanguage: auth.user.defaultLanguage || 'he'
       });
-      setChannelType(auth.user.channelType ?? 'sms');
       setLanguage((auth.user.defaultLanguage as SupportedLanguage) ?? 'he');
     }
   }, [auth.user]);
@@ -94,20 +91,6 @@ const Account: React.FC = () => {
       toast.error(t('account.languageUpdateError'));
     } finally {
       setIsSavingLanguage(false);
-    }
-  };
-
-  const handleChannelTypeChange = async (value: 'sms' | 'whatsapp') => {
-    setChannelType(value);
-    setIsSavingChannel(true);
-    try {
-      await updateUser({ channelType: value });
-      toast.success(t('account.channelUpdateSuccess'));
-    } catch {
-      toast.error(t('account.channelUpdateError'));
-      setChannelType(auth.user?.channelType ?? 'sms');
-    } finally {
-      setIsSavingChannel(false);
     }
   };
 
@@ -166,39 +149,9 @@ const Account: React.FC = () => {
         </p>
       </div>
 
-      {/* Notification Channel Card */}
-      <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="w-5 h-5 text-primary shrink-0" />
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
-                {t('account.channelType')}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {t('account.channelTypeDesc')}
-              </p>
-            </div>
-          </div>
-
-          <div className={`flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-fit text-sm shrink-0 ${isSavingChannel ? 'opacity-60 pointer-events-none' : ''}`}>
-            <button
-              type="button"
-              onClick={() => handleChannelTypeChange('sms')}
-              className={`px-4 py-2 font-medium transition-colors ${channelType === 'sms' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            >
-              {t('account.channelSms')}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChannelTypeChange('whatsapp')}
-              className={`px-4 py-2 font-medium transition-colors ${channelType === 'whatsapp' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            >
-              {t('account.channelWhatsapp')}
-            </button>
-          </div>
-        </div>
-      </Card>
+      {/* How and about what the owner hears — email, SMS or WhatsApp, one
+          switch per event (LT-129, LT-213) */}
+      <NotificationsCard leadsSite={leadsSite} />
 
       {/* Dashboard Language Card */}
       <Card>
@@ -225,9 +178,6 @@ const Account: React.FC = () => {
           </div>
         </div>
       </Card>
-
-      {/* Push per-event toggles — renders nothing outside the native app (LT-129) */}
-      <NotificationsCard leadsSite={leadsSite} />
 
       <BillingSection leadsSite={leadsSite} />
 

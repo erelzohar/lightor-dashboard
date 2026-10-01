@@ -265,7 +265,7 @@ const AdminUserDetail: React.FC = () => {
               </div>
               <div>
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.channel')}</dt>
-                <dd className="mt-0.5 text-gray-800 dark:text-gray-200 uppercase">{user.channelType ?? 'sms'}</dd>
+                <dd className="mt-0.5 text-gray-800 dark:text-gray-200 uppercase">{user.channelType ?? 'email'}</dd>
               </div>
               <div>
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.lastBooked')}</dt>

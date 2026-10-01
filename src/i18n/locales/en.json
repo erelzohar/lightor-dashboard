@@ -504,26 +504,38 @@
     "passwordCurrentIncorrect": "Current password is incorrect",
     "passwordSameAsOld": "New password cannot be the same as the current password",
     "passwordUpdateError": "Failed to update password",
-    "channelType": "Your notification channel",
-    "channelTypeDesc": "How new-booking alerts reach your phone. Your customers choose SMS or WhatsApp themselves when they book.",
-    "channelSms": "SMS",
-    "channelWhatsapp": "WhatsApp",
-    "channelUpdateSuccess": "Notification channel updated",
-    "channelUpdateError": "Failed to update notification channel",
     "language": "Dashboard language",
     "languageDesc": "The language you see this dashboard in",
     "languageUpdateSuccess": "Dashboard language updated",
     "languageUpdateError": "Failed to update the language",
     "notifications": {
       "title": "Notifications",
-      "description": "Choose what your phone notifies you about",
+      "description": "How you hear about your business, and about what. What your customers receive does not change.",
       "newBooking": "New booking",
       "cancellation": "Cancellation",
       "reschedule": "Reschedule",
       "morningDigest": "Morning digest",
       "saved": "Preferences saved",
       "saveFailed": "Could not save",
-      "newLead": "New inquiry"
+      "newLead": "New inquiry",
+      "channel": "Channel",
+      "channels": {
+        "email": "Email",
+        "sms": "SMS",
+        "whatsapp": "WhatsApp"
+      },
+      "sendsTo": "Sent to",
+      "plusOnly": "SMS and WhatsApp come with the Plus plan.",
+      "needsPhone": "SMS and WhatsApp need a phone number in your account details.",
+      "events": "Notify me about",
+      "hints": {
+        "newBooking": "A customer booked on your site",
+        "cancellation": "A customer cancelled through their link",
+        "reschedule": "A customer moved their appointment",
+        "morningDigest": "Every morning, today's appointments",
+        "newLead": "Someone left their details on your site"
+      },
+      "pushNote": "App notifications follow these choices too."
     }
   },
   "incomeStats": {

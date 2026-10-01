@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 import globals from './globals';
 import { PlanLimits } from './entitlementsApi';
+import type { OwnerChannel } from '../types';
 
 /**
  * Operator admin panel API (LT-058). Every call maps 1:1 onto
@@ -108,7 +109,7 @@ export interface AdminUserRow {
   boardingStatus: 'new' | 'onboarded' | 'active';
   subscription: AdminSubscription;
   defaultLanguage: string;
-  channelType?: 'sms' | 'whatsapp';
+  channelType?: OwnerChannel;
   webConfig_id?: string;
   createdAt: string;
   updatedAt: string;
@@ -298,7 +299,7 @@ export interface AdminCreateUserInput {
   password: string;
   phone?: string;
   defaultLanguage?: string;
-  channelType?: 'sms' | 'whatsapp';
+  channelType?: OwnerChannel;
   isVerified?: boolean;
 }
 

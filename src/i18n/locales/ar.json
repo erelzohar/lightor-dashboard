@@ -504,26 +504,38 @@
     "passwordCurrentIncorrect": "كلمة المرور الحالية غير صحيحة",
     "passwordSameAsOld": "لا يمكن أن تكون كلمة المرور الجديدة مماثلة للحالية",
     "passwordUpdateError": "فشل تحديث كلمة المرور",
-    "channelType": "قناة إشعاراتك",
-    "channelTypeDesc": "كيف تصل تنبيهات الحجوزات الجديدة إلى هاتفك. يختار عملاؤك الرسائل النصية أو واتساب بأنفسهم عند الحجز.",
-    "channelSms": "رسائل SMS",
-    "channelWhatsapp": "واتساب",
-    "channelUpdateSuccess": "تم تحديث قناة الإشعارات",
-    "channelUpdateError": "فشل تحديث قناة الإشعارات",
     "language": "لغة لوحة التحكم",
     "languageDesc": "اللغة التي ترى بها لوحة التحكم هذه",
     "languageUpdateSuccess": "تم تحديث لغة لوحة التحكم",
     "languageUpdateError": "فشل تحديث اللغة",
     "notifications": {
       "title": "الإشعارات",
-      "description": "اختر ما يُرسل إليك هاتفك إشعارات بشأنه",
+      "description": "كيف تصلك أخبار عملك وعن ماذا. الرسائل التي يتلقاها عملاؤك لا تتغير.",
       "newBooking": "حجز جديد",
       "cancellation": "إلغاء موعد",
       "reschedule": "تغيير الموعد",
       "morningDigest": "ملخص الصباح",
       "saved": "تم حفظ التفضيلات",
       "saveFailed": "فشل الحفظ",
-      "newLead": "استفسار جديد"
+      "newLead": "استفسار جديد",
+      "channel": "القناة",
+      "channels": {
+        "email": "البريد الإلكتروني",
+        "sms": "SMS",
+        "whatsapp": "واتساب"
+      },
+      "sendsTo": "يُرسل إلى",
+      "plusOnly": "الرسائل النصية وواتساب متاحة في باقة Plus.",
+      "needsPhone": "تحتاج الرسائل النصية وواتساب إلى رقم هاتف في بيانات حسابك.",
+      "events": "أعلمني عند",
+      "hints": {
+        "newBooking": "حجز عميل موعدًا في موقعك",
+        "cancellation": "ألغى عميل موعده عبر الرابط",
+        "reschedule": "نقل عميل موعده",
+        "morningDigest": "كل صباح، مواعيد اليوم",
+        "newLead": "ترك شخص بياناته في موقعك"
+      },
+      "pushNote": "إشعارات التطبيق تتبع هذه الاختيارات أيضًا."
     }
   },
   "incomeStats": {

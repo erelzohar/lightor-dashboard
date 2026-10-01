@@ -228,7 +228,8 @@ export interface User {
   phone: string;
   name: string;
   defaultLanguage: string;
-  channelType?: 'sms' | 'whatsapp';
+  /** How the owner hears about their business (LT-213); email when absent. */
+  channelType?: OwnerChannel;
   isVerified: boolean;
   verificationToken?: string;
   verificationExpire?: string | Date;
@@ -249,12 +250,16 @@ export interface User {
   /** Mongoose timestamp; the verified-email gate's grace window keys off it. */
   createdAt?: string | Date;
   /**
-   * Which push events the phone gets (LT-129). All default true server-side;
-   * absent on accounts that predate the field, which the UI treats as true.
-   * `PUT /api/users/:id` merges a partial object.
+   * Which events the owner hears about, on their channel and in the app
+   * (LT-129, LT-213). All default true server-side; absent on accounts that
+   * predate the field, which the UI treats as true. `PUT /api/users/:id`
+   * merges a partial object.
    */
   notificationPrefs?: NotificationPrefs;
 }
+
+/** The owner's own alerts (LT-213). SMS and WhatsApp are Plus channels. */
+export type OwnerChannel = 'email' | 'sms' | 'whatsapp';
 
 export interface NotificationPrefs {
   newBooking: boolean;

@@ -504,26 +504,38 @@
     "passwordCurrentIncorrect": "Le mot de passe actuel est incorrect",
     "passwordSameAsOld": "Le nouveau mot de passe ne peut pas être identique à l'actuel",
     "passwordUpdateError": "Échec de la mise à jour du mot de passe",
-    "channelType": "Votre canal de notification",
-    "channelTypeDesc": "Comment les alertes de nouvelles réservations arrivent sur votre téléphone. Vos clients choisissent eux-mêmes SMS ou WhatsApp en réservant.",
-    "channelSms": "SMS",
-    "channelWhatsapp": "WhatsApp",
-    "channelUpdateSuccess": "Canal de notification mis à jour",
-    "channelUpdateError": "Échec de la mise à jour du canal de notification",
     "language": "Langue du tableau de bord",
     "languageDesc": "La langue dans laquelle vous voyez ce tableau de bord",
     "languageUpdateSuccess": "Langue du tableau de bord mise à jour",
     "languageUpdateError": "Échec de la mise à jour de la langue",
     "notifications": {
       "title": "Notifications",
-      "description": "Choisissez ce dont votre téléphone vous avertit",
+      "description": "Comment être averti de l’activité de votre entreprise, et pour quoi. Les messages reçus par vos clients ne changent pas.",
       "newBooking": "Nouvelle réservation",
       "cancellation": "Annulation",
       "reschedule": "Report",
       "morningDigest": "Résumé du matin",
       "saved": "Préférences enregistrées",
       "saveFailed": "Échec de l’enregistrement",
-      "newLead": "Nouvelle demande"
+      "newLead": "Nouvelle demande",
+      "channel": "Canal",
+      "channels": {
+        "email": "E-mail",
+        "sms": "SMS",
+        "whatsapp": "WhatsApp"
+      },
+      "sendsTo": "Envoyé à",
+      "plusOnly": "Les SMS et WhatsApp font partie de l’offre Plus.",
+      "needsPhone": "Les SMS et WhatsApp nécessitent un numéro de téléphone dans les informations de votre compte.",
+      "events": "M’avertir quand",
+      "hints": {
+        "newBooking": "Un client a réservé sur votre site",
+        "cancellation": "Un client a annulé via son lien",
+        "reschedule": "Un client a déplacé son rendez-vous",
+        "morningDigest": "Chaque matin, les rendez-vous du jour",
+        "newLead": "Quelqu’un a laissé ses coordonnées sur votre site"
+      },
+      "pushNote": "Les notifications de l’application suivent aussi ces choix."
     }
   },
   "incomeStats": {

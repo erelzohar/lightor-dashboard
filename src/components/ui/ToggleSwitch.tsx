@@ -6,6 +6,8 @@ interface ToggleSwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label?: string;
+  /** The switch's accessible name when the visible text sits outside it. */
+  ariaLabel?: string;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -14,6 +16,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   checked,
   onChange,
   label,
+  ariaLabel,
   disabled = false,
   size = 'md'
 }) => {
@@ -71,6 +74,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         onClick={() => !disabled && onChange(!checked)}
         disabled={disabled}
         aria-checked={checked}
+        aria-label={ariaLabel}
         role="switch"
         dir={direction}
       >

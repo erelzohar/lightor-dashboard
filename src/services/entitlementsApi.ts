@@ -21,6 +21,11 @@ export interface PlanLimits {
   customerExport: boolean;
   /** Contact-form leads per month (LT-197); null = unlimited. Absent on an older API. */
   monthlyLeads?: number | null;
+  /**
+   * The owner's own alerts by SMS or WhatsApp (LT-213) — Plus. Absent on an
+   * older API, which reads as allowed: the server decides the channel anyway.
+   */
+  ownerTextAlerts?: boolean;
 }
 
 export interface MyEntitlements {
