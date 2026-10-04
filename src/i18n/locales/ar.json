@@ -231,7 +231,7 @@
     "editService": "تعديل الخدمة",
     "newService": "خدمة جديدة",
     "serviceName": "اسم الخدمة",
-    "price": "السعر ($)",
+    "price": "السعر (₪)",
     "duration": "المدة (دقائق)",
     "services": "الخدمات",
     "addNew": "إضافة",
@@ -287,7 +287,7 @@
       "openInMaps": "فتح في خرائط Google"
     },
     "price": "السعر",
-    "currencySymbol": "$",
+    "currencySymbol": "₪",
     "markCompleted": "وضع علامة مكتمل",
     "cancelAppointment": "إلغاء",
     "cancelConfirm": "هل أنت متأكد من إلغاء هذا الموعد؟",

@@ -231,7 +231,7 @@
     "editService": "Modifier le service",
     "newService": "Nouveau service",
     "serviceName": "Nom du service",
-    "price": "Prix ($)",
+    "price": "Prix (₪)",
     "duration": "Durée (minutes)",
     "services": "Services",
     "addNew": "Ajouter",
@@ -287,7 +287,7 @@
       "openInMaps": "Ouvrir dans Google Maps"
     },
     "price": "Prix",
-    "currencySymbol": "$",
+    "currencySymbol": "₪",
     "markCompleted": "Marquer comme terminé",
     "cancelAppointment": "Annuler",
     "cancelConfirm": "Voulez-vous vraiment annuler ce rendez-vous ?",

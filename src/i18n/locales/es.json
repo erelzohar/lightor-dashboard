@@ -231,7 +231,7 @@
     "editService": "Editar servicio",
     "newService": "Nuevo servicio",
     "serviceName": "Nombre del servicio",
-    "price": "Precio ($)",
+    "price": "Precio (₪)",
     "duration": "Duración (minutos)",
     "services": "Servicios",
     "addNew": "Añadir",
@@ -287,7 +287,7 @@
       "openInMaps": "Abrir en Google Maps"
     },
     "price": "Precio",
-    "currencySymbol": "$",
+    "currencySymbol": "₪",
     "markCompleted": "Marcar como completada",
     "cancelAppointment": "Cancelar",
     "cancelConfirm": "¿Seguro que quieres cancelar esta cita?",

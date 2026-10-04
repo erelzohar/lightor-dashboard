@@ -64,6 +64,15 @@ describe('dashboard translations', () => {
     expect(mismatched).toEqual([]);
   });
 
+  it('prices in shekels in every language (LT-218)', () => {
+    // There is no currency setting; the English, Arabic, French and Spanish
+    // dashboards showed every price and revenue figure in dollars.
+    for (const lang of Object.keys(locales) as (keyof typeof locales)[]) {
+      expect(locales[lang]['appointments.currencySymbol']).toBe('₪');
+      expect(locales[lang]['appointmentTypes.price']).toContain('(₪)');
+    }
+  });
+
   it('does not describe the free plan as a trial (LT-036)', () => {
     // The upgrade bar used to read "30 days left in your trial" to accounts on
     // the permanent free tier, counting down a nextBillDate the backend seeded
