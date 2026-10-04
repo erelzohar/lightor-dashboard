@@ -97,8 +97,9 @@ export const bookingFieldsValid = (fields: BookingField[]): boolean =>
 
 /**
  * The catalog as it goes on the wire: trimmed, `options` only on a choice,
- * `key` only when the server gave us one. Anything else the server would
- * refuse or regenerate anyway.
+ * `key` only when the server gave us one, the LT-217 switches only once set
+ * (left out, the server keeps what it stored — a new address defaults to
+ * remembered). Anything else the server would refuse or regenerate anyway.
  */
 export const normaliseBookingFields = (fields: BookingField[]): BookingField[] =>
   fields.map((field) => {
@@ -110,6 +111,8 @@ export const normaliseBookingFields = (fields: BookingField[]): BookingField[] =
     };
     if (typeof field.key === 'string' && field.key) out.key = field.key;
     if (field.type === 'choice') out.options = (field.options ?? []).map((o) => o.trim());
+    if (typeof field.important === 'boolean') out.important = field.important;
+    if (typeof field.remember === 'boolean') out.remember = field.remember;
     return out;
   });
 

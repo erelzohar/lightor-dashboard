@@ -82,6 +82,18 @@ describe('normaliseBookingFields', () => {
       { label: 'Blank key', type: 'text', required: false, services: [] },
     ]);
   });
+
+  it('sends the two switches once they are set, either way (LT-217)', () => {
+    expect(
+      normaliseBookingFields([
+        field({ key: 'a', label: 'Address', type: 'address', important: true, remember: false }),
+        field({ key: 'b', label: 'Notes', important: false }),
+      ])
+    ).toEqual([
+      { key: 'a', label: 'Address', type: 'address', required: false, services: [], important: true, remember: false },
+      { key: 'b', label: 'Notes', type: 'text', required: false, services: [], important: false },
+    ]);
+  });
 });
 
 describe('bookingFieldsFromAi', () => {

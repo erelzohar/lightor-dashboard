@@ -109,8 +109,10 @@ describe('Settings: booking questions', () => {
 
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
     const payload = sentPayload(0);
+    // A new address question starts remembered (the editor shows it on), and
+    // what the editor shows is what goes out.
     expect(payload.bookingFields).toEqual([
-      { label: 'Full address', type: 'address', required: false, services: [] },
+      { label: 'Full address', type: 'address', required: false, services: [], remember: true },
     ]);
     expect(payload.bookingFields![0]).not.toHaveProperty('key');
     // The rest of the config still travels as before.
@@ -133,6 +135,29 @@ describe('Settings: booking questions', () => {
     expect(sentPayload(1).bookingFields).toEqual([
       { key: 'key-0', label: 'Home address', type: 'text', required: false, services: [] },
     ]);
+  });
+
+  it('sends a switch the owner turned on, so it stays on after the save (LT-217)', async () => {
+    // Erel 2026-10-04: on a stored question, "show in the new-booking message"
+    // went back to off after every save — the payload never carried it.
+    const stored: BookingField = {
+      key: 'q', label: 'Address', type: 'address', required: true, services: [], important: false, remember: false,
+    };
+    state.webConfig.data = { ...savedConfig, bookingFields: [stored] } as WebConfig;
+    try {
+      render(<Settings />);
+      const important = () => screen.getByTestId('field-important-0') as HTMLInputElement;
+      expect(important().checked).toBe(false);
+      fireEvent.click(important());
+
+      fireEvent.click(await screen.findByText('common.save'));
+      await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+      expect(sentPayload(0).bookingFields).toEqual([{ ...stored, important: true }]);
+      // The reply is what the editor shows next: still on.
+      await waitFor(() => expect(important().checked).toBe(true));
+    } finally {
+      state.webConfig.data = savedConfig;
+    }
   });
 
   it('leaves the catalog out of the payload when it was not touched', async () => {
