@@ -16,7 +16,7 @@ interface Links {
   label: string;
   href: string;
   icon: React.JSX.Element | React.ReactNode;
-  /** A count beside the label (a dot on the icon while collapsed), e.g. new leads (LT-197). */
+  /** A count beside the label (on the icon while collapsed), e.g. new leads (LT-197). */
   badge?: number;
 }
 
@@ -190,8 +190,18 @@ export const SidebarLink = ({
     >
       <span className="relative inline-flex">
         {link.icon}
+        {/* Collapsed, the count sits on the icon's start corner. The end
+            corner is the rail's edge: the scroll area is overflow-x-hidden
+            (for the collapse) and cut the old dot in half. The link's start
+            padding is the room this badge grows into. */}
         {!!link.badge && animate && !open && (
-          <span className="absolute -top-1 -end-1 w-2 h-2 rounded-full bg-rose-500" aria-hidden="true" />
+          <span
+            className="absolute -top-2 -start-2 min-w-[1rem] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-4 text-center tabular-nums"
+            data-testid="nav-badge-collapsed"
+            aria-hidden="true"
+          >
+            {link.badge > 9 ? '9+' : link.badge}
+          </span>
         )}
       </span>
       <motion.span
