@@ -9,6 +9,7 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import StatusBadge from '../admin/StatusBadge';
 import BlockCustomerDialog from './BlockCustomerDialog';
 import OwnerBookingModal from './OwnerBookingModal';
+import AnswersList from '../appointments/AnswersList';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   fetchCustomer,
@@ -248,6 +249,17 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                     </div>
                   </div>
 
+                  {/* The details kept for their next booking (LT-217) —
+                      the owner's booking window fills them in. */}
+                  {(customer.answers?.length ?? 0) > 0 && (
+                    <section data-testid="customer-saved-details">
+                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        {t('customers.detail.savedDetails')}
+                      </h3>
+                      <AnswersList answers={customer.answers} />
+                    </section>
+                  )}
+
                   {/* Notes */}
                   <section>
                     <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -285,6 +297,8 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                                 {row.typeName ?? '—'}
                               </p>
                               <p className="text-xs text-gray-400">{formatDateTime(row.scheduledAt)}</p>
+                              {/* What they answered that time (LT-217). */}
+                              <AnswersList answers={row.answers} className="mt-1 text-xs" />
                             </div>
                             {row.typePrice && (
                               <span className="text-xs text-gray-500 whitespace-nowrap">
@@ -328,6 +342,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                   name: customer.name,
                   phone: customer.phone,
                   channelType: detail?.history.find((h) => h.channelType)?.channelType,
+                  answers: customer.answers,
                 }}
                 onClose={() => setBookingOpen(false)}
                 onBooked={() => {

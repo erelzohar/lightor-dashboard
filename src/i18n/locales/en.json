@@ -194,7 +194,11 @@
       "oneAddress": "Only one address question is allowed",
       "labelRequired": "Write the question (up to 40 characters)",
       "optionsInvalid": "A list needs 2 to 10 different options, up to 30 characters each",
-      "limitReached": "You have reached the maximum of 8 questions"
+      "limitReached": "You have reached the maximum of 8 questions",
+      "important": "Show in the new-booking message",
+      "importantHint": "The answer also appears in the SMS or WhatsApp you get for a new booking",
+      "remember": "Remember for the customer's next booking",
+      "rememberHint": "Next time the customer can reuse this answer without typing it again, after verifying their phone"
     },
     "leadFields": {
       "title": "Contact form questions",
@@ -305,6 +309,18 @@
       "removeConfirm": "Remove {{name}} from the class?",
       "full": "Class full",
       "empty": "No participants yet"
+    },
+    "export": {
+      "button": "Export",
+      "title": "Export appointments",
+      "hint": "A CSV file for Excel, with a column for each booking question",
+      "from": "From",
+      "to": "To",
+      "download": "Download",
+      "cancel": "Cancel",
+      "failed": "The export failed, please try again",
+      "rangeInvalid": "You can export up to a year at a time",
+      "upgradeToast": "Exporting appointments is part of Plus"
     }
   },
   "login": {
@@ -513,7 +529,7 @@
       "description": "How you hear about your business, and about what. What your customers receive does not change.",
       "newBooking": "New booking",
       "cancellation": "Cancellation",
-      "reschedule": "Reschedule",
+      "reschedule": "Reschedule or details",
       "morningDigest": "Morning digest",
       "saved": "Preferences saved",
       "saveFailed": "Could not save",
@@ -531,7 +547,7 @@
       "hints": {
         "newBooking": "A customer booked on your site",
         "cancellation": "A customer cancelled through their link",
-        "reschedule": "A customer moved their appointment",
+        "reschedule": "A customer moved their appointment or updated their details",
         "morningDigest": "Every morning, today's appointments",
         "newLead": "Someone left their details on your site"
       },
@@ -1079,7 +1095,8 @@
       "saveNotes": "Save notes",
       "notesSaved": "Notes saved",
       "history": "Appointment history",
-      "noHistory": "No appointments yet"
+      "noHistory": "No appointments yet",
+      "savedDetails": "Saved for next time"
     },
     "block": {
       "title": "Block customer",

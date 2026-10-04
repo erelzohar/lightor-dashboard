@@ -6,6 +6,7 @@ import AppointmentCalendar from '../components/appointments/AppointmentCalendar'
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import AppointmentsList from '../components/appointments/AppointmentsList';
 import OwnerBookingModal from '../components/customers/OwnerBookingModal';
+import ExportAppointmentsButton from '../components/appointments/ExportAppointmentsButton';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -78,6 +79,7 @@ const Appointments: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <ExportAppointmentsButton />
           <button
             type="button"
             onClick={() => setBooking(true)}

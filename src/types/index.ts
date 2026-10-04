@@ -162,6 +162,10 @@ export interface BookingField {
   options?: string[];
   /** AppointmentType ids this question applies to; [] = every service. */
   services: string[];
+  /** LT-217: the answer goes into the owner's new-booking SMS/WhatsApp too. */
+  important?: boolean;
+  /** LT-217: the answer is kept on the customer's record for their next booking. */
+  remember?: boolean;
 }
 
 /** A customer's answer, copied onto the appointment with the label as asked. */

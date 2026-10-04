@@ -107,6 +107,41 @@ describe('BookingFieldsEditor', () => {
     expect(next[0]).not.toHaveProperty('options');
   });
 
+  // LT-217: where an answer goes after the booking.
+  it('switches a question into the new-booking message and into the customer’s record', () => {
+    const onChange = renderEditor([field({ key: 'address', label: 'Address', type: 'address' })]);
+
+    fireEvent.click(screen.getByTestId('field-important-0'));
+    let [next] = onChange.mock.calls[0] as [BookingField[]];
+    expect(next[0]).toMatchObject({ key: 'address', important: true });
+
+    onChange.mockClear();
+    fireEvent.click(screen.getByTestId('field-remember-0'));
+    [next] = onChange.mock.calls[0] as [BookingField[]];
+    expect(next[0]).toMatchObject({ key: 'address', remember: true });
+  });
+
+  it('remembers a new address question by default, and leaves a saved one as it was', () => {
+    const onChange = renderEditor([field({ label: 'Where' }), field({ key: 'old', label: 'Old', type: 'text' })]);
+
+    const types = screen.getAllByLabelText('settings.bookingFields.type');
+    fireEvent.change(types[0], { target: { value: 'address' } });
+    let [next] = onChange.mock.calls[0] as [BookingField[]];
+    expect(next[0]).toMatchObject({ type: 'address', remember: true });
+
+    onChange.mockClear();
+    fireEvent.change(types[1], { target: { value: 'address' } });
+    [next] = onChange.mock.calls[0] as [BookingField[]];
+    expect(next[1].type).toBe('address');
+    expect(next[1].remember).toBeUndefined();
+  });
+
+  it('offers neither switch on the contact form’s questions', () => {
+    render(<BookingFieldsEditor value={[field({ key: 'area', label: 'Area' })]} onChange={vi.fn()} variant="lead" />);
+    expect(screen.queryByTestId('field-important-0')).toBeNull();
+    expect(screen.queryByTestId('field-remember-0')).toBeNull();
+  });
+
   it('reorders with the arrows and deletes', () => {
     const onChange = renderEditor([
       field({ key: 'a', label: 'A' }),

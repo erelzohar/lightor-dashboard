@@ -190,3 +190,38 @@ export const updateAppointmentStatus = async (
     throw err;
   }
 };
+/* ------------------ Export (LT-217) ------------------ */
+
+/**
+ * The owner's appointments as a CSV file, `from` to `to` (YYYY-MM-DD, both
+ * days included), with a column per booking question. Saves the file; a
+ * refusal throws an Error whose message is the server's code (PLAN_REQUIRED,
+ * RANGE_INVALID) — the body of a failed blob request is read for it.
+ */
+export const exportAppointmentsCsv = async (range: { from: string; to: string }): Promise<void> => {
+  let response;
+  try {
+    response = await apiClient.get(`${APPOINTMENTS_URL}export`, { params: range, responseType: 'blob' });
+  } catch (error) {
+    const data = (error as { response?: { data?: unknown } })?.response?.data;
+    let code: string | undefined;
+    if (data instanceof Blob) {
+      try {
+        code = JSON.parse(await data.text())?.code;
+      } catch {
+        // Not JSON: no code to report.
+      }
+    }
+    throw new Error(code ?? 'EXPORT_FAILED');
+  }
+  const disposition = (response.headers?.['content-disposition'] as string | undefined) ?? '';
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? 'appointments.csv';
+  const url = URL.createObjectURL(response.data as Blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+};

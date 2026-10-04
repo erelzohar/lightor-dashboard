@@ -194,7 +194,11 @@
       "oneAddress": "Solo se permite una pregunta de dirección",
       "labelRequired": "Escribe la pregunta (hasta 40 caracteres)",
       "optionsInvalid": "Una lista necesita de 2 a 10 opciones distintas, de hasta 30 caracteres cada una",
-      "limitReached": "Has llegado al máximo de 8 preguntas"
+      "limitReached": "Has llegado al máximo de 8 preguntas",
+      "important": "Mostrar en el mensaje de nueva reserva",
+      "importantHint": "La respuesta también aparece en el SMS o WhatsApp que recibes por una nueva reserva",
+      "remember": "Recordar para la próxima reserva del cliente",
+      "rememberHint": "La próxima vez el cliente podrá reutilizar esta respuesta sin escribirla de nuevo, tras verificar su teléfono"
     },
     "leadFields": {
       "title": "Preguntas del formulario de contacto",
@@ -305,6 +309,18 @@
       "removeConfirm": "¿Quitar a {{name}} de la clase?",
       "full": "Clase completa",
       "empty": "Aún no hay participantes"
+    },
+    "export": {
+      "button": "Exportar",
+      "title": "Exportar citas",
+      "hint": "Un archivo CSV para Excel, con una columna por cada pregunta de reserva",
+      "from": "Desde",
+      "to": "Hasta",
+      "download": "Descargar",
+      "cancel": "Cancelar",
+      "failed": "La exportación falló, inténtalo de nuevo",
+      "rangeInvalid": "Puedes exportar hasta un año cada vez",
+      "upgradeToast": "Exportar citas es parte de Plus"
     }
   },
   "login": {
@@ -513,7 +529,7 @@
       "description": "Cómo y de qué te enteras sobre tu negocio. Los mensajes que reciben tus clientes no cambian.",
       "newBooking": "Nueva reserva",
       "cancellation": "Cancelación",
-      "reschedule": "Cambio de horario",
+      "reschedule": "Cambio de horario o datos",
       "morningDigest": "Resumen matutino",
       "saved": "Preferencias guardadas",
       "saveFailed": "No se pudo guardar",
@@ -531,7 +547,7 @@
       "hints": {
         "newBooking": "Un cliente reservó en tu sitio",
         "cancellation": "Un cliente canceló desde su enlace",
-        "reschedule": "Un cliente cambió su cita",
+        "reschedule": "Un cliente cambió su cita o actualizó sus datos",
         "morningDigest": "Cada mañana, las citas del día",
         "newLead": "Alguien dejó sus datos en tu sitio"
       },
@@ -1079,7 +1095,8 @@
       "saveNotes": "Guardar notas",
       "notesSaved": "Notas guardadas",
       "history": "Historial de citas",
-      "noHistory": "Aún no hay citas"
+      "noHistory": "Aún no hay citas",
+      "savedDetails": "Guardado para la próxima vez"
     },
     "block": {
       "title": "Bloquear cliente",

@@ -171,6 +171,28 @@ describe('OwnerBookingModal: booking questions', () => {
     ]);
   });
 
+  // LT-217: the details kept from the customer's last booking.
+  it("fills in the customer's kept address — with its place — and the owner may change it", async () => {
+    renderModal({
+      customer: {
+        name: 'Dana',
+        phone: '0501234567',
+        answers: [{ key: 'address', label: 'Address', value: 'Herzl 12, Tel Aviv', placeId: 'ChIJ_herzl', lat: 32.06, lng: 34.77 }],
+      },
+    });
+    await toDetails();
+
+    expect((screen.getByLabelText(/Address/) as HTMLInputElement).value).toBe('Herzl 12, Tel Aviv');
+    fireEvent.change(screen.getByLabelText(/Car model/), { target: { value: 'Mazda 3' } });
+    fireEvent.click(submitButton());
+
+    await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
+    expect(sentBody().answers).toEqual([
+      { key: 'address', value: 'Herzl 12, Tel Aviv', placeId: 'ChIJ_herzl', lat: 32.06, lng: 34.77 },
+      { key: 'car', value: 'Mazda 3' },
+    ]);
+  });
+
   it('does not block on a required question left blank, and omits an unticked confirm', async () => {
     renderModal();
     await toDetails('Home visit', 4, '11:00');

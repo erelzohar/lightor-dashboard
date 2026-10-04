@@ -21,7 +21,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { ChoiceSummary, DayTimes, MonthDays, ServicePicker } from './BookingSteps';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
 import { isBookableService } from '../../utils/siteMode';
-import type { AppointmentType, BookingField } from '../../types';
+import type { AppointmentAnswer, AppointmentType, BookingField } from '../../types';
 
 /**
  * Book an appointment FOR a customer from the dashboard (LT-122) — the first
@@ -48,11 +48,13 @@ import type { AppointmentType, BookingField } from '../../types';
  * same ones a customer sees, so a walk-in arrives with its address too —
  * with Google's suggestions under it, as on the public form (LT-206).
  * Required is marked but never enforced here: the server spares the owner.
+ * A customer's details kept from their last booking (LT-217, an address)
+ * fill those questions in; the owner sees them and may change them.
  */
 interface OwnerBookingModalProps {
   open: boolean;
   /** Who is booked. Absent for a walk-in (LT-204): the owner types a name and a phone. */
-  customer?: { name: string; phone: string; channelType?: 'sms' | 'whatsapp' };
+  customer?: { name: string; phone: string; channelType?: 'sms' | 'whatsapp'; answers?: AppointmentAnswer[] };
   /** Open on this class session (LT-204: "Add participant" on a roster). */
   preset?: { typeId: string; timestamp: string };
   onClose: () => void;
@@ -81,7 +83,20 @@ interface FetchedMonth extends Availability {
   failed: boolean;
 }
 
+/** Kept answers back in the shape the form edits: an address keeps its place. */
+const keptAnswers = (kept?: AppointmentAnswer[]): Record<string, string | AddressAnswer> =>
+  Object.fromEntries(
+    (kept ?? []).map((a) => [
+      a.key,
+      a.placeId && typeof a.lat === 'number' && typeof a.lng === 'number'
+        ? { text: a.value, placeId: a.placeId, lat: a.lat, lng: a.lng }
+        : a.value,
+    ])
+  );
+
 const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, preset, onClose, onBooked }) => {
+  // The array itself, from the drawer's state: stable while the window is open.
+  const rememberedAnswers = customer?.answers;
   const { t } = useTranslation();
   const { direction } = useTheme();
   const { auth } = useAuth();
@@ -145,8 +160,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     setStep(presetType && presetTimestamp ? 'details' : 'service');
     setName('');
     setPhone('');
-    setAnswers({});
-  }, [open, appointmentTypes, presetTypeId, presetTimestamp]);
+    setAnswers(keptAnswers(rememberedAnswers));
+  }, [open, appointmentTypes, presetTypeId, presetTimestamp, rememberedAnswers]);
 
   const selectedType = appointmentTypes.find((ty) => ty._id === typeId);
   const isClass = selectedType?.kind === 'class';

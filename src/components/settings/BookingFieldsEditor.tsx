@@ -98,6 +98,9 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
   const changeType = (index: number, type: BookingFieldType) => {
     const field = fields[index];
     const patch: BookingField = { ...field, type };
+    // A new address question is remembered unless the owner says otherwise
+    // (LT-217) — the server's default for a question it has not seen.
+    if (!field.key && type === 'address' && !isLead) patch.remember = true;
     if (type === 'choice') {
       if (!patch.options?.length) patch.options = Array.from({ length: MIN_CHOICE_OPTIONS }, () => '');
     } else {
@@ -321,6 +324,27 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                       {t('settings.bookingFields.required')}
                     </span>
                   </label>
+
+                  {/* LT-217: where the answer goes after the booking. */}
+                  {!isLead && ([
+                    ['important', field.important === true],
+                    ['remember', field.remember === true],
+                  ] as const).map(([flag, on]) => (
+                    <label key={flag} className="relative inline-flex items-center cursor-pointer" title={t(`settings.bookingFields.${flag}Hint`)}>
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={on}
+                        onChange={(e) => update(index, { [flag]: e.target.checked })}
+                        aria-label={t(`settings.bookingFields.${flag}`)}
+                        data-testid={`field-${flag}-${index}`}
+                      />
+                      <div className="w-9 h-5 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
+                      <span className="ms-2 text-sm text-gray-700 dark:text-gray-300">
+                        {t(`settings.bookingFields.${flag}`)}
+                      </span>
+                    </label>
+                  ))}
 
                   {!isLead && (
                   <div className="flex flex-wrap items-center gap-1.5 min-w-0">

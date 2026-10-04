@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 import globals from './globals';
 import { Paginated } from './adminApi';
+import type { AppointmentAnswer } from '../types';
 
 /**
  * Customers directory API (LT-122) — 1:1 with `/api/customers/*`.
@@ -82,6 +83,8 @@ export interface CustomerRecord {
   firstSeenAt: string;
   lastSeenAt: string;
   createdAt: string;
+  /** Details kept for their next booking (LT-217): answers to "remember" questions. */
+  answers?: AppointmentAnswer[];
 }
 
 export interface CustomerHistoryRow {
@@ -97,6 +100,8 @@ export interface CustomerHistoryRow {
   typeName?: string;
   typePrice?: string;
   typeDurationMS?: string;
+  /** What they answered that time (LT-217). */
+  answers?: AppointmentAnswer[];
 }
 
 export interface CustomerDetail {

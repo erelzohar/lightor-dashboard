@@ -194,7 +194,11 @@
       "oneAddress": "Une seule question d’adresse est possible",
       "labelRequired": "Écrivez la question (40 caractères maximum)",
       "optionsInvalid": "Une liste doit avoir de 2 à 10 options différentes, de 30 caractères maximum chacune",
-      "limitReached": "Vous avez atteint le maximum de 8 questions"
+      "limitReached": "Vous avez atteint le maximum de 8 questions",
+      "important": "Afficher dans le message de nouvelle réservation",
+      "importantHint": "La réponse apparaît aussi dans le SMS ou le WhatsApp reçu pour une nouvelle réservation",
+      "remember": "Retenir pour la prochaine réservation du client",
+      "rememberHint": "La prochaine fois, le client pourra réutiliser cette réponse sans la retaper, après vérification de son téléphone"
     },
     "leadFields": {
       "title": "Questions du formulaire de contact",
@@ -305,6 +309,18 @@
       "removeConfirm": "Retirer {{name}} du cours ?",
       "full": "Cours complet",
       "empty": "Aucun participant pour l'instant"
+    },
+    "export": {
+      "button": "Exporter",
+      "title": "Exporter les rendez-vous",
+      "hint": "Un fichier CSV pour Excel, avec une colonne par question de réservation",
+      "from": "Du",
+      "to": "Au",
+      "download": "Télécharger",
+      "cancel": "Annuler",
+      "failed": "L’export a échoué, veuillez réessayer",
+      "rangeInvalid": "Vous pouvez exporter jusqu’à un an à la fois",
+      "upgradeToast": "L’export des rendez-vous fait partie de Plus"
     }
   },
   "login": {
@@ -513,7 +529,7 @@
       "description": "Comment être averti de l’activité de votre entreprise, et pour quoi. Les messages reçus par vos clients ne changent pas.",
       "newBooking": "Nouvelle réservation",
       "cancellation": "Annulation",
-      "reschedule": "Report",
+      "reschedule": "Report ou informations",
       "morningDigest": "Résumé du matin",
       "saved": "Préférences enregistrées",
       "saveFailed": "Échec de l’enregistrement",
@@ -531,7 +547,7 @@
       "hints": {
         "newBooking": "Un client a réservé sur votre site",
         "cancellation": "Un client a annulé via son lien",
-        "reschedule": "Un client a déplacé son rendez-vous",
+        "reschedule": "Un client a déplacé son rendez-vous ou mis à jour ses informations",
         "morningDigest": "Chaque matin, les rendez-vous du jour",
         "newLead": "Quelqu’un a laissé ses coordonnées sur votre site"
       },
@@ -1079,7 +1095,8 @@
       "saveNotes": "Enregistrer les notes",
       "notesSaved": "Notes enregistrées",
       "history": "Historique des rendez-vous",
-      "noHistory": "Aucun rendez-vous pour l’instant"
+      "noHistory": "Aucun rendez-vous pour l’instant",
+      "savedDetails": "Gardé pour la prochaine fois"
     },
     "block": {
       "title": "Bloquer le client",
