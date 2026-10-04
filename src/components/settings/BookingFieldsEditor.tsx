@@ -17,6 +17,7 @@ import {
   bookingFieldProblems,
   fieldsForService,
   newBookingField,
+  rememberedDetails,
 } from '../../utils/bookingFields';
 
 interface BookingFieldsEditorProps {
@@ -325,11 +326,12 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                     </span>
                   </label>
 
-                  {/* LT-217: where the answer goes after the booking. */}
+                  {/* LT-217: where the answer goes after the booking. The
+                      remember switch is hidden for now (LT-225). */}
                   {!isLead && ([
                     ['important', field.important === true],
                     ['remember', field.remember === true],
-                  ] as const).map(([flag, on]) => (
+                  ] as const).filter(([flag]) => flag !== 'remember' || rememberedDetails.offered).map(([flag, on]) => (
                     <label key={flag} className="relative inline-flex items-center cursor-pointer" title={t(`settings.bookingFields.${flag}Hint`)}>
                       <input
                         type="checkbox"

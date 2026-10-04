@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import BookingFieldsEditor from '../../components/settings/BookingFieldsEditor';
+import { rememberedDetails } from '../../utils/bookingFields';
 import type { AppointmentType, BookingField } from '../../types';
 
 vi.mock('react-i18next', () => ({
@@ -109,16 +110,28 @@ describe('BookingFieldsEditor', () => {
 
   // LT-217: where an answer goes after the booking.
   it('switches a question into the new-booking message and into the customer’s record', () => {
-    const onChange = renderEditor([field({ key: 'address', label: 'Address', type: 'address' })]);
+    // The remember switch is hidden for now (LT-225); its wiring stays tested.
+    rememberedDetails.offered = true;
+    try {
+      const onChange = renderEditor([field({ key: 'address', label: 'Address', type: 'address' })]);
 
-    fireEvent.click(screen.getByTestId('field-important-0'));
-    let [next] = onChange.mock.calls[0] as [BookingField[]];
-    expect(next[0]).toMatchObject({ key: 'address', important: true });
+      fireEvent.click(screen.getByTestId('field-important-0'));
+      let [next] = onChange.mock.calls[0] as [BookingField[]];
+      expect(next[0]).toMatchObject({ key: 'address', important: true });
 
-    onChange.mockClear();
-    fireEvent.click(screen.getByTestId('field-remember-0'));
-    [next] = onChange.mock.calls[0] as [BookingField[]];
-    expect(next[0]).toMatchObject({ key: 'address', remember: true });
+      onChange.mockClear();
+      fireEvent.click(screen.getByTestId('field-remember-0'));
+      [next] = onChange.mock.calls[0] as [BookingField[]];
+      expect(next[0]).toMatchObject({ key: 'address', remember: true });
+    } finally {
+      rememberedDetails.offered = false;
+    }
+  });
+
+  it('shows only the new-booking message switch for now (LT-225)', () => {
+    renderEditor([field({ key: 'address', label: 'Address', type: 'address', remember: true })]);
+    expect(screen.getByTestId('field-important-0')).toBeTruthy();
+    expect(screen.queryByTestId('field-remember-0')).toBeNull();
   });
 
   it('remembers a new address question by default, and leaves a saved one as it was', () => {

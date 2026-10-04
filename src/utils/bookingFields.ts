@@ -42,6 +42,16 @@ export const fieldsForService = (
 
 export const isChoice = (field: Pick<BookingField, 'type'>): boolean => field.type === 'choice';
 
+/**
+ * The "remember for the customer's next booking" switch (LT-217) — hidden for
+ * now (LT-225, Erel 2026-10-05), together with the site's "use the details from
+ * my last booking" box it promises (LT-224, the front's flag of the same
+ * name). Answers are still kept — a new address is remembered, as the server
+ * does — and still prefill the owner's own bookings and the customer card.
+ * Flip `offered` here and in the front to bring both back.
+ */
+export const rememberedDetails = { offered: false };
+
 /** A brand-new question as the editor creates it: no key until the server assigns one. */
 export const newBookingField = (): BookingField => ({
   label: '',
