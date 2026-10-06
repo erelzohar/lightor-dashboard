@@ -1,0 +1,4 @@
+/* iOS permission prompts (LT-231). Keep in step with Info.plist (en). */
+"NSCameraUsageDescription" = "Lightor utilise l’appareil photo pour que vous puissiez photographier vos réalisations et les ajouter à la galerie de votre entreprise.";
+"NSPhotoLibraryUsageDescription" = "Lightor a besoin d’accéder à vos photos pour que vous puissiez ajouter des images de vos réalisations à la galerie de votre entreprise.";
+"NSPhotoLibraryAddUsageDescription" = "Lightor enregistre dans votre photothèque les images que vous exportez.";
