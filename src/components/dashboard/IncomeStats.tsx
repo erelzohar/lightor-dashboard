@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { Banknote, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Appointment } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
@@ -97,7 +97,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       count: monthCount,
       change: monthChange,
       changeLabel: t('incomeStats.vsLastMonth'),
-      icon: <DollarSign className="text-violet-500" size={20} />,
+      icon: <Banknote className="text-violet-500" size={20} />,
       iconBg: 'bg-violet-100 dark:bg-violet-900/30',
       accentColor: 'bg-violet-500',
       delay: 0.3,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, DollarSign, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
+import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { uploadImage } from '../services/imagesApi';
 import { AppointmentType, ClassSession } from '../types';
@@ -300,9 +300,9 @@ const AppointmentTypes: React.FC = () => {
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {isFormOpen
                 ? currentType
-                  ? `Editing "${currentType.name}"`
-                  : 'Fill in the details below'
-                : 'Click to add a new service'}
+                  ? t('appointmentTypes.editingNamed', { name: currentType.name })
+                  : t('appointmentTypes.fillDetails')
+                : t('appointmentTypes.tapToAdd')}
             </p>
           </div>
 
@@ -425,7 +425,7 @@ const AppointmentTypes: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <InputField
                         label={t('appointmentTypes.price')}
-                        icon={<DollarSign size={16} />}
+                        icon={<Banknote size={16} />}
                         prefix={
                           <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
                             $
@@ -586,7 +586,7 @@ const AppointmentTypes: React.FC = () => {
                           boxShadow: '0 8px 24px -8px rgba(139,92,246,0.6)',
                         }}
                       >
-                        <DollarSign size={14} />
+                        <Banknote size={14} />
                         {currentType ? t('common.save') : t('appointmentTypes.addNew')}
                       </button>
                     </div>
@@ -682,7 +682,7 @@ const AppointmentTypes: React.FC = () => {
                         ) : (
                           <>
                             <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                              <DollarSign size={11} className="text-green-400" />
+                              <Banknote size={11} className="text-green-400" />
                               {t('appointments.currencySymbol')}{type.price}
                             </span>
                             {isBookableService(type) ? (

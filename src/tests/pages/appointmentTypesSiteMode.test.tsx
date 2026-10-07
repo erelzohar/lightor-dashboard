@@ -198,3 +198,15 @@ describe('Services page — by site mode', () => {
     expect(input('durationMinutes')).toBeRequired();
   });
 });
+
+// LT-233: the form header's second line was hard-coded English, so the Hebrew
+// app read "Click to add a new service" (caught on the App Store screenshots).
+describe('Services page — form header', () => {
+  it('says every state through i18n', async () => {
+    answerTypes(() => [service({ price: '100' })]);
+    renderPage('book');
+
+    expect(await screen.findByText('appointmentTypes.tapToAdd')).toBeInTheDocument();
+    expect(screen.queryByText(/Click to add|Fill in the details|Editing "/)).toBeNull();
+  });
+});
