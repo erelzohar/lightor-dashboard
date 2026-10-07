@@ -4,6 +4,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { META_FEATURES_ENABLED } from '../../config/metaFeatures';
+import { canOfferPurchases } from '../../lib/platform';
 
 function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -328,7 +329,10 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                 </>
               )}
 
-              {/* Register link */}
+              {/* Register link. Not in the app (LT-233): register.lightor.app
+                  shows the plans with live prices and checkout, and a link to
+                  it is the steering App Store guideline 3.1.1 forbids. */}
+              {canOfferPurchases() && (
               <motion.p
                 className="text-center text-xs text-white/60 mt-4"
                 initial={{ opacity: 0 }}
@@ -348,6 +352,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                   <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signup:w-full transition-all duration-300" />
                 </a>
               </motion.p>
+              )}
             </form>
           </div>
         </div>
