@@ -204,12 +204,17 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Nothing to show yet: the welcome (and whatever notices ride with it)
+  // centres in the pane instead of sitting under the greeting with an empty
+  // screen below it.
+  const isEmpty = leadsSite ? leadsTotal === 0 : appointments.length === 0;
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-5"
+      className={`space-y-5 ${isEmpty ? 'flex-1 flex flex-col' : ''}`}
     >
       {/* Page Title */}
       <div className="mb-2">
@@ -236,9 +241,10 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      <div className={isEmpty ? 'flex-1 flex flex-col justify-center space-y-5' : 'space-y-5'}>
       {/* ── New account, no bookings (or, on a leads site, no inquiries) yet:
           Lighty says hello first ── */}
-      {(leadsSite ? leadsTotal === 0 : appointments.length === 0) && (
+      {isEmpty && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -561,6 +567,8 @@ const Dashboard: React.FC = () => {
           />
         </ErrorBoundaryWithLanguage>
       )}
+
+      </div>
 
       {/* Appointment Details Modal */}
       {selectedAppointment && (
