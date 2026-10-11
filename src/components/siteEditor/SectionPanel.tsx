@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2, Type } from 'lucide-react';
+import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, Trash2, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
@@ -16,6 +16,13 @@ interface SectionPanelProps<T> {
   fields: SiteField[];
   onUpdate: (next: T, mergeKey?: string) => void;
   onSelectField: (field: SiteField) => void;
+  /**
+   * LT-252: move the section one place — on a legacy page too, which the
+   * editor first turns into blocks. Without it a composed page moves its block.
+   */
+  onMove?: (by: -1 | 1) => void;
+  /** LT-252: open the add-section list, placed below this section. */
+  onAddBelow?: () => void;
 }
 
 const chip = (on: boolean) =>
@@ -30,7 +37,7 @@ const chip = (on: boolean) =>
  * the design token on a legacy one), whether it shows, its background and
  * place on a composed page, the fields inside it, and AI over all its texts.
  */
-function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSelectField }: SectionPanelProps<T>) {
+function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSelectField, onMove, onAddBelow }: SectionPanelProps<T>) {
   const { t, i18n } = useTranslation();
   const lang = vocabLang(i18n.language);
   const type = sectionType ?? section;
@@ -62,6 +69,12 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
     if (visiblePath) onUpdate(setAt(config, visiblePath, on));
     else if (block) onUpdate(patchBlock(config, block.id, { mod: { ...mod, hidden: on ? undefined : true } }));
   };
+
+  // The opening and the footer stay where they are; the navbar and the
+  // contact button are not in the page's order at all.
+  const inFlow = !def.outsideBlocks;
+  const pinned = type === 'hero' || type === 'footer';
+  const move = onMove ?? (composed && block ? (by: -1 | 1) => onUpdate(moveBlock(config, block.id, by)) : undefined);
 
   const textFields = fields.filter((f) => f.kind === 'text' && aiEditable(f.path));
   const aiFields = textFields.map((f) => ({
@@ -120,24 +133,42 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" className={chip(false)} onClick={() => onUpdate(moveBlock(config, block.id, -1))} aria-label={t('siteEditor.section.moveUp')}>
-              <span className="inline-flex items-center gap-1"><ArrowUp className="w-3.5 h-3.5" />{t('siteEditor.section.moveUp')}</span>
-            </button>
-            <button type="button" className={chip(false)} onClick={() => onUpdate(moveBlock(config, block.id, 1))} aria-label={t('siteEditor.section.moveDown')}>
-              <span className="inline-flex items-center gap-1"><ArrowDown className="w-3.5 h-3.5" />{t('siteEditor.section.moveDown')}</span>
-            </button>
-            {type !== 'hero' && type !== 'footer' && (
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-full text-xs font-medium border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400"
-                onClick={() => onUpdate(removeBlock(config, block.id))}
-              >
-                <span className="inline-flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" />{t('siteEditor.section.remove')}</span>
-              </button>
-            )}
-          </div>
         </>
+      )}
+
+      {inFlow && !pinned && (move || (composed && block)) && (
+        <div className="flex flex-wrap gap-2">
+          {move && (
+            <>
+              <button type="button" className={chip(false)} onClick={() => move(-1)} aria-label={t('siteEditor.section.moveUp')}>
+                <span className="inline-flex items-center gap-1"><ArrowUp className="w-3.5 h-3.5" />{t('siteEditor.section.moveUp')}</span>
+              </button>
+              <button type="button" className={chip(false)} onClick={() => move(1)} aria-label={t('siteEditor.section.moveDown')}>
+                <span className="inline-flex items-center gap-1"><ArrowDown className="w-3.5 h-3.5" />{t('siteEditor.section.moveDown')}</span>
+              </button>
+            </>
+          )}
+          {composed && block && (
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400"
+              onClick={() => onUpdate(removeBlock(config, block.id))}
+            >
+              <span className="inline-flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" />{t('siteEditor.section.remove')}</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {onAddBelow && inFlow && type !== 'footer' && (
+        <button
+          type="button"
+          onClick={onAddBelow}
+          className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/40 text-sm font-medium text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20"
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          {t('siteEditor.sections.addBelow')}
+        </button>
       )}
 
       {!def.variants && !canHide && (

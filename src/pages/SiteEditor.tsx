@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronLeft, ChevronRight, Loader2, Monitor, Palette, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
+  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Layers, Loader2, Monitor, Palette, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import type { AxiosError } from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -16,13 +17,17 @@ import globals from '../services/globals';
 import { removedStoredImages } from '../utils/aiReconcile';
 import { useDraft } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
-import { getAt, removeAt, setAt } from '../utils/editorPaths';
+import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
+import { addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
+import { aiService } from '../services/aiApi';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import TextPanel from '../components/siteEditor/TextPanel';
 import ImagePanel from '../components/siteEditor/ImagePanel';
 import SectionPanel from '../components/siteEditor/SectionPanel';
 import PagePanel from '../components/siteEditor/PagePanel';
+import SectionsPanel from '../components/siteEditor/SectionsPanel';
+import AddSectionPanel from '../components/siteEditor/AddSectionPanel';
 import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/labels';
 import AiBuilder from './AiBuilder';
 import type { WebConfig } from '../types';
@@ -85,6 +90,15 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
 
   // A request typed in the floating assistant (it still lands here until Lighty, phase 2).
   const [initialMessage] = useState(() => (location.state as { floatingMessage?: string } | null)?.floatingMessage);
+  // LT-252: with nothing selected the panel is the whole site — its sections, or its design.
+  const [siteTab, setSiteTab] = useState<'sections' | 'design'>(initialMessage ? 'design' : 'sections');
+  // The add-section list, placed below a section (`after`) or where each one belongs (null).
+  const [adding, setAdding] = useState<{ after: string | null } | null>(null);
+  // The section the AI is drafting for the owner.
+  const [drafting, setDrafting] = useState<string | null>(null);
+  // An add waits for its draft; it lands on the draft as it is by then.
+  const draftRef = useRef(draft.value);
+  draftRef.current = draft.value;
   useEffect(() => {
     if (initialMessage) {
       window.history.replaceState({}, '');
@@ -97,6 +111,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
 
   const select = useCallback((next: SiteSelection | null) => {
     setSelection(next);
+    setAdding(null);
     if (next) setPageOpen(false);
   }, []);
   // On a phone the panel opens over the lower screen: bring what was tapped to the top.
@@ -112,6 +127,89 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
 
   const update = useCallback((next: WebConfig, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
   const setField = (path: string, value: unknown) => update(setAt(draft.value, path, value), path);
+
+  // ── LT-252: the page's sections ──
+  const rows = useMemo(() => rowsOf(draft.value, bridge.layout), [draft.value, bridge.layout]);
+
+  // A selection whose section is gone (removed, or undone back to a legacy page) closes.
+  useEffect(() => {
+    const id = selection?.kind === 'section' ? selection.section : null;
+    if (!id || id === 'navbar' || id === 'contactButton') return;
+    const blocks = draft.value.blocks;
+    if (blocks?.length ? !blocks.some((b) => b.id === id) : /^b\d+$/.test(id)) setSelection(null);
+  }, [draft.value, selection]);
+
+  /**
+   * The draft with blocks — a legacy page turns into the blocks it is drawn
+   * as — with the selection following its section to its new block.
+   */
+  const blocksNow = () => {
+    const { config, idOf } = withBlocks(draftRef.current, bridge.layout);
+    const idFor = (section: string | null | undefined) => (section ? idOf[section] ?? section : null);
+    if (selection?.section && idOf[selection.section]) {
+      const id = idOf[selection.section];
+      const type = config.blocks?.find((b) => b.id === id)?.type ?? null;
+      setSelection((s) => (s ? { ...s, section: id, sectionType: type } : s));
+    }
+    return { config, idFor };
+  };
+
+  const selectRow = (row: SectionRow) => {
+    // A legacy page's sections are drawn under their own names until it has blocks.
+    const section = row.key ?? row.id;
+    const sectionType = row.key ?? row.type;
+    select({ kind: 'section', path: null, section, sectionType, fields: sectionFieldsFromConfig(draft.value, section, sectionType) });
+    bridge.scrollTo({ section, block: 'start' });
+  };
+
+  const toggleRow = (row: SectionRow) => {
+    const { config } = blocksNow();
+    const block = config.blocks?.find((b) => b.id === row.id);
+    if (!block) return;
+    const mod = { ...(block.mod ?? {}) };
+    if (mod.hidden) delete mod.hidden; else mod.hidden = true;
+    update(patchBlock(config, block.id, { mod }));
+  };
+
+  const moveRow = (row: SectionRow, to: number) => update(moveBlockTo(blocksNow().config, row.id, to));
+
+  /** The selected section one place up or down — never above the opening or below the footer. */
+  const moveSelected = (by: -1 | 1) => {
+    const { config, idFor } = blocksNow();
+    const blocks = config.blocks ?? [];
+    const id = idFor(selection?.section);
+    const at = blocks.findIndex((b) => b.id === id);
+    if (!id || at === -1) return;
+    const lo = blocks[0]?.type === 'hero' ? 1 : 0;
+    const hi = blocks[blocks.length - 1]?.type === 'footer' ? blocks.length - 2 : blocks.length - 1;
+    const to = Math.min(Math.max(at + by, lo), hi);
+    if (to !== at) update(moveBlockTo(config, id, to));
+    else if (config !== draftRef.current) update(config);
+  };
+
+  const addNewSection = async (type: string, at: number) => {
+    if (drafting || !availabilityOf(draftRef.current, type, rows.length).ok) return;
+    let content: Record<string, unknown> | null = null;
+    if (availabilityOf(draftRef.current, type, 0).source === 'ai') {
+      setDrafting(type);
+      try {
+        content = await aiService.draftSection(type);
+      } catch (err) {
+        // The section still comes, with its fields open for the owner.
+        const status = (err as AxiosError)?.response?.status;
+        toast.error(t(status === 429 ? 'siteEditor.sections.aiBudget' : 'siteEditor.sections.aiFailed'));
+      } finally {
+        setDrafting(null);
+      }
+    }
+    const { config } = blocksNow();
+    const added = addSection(config, type, at, content);
+    update(added.config);
+    select(added.openPath
+      ? { kind: 'text', path: added.openPath, section: added.id, sectionType: type }
+      : { kind: 'section', path: null, section: added.id, sectionType: type, fields: sectionFieldsFromConfig(added.config, added.id, type) });
+    bridge.scrollTo({ section: added.id, block: 'start' });
+  };
 
   // Undo / redo from the keyboard, unless the owner is typing in a field.
   useEffect(() => {
@@ -145,7 +243,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     if (saving) return;
     setSaving(true);
     try {
-      const d = draft.value;
+      // Empty FAQ items, reviews and steps left by an added section stay behind (LT-252).
+      const d = cleanForSave(draft.value);
       const before = baseRef.current;
       // Services first: the config's answer below brings them back populated.
       const changedServices = (d.appointmentTypes ?? []).filter((s) => {
@@ -191,6 +290,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const discard = async () => {
     setConfirmDiscard(false);
     setSelection(null);
+    setAdding(null);
     draft.reset(baseRef.current);
     await dropUnusedUploads(baseRef.current);
   };
@@ -213,16 +313,54 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   };
 
   const panel = () => {
-    if (!selection) return <PagePanel config={draft.value} onUpdate={update} initialMessage={initialMessage} />;
+    if (adding) {
+      return <AddSectionPanel config={draft.value} rows={rows} after={adding.after} drafting={drafting} onAdd={(type, at) => void addNewSection(type, at)} />;
+    }
+    if (!selection) {
+      const tab = (key: 'sections' | 'design', label: string) => (
+        <button
+          type="button"
+          role="tab"
+          aria-selected={siteTab === key}
+          onClick={() => setSiteTab(key)}
+          className={`h-9 rounded-full text-sm font-medium transition-colors ${siteTab === key ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
+        >
+          {label}
+        </button>
+      );
+      return (
+        <>
+          <div role="tablist" className="grid grid-cols-2 gap-1 p-1 mb-4 rounded-full bg-gray-100 dark:bg-slate-800">
+            {tab('sections', t('siteEditor.sections.tab'))}
+            {tab('design', t('siteEditor.pageSettings'))}
+          </div>
+          {siteTab === 'sections' ? (
+            <SectionsPanel
+              rows={rows}
+              selectedId={null}
+              onSelect={selectRow}
+              onToggleHidden={toggleRow}
+              onMove={moveRow}
+              onAdd={() => setAdding({ after: null })}
+            />
+          ) : (
+            <PagePanel config={draft.value} onUpdate={update} initialMessage={initialMessage} />
+          )}
+        </>
+      );
+    }
     if (selection.kind === 'section' && selection.section) {
+      const section = selection.section;
       return (
         <SectionPanel
           config={draft.value}
-          section={selection.section}
+          section={section}
           sectionType={selection.sectionType}
-          fields={selection.fields ?? sectionFieldsFromConfig(draft.value, selection.section, selection.sectionType)}
+          fields={selection.fields ?? sectionFieldsFromConfig(draft.value, section, selection.sectionType)}
           onUpdate={update}
           onSelectField={openField}
+          onMove={moveSelected}
+          onAddBelow={() => setAdding({ after: section })}
         />
       );
     }
@@ -254,13 +392,40 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     );
   };
 
-  const heading = !selection
-    ? t('siteEditor.pageSettings')
-    : selection.kind === 'section'
-      ? sectionLabel(selection.sectionType ?? selection.section, lang)
-      : fieldLabel(t, selection.path ?? '');
+  const heading = adding
+    ? t('siteEditor.sections.add')
+    : !selection
+      ? t('siteEditor.site')
+      : selection.kind === 'section'
+        ? sectionLabel(selection.sectionType ?? selection.section, lang)
+        : fieldLabel(t, selection.path ?? '');
   const Back = direction === 'rtl' ? ChevronRight : ChevronLeft;
-  const sheetOpen = !!selection || pageOpen;
+  const sheetOpen = !!selection || pageOpen || !!adding;
+  // Back: from the add list to where it opened, from a field to its section, from a section to the site's sections.
+  const goBack = () => {
+    if (adding) setAdding(null);
+    else if (selection && selection.kind !== 'section' && selection.section) backToSection();
+    else {
+      setSelection(null);
+      setSiteTab('sections');
+      setPageOpen(true);
+    }
+  };
+  const closePanel = () => {
+    setSelection(null);
+    setAdding(null);
+    setPageOpen(false);
+  };
+  // Another panel opens at its top (on a phone the sheet kept the last one's
+  // scroll), and unfolded: on a phone the sheet folds down to its header, to
+  // see the page behind it (LT-252).
+  const panelScrollRef = useRef<HTMLDivElement>(null);
+  const [folded, setFolded] = useState(false);
+  const panelKey = `${adding ? 'add' : ''}|${selection?.kind ?? ''}|${selection?.section ?? ''}|${selection?.path ?? ''}|${siteTab}`;
+  useEffect(() => {
+    if (panelScrollRef.current) panelScrollRef.current.scrollTop = 0;
+    setFolded(false);
+  }, [panelKey]);
   const iconButton = 'p-2 rounded-full text-gray-500 dark:text-slate-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20 disabled:opacity-40 disabled:hover:bg-transparent';
 
   return (
@@ -287,8 +452,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           <button type="button" className={iconButton} onClick={draft.redo} disabled={!draft.canRedo} title={t('siteEditor.redo')} aria-label={t('siteEditor.redo')}>
             <Redo2 className="w-4 h-4" />
           </button>
-          <button type="button" className={`${iconButton} md:hidden`} onClick={() => { setSelection(null); setPageOpen((v) => !v); }} title={t('siteEditor.pageSettings')} aria-label={t('siteEditor.pageSettings')}>
-            <Palette className="w-4 h-4" />
+          <button type="button" className={`${iconButton} md:hidden`} onClick={() => { setSelection(null); setAdding(null); setPageOpen((v) => !v); }} title={t('siteEditor.site')} aria-label={t('siteEditor.site')}>
+            <Layers className="w-4 h-4" />
           </button>
           <button type="button" className={iconButton} onClick={() => setConfirmDiscard(true)} disabled={!draft.dirty || saving} title={t('siteEditor.discard')} aria-label={t('siteEditor.discard')}>
             <RotateCcw className="w-4 h-4" />
@@ -340,8 +505,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         >
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700/50 shrink-0">
             <div className="flex items-center gap-1 min-w-0">
-              {selection && selection.kind !== 'section' && selection.section && (
-                <button type="button" onClick={backToSection} className={iconButton} title={t('siteEditor.backToSection')} aria-label={t('siteEditor.backToSection')}>
+              {(adding || selection) && (
+                <button type="button" onClick={goBack} className={iconButton} title={t('siteEditor.back')} aria-label={t('siteEditor.back')}>
                   <Back className="w-4 h-4" />
                 </button>
               )}
@@ -352,14 +517,26 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
                 <h2 className="font-semibold text-gray-800 dark:text-white truncate">{heading}</h2>
               </div>
             </div>
-            {(selection || pageOpen) && (
-              <button type="button" className={iconButton} onClick={() => { setSelection(null); setPageOpen(false); }} title={t('siteEditor.close')} aria-label={t('siteEditor.close')}>
-                <X className="w-4 h-4" />
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                className={`${iconButton} md:hidden`}
+                onClick={() => setFolded((f) => !f)}
+                aria-expanded={!folded}
+                title={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
+                aria-label={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
+              >
+                {folded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
-            )}
+              {(selection || pageOpen || adding) && (
+                <button type="button" className={iconButton} onClick={closePanel} title={t('siteEditor.close')} aria-label={t('siteEditor.close')}>
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
-            {!selection && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
+          <div ref={panelScrollRef} className={`flex-1 overflow-y-auto p-4 ${folded ? 'hidden md:block' : ''}`}>
+            {!selection && !adding && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
             {panel()}
           </div>
         </aside>

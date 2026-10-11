@@ -1332,6 +1332,49 @@
       "changed": "Changed: {{list}}",
       "nothingChanged": "Nothing changed.",
       "look": "the design"
-    }
+    },
+    "site": "Your site",
+    "back": "Back",
+    "sections": {
+      "tab": "Sections",
+      "hint": "Drag the handle to reorder. Tap a section to see it on your site.",
+      "add": "Add a section",
+      "addBelow": "Add a section below",
+      "where": "Where",
+      "recommended": "Where each section fits best",
+      "after": "After {{name}}",
+      "groups": {
+        "content": "Content",
+        "images": "Images",
+        "services": "Services and booking",
+        "info": "Business details"
+      },
+      "badge": {
+        "ai": "AI writes a draft",
+        "owner": "You write it"
+      },
+      "drafting": "The AI is writing a draft…",
+      "aiFailed": "The AI couldn't write a draft. The section is added; fill it in yourself.",
+      "aiBudget": "Your monthly AI budget is used up. The section is added; fill it in yourself.",
+      "hide": "Hide {{name}}",
+      "show": "Show {{name}}",
+      "drag": "Drag {{name}}",
+      "locked": "{{name}} stays in place",
+      "hiddenTag": "Hidden",
+      "reasons": {
+        "max": "Your site already has {{n}} sections, the most it can. Remove one to add another.",
+        "noPhotos": "Needs photos in your gallery first",
+        "twoPhotos": "Needs at least two photos in your gallery",
+        "noServices": "Needs services first",
+        "noHours": "Needs opening hours first",
+        "noAddress": "Needs an address in Settings first",
+        "noSocial": "Needs a social link in Settings first",
+        "noLogo": "Needs a logo first",
+        "leadsSite": "Not on a leads site",
+        "noBookingText": "Needs a booking section description first"
+      }
+    },
+    "fold": "Fold the panel",
+    "unfold": "Unfold the panel"
   }
 }

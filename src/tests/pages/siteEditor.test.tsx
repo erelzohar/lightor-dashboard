@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
+import toast from 'react-hot-toast';
 import { MemoryRouter } from 'react-router-dom';
 import SiteEditor from '../../pages/SiteEditor';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
@@ -25,7 +26,7 @@ vi.mock('../../services/entitlementsApi', () => ({ fetchMyEntitlements: vi.fn(as
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn(), deleteImage: vi.fn(async () => undefined) }));
 vi.mock('../../services/appointmentsApi', () => ({ updateAppointmentType: vi.fn(async () => ({})) }));
 vi.mock('../../services/aiApi', () => ({
-  aiService: { editElement: vi.fn(), editSite: vi.fn() },
+  aiService: { editElement: vi.fn(), editSite: vi.fn(), draftSection: vi.fn() },
   trimHistory: (m: unknown[]) => m,
 }));
 
@@ -50,7 +51,7 @@ const saved = {
   blocks: [{ id: 'b1', type: 'hero' }, { id: 'b2', type: 'faq', variant: 'lines' }],
 } as unknown as WebConfig;
 
-const state = { webConfig: { data: saved, loading: false, error: null as string | null } };
+const state = { webConfig: { data: saved as WebConfig, loading: false, error: null as string | null } };
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: typeof state) => unknown): unknown => selector(state),
 }));
@@ -74,9 +75,13 @@ const fromSite = (data: unknown, origin = siteOrigin()) =>
 describe('the site editor (LT-249)', () => {
   let toSite: ReturnType<typeof vi.fn>;
 
+  afterEach(() => { state.webConfig.data = saved; });
+
   beforeEach(() => {
     vi.mocked(updateWebConfig).mockClear();
     vi.mocked(aiService.editElement).mockReset();
+    vi.mocked(aiService.draftSection).mockReset();
+    vi.mocked(toast.error).mockClear();
     dispatchMock.mockReset().mockImplementation((action: { type: string; payload?: Record<string, unknown> }) => {
       if (action.type === 'webConfig/update') {
         return Promise.resolve({ type: 'webConfig/update/fulfilled', payload: { ...saved, ...action.payload } });
@@ -186,4 +191,98 @@ describe('the site editor (LT-249)', () => {
     expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.faqAnswer:1' })).toHaveValue('A');
     expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: 'components.faq.items.0.answer', section: null, block: 'center' });
   });
+
+  // ── LT-252: the page's sections ──
+  const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig }).config;
+  const row = (id: string) => within(screen.getByTestId(`section-row-${id}`));
+
+  it("with nothing selected, lists the page's sections; a tap selects one and shows it on the site", async () => {
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    expect(screen.getByRole('tab', { name: 'siteEditor.sections.tab' })).toHaveAttribute('aria-selected', 'true');
+    expect(row('b1').getByText('פתיחה')).toBeInTheDocument();
+    expect(row('b2').getByText('שאלות נפוצות')).toBeInTheDocument();
+
+    fireEvent.click(row('b2').getByText('שאלות נפוצות'));
+    expect(await screen.findByTestId('section-panel')).toBeInTheDocument();
+    expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: null, section: 'b2', block: 'start' });
+
+    // Back from the section is the list again.
+    fireEvent.click(screen.getByLabelText('siteEditor.back'));
+    expect(await screen.findByTestId('sections-panel')).toBeInTheDocument();
+
+    // The eye hides it (the block stays, marked).
+    fireEvent.click(row('b2').getByLabelText('siteEditor.sections.hide'));
+    await waitFor(() => expect(lastConfig().blocks?.find((b) => b.id === 'b2')?.mod).toEqual({ hidden: true }));
+    expect(row('b2').getByText('siteEditor.sections.hiddenTag')).toBeInTheDocument();
+  });
+
+  it('adds a section the AI drafts, where it belongs, and selects it', async () => {
+    vi.mocked(aiService.draftSection).mockResolvedValue({ title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] });
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    fireEvent.click(screen.getByText('siteEditor.sections.add'));
+    const list = await screen.findByTestId('add-section-panel');
+    // The page has an FAQ already: not offered again. A gallery needs photos first.
+    expect(within(list).queryByText('שאלות נפוצות')).toBeNull();
+    expect(within(list).getByText('גלריה').closest('button')).toBeDisabled();
+    expect(within(list).getByText('siteEditor.sections.reasons.noPhotos')).toBeInTheDocument();
+
+    fireEvent.click(within(list).getByText('שלבים'));
+    expect(aiService.draftSection).toHaveBeenCalledWith('process');
+    await waitFor(() => expect(lastConfig().blocks?.map((b) => b.id)).toEqual(['b1', 'b3', 'b2']));
+    expect(lastConfig().blocks?.[1]).toEqual({ id: 'b3', type: 'process', variant: 'rail', props: { title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] } });
+    expect(await screen.findByTestId('section-panel')).toBeInTheDocument();
+    expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: null, section: 'b3', block: 'start' });
+  });
+
+  it("opens the owner's fields when the AI cannot draft, and reviews are always the owner's; Save leaves empty ones out", async () => {
+    vi.mocked(aiService.draftSection).mockRejectedValue({ response: { status: 429 } });
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    fireEvent.click(screen.getByText('siteEditor.sections.add'));
+    fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('שלבים'));
+    expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.stepTitle:1' })).toHaveValue('');
+    expect(toast.error).toHaveBeenCalledWith('siteEditor.sections.aiBudget');
+
+    fireEvent.click(screen.getByLabelText('siteEditor.close'));
+    fireEvent.click(screen.getByText('siteEditor.sections.add'));
+    fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('המלצות'));
+    expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.quoteText:1' })).toHaveValue('');
+    expect(aiService.draftSection).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText('siteEditor.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(updateWebConfig).mock.calls[0][0] as Partial<WebConfig>;
+    expect(payload.components?.testimonials?.items).toEqual([]);
+    expect(payload.blocks?.find((b) => b.type === 'process')).toBeUndefined();
+  });
+
+  it('a legacy page: listed as the site draws it, and turned into those blocks by the first change', async () => {
+    state.webConfig.data = { ...saved, blocks: undefined };
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await fromSite({
+      type: 'LT_LAYOUT',
+      blocks: [
+        { key: 'hero', type: 'hero', source: 'hero' },
+        { key: 'faq', type: 'faq', source: 'faq' },
+        { key: 'footer', type: 'footer', source: 'footer' },
+      ],
+    });
+    expect(row('b3').getByText('כותרת תחתונה')).toBeInTheDocument();
+
+    // Before any change, a section is selected by its legacy name.
+    fireEvent.click(row('b2').getByText('שאלות נפוצות'));
+    expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: null, section: 'faq', block: 'start' });
+    fireEvent.click(screen.getByLabelText('siteEditor.back'));
+
+    fireEvent.click(row('b2').getByLabelText('siteEditor.sections.hide'));
+    await waitFor(() => expect(lastConfig().blocks).toEqual([
+      { id: 'b1', type: 'hero', source: 'hero' },
+      { id: 'b2', type: 'faq', source: 'faq', mod: { hidden: true } },
+      { id: 'b3', type: 'footer', source: 'footer' },
+    ]));
+  });
 });
+

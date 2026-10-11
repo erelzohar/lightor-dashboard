@@ -1332,6 +1332,49 @@
       "changed": "Cambiado: {{list}}",
       "nothingChanged": "No cambió nada.",
       "look": "el diseño"
-    }
+    },
+    "site": "Tu sitio",
+    "back": "Atrás",
+    "sections": {
+      "tab": "Secciones",
+      "hint": "Arrastra el asa para reordenar. Toca una sección para verla en tu sitio.",
+      "add": "Añadir una sección",
+      "addBelow": "Añadir una sección debajo",
+      "where": "Dónde",
+      "recommended": "Donde mejor encaja cada sección",
+      "after": "Después de {{name}}",
+      "groups": {
+        "content": "Contenido",
+        "images": "Imágenes",
+        "services": "Servicios y reservas",
+        "info": "Datos del negocio"
+      },
+      "badge": {
+        "ai": "La IA escribe un borrador",
+        "owner": "Lo escribes tú"
+      },
+      "drafting": "La IA está escribiendo un borrador…",
+      "aiFailed": "La IA no pudo escribir un borrador. La sección se añadió; complétala tú.",
+      "aiBudget": "Se agotó tu presupuesto de IA del mes. La sección se añadió; complétala tú.",
+      "hide": "Ocultar {{name}}",
+      "show": "Mostrar {{name}}",
+      "drag": "Arrastrar {{name}}",
+      "locked": "{{name}} se queda en su sitio",
+      "hiddenTag": "Oculto",
+      "reasons": {
+        "max": "Tu sitio ya tiene {{n}} secciones, el máximo. Quita una para añadir otra.",
+        "noPhotos": "Primero necesita fotos en la galería",
+        "twoPhotos": "Necesita al menos dos fotos en la galería",
+        "noServices": "Primero necesita servicios",
+        "noHours": "Primero necesita un horario",
+        "noAddress": "Primero necesita una dirección en Ajustes",
+        "noSocial": "Primero necesita un enlace a una red social en Ajustes",
+        "noLogo": "Primero necesita un logo",
+        "leadsSite": "No en un sitio de contactos",
+        "noBookingText": "Primero necesita una descripción para la reserva"
+      }
+    },
+    "fold": "Plegar el panel",
+    "unfold": "Desplegar el panel"
   }
 }

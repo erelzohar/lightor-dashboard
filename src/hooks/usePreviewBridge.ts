@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import type { LayoutBlock } from '../utils/siteSections';
 
 /**
  * LT-249 — the editor's side of the bridge with the public site in the
@@ -38,6 +39,8 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
   // reload) says it again and gets the draft and the editor again.
   const [readySeq, setReadySeq] = useState(0);
   const ready = readySeq > 0;
+  // LT-252: a legacy page's sections as the blocks it would be (front LT_LAYOUT).
+  const [layout, setLayout] = useState<LayoutBlock[] | null>(null);
   const onSelectRef = useRef(onSelect);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
 
@@ -61,6 +64,11 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
         });
       } else if (data?.type === 'LT_DESELECT') {
         onSelectRef.current(null);
+      } else if (data?.type === 'LT_LAYOUT' && Array.isArray(data.blocks)) {
+        setLayout((data.blocks as unknown[]).filter((b): b is LayoutBlock => {
+          const r = b as Record<string, unknown> | null;
+          return !!r && typeof r.key === 'string' && typeof r.type === 'string';
+        }));
       }
     };
     window.addEventListener('message', onMessage);
@@ -99,5 +107,5 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
     post({ type: 'LT_SCROLL_TO', path: target.path ?? null, section: target.section ?? null, ...(target.block ? { block: target.block } : {}) });
   }, [post]);
 
-  return { ready, onLoad, reloading, scrollTo };
+  return { ready, onLoad, reloading, scrollTo, layout };
 }

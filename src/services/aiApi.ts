@@ -236,6 +236,19 @@ export const aiService = {
     );
     return response.data.data;
   },
+
+  /**
+   * LT-252: the first draft of a section the site editor adds — written by
+   * the server from the site's own facts. 422 = nothing in the draft held,
+   * 429 = the AI budget is spent; either way the owner fills it in.
+   */
+  draftSection: async (type: string): Promise<Record<string, unknown>> => {
+    const response = await apiClient.post<{ success: boolean; data: { content: Record<string, unknown> } }>(
+      `${globals.aiUrl}section-draft`,
+      { type }
+    );
+    return response.data.data.content;
+  },
 };
 
 export interface ElementField {

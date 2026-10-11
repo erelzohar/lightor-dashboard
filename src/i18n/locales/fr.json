@@ -1332,6 +1332,49 @@
       "changed": "Modifié : {{list}}",
       "nothingChanged": "Rien n'a changé.",
       "look": "le design"
-    }
+    },
+    "site": "Votre site",
+    "back": "Retour",
+    "sections": {
+      "tab": "Sections",
+      "hint": "Faites glisser la poignée pour réordonner. Touchez une section pour la voir sur votre site.",
+      "add": "Ajouter une section",
+      "addBelow": "Ajouter une section en dessous",
+      "where": "Où",
+      "recommended": "À la meilleure place pour chaque section",
+      "after": "Après {{name}}",
+      "groups": {
+        "content": "Contenu",
+        "images": "Images",
+        "services": "Services et réservation",
+        "info": "Infos de l'entreprise"
+      },
+      "badge": {
+        "ai": "L'IA rédige un brouillon",
+        "owner": "Vous l'écrivez"
+      },
+      "drafting": "L'IA rédige un brouillon…",
+      "aiFailed": "L'IA n'a pas pu rédiger de brouillon. La section est ajoutée : remplissez-la vous-même.",
+      "aiBudget": "Votre budget IA du mois est épuisé. La section est ajoutée : remplissez-la vous-même.",
+      "hide": "Masquer {{name}}",
+      "show": "Afficher {{name}}",
+      "drag": "Déplacer {{name}}",
+      "locked": "{{name}} reste à sa place",
+      "hiddenTag": "Masqué",
+      "reasons": {
+        "max": "Votre site a déjà {{n}} sections, le maximum. Retirez-en une pour en ajouter une autre.",
+        "noPhotos": "Il faut d'abord des photos dans la galerie",
+        "twoPhotos": "Il faut au moins deux photos dans la galerie",
+        "noServices": "Il faut d'abord des services",
+        "noHours": "Il faut d'abord des horaires",
+        "noAddress": "Il faut d'abord une adresse dans les réglages",
+        "noSocial": "Il faut d'abord un lien de réseau social dans les réglages",
+        "noLogo": "Il faut d'abord un logo",
+        "leadsSite": "Pas sur un site de prospects",
+        "noBookingText": "Il faut d'abord une description pour la réservation"
+      }
+    },
+    "fold": "Réduire le panneau",
+    "unfold": "Agrandir le panneau"
   }
 }

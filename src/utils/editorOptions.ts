@@ -198,7 +198,7 @@ export const SECTIONS: Record<string, SectionDef> = {
   interlude: { label: { he: 'תמונה מפרידה', en: 'Photo break' }, variants: ['photo', 'split'] },
   'booking-band': { label: { he: 'רצועת הזמנה', en: 'Booking band' } },
   bookingBand: { label: { he: 'רצועת הזמנה', en: 'Booking band' }, variants: ['plain', 'chips'] },
-  ticker: { label: { he: 'טיקר', en: 'Ticker' } },
+  ticker: { label: { he: 'רצועת שירותים', en: 'Services strip' } },
   announcement: { label: { he: 'הודעה', en: 'Announcement' } },
   manifesto: { label: { he: 'הצהרה', en: 'Statement' } },
   stats: { label: { he: 'מספרים', en: 'Numbers' } },
@@ -210,6 +210,34 @@ export const SECTIONS: Record<string, SectionDef> = {
   mapStrip: { label: { he: 'מפה', en: 'Map' } },
   logoMark: { label: { he: 'לוגו', en: 'Logo' } },
   social: { label: { he: 'רשתות חברתיות', en: 'Social' } },
+};
+
+/** LT-252: one line on what each section is, in the add-section list. */
+export const SECTION_HINTS: Named = {
+  intro: { he: 'כמה מילים על העסק', en: 'A few words about the business' },
+  features: { he: 'מה מייחד אתכם', en: 'What sets you apart' },
+  faq: { he: 'שאלות ותשובות ללקוחות', en: 'Questions and answers for customers' },
+  process: { he: 'איך זה עובד, צעד אחר צעד', en: 'How it works, step by step' },
+  quote: { he: 'מה הלקוחות אומרים', en: 'What customers say' },
+  stats: { he: 'מספרים בולטים על העסק', en: 'Standout numbers about the business' },
+  manifesto: { he: 'משפט גדול שמסכם את העסק', en: 'One big line that sums you up' },
+  pullQuote: { he: 'משפט מודגש בקול שלכם', en: 'A highlighted line in your voice' },
+  announcement: { he: 'שורה בראש הדף: מבצע, חדשות', en: 'A line at the top: an offer, news' },
+  gallery: { he: 'התמונות מהגלריה', en: 'Your gallery photos' },
+  interlude: { he: 'תמונה רחבה בין אזורים', en: 'A wide photo between sections' },
+  photoPair: { he: 'שתי תמונות זו לצד זו', en: 'Two photos side by side' },
+  beforeAfter: { he: 'השוואה בין שתי תמונות', en: 'Two photos compared' },
+  ledger: { he: 'השירותים והמחירים ברשימה', en: 'Your services and prices, listed' },
+  priceCards: { he: 'השירותים ככרטיסים', en: 'Your services as cards' },
+  ticker: { he: 'שמות השירותים בפס נע', en: 'Service names in a moving strip' },
+  schedule: { he: 'יומן קביעת התורים', en: 'The booking calendar' },
+  bookingBand: { he: 'רצועה שמזמינה לקבוע תור', en: 'A band that invites booking' },
+  contact: { he: 'טופס ופרטי התקשרות', en: 'A form and your contact details' },
+  hours: { he: 'השעות שהגדרתם', en: 'The hours you set' },
+  mapStrip: { he: 'מפה לפי הכתובת', en: 'A map of your address' },
+  social: { he: 'הקישורים לרשתות', en: 'Your social links' },
+  logoMark: { he: 'הלוגו בגדול', en: 'Your logo, large' },
+  footer: { he: 'סוף הדף', en: 'The bottom of the page' },
 };
 
 /** A block variant that stands for "the default look" — stored as no variant at all. */

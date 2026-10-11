@@ -1,0 +1,35 @@
+import {
+  ArrowLeftRight, BarChart3, BadgeCheck, CalendarCheck, CalendarClock, Clock, Columns2, HelpCircle, Image, Images, Info,
+  LayoutGrid, ListOrdered, MapPin, Megaphone, MessageSquareQuote, MoveHorizontal, PanelBottom, PanelTop, Phone, Quote,
+  Receipt, Share2, Sparkles, Type, type LucideIcon,
+} from 'lucide-react';
+
+/** LT-252: an icon per section type, in the sections list and the add list. */
+export const SECTION_ICONS: Record<string, LucideIcon> = {
+  hero: PanelTop,
+  intro: Info,
+  features: Sparkles,
+  faq: HelpCircle,
+  process: ListOrdered,
+  quote: MessageSquareQuote,
+  stats: BarChart3,
+  manifesto: Type,
+  pullQuote: Quote,
+  announcement: Megaphone,
+  gallery: Images,
+  interlude: Image,
+  photoPair: Columns2,
+  beforeAfter: ArrowLeftRight,
+  ledger: Receipt,
+  priceCards: LayoutGrid,
+  ticker: MoveHorizontal,
+  schedule: CalendarCheck,
+  bookingBand: CalendarClock,
+  contact: Phone,
+  visit: Phone,
+  hours: Clock,
+  mapStrip: MapPin,
+  social: Share2,
+  logoMark: BadgeCheck,
+  footer: PanelBottom,
+};
