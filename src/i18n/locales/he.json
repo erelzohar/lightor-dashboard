@@ -46,7 +46,8 @@
     "adminPanel": "פאנל ניהול",
     "customers": "לקוחות",
     "leads": "פניות",
-    "openingHours": "שעות פעילות"
+    "openingHours": "שעות פעילות",
+    "siteDesign": "עיצוב האתר"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -1204,6 +1205,132 @@
       "loadFailed": "לא הצלחנו לטעון את הפניות",
       "saveFailed": "לא הצלחנו לעדכן את הפנייה",
       "deleteFailed": "לא הצלחנו למחוק את הפנייה"
+    }
+  },
+  "siteEditor": {
+    "title": "עיצוב האתר",
+    "desktop": "מחשב",
+    "phone": "טלפון",
+    "undo": "ביטול פעולה",
+    "redo": "חזרה על פעולה",
+    "save": "שמירה ופרסום",
+    "saving": "שומר…",
+    "saved": "נשמר",
+    "saveFailed": "השמירה נכשלה, נסו שוב",
+    "discard": "ביטול השינויים",
+    "discardTitle": "לבטל את השינויים?",
+    "discardBody": "כל השינויים שלא נשמרו יימחקו והאתר יחזור למה שפורסם.",
+    "unsaved": "יש שינויים שלא נשמרו",
+    "loading": "טוען את האתר…",
+    "previewTitle": "תצוגה מקדימה של האתר",
+    "hint": "לחצו על כל טקסט, תמונה או אזור באתר כדי לערוך אותו.",
+    "pageSettings": "עיצוב כללי",
+    "close": "סגירה",
+    "backToSection": "לכל האזור",
+    "fields": {
+      "heroTitle": "כותרת ראשית",
+      "heroSubtitle": "כותרת משנה",
+      "heroDescription": "תיאור",
+      "heroCta": "טקסט הכפתור",
+      "heroStamp": "חותמת",
+      "heroImage": "תמונה ראשית",
+      "sectionTitle": "כותרת האזור",
+      "sectionDescription": "תיאור האזור",
+      "aboutIntro": "פסקת פתיחה",
+      "aboutMission": "פסקה שנייה",
+      "featureTitle": "יתרון {{n}} – כותרת",
+      "featureDescription": "יתרון {{n}} – תיאור",
+      "galleryImage": "תמונה {{n}} בגלריה",
+      "galleryTitle": "תמונה {{n}} – כותרת",
+      "galleryDescription": "תמונה {{n}} – תיאור",
+      "quoteText": "המלצה {{n}}",
+      "quoteName": "המלצה {{n}} – שם",
+      "faqQuestion": "שאלה {{n}}",
+      "faqAnswer": "תשובה {{n}}",
+      "footerDescription": "טקסט בתחתית",
+      "popupText": "הודעה קופצת",
+      "blockText": "טקסט",
+      "blockAttribution": "חתימה",
+      "blockTitle": "כותרת",
+      "blockImage": "תמונה",
+      "statValue": "מספר {{n}}",
+      "statLabel": "מספר {{n}} – תיאור",
+      "stepTitle": "שלב {{n}}",
+      "stepText": "שלב {{n}} – תיאור",
+      "serviceName": "שם השירות",
+      "servicePrice": "מחיר",
+      "serviceImage": "תמונת השירות",
+      "businessName": "שם העסק",
+      "logo": "לוגו",
+      "text": "טקסט"
+    },
+    "text": {
+      "count": "{{count}}/{{max}}"
+    },
+    "ai": {
+      "title": "עזרה מ-AI",
+      "placeholder": "מה לשנות? למשל: תוסיף שיש חניה",
+      "send": "החלה",
+      "working": "חושב…",
+      "done": "עודכן",
+      "noChange": "ה-AI השאיר את הטקסט כמו שהוא",
+      "failed": "זה לא הצליח, נסו שוב",
+      "budget": "מכסת ה-AI החודשית נגמרה",
+      "sectionHint": "ה-AI ישנה רק את הטקסטים של האזור הזה.",
+      "usage": "השתמשת ב-{{percent}}% ממכסת ה-AI החודשית",
+      "quick": {
+        "shorter": "קצר יותר",
+        "warmer": "חם יותר",
+        "formal": "רשמי יותר",
+        "fix": "תיקון ניסוח"
+      },
+      "ask": {
+        "shorter": "קצר את הטקסט",
+        "warmer": "נסח את הטקסט בטון חם ואישי יותר",
+        "formal": "נסח את הטקסט בטון רשמי ומקצועי יותר",
+        "fix": "תקן את הניסוח, הדקדוק והפיסוק בלי לשנות את התוכן"
+      }
+    },
+    "image": {
+      "replace": "החלפת תמונה",
+      "uploading": "מעלה…",
+      "choose": "או בחרו תמונה שכבר באתר:",
+      "use": "שימוש בתמונה הזו",
+      "removeFromGallery": "הסרה מהגלריה",
+      "uploadFailed": "ההעלאה נכשלה, נסו שוב"
+    },
+    "section": {
+      "layout": "סגנון",
+      "visible": "מוצג באתר",
+      "tone": "רקע",
+      "tone_bg": "רקע ראשי",
+      "tone_surface": "רקע משני",
+      "dark": "כהה",
+      "moveUp": "למעלה",
+      "moveDown": "למטה",
+      "remove": "הסרת האזור",
+      "fields": "טקסטים ותמונות באזור",
+      "noOptions": "לאזור הזה אין אפשרויות עיצוב."
+    },
+    "theme": {
+      "preset": "סגנון האתר",
+      "pickPreset": "בחירת סגנון",
+      "presetHint": "בחירת סגנון מחליפה את כל העיצוב.",
+      "byStyle": "לפי הסגנון",
+      "color": "צבע ראשי",
+      "headingFont": "פונט כותרות",
+      "bodyFont": "פונט טקסט",
+      "buttons": "כפתורים",
+      "corners": "פינות",
+      "cards": "כרטיסים",
+      "mode": "מצב תצוגה"
+    },
+    "chat": {
+      "title": "שינוי כללי עם AI",
+      "placeholder": "מה לשנות באתר?",
+      "changed": "שונה: {{list}}",
+      "nothingChanged": "לא השתנה כלום.",
+      "look": "העיצוב"
     }
   }
 }

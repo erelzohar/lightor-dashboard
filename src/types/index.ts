@@ -122,6 +122,20 @@ export interface ComponentsConfig {
   footer: FooterConfig;
   introPopup: IntroPopupConfig;
   contactButton: ContactButtonConfig;
+  /** Optional sections (LT-086); absent on older sites. */
+  testimonials?: { visible: boolean; title: string; items: { text: string; name: string }[] };
+  faq?: { visible: boolean; title: string; items: { question: string; answer: string }[] };
+  services?: { title?: string };
+}
+
+/** One section of a composed page (LT-133); the site editor selects and edits blocks by id (LT-249). */
+export interface SiteBlock {
+  id: string;
+  type: string;
+  variant?: string;
+  source?: string;
+  props?: Record<string, unknown>;
+  mod?: Record<string, unknown>;
 }
 export interface Vacation {
   _id?: string;
@@ -222,6 +236,10 @@ export interface WebConfig {
   social: Social;
   pallete: Palette;
   components: ComponentsConfig;
+  /** Design tokens (presets, fonts, layouts); the public site expands the preset. */
+  design?: Record<string, string | undefined>;
+  /** A composed page's sections, in order (absent = the legacy fixed order). */
+  blocks?: SiteBlock[];
 }
 
 export interface User {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, UsersRound, Calendar, Menu, Sparkles, Inbox, Tag } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, UsersRound, Calendar, Menu, Palette, Inbox, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
@@ -40,7 +40,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   const tabs = isRestricted
     ? [
         { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
-        { path: '/ai', Icon: Sparkles, label: t('common.aiBuilder') },
+        { path: '/design', Icon: Palette, label: t('common.siteDesign') },
       ]
     : leadsSite
       ? [

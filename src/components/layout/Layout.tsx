@@ -15,7 +15,7 @@ import { bindNotificationTaps } from '../../services/pushClient';
 // Pages that deliberately bleed to the edges: they already cancel the
 // layout's own padding with negative margins and size themselves, so the
 // shared bottom padding would only add a dead gap under them.
-const FULL_BLEED_ROUTES = ['/ai'];
+const FULL_BLEED_ROUTES = ['/design'];
 
 const Layout: React.FC = () => {
   const { pathname } = useLocation();
@@ -86,7 +86,7 @@ const Layout: React.FC = () => {
     if (isRestricted) {
       // No webConfig yet — just navigate to AI builder, don't advance status
       setWelcomeDismissed(true);
-      navigate('/ai');
+      navigate('/design');
       return;
     }
     // Has existing webConfig — advance status and go to dashboard
@@ -129,10 +129,11 @@ const Layout: React.FC = () => {
         />
       )}
 
-      {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && (
+      {/* LT-249: not over the site editor, which has its own AI in the panel. */}
+      {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && pathname !== '/design' && (
         <FloatingAiAssistant
           direction={direction}
-          onSend={(msg) => navigate('/ai', { state: { floatingMessage: msg } })}
+          onSend={(msg) => navigate('/design', { state: { floatingMessage: msg } })}
         />
       )}
 

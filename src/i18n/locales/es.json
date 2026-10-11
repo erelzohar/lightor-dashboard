@@ -46,7 +46,8 @@
     "adminPanel": "Panel de administración",
     "customers": "Clientes",
     "leads": "Consultas",
-    "openingHours": "Horario"
+    "openingHours": "Horario",
+    "siteDesign": "Diseño del sitio"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -1204,6 +1205,132 @@
       "loadFailed": "No se pudieron cargar las consultas",
       "saveFailed": "No se pudo actualizar la consulta",
       "deleteFailed": "No se pudo eliminar la consulta"
+    }
+  },
+  "siteEditor": {
+    "title": "Diseño del sitio",
+    "desktop": "Ordenador",
+    "phone": "Teléfono",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "save": "Guardar y publicar",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "saveFailed": "No se pudo guardar — inténtalo de nuevo",
+    "discard": "Descartar cambios",
+    "discardTitle": "¿Descartar tus cambios?",
+    "discardBody": "Se perderán todos los cambios sin guardar y el sitio volverá a lo publicado.",
+    "unsaved": "Cambios sin guardar",
+    "loading": "Cargando tu sitio…",
+    "previewTitle": "Vista previa del sitio",
+    "hint": "Haz clic en cualquier texto, imagen o sección de tu sitio para editarlo.",
+    "pageSettings": "Diseño general",
+    "close": "Cerrar",
+    "backToSection": "Toda la sección",
+    "fields": {
+      "heroTitle": "Título principal",
+      "heroSubtitle": "Subtítulo",
+      "heroDescription": "Descripción",
+      "heroCta": "Texto del botón",
+      "heroStamp": "Sello",
+      "heroImage": "Imagen principal",
+      "sectionTitle": "Título de la sección",
+      "sectionDescription": "Descripción de la sección",
+      "aboutIntro": "Párrafo inicial",
+      "aboutMission": "Segundo párrafo",
+      "featureTitle": "Ventaja {{n}} – título",
+      "featureDescription": "Ventaja {{n}} – texto",
+      "galleryImage": "Foto {{n}} de la galería",
+      "galleryTitle": "Foto {{n}} – título",
+      "galleryDescription": "Foto {{n}} – pie",
+      "quoteText": "Reseña {{n}}",
+      "quoteName": "Reseña {{n}} – nombre",
+      "faqQuestion": "Pregunta {{n}}",
+      "faqAnswer": "Respuesta {{n}}",
+      "footerDescription": "Texto del pie de página",
+      "popupText": "Mensaje emergente",
+      "blockText": "Texto",
+      "blockAttribution": "Firma",
+      "blockTitle": "Título",
+      "blockImage": "Imagen",
+      "statValue": "Cifra {{n}}",
+      "statLabel": "Cifra {{n}} – etiqueta",
+      "stepTitle": "Paso {{n}}",
+      "stepText": "Paso {{n}} – texto",
+      "serviceName": "Nombre del servicio",
+      "servicePrice": "Precio",
+      "serviceImage": "Imagen del servicio",
+      "businessName": "Nombre del negocio",
+      "logo": "Logo",
+      "text": "Texto"
+    },
+    "text": {
+      "count": "{{count}}/{{max}}"
+    },
+    "ai": {
+      "title": "Ayuda de IA",
+      "placeholder": "¿Qué cambiar? p. ej. menciona el aparcamiento",
+      "send": "Aplicar",
+      "working": "Pensando…",
+      "done": "Actualizado",
+      "noChange": "La IA dejó el texto como estaba",
+      "failed": "No funcionó — inténtalo de nuevo",
+      "budget": "Se agotó la cuota de IA de este mes",
+      "sectionHint": "La IA solo cambia los textos de esta sección.",
+      "usage": "Has usado el {{percent}} % de la cuota de IA de este mes",
+      "quick": {
+        "shorter": "Más corto",
+        "warmer": "Más cálido",
+        "formal": "Más formal",
+        "fix": "Corregir"
+      },
+      "ask": {
+        "shorter": "Haz el texto más corto",
+        "warmer": "Haz el texto más cálido y cercano",
+        "formal": "Haz el texto más formal y profesional",
+        "fix": "Corrige la redacción, la gramática y la puntuación sin cambiar el sentido"
+      }
+    },
+    "image": {
+      "replace": "Reemplazar imagen",
+      "uploading": "Subiendo…",
+      "choose": "O elige una imagen que ya está en tu sitio:",
+      "use": "Usar esta imagen",
+      "removeFromGallery": "Quitar de la galería",
+      "uploadFailed": "Error al subir — inténtalo de nuevo"
+    },
+    "section": {
+      "layout": "Estilo",
+      "visible": "Visible en el sitio",
+      "tone": "Fondo",
+      "tone_bg": "Página",
+      "tone_surface": "Panel",
+      "dark": "Oscuro",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "remove": "Quitar la sección",
+      "fields": "Textos e imágenes aquí",
+      "noOptions": "Esta sección no tiene opciones de diseño."
+    },
+    "theme": {
+      "preset": "Estilo del sitio",
+      "pickPreset": "Elige un estilo",
+      "presetHint": "Un estilo reemplaza todo el diseño.",
+      "byStyle": "Según el estilo",
+      "color": "Color principal",
+      "headingFont": "Fuente de títulos",
+      "bodyFont": "Fuente del texto",
+      "buttons": "Botones",
+      "corners": "Esquinas",
+      "cards": "Tarjetas",
+      "mode": "Modo"
+    },
+    "chat": {
+      "title": "Cambiar todo el sitio con IA",
+      "placeholder": "¿Qué cambiar en el sitio?",
+      "changed": "Cambiado: {{list}}",
+      "nothingChanged": "No cambió nada.",
+      "look": "el diseño"
     }
   }
 }

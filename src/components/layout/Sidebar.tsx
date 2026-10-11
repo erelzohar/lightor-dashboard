@@ -9,7 +9,7 @@ import {
   Tag,
   Calendar,
   Image as ImageIcon,
-  Sparkles,
+  Palette,
   Moon,
   Sun,
   ShieldCheck,
@@ -34,7 +34,7 @@ interface SidebarProps {
   isRestricted?: boolean;
 }
 
-const ALLOWED_WHEN_RESTRICTED = ['/', '/ai'];
+const ALLOWED_WHEN_RESTRICTED = ['/', '/design'];
 
 const linkClasses =
   'px-2 rounded-lg text-gray-600 dark:text-dark-gray hover:bg-white dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-dark-text transition-colors';
@@ -191,12 +191,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       items: leadsSite
         ? [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
-            { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
+            { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             leadsLink,
           ]
         : [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
-            { path: '/ai', Icon: Sparkles, name: t('common.aiBuilder') },
+            { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
           ],
     },

@@ -39,14 +39,14 @@ describe('BottomTabBar', () => {
     expect(onMore).toHaveBeenCalledTimes(1);
   });
 
-  it('only offers Dashboard and the AI builder to a restricted account', () => {
+  it('only offers Dashboard and the site design page to a restricted account', () => {
     render(
       <MemoryRouter>
         <BottomTabBar isRestricted onMore={vi.fn()} />
       </MemoryRouter>
     );
     expect(screen.getByText('common.dashboard')).toBeInTheDocument();
-    expect(screen.getByText('common.aiBuilder')).toBeInTheDocument();
+    expect(screen.getByText('common.siteDesign')).toBeInTheDocument();
     expect(screen.queryByText('common.customers')).not.toBeInTheDocument();
     expect(screen.queryByText('common.appointments')).not.toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe('BottomTabBar', () => {
         <BottomTabBar isRestricted leadsSite onMore={vi.fn()} />
       </MemoryRouter>
     );
-    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/ai']);
+    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/design']);
   });
 
   it('clears the home indicator via the safe-area inset', () => {

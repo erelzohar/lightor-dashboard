@@ -46,7 +46,8 @@
     "adminPanel": "لوحة الإدارة",
     "customers": "العملاء",
     "leads": "الاستفسارات",
-    "openingHours": "ساعات العمل"
+    "openingHours": "ساعات العمل",
+    "siteDesign": "تصميم الموقع"
   },
   "greetings": {
     "morning": "صباح الخير",
@@ -1204,6 +1205,132 @@
       "loadFailed": "تعذر تحميل الاستفسارات",
       "saveFailed": "تعذر تحديث الاستفسار",
       "deleteFailed": "تعذر حذف الاستفسار"
+    }
+  },
+  "siteEditor": {
+    "title": "تصميم الموقع",
+    "desktop": "حاسوب",
+    "phone": "هاتف",
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "save": "حفظ ونشر",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم الحفظ",
+    "saveFailed": "تعذّر الحفظ، حاول مرة أخرى",
+    "discard": "تجاهل التغييرات",
+    "discardTitle": "تجاهل التغييرات؟",
+    "discardBody": "ستُحذف كل التغييرات غير المحفوظة ويعود الموقع إلى ما هو منشور.",
+    "unsaved": "توجد تغييرات غير محفوظة",
+    "loading": "جارٍ تحميل موقعك…",
+    "previewTitle": "معاينة الموقع",
+    "hint": "انقر على أي نص أو صورة أو قسم في موقعك لتعديله.",
+    "pageSettings": "التصميم العام",
+    "close": "إغلاق",
+    "backToSection": "القسم كاملًا",
+    "fields": {
+      "heroTitle": "العنوان الرئيسي",
+      "heroSubtitle": "العنوان الفرعي",
+      "heroDescription": "الوصف",
+      "heroCta": "نص الزر",
+      "heroStamp": "الختم",
+      "heroImage": "الصورة الرئيسية",
+      "sectionTitle": "عنوان القسم",
+      "sectionDescription": "وصف القسم",
+      "aboutIntro": "الفقرة الافتتاحية",
+      "aboutMission": "الفقرة الثانية",
+      "featureTitle": "ميزة {{n}} – عنوان",
+      "featureDescription": "ميزة {{n}} – نص",
+      "galleryImage": "صورة {{n}} في المعرض",
+      "galleryTitle": "صورة {{n}} – عنوان",
+      "galleryDescription": "صورة {{n}} – وصف",
+      "quoteText": "تقييم {{n}}",
+      "quoteName": "تقييم {{n}} – الاسم",
+      "faqQuestion": "سؤال {{n}}",
+      "faqAnswer": "إجابة {{n}}",
+      "footerDescription": "نص التذييل",
+      "popupText": "رسالة منبثقة",
+      "blockText": "نص",
+      "blockAttribution": "التوقيع",
+      "blockTitle": "عنوان",
+      "blockImage": "صورة",
+      "statValue": "رقم {{n}}",
+      "statLabel": "رقم {{n}} – وصف",
+      "stepTitle": "خطوة {{n}}",
+      "stepText": "خطوة {{n}} – نص",
+      "serviceName": "اسم الخدمة",
+      "servicePrice": "السعر",
+      "serviceImage": "صورة الخدمة",
+      "businessName": "اسم النشاط",
+      "logo": "الشعار",
+      "text": "نص"
+    },
+    "text": {
+      "count": "{{count}}/{{max}}"
+    },
+    "ai": {
+      "title": "مساعدة الذكاء الاصطناعي",
+      "placeholder": "ما الذي تريد تغييره؟ مثلًا: اذكر وجود موقف سيارات",
+      "send": "تطبيق",
+      "working": "يفكّر…",
+      "done": "تم التحديث",
+      "noChange": "ترك الذكاء الاصطناعي النص كما هو",
+      "failed": "لم ينجح ذلك، حاول مرة أخرى",
+      "budget": "نفدت حصة الذكاء الاصطناعي لهذا الشهر",
+      "sectionHint": "لن يغيّر الذكاء الاصطناعي إلا نصوص هذا القسم.",
+      "usage": "استخدمت {{percent}}% من حصة الذكاء الاصطناعي لهذا الشهر",
+      "quick": {
+        "shorter": "أقصر",
+        "warmer": "أكثر دفئًا",
+        "formal": "أكثر رسمية",
+        "fix": "تحسين الصياغة"
+      },
+      "ask": {
+        "shorter": "اجعل النص أقصر",
+        "warmer": "اجعل النص أكثر دفئًا وقربًا",
+        "formal": "اجعل النص أكثر رسمية واحترافية",
+        "fix": "صحّح الصياغة والقواعد وعلامات الترقيم دون تغيير المعنى"
+      }
+    },
+    "image": {
+      "replace": "استبدال الصورة",
+      "uploading": "جارٍ الرفع…",
+      "choose": "أو اختر صورة موجودة في موقعك:",
+      "use": "استخدام هذه الصورة",
+      "removeFromGallery": "إزالة من المعرض",
+      "uploadFailed": "فشل الرفع، حاول مرة أخرى"
+    },
+    "section": {
+      "layout": "النمط",
+      "visible": "معروض في الموقع",
+      "tone": "الخلفية",
+      "tone_bg": "الصفحة",
+      "tone_surface": "لوحة",
+      "dark": "داكن",
+      "moveUp": "للأعلى",
+      "moveDown": "للأسفل",
+      "remove": "إزالة القسم",
+      "fields": "النصوص والصور هنا",
+      "noOptions": "لا توجد خيارات تصميم لهذا القسم."
+    },
+    "theme": {
+      "preset": "نمط الموقع",
+      "pickPreset": "اختر نمطًا",
+      "presetHint": "اختيار نمط يستبدل التصميم كله.",
+      "byStyle": "كما في النمط",
+      "color": "اللون الرئيسي",
+      "headingFont": "خط العناوين",
+      "bodyFont": "خط النص",
+      "buttons": "الأزرار",
+      "corners": "الزوايا",
+      "cards": "البطاقات",
+      "mode": "الوضع"
+    },
+    "chat": {
+      "title": "تغيير الموقع كله بالذكاء الاصطناعي",
+      "placeholder": "ما الذي تريد تغييره في الموقع؟",
+      "changed": "تم تغيير: {{list}}",
+      "nothingChanged": "لم يتغيّر شيء.",
+      "look": "التصميم"
     }
   }
 }

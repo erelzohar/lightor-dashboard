@@ -46,7 +46,8 @@
     "adminPanel": "Panneau d'administration",
     "customers": "Clients",
     "leads": "Demandes",
-    "openingHours": "Horaires"
+    "openingHours": "Horaires",
+    "siteDesign": "Design du site"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -1204,6 +1205,132 @@
       "loadFailed": "Impossible de charger les demandes",
       "saveFailed": "Impossible de mettre à jour la demande",
       "deleteFailed": "Impossible de supprimer la demande"
+    }
+  },
+  "siteEditor": {
+    "title": "Design du site",
+    "desktop": "Ordinateur",
+    "phone": "Téléphone",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "save": "Enregistrer et publier",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "saveFailed": "Échec de l'enregistrement — réessayez",
+    "discard": "Annuler les modifications",
+    "discardTitle": "Annuler vos modifications ?",
+    "discardBody": "Toutes les modifications non enregistrées seront perdues et le site reviendra à la version publiée.",
+    "unsaved": "Modifications non enregistrées",
+    "loading": "Chargement de votre site…",
+    "previewTitle": "Aperçu du site",
+    "hint": "Cliquez sur n'importe quel texte, image ou section de votre site pour le modifier.",
+    "pageSettings": "Design général",
+    "close": "Fermer",
+    "backToSection": "Toute la section",
+    "fields": {
+      "heroTitle": "Titre principal",
+      "heroSubtitle": "Sous-titre",
+      "heroDescription": "Description",
+      "heroCta": "Texte du bouton",
+      "heroStamp": "Tampon",
+      "heroImage": "Image principale",
+      "sectionTitle": "Titre de la section",
+      "sectionDescription": "Description de la section",
+      "aboutIntro": "Paragraphe d'ouverture",
+      "aboutMission": "Deuxième paragraphe",
+      "featureTitle": "Atout {{n}} – titre",
+      "featureDescription": "Atout {{n}} – texte",
+      "galleryImage": "Photo {{n}} de la galerie",
+      "galleryTitle": "Photo {{n}} – titre",
+      "galleryDescription": "Photo {{n}} – légende",
+      "quoteText": "Avis {{n}}",
+      "quoteName": "Avis {{n}} – nom",
+      "faqQuestion": "Question {{n}}",
+      "faqAnswer": "Réponse {{n}}",
+      "footerDescription": "Texte du pied de page",
+      "popupText": "Message pop-up",
+      "blockText": "Texte",
+      "blockAttribution": "Signature",
+      "blockTitle": "Titre",
+      "blockImage": "Image",
+      "statValue": "Chiffre {{n}}",
+      "statLabel": "Chiffre {{n}} – libellé",
+      "stepTitle": "Étape {{n}}",
+      "stepText": "Étape {{n}} – texte",
+      "serviceName": "Nom du service",
+      "servicePrice": "Prix",
+      "serviceImage": "Image du service",
+      "businessName": "Nom de l'entreprise",
+      "logo": "Logo",
+      "text": "Texte"
+    },
+    "text": {
+      "count": "{{count}}/{{max}}"
+    },
+    "ai": {
+      "title": "Aide de l'IA",
+      "placeholder": "Que faut-il changer ? ex. mentionner le parking",
+      "send": "Appliquer",
+      "working": "Réflexion…",
+      "done": "Mis à jour",
+      "noChange": "L'IA a laissé le texte tel quel",
+      "failed": "Ça n'a pas marché — réessayez",
+      "budget": "Le quota d'IA de ce mois est épuisé",
+      "sectionHint": "L'IA ne modifie que les textes de cette section.",
+      "usage": "Vous avez utilisé {{percent}} % du quota d'IA de ce mois",
+      "quick": {
+        "shorter": "Plus court",
+        "warmer": "Plus chaleureux",
+        "formal": "Plus formel",
+        "fix": "Corriger"
+      },
+      "ask": {
+        "shorter": "Raccourcis le texte",
+        "warmer": "Rends le texte plus chaleureux et personnel",
+        "formal": "Rends le texte plus formel et professionnel",
+        "fix": "Corrige la formulation, la grammaire et la ponctuation sans changer le sens"
+      }
+    },
+    "image": {
+      "replace": "Remplacer l'image",
+      "uploading": "Envoi…",
+      "choose": "Ou choisissez une image déjà sur votre site :",
+      "use": "Utiliser cette image",
+      "removeFromGallery": "Retirer de la galerie",
+      "uploadFailed": "Échec de l'envoi — réessayez"
+    },
+    "section": {
+      "layout": "Style",
+      "visible": "Affichée sur le site",
+      "tone": "Fond",
+      "tone_bg": "Page",
+      "tone_surface": "Panneau",
+      "dark": "Sombre",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "remove": "Retirer la section",
+      "fields": "Textes et images ici",
+      "noOptions": "Cette section n'a pas d'options de design."
+    },
+    "theme": {
+      "preset": "Style du site",
+      "pickPreset": "Choisir un style",
+      "presetHint": "Un style remplace tout le design.",
+      "byStyle": "Selon le style",
+      "color": "Couleur principale",
+      "headingFont": "Police des titres",
+      "bodyFont": "Police du texte",
+      "buttons": "Boutons",
+      "corners": "Coins",
+      "cards": "Cartes",
+      "mode": "Mode"
+    },
+    "chat": {
+      "title": "Modifier tout le site avec l'IA",
+      "placeholder": "Que faut-il changer sur le site ?",
+      "changed": "Modifié : {{list}}",
+      "nothingChanged": "Rien n'a changé.",
+      "look": "le design"
     }
   }
 }

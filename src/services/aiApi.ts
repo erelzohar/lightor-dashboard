@@ -223,4 +223,29 @@ export const aiService = {
 
     throw lastError;
   },
+
+  /**
+   * LT-249: the site editor's AI for what the owner selected — one text, or
+   * every text of a section. Only these texts can change; the answer carries
+   * the ones the model changed, by path. 429 = the AI budget is spent.
+   */
+  editElement: async (instruction: string, fields: ElementField[]): Promise<ElementEditResult> => {
+    const response = await apiClient.post<{ success: boolean; data: ElementEditResult }>(
+      `${globals.aiUrl}edit-element`,
+      { instruction, fields, language: replyLanguage() }
+    );
+    return response.data.data;
+  },
 };
+
+export interface ElementField {
+  path: string;
+  value: string;
+  label?: string;
+  maxLength?: number;
+}
+
+export interface ElementEditResult {
+  values: Record<string, string>;
+  message: string;
+}
