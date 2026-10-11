@@ -34,7 +34,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         return {
           track: 'w-11 h-6',
           thumb: 'w-5 h-5',
-          translateX: '1.375rem' // 22px (5 * 4px + 2px offset or so)
+          translateX: '1.25rem' // 44px track - 4px inset - 20px thumb
         };
       case 'lg':
         return {
@@ -63,7 +63,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
       <button
         type="button"
         className={`
-          relative inline-flex ${sizeClasses.track} items-center rounded-full
+          relative inline-flex ${sizeClasses.track} items-center rounded-full p-0.5 shrink-0
           transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/30
           ${checked 
             ? 'bg-primary' 

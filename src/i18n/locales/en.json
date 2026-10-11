@@ -1310,7 +1310,8 @@
       "moveDown": "Move down",
       "remove": "Remove section",
       "fields": "Texts and pictures here",
-      "noOptions": "This section has no design options."
+      "noOptions": "This section has no design options.",
+      "hiddenNote": "This section is hidden on your site. It shows faded here so you can bring it back."
     },
     "theme": {
       "preset": "Site style",

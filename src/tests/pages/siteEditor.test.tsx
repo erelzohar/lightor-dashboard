@@ -169,6 +169,19 @@ describe('the site editor (LT-249)', () => {
       expect(last.config.blocks?.find((b) => b.id === 'b2')?.variant).toBe('pills');
     });
 
+    // Hidden, not deleted: the block stays with mod.hidden, and the switch says so (LT-249).
+    fireEvent.click(screen.getByRole('switch', { name: 'siteEditor.section.visible' }));
+    await waitFor(() => {
+      const last = lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig };
+      expect(last.config.blocks?.find((b) => b.id === 'b2')?.mod).toEqual({ hidden: true });
+    });
+    expect(screen.getByText('siteEditor.section.hiddenNote')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('switch', { name: 'siteEditor.section.visible' }));
+    await waitFor(() => {
+      const last = lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig };
+      expect(last.config.blocks?.find((b) => b.id === 'b2')?.mod).toEqual({});
+    });
+
     fireEvent.click(screen.getByText('siteEditor.fields.faqAnswer:1'));
     expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.faqAnswer:1' })).toHaveValue('A');
     expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: 'components.faq.items.0.answer', section: null, block: 'center' });

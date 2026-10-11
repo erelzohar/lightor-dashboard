@@ -1310,7 +1310,8 @@
       "moveDown": "Descendre",
       "remove": "Retirer la section",
       "fields": "Textes et images ici",
-      "noOptions": "Cette section n'a pas d'options de design."
+      "noOptions": "Cette section n'a pas d'options de design.",
+      "hiddenNote": "Cette section est masquée sur votre site. Elle apparaît estompée ici pour pouvoir la réafficher."
     },
     "theme": {
       "preset": "Style du site",

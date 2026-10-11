@@ -52,8 +52,16 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
   };
 
   const visiblePath = !composed && def.visibleKey ? `components.${def.visibleKey}.visible` : null;
-  const visible = visiblePath ? getAt(config, visiblePath) !== false : true;
   const mod = (block?.mod ?? {}) as Record<string, unknown>;
+  // Shown or hidden: the section's own switch on a legacy page; on a composed
+  // page the block stays, with its copy, marked hidden (LT-249) — the site
+  // skips it, the editor draws it faded so it can come back.
+  const canHide = !!visiblePath || composed;
+  const visible = visiblePath ? getAt(config, visiblePath) !== false : !mod.hidden;
+  const setVisible = (on: boolean) => {
+    if (visiblePath) onUpdate(setAt(config, visiblePath, on));
+    else if (block) onUpdate(patchBlock(config, block.id, { mod: { ...mod, hidden: on ? undefined : true } }));
+  };
 
   const textFields = fields.filter((f) => f.kind === 'text' && aiEditable(f.path));
   const aiFields = textFields.map((f) => ({
@@ -78,12 +86,14 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         </div>
       )}
 
-      {visiblePath && (
-        <ToggleSwitch
-          checked={visible}
-          onChange={(on) => onUpdate(setAt(config, visiblePath, on))}
-          label={t('siteEditor.section.visible')}
-        />
+      {canHide && (
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('siteEditor.section.visible')}</p>
+            {!visible && <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{t('siteEditor.section.hiddenNote')}</p>}
+          </div>
+          <ToggleSwitch checked={visible} onChange={setVisible} ariaLabel={t('siteEditor.section.visible')} />
+        </div>
       )}
 
       {composed && block && (
@@ -130,7 +140,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         </>
       )}
 
-      {!def.variants && !visiblePath && !composed && (
+      {!def.variants && !canHide && (
         <p className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.section.noOptions')}</p>
       )}
 

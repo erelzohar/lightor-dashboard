@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ColorPicker from '../ui/ColorPicker';
+import Select from '../ui/Select';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { getAt, setAt } from '../../utils/editorPaths';
 import { BUTTON_STYLES, CARD_STYLES, FONTS, PRESETS, RADII, THEMES, optionLabel } from '../../utils/editorOptions';
@@ -12,9 +13,6 @@ interface PagePanelProps<T> {
   onUpdate: (next: T, mergeKey?: string) => void;
   initialMessage?: string;
 }
-
-const selectClass =
-  'w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/30';
 
 /**
  * LT-249: the whole site — its style, main colour, fonts, buttons, corners,
@@ -48,27 +46,33 @@ function PagePanel<T>({ config, onUpdate, initialMessage }: PagePanelProps<T>) {
   };
 
   const select = (key: string, names: Record<string, { he: string; en: string }>, label: string) => (
-    <label className="block">
-      <span className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{label}</span>
-      <select className={selectClass} value={design[key] ?? ''} onChange={(e) => setToken(key, e.target.value)}>
-        <option value="">{t('siteEditor.theme.byStyle')}</option>
-        {Object.keys(names).map((v) => <option key={v} value={v}>{optionLabel(names, v, lang)}</option>)}
-      </select>
-    </label>
+    <Select
+      id={`site-theme-${key}`}
+      label={label}
+      value={design[key] ?? ''}
+      onChange={(e) => setToken(key, e.target.value)}
+      options={[
+        { value: '', label: t('siteEditor.theme.byStyle') },
+        ...Object.keys(names).map((v) => ({ value: v, label: optionLabel(names, v, lang) })),
+      ]}
+    />
   );
 
   const primary = String(getAt(config, 'pallete.colorPrimary') ?? '#7c3aed');
 
   return (
     <div className="flex flex-col gap-5" data-testid="page-panel">
-      <label className="block">
-        <span className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('siteEditor.theme.preset')}</span>
-        <select className={selectClass} value={design.stylePreset ?? ''} onChange={(e) => e.target.value && choosePreset(e.target.value)}>
-          <option value="" disabled>{t('siteEditor.theme.pickPreset')}</option>
-          {Object.keys(PRESETS).map((v) => <option key={v} value={v}>{optionLabel(PRESETS, v, lang)}</option>)}
-        </select>
-        <span className="block mt-1 text-xs text-gray-400 dark:text-slate-500">{t('siteEditor.theme.presetHint')}</span>
-      </label>
+      <Select
+        id="site-theme-preset"
+        label={t('siteEditor.theme.preset')}
+        value={design.stylePreset ?? ''}
+        onChange={(e) => e.target.value && choosePreset(e.target.value)}
+        helperText={t('siteEditor.theme.presetHint')}
+        options={[
+          { value: '', label: t('siteEditor.theme.pickPreset'), disabled: true },
+          ...Object.keys(PRESETS).map((v) => ({ value: v, label: optionLabel(PRESETS, v, lang) })),
+        ]}
+      />
 
       <ColorPicker
         label={t('siteEditor.theme.color')}
