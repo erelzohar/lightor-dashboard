@@ -278,7 +278,7 @@ const Dashboard: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-card glass-tint-red flex-1 min-w-0 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              className="glass-card glass-tint-red flex-1 min-w-0 p-4 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 dark:bg-red-800/40 rounded-full text-red-600 dark:text-red-400 shrink-0">
@@ -314,7 +314,7 @@ const Dashboard: React.FC = () => {
           {/* Trial Bar — never in the app: it is a call to buy (LT-130, App Store 3.1.1). */}
           {onFreePlan && canOfferPurchases() && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-              <div className="glass-card glass-tint-amber h-full rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="glass-card glass-tint-amber h-full rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
                     <Crown className="w-5 h-5" />
@@ -346,7 +346,7 @@ const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           data-testid="leads-cap-notice"
-          className={`glass-card ${leadsNotice === 'full' ? 'glass-tint-red' : 'glass-tint-amber'} p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
+          className={`glass-card ${leadsNotice === 'full' ? 'glass-tint-red' : 'glass-tint-amber'} p-4 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
         >
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-full shrink-0 ${leadsNotice === 'full' ? 'bg-red-100 dark:bg-red-800/40 text-red-600 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-400'}`}>
@@ -381,7 +381,7 @@ const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           onClick={() => navigate('/leads')}
           data-testid="leads-home-card"
-          className="glass-card w-full p-4 rounded-2xl flex items-center gap-3 text-start hover:border-primary/40 transition-colors"
+          className="glass-card w-full p-4 rounded-3xl flex items-center gap-3 text-start hover:border-primary/40 transition-colors"
         >
           <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
             <Inbox className="w-5 h-5" />

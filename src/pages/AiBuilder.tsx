@@ -446,7 +446,7 @@ const AiBuilder: React.FC = () => {
 
         {/* ── Live Preview (desktop toggle / mobile tab) ── */}
         <section
-          className={`bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl flex-col overflow-hidden shadow-sm ${
+          className={`bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-3xl flex-col overflow-hidden shadow-sm ${
             isPreviewFullscreen
               ? 'fixed inset-0 z-50 flex rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'
               : `flex-1 ${activeTab === 'preview' ? 'flex' : 'hidden'} ${showPreview ? 'md:flex' : 'md:hidden'}`
@@ -568,7 +568,7 @@ const AiBuilder: React.FC = () => {
 
         {/* ── Chat panel (full width, content centered) ── */}
         <aside
-          className={`flex-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl shrink-0 shadow-lg overflow-hidden flex-col ${
+          className={`flex-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-3xl shrink-0 shadow-lg overflow-hidden flex-col ${
             activeTab === 'chat' ? 'flex' : 'hidden'
           } md:flex`}
         >

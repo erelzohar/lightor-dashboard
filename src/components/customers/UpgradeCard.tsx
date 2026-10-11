@@ -27,7 +27,7 @@ const UpgradeCard: React.FC<UpgradeCardProps> = ({ title, description, className
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={className}>
-      <div className="glass-card glass-tint-amber rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="glass-card glass-tint-amber rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
             <Crown className="w-5 h-5" />

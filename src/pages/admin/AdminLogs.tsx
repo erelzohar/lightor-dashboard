@@ -168,7 +168,7 @@ const AdminLogs: React.FC = () => {
       </div>
 
       {result?.truncated && (
-        <div className="glass-card glass-tint-amber rounded-2xl p-3 text-xs text-amber-800 dark:text-amber-300">
+        <div className="glass-card glass-tint-amber rounded-3xl p-3 text-xs text-amber-800 dark:text-amber-300">
           {t('admin.logs.truncated')}
         </div>
       )}

@@ -19,7 +19,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, delay })
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="glass-card rounded-lg p-6 relative overflow-hidden"
+      className="glass-card rounded-3xl p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start">
         <div>

@@ -160,7 +160,7 @@ const Leads: React.FC = () => {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : !result?.data.length ? (
-          <div className="glass-card rounded-2xl p-10 text-center space-y-2" data-testid="leads-empty">
+          <div className="glass-card rounded-3xl p-10 text-center space-y-2" data-testid="leads-empty">
             <Inbox className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600" />
             <p className="font-medium text-gray-700 dark:text-gray-200">
               {status ? t('leads.emptyFiltered') : t('leads.empty')}
@@ -173,7 +173,7 @@ const Leads: React.FC = () => {
               <li
                 key={lead._id}
                 data-testid="lead-card"
-                className={`glass-card rounded-2xl p-4 sm:p-5 space-y-3 ${lead.status === 'closed' ? 'opacity-70' : ''}`}
+                className={`glass-card rounded-3xl p-4 sm:p-5 space-y-3 ${lead.status === 'closed' ? 'opacity-70' : ''}`}
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">

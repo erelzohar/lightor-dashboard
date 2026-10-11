@@ -59,7 +59,7 @@ const VerifyEmailGate: React.FC = () => {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="max-w-md w-full text-center space-y-6 p-8 rounded-2xl bg-light-surface dark:bg-dark-surface border border-gray-200 dark:border-gray-700 shadow-sm"
+        className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-light-surface dark:bg-dark-surface border border-gray-200 dark:border-gray-700 shadow-sm"
       >
         <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
           <MailWarning className="w-7 h-7 text-amber-600 dark:text-amber-400" />

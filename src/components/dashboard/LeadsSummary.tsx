@@ -46,7 +46,7 @@ const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, thisMonth, direction 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="glass-card rounded-2xl p-4 sm:p-5 space-y-4"
+      className="glass-card rounded-3xl p-4 sm:p-5 space-y-4"
       data-testid="leads-summary"
     >
       <div className="flex items-center gap-3">
