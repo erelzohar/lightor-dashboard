@@ -235,6 +235,31 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const nextPeriod = () => setCurrentDate(d => addDays(d, visibleDays));
   const goToday    = () => { setCurrentDate(new Date()); setMiniCalMonth(startOfMonth(new Date())); };
 
+  // Swipe the grid sideways to page through days (LT-246) — one day on a
+  // phone, where the grid shows one. Only a clearly horizontal, quick stroke
+  // counts, so scrolling through the hours is untouched; a grid that scrolls
+  // sideways itself keeps the gesture. Forward is right-to-left in LTR and
+  // left-to-right in RTL, where tomorrow sits to the left.
+  const swipeRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const p = e.touches[0];
+    swipeRef.current = e.touches.length === 1 ? { x: p.clientX, y: p.clientY, t: Date.now() } : null;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = swipeRef.current;
+    swipeRef.current = null;
+    const p = e.changedTouches[0];
+    if (!start || !p) return;
+    const dx = p.clientX - start.x;
+    const dy = p.clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - start.t > 800) return;
+    const grid = scrollRef.current;
+    if (grid && grid.scrollWidth > grid.clientWidth + 1) return;
+    setSelectedAppt(null);
+    if (direction === 'rtl' ? dx > 0 : dx < 0) nextPeriod();
+    else prevPeriod();
+  };
+
   const handleViewMode = (m: ViewMode) => {
     setViewMode(m);
     setVisibleDays(m === 'day' ? 1 : window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 3 : 7);
@@ -670,7 +695,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         </header>
 
         {/* ── Scrollable calendar body ───────────────────────────────── */}
-        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto bg-white dark:bg-gray-900" onClick={() => setSelectedAppt(null)}>
+        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto bg-white dark:bg-gray-900" onClick={() => setSelectedAppt(null)}
+          onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={() => { swipeRef.current = null; }}>
 
           {/* ── Sticky day-column headers ───────────────────────────── */}
           <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700/50"
