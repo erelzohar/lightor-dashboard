@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, X, Clock, User, Phone,
@@ -85,6 +86,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
   const [selectedAppt,setSelectedAppt]          = useState<Appointment | null>(null);
   const [popupPos,    setPopupPos]              = useState<{ x: number; y: number } | null>(null);
+  // The clicked event block and the details card: the card is placed from
+  // both MEASURED rects, and re-placed on every scroll (LT-244).
+  const anchorRef = useRef<HTMLElement | null>(null);
+  const popupRef  = useRef<HTMLDivElement>(null);
   const [activeFilter,setActiveFilter]          = useState<FilterKey>('all');
   const [hiddenTypeIds,setHiddenTypeIds]        = useState<Set<string>>(new Set());
   const [calSecOpen,  setCalSecOpen]            = useState(true);
@@ -237,15 +242,56 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   const handleEventClick = (appt: Appointment, e: React.MouseEvent) => {
     e.stopPropagation();
+    anchorRef.current = e.currentTarget as HTMLElement;
     setSelectedAppt(appt);
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const PW = 308, PH = 380;
-    let x = rect.right + 10;
-    let y = rect.top;
-    if (x + PW > window.innerWidth - 8) x = Math.max(8, rect.left - PW - 10);
-    if (y + PH > window.innerHeight - 8) y = Math.max(8, window.innerHeight - PH - 8);
-    setPopupPos({ x, y });
+    // A first guess so the card can mount; placePopup corrects it from the
+    // card's real size before the browser paints.
+    const rect = anchorRef.current.getBoundingClientRect();
+    setPopupPos({ x: rect.right + 10, y: rect.top });
   };
+
+  // The card sits beside its event block, flipping to the other side when
+  // there is no room, and is clamped into the viewport using its REAL height
+  // (a fixed 380px guess let taller cards — booking answers, buttons — run off
+  // the top or bottom of the screen). Called again on every scroll so it
+  // travels with its appointment; once the block scrolls out of the calendar
+  // the card closes rather than floating next to nothing.
+  const placePopup = useCallback(() => {
+    const anchor = anchorRef.current;
+    const pop = popupRef.current;
+    if (!anchor || !pop) return;
+    const r = anchor.getBoundingClientRect();
+    const box = scrollRef.current?.getBoundingClientRect();
+    if (!anchor.isConnected || (box && (r.bottom <= box.top || r.top >= box.bottom))) {
+      setSelectedAppt(null);
+      return;
+    }
+    const PW = pop.offsetWidth;
+    const PH = pop.offsetHeight;
+    let x = r.right + 10;
+    if (x + PW > window.innerWidth - 8) x = Math.max(8, r.left - PW - 10);
+    const y = Math.min(Math.max(8, r.top), Math.max(8, window.innerHeight - PH - 8));
+    setPopupPos(p => (p && p.x === x && p.y === y ? p : { x, y }));
+  }, []);
+
+  useLayoutEffect(() => {
+    if (selectedAppt) placePopup();
+  }, [selectedAppt, popupPos, placePopup]);
+
+  useEffect(() => {
+    if (!selectedAppt) return;
+    // Capture phase: scrolls of the calendar grid and of the page's own
+    // scrolling <main> never bubble to window.
+    window.addEventListener('scroll', placePopup, true);
+    window.addEventListener('resize', placePopup);
+    const ro = popupRef.current && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(placePopup) : null;
+    if (ro && popupRef.current) ro.observe(popupRef.current);
+    return () => {
+      window.removeEventListener('scroll', placePopup, true);
+      window.removeEventListener('resize', placePopup);
+      ro?.disconnect();
+    };
+  }, [selectedAppt, placePopup]);
 
   const handleSessionClick = (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -841,9 +887,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         )}
       </AnimatePresence>
 
+      {/* On document.body (LT-244, the LT-204 pattern): a glass card's
+          backdrop-filter is the containing block of anything fixed inside it,
+          so the card's viewport coordinates were off and it moved with the page. */}
+      {createPortal(
       <AnimatePresence>
         {selectedAppt && popupPos && (
           <motion.div
+            ref={popupRef}
+            dir={direction}
             key="popup"
             initial={{ opacity: 0, scale: 0.93, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -970,7 +1022,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </div>
   );
 };
