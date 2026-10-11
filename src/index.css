@@ -320,3 +320,15 @@ html[dir="rtl"] body {
   padding-top: max(1rem, env(safe-area-inset-top));
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
+
+/* Calendar page turn (LT-247): the day cells are keyed by date, so a new day
+   mounts new cells and this plays once per turn. --cal-slide-from carries the
+   side they come from (set on the grid). */
+@keyframes cal-slide-in {
+  from { transform: translateX(var(--cal-slide-from, 0)); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.cal-slide-in { animation: cal-slide-in 220ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .cal-slide-in { animation: none; }
+}

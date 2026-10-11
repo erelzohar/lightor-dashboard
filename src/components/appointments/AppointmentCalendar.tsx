@@ -231,9 +231,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────
-  const prevPeriod = () => setCurrentDate(d => addDays(d, -visibleDays));
-  const nextPeriod = () => setCurrentDate(d => addDays(d, visibleDays));
-  const goToday    = () => { setCurrentDate(new Date()); setMiniCalMonth(startOfMonth(new Date())); };
+  // Page turns slide the new days in from the side they come from (LT-247).
+  // Off until the first navigation, so opening the calendar does not animate.
+  const [slideDir, setSlideDir] = useState<1 | -1 | 0>(0);
+  const goTo = (target: Date) => {
+    setSlideDir(startOfDay(target) < startOfDay(currentDate) ? -1 : 1);
+    setCurrentDate(target);
+  };
+  const prevPeriod = () => goTo(addDays(currentDate, -visibleDays));
+  const nextPeriod = () => goTo(addDays(currentDate, visibleDays));
+  const goToday    = () => { goTo(new Date()); setMiniCalMonth(startOfMonth(new Date())); };
+  // Forward content enters from the end side: the right in LTR, the left in RTL.
+  const slideFrom = `${slideDir * (direction === 'rtl' ? -1 : 1) * 48}px`;
+  const slideClass = slideDir ? ' cal-slide-in' : '';
 
   // Swipe the grid sideways to page through days (LT-246) — one day on a
   // phone, where the grid shows one. Only a clearly horizontal, quick stroke
@@ -428,7 +438,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               const hasA = miniHasAppts(day);
               return (
                 <button key={day.toISOString()}
-                  onClick={e => { e.stopPropagation(); setCurrentDate(day); setMiniCalMonth(startOfMonth(day)); }}
+                  onClick={e => { e.stopPropagation(); goTo(day); setMiniCalMonth(startOfMonth(day)); }}
                   className="relative w-7 h-7 mx-auto text-[11px] rounded-full flex items-center justify-center transition-all"
                   style={{
                     color: !inMonth ? '#374151' : tod ? '#fff' : sel ? '#818cf8' : '#d1d5db',
@@ -695,7 +705,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         </header>
 
         {/* ── Scrollable calendar body ───────────────────────────────── */}
-        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto bg-white dark:bg-gray-900" onClick={() => setSelectedAppt(null)}
+        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-900" onClick={() => setSelectedAppt(null)}
+          style={{ ['--cal-slide-from' as string]: slideFrom }}
           onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={() => { swipeRef.current = null; }}>
 
           {/* ── Sticky day-column headers ───────────────────────────── */}
@@ -712,7 +723,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               const dots = Math.min(getDaySessions(day).length, 4);
               return (
                 <div key={day.toISOString()}
-                  className="flex flex-col items-center py-3 relative"
+                  className={`flex flex-col items-center py-3 relative${slideClass}`}
                   style={{ borderLeft: '1px solid', borderColor: 'rgba(243,244,246,0.8)' }}>
                   {/* Today gets a dark rounded header card */}
                   {tod ? (
@@ -770,7 +781,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
                 return (
-                  <div key={day.toISOString()} className="relative"
+                  <div key={day.toISOString()} className={`relative${slideClass}`}
                     style={{
                       borderLeft: '1px solid',
                       borderColor: 'rgba(243,244,246,0.9)',

@@ -89,4 +89,26 @@ describe('swiping the calendar grid', () => {
     swipe(grid, -90, 200);
     expect(shows()).toBe(false);
   });
+
+  it('slides the new day in from the side it comes from, but not on first open (LT-247)', () => {
+    theme.direction = 'ltr';
+    const { grid } = setup();
+    const sliding = () => grid.querySelectorAll('.cal-slide-in').length;
+    const from = () => grid.style.getPropertyValue('--cal-slide-from');
+    expect(sliding()).toBe(0);
+
+    swipe(grid, -120); // forward: tomorrow enters from the right
+    expect(sliding()).toBeGreaterThan(0);
+    expect(from()).toBe('48px');
+    swipe(grid, 120); // back: from the left
+    expect(from()).toBe('-48px');
+  });
+
+  it('mirrors the slide in Hebrew', () => {
+    theme.direction = 'rtl';
+    const { grid } = setup();
+    swipe(grid, 120); // forward in RTL: tomorrow enters from the left
+    expect(grid.style.getPropertyValue('--cal-slide-from')).toBe('-48px');
+    theme.direction = 'ltr';
+  });
 });
