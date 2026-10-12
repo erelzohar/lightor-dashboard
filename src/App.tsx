@@ -19,6 +19,7 @@ import AppointmentTypes from './pages/AppointmentTypes';
 import Account from './pages/Account';
 import Portfolio from './pages/Portfolio';
 import SiteEditor from './pages/SiteEditor';
+import LightyPage from './pages/Lighty';
 import AiToDesignRedirect from './components/routing/AiToDesignRedirect';
 
 // Components
@@ -72,6 +73,7 @@ function App() {
                     <Route path="account" element={<Account />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="design" element={<SiteEditor />} />
+                    <Route path="lighty" element={<LightyPage />} />
                     <Route path="ai" element={<AiToDesignRedirect />} />
                     {/* Admin pages share the owner Layout — the sidebar simply
                         grows an admin section when the operator is logged in. */}

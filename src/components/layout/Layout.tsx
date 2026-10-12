@@ -15,7 +15,7 @@ import { bindNotificationTaps } from '../../services/pushClient';
 // Pages that deliberately bleed to the edges: they already cancel the
 // layout's own padding with negative margins and size themselves, so the
 // shared bottom padding would only add a dead gap under them.
-const FULL_BLEED_ROUTES = ['/design'];
+const FULL_BLEED_ROUTES = ['/design', '/lighty'];
 
 const Layout: React.FC = () => {
   const { pathname } = useLocation();
@@ -129,11 +129,13 @@ const Layout: React.FC = () => {
         />
       )}
 
-      {/* LT-249: not over the site editor, which has its own AI in the panel. */}
-      {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && pathname !== '/design' && (
+      {/* LT-253: Lighty, a tap away — not over his own page, nor over the
+          site editor, where he already sits in the panel. */}
+      {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && pathname !== '/design' && pathname !== '/lighty' && (
         <FloatingAiAssistant
           direction={direction}
-          onSend={(msg) => navigate('/design', { state: { floatingMessage: msg } })}
+          onSend={(msg) => navigate('/lighty', { state: { lightyMessage: msg } })}
+          onOpenPage={() => navigate('/lighty')}
         />
       )}
 

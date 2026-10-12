@@ -1269,14 +1269,14 @@
     },
     "ai": {
       "title": "Ayuda de IA",
-      "placeholder": "¿Qué cambiar? p. ej. menciona el aparcamiento",
+      "placeholder": "Escríbele a Lighty, p. ej.: menciona el aparcamiento",
       "send": "Aplicar",
       "working": "Pensando…",
       "done": "Actualizado",
       "noChange": "La IA dejó el texto como estaba",
       "failed": "No funcionó — inténtalo de nuevo",
       "budget": "Se agotó la cuota de IA de este mes",
-      "sectionHint": "La IA solo cambia los textos de esta sección.",
+      "sectionHint": "Puedo cambiar todos los textos de esta sección de una vez. ¿Qué hago?",
       "usage": "Has usado el {{percent}} % de la cuota de IA de este mes",
       "quick": {
         "shorter": "Más corto",
@@ -1289,7 +1289,8 @@
         "warmer": "Haz el texto más cálido y cercano",
         "formal": "Haz el texto más formal y profesional",
         "fix": "Corrige la redacción, la gramática y la puntuación sin cambiar el sentido"
-      }
+      },
+      "greetText": "¿Mejoro este texto? Elige una opción o dime qué cambiar."
     },
     "image": {
       "replace": "Reemplazar imagen",
@@ -1327,11 +1328,12 @@
       "mode": "Modo"
     },
     "chat": {
-      "title": "Cambiar todo el sitio con IA",
+      "title": "Lighty — cambios en todo el sitio",
       "placeholder": "¿Qué cambiar en el sitio?",
       "changed": "Cambiado: {{list}}",
       "nothingChanged": "No cambió nada.",
-      "look": "el diseño"
+      "look": "el diseño",
+      "greet": "Pídeme un cambio en todo el sitio: colores, estilo, textos. ¿Qué cambio?"
     },
     "site": "Tu sitio",
     "back": "Atrás",
@@ -1376,5 +1378,34 @@
     },
     "fold": "Plegar el panel",
     "unfold": "Desplegar el panel"
+  },
+  "lighty": {
+    "hello": "¡Hola! Soy Lighty",
+    "intro": "Pregúntame por tus citas, tus horas libres, tus clientes y tus contactos.",
+    "subtitle": "Tu asistente para el negocio",
+    "thinking": "Lighty está pensando…",
+    "placeholder": "Pregúntale a Lighty…",
+    "send": "Enviar",
+    "newChat": "Nueva conversación",
+    "conversation": "Conversación con Lighty",
+    "failed": "Lighty no pudo responder esta vez. Inténtalo de nuevo.",
+    "budget": "Se agotó el presupuesto de IA de este mes.",
+    "usage": "Has usado el {{percent}} % del presupuesto de IA del mes",
+    "toEditor": "Abrir el editor del sitio",
+    "openPage": "Chat completo",
+    "close": "Cerrar",
+    "ask": "Pregúntale a Lighty",
+    "floatingHello": "¡Hola! ¿En qué te ayudo?",
+    "suggest": {
+      "today": "¿Qué tengo hoy?",
+      "tomorrowFree": "¿Cuándo estoy libre mañana?",
+      "week": "Resume mi semana",
+      "leads": "¿Hay contactos sin atender?",
+      "regulars": "¿Quiénes son mis clientes habituales?",
+      "howBlock": "¿Cómo bloqueo un día?",
+      "month": "Resume mi mes",
+      "services": "¿Cuáles son mis servicios y precios?",
+      "howHours": "¿Cómo cambio mi horario?"
+    }
   }
 }

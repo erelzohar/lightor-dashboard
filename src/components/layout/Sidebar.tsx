@@ -29,6 +29,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import globals from '../../services/globals';
 import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsCount';
 import { isLeadsSite } from '../../utils/siteMode';
+import LightyIcon from '../lighty/LightyIcon';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -178,6 +179,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const leadsLink = { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined };
+  // LT-253: Lighty, the business chat — his face for an icon.
+  const lightyLink = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, name: 'Lighty' };
 
   // Close the mobile drawer when the route changes.
   useEffect(() => {
@@ -191,11 +194,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       items: leadsSite
         ? [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
+            lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             leadsLink,
           ]
         : [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
+            lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
           ],

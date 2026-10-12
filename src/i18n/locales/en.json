@@ -1269,14 +1269,14 @@
     },
     "ai": {
       "title": "AI help",
-      "placeholder": "What should change? e.g. mention the parking",
+      "placeholder": "Tell Lighty, e.g. mention the parking",
       "send": "Apply",
       "working": "Thinking…",
       "done": "Updated",
       "noChange": "The AI left it as it was",
       "failed": "That didn't work — try again",
       "budget": "This month's AI allowance is used up",
-      "sectionHint": "The AI only changes this section's texts.",
+      "sectionHint": "I can change all the texts in this section at once. What should I do?",
       "usage": "You've used {{percent}}% of this month's AI allowance",
       "quick": {
         "shorter": "Shorter",
@@ -1289,7 +1289,8 @@
         "warmer": "Make the text warmer and more personal",
         "formal": "Make the text more formal and professional",
         "fix": "Fix the wording, grammar and punctuation without changing the meaning"
-      }
+      },
+      "greetText": "Want me to improve this text? Pick one or tell me what to change."
     },
     "image": {
       "replace": "Replace picture",
@@ -1327,11 +1328,12 @@
       "mode": "Mode"
     },
     "chat": {
-      "title": "Change the whole site with AI",
+      "title": "Lighty — changes across the site",
       "placeholder": "What should change on the site?",
       "changed": "Changed: {{list}}",
       "nothingChanged": "Nothing changed.",
-      "look": "the design"
+      "look": "the design",
+      "greet": "Ask me for a change across the whole site: colours, style, texts. What should change?"
     },
     "site": "Your site",
     "back": "Back",
@@ -1376,5 +1378,34 @@
     },
     "fold": "Fold the panel",
     "unfold": "Unfold the panel"
+  },
+  "lighty": {
+    "hello": "Hi! I'm Lighty",
+    "intro": "Ask me about your appointments, free times, customers and leads.",
+    "subtitle": "Your business assistant",
+    "thinking": "Lighty is thinking…",
+    "placeholder": "Ask Lighty…",
+    "send": "Send",
+    "newChat": "New chat",
+    "conversation": "Conversation with Lighty",
+    "failed": "Lighty couldn't answer this time. Try again.",
+    "budget": "This month's AI allowance is used up.",
+    "usage": "You've used {{percent}}% of this month's AI allowance",
+    "toEditor": "Open the site editor",
+    "openPage": "Full chat",
+    "close": "Close",
+    "ask": "Ask Lighty",
+    "floatingHello": "Hi! How can I help?",
+    "suggest": {
+      "today": "What do I have today?",
+      "tomorrowFree": "When am I free tomorrow?",
+      "week": "Sum up my week",
+      "leads": "Any leads I haven't handled?",
+      "regulars": "Who are my regular customers?",
+      "howBlock": "How do I block a day?",
+      "month": "Sum up my month",
+      "services": "What are my services and prices?",
+      "howHours": "How do I change my hours?"
+    }
   }
 }

@@ -1,33 +1,37 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, X } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Send, X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { LightyAvatar, LightyBubble } from '../lighty/LightyChat';
 
 interface FloatingAiAssistantProps {
+  /** A question for Lighty: his page opens and sends it. */
   onSend: (message: string) => void;
+  /** Open Lighty's page without a question. */
+  onOpenPage?: () => void;
   direction?: 'ltr' | 'rtl';
 }
 
-export function FloatingAiAssistant({ onSend, direction = 'ltr' }: FloatingAiAssistantProps) {
+const QUICK = ['today', 'week', 'leads'] as const;
+
+/**
+ * LT-253: Lighty, a tap away on every page — his face on the button; a short
+ * card with his greeting, two or three ready questions and a box to ask your
+ * own. A question goes to his page, where the answer comes.
+ */
+export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr' }: FloatingAiAssistantProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [message, setMessage] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
-
   const { t } = useTranslation();
   const isRtl = direction === 'rtl';
+  const Open = isRtl ? ArrowUpLeft : ArrowUpRight;
 
-  const handleSend = () => {
-    const trimmed = message.trim();
+  const ask = (text: string) => {
+    const trimmed = text.trim();
     if (!trimmed) return;
     onSend(trimmed);
     setMessage('');
     setIsChatOpen(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
   };
 
   useEffect(() => {
@@ -49,85 +53,85 @@ export function FloatingAiAssistant({ onSend, direction = 'ltr' }: FloatingAiAss
       // Phones: sit above the BottomTabBar + home indicator (LT-127); md+ has no bar.
       className={`fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 z-50 ${isRtl ? 'left-6' : 'right-6'}`}
     >
-      {/* Chat panel */}
       {isChatOpen && (
         <div
           ref={chatRef}
-          className={`absolute bottom-20 w-[340px] max-w-[calc(100vw-3rem)] transition-all duration-300 ${
-            isRtl ? 'left-0 origin-bottom-left' : 'right-0 origin-bottom-right'
-          }`}
+          className={`absolute bottom-20 w-[340px] max-w-[calc(100vw-3rem)] ${isRtl ? 'left-0 origin-bottom-left' : 'right-0 origin-bottom-right'}`}
           style={{ animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
           dir={direction}
+          role="dialog"
+          aria-label="Lighty"
         >
-          <div className="relative flex flex-col rounded-3xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/90 border border-zinc-500/50 shadow-2xl backdrop-blur-3xl overflow-hidden">
-
-            {/* Overlay gradient */}
-            <div
-              className="absolute inset-0 rounded-3xl pointer-events-none"
-              style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.06), transparent, rgba(147,51,234,0.06))' }}
-            />
-
-            {/* Header */}
-            <div className="relative flex items-center justify-between px-5 pt-4 pb-2 z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-medium text-zinc-400">{t('floatingAssistant.label')}</span>
-              </div>
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className="p-1.5 rounded-full hover:bg-zinc-700/50 transition-colors"
-              >
-                <X className="w-4 h-4 text-zinc-400" />
+          <div className="flex flex-col gap-3 rounded-3xl bg-white dark:bg-slate-900 border border-violet-100 dark:border-violet-900/50 shadow-2xl p-4">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-800 dark:text-white">Lighty</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
+              <span className="flex-1" />
+              {onOpenPage && (
+                <button
+                  type="button"
+                  onClick={() => { setIsChatOpen(false); onOpenPage(); }}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:underline"
+                >
+                  {t('lighty.openPage')}
+                  <Open className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              )}
+              <button type="button" onClick={() => setIsChatOpen(false)} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800" aria-label={t('lighty.close')}>
+                <X className="w-4 h-4 text-gray-400" />
               </button>
             </div>
-
-            {/* Textarea */}
-            <div className="relative px-1 z-10">
+            <LightyBubble avatar={36}>{t('lighty.floatingHello')}</LightyBubble>
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => ask(t(`lighty.suggest.${key}`))}
+                  className="px-3 py-1.5 rounded-full text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800/50 text-violet-700 dark:text-violet-200 hover:bg-violet-100 dark:hover:bg-violet-900/50"
+                >
+                  {t(`lighty.suggest.${key}`)}
+                </button>
+              ))}
+            </div>
+            <form className="flex items-end gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5" onSubmit={(e) => { e.preventDefault(); ask(message); }}>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={4}
-                className="w-full px-5 py-3 bg-transparent border-none outline-none resize-none text-sm leading-relaxed text-zinc-100 placeholder-zinc-500 break-words overflow-wrap-anywhere"
-                style={{ scrollbarWidth: 'none', overflowWrap: 'anywhere' }}
-                placeholder="Ask me anything about your site..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    ask(message);
+                  }
+                }}
+                rows={2}
+                maxLength={1000}
+                placeholder={t('lighty.placeholder')}
+                aria-label={t('lighty.placeholder')}
+                className="flex-1 min-w-0 resize-none bg-transparent px-2 py-1.5 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none"
               />
-            </div>
-
-            {/* Send row */}
-            <div className="relative px-4 pb-4 z-10">
-              <div className={`flex items-center ${isRtl ? 'justify-start' : 'justify-end'}`}>
-                <button
-                  onClick={handleSend}
-                  disabled={!message.trim()}
-                  className="group p-3 bg-gradient-to-r from-violet-600 to-purple-500 rounded-xl text-white shadow-lg hover:from-violet-500 hover:to-purple-400 hover:scale-105 hover:shadow-purple-500/30 hover:shadow-xl active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  <Send className="w-4 h-4 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </button>
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={!message.trim()}
+                aria-label={t('lighty.send')}
+                className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-r from-primary to-violet-500 text-white disabled:opacity-40"
+              >
+                <Send className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+              </button>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Floating button */}
       <button
-        className={`floating-ai-button relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
-          isChatOpen ? 'rotate-90' : 'rotate-0'
-        }`}
+        type="button"
+        className="floating-ai-button relative w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 shadow-[0_8px_24px_rgba(124,58,237,0.35)] ring-2 ring-violet-200 dark:ring-violet-700/60 transition-transform duration-300 hover:scale-105 active:scale-95"
         onClick={() => setIsChatOpen((prev) => !prev)}
-        style={{
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.85) 0%, rgba(168,85,247,0.85) 100%)',
-          boxShadow: '0 0 20px rgba(139,92,246,0.7), 0 0 40px rgba(124,58,237,0.5), 0 0 60px rgba(109,40,217,0.3)',
-          border: '2px solid rgba(255,255,255,0.2)',
-        }}
+        aria-label={isChatOpen ? t('lighty.close') : t('lighty.ask')}
+        aria-expanded={isChatOpen}
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent opacity-30" />
-        <div className="absolute inset-0 rounded-full border-2 border-white/10" />
-        <div className="relative z-10">
-          {isChatOpen ? <X className="w-6 h-6 text-white" /> : <Bot className="w-7 h-7 text-white" />}
-        </div>
-        <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-indigo-500" />
+        {isChatOpen ? <X className="w-6 h-6 text-violet-600" /> : <LightyAvatar size={52} className="ring-0" />}
+        {!isChatOpen && <span className="absolute inset-0 rounded-full animate-ping opacity-20 bg-violet-400 pointer-events-none" aria-hidden="true" />}
       </button>
     </div>
   );
