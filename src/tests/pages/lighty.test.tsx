@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import LightyPage from '../../pages/Lighty';
 import { assistantService } from '../../services/assistantApi';
@@ -115,6 +115,19 @@ describe('the floating Lighty (LT-253)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'lighty.ask' }));
     fireEvent.click(screen.getByText('lighty.openPage'));
     expect(onOpenPage).toHaveBeenCalled();
+  });
+
+  it("says the home page's greeting in a bubble; tapping it opens his card (LT-269)", () => {
+    const { rerender } = render(<FloatingAiAssistant onSend={vi.fn()} greeting="Good afternoon, Erel" />);
+    fireEvent.click(screen.getByText('Good afternoon, Erel'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // While the card is open, the bubble steps aside.
+    expect(screen.queryByText('Good afternoon, Erel')).toBeNull();
+
+    rerender(<FloatingAiAssistant onSend={vi.fn()} />);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'lighty.close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByText('Good afternoon, Erel')).toBeNull(); // other pages: no greeting
   });
 });
 

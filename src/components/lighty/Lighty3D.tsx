@@ -40,6 +40,8 @@ interface Lighty3DProps {
   /** Bumped when an answer lands — he cheers once. */
   cheerKey: number;
   className?: string;
+  /** Called once the model is on screen — the floating Lighty swaps his 2D face out then (LT-269). */
+  onReady?: () => void;
 }
 
 // Framing: the model is 1 unit tall with its feet at y=0; the view spans
@@ -48,7 +50,9 @@ const VIEW_H = 1.45;
 const FOV = 30;
 const LOOK_Y = VIEW_H / 2 - 0.065;
 
-export default function Lighty3D({ thinking, cheerKey, className = '' }: Lighty3DProps) {
+export default function Lighty3D({ thinking, cheerKey, className = '', onReady }: Lighty3DProps) {
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
   const hostRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const ctlRef = useRef<{ setThinking: (on: boolean) => void; cheer: () => void } | null>(null);
@@ -174,6 +178,7 @@ export default function Lighty3D({ thinking, cheerKey, className = '' }: Lighty3
         play('wave', true);
       }
       setReady(true);
+      onReadyRef.current?.();
       start();
     });
 

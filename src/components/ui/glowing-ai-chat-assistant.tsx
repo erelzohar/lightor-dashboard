@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Send, X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LightyAvatar, LightyBubble } from '../lighty/LightyChat';
+
+// three.js and the 1.8 MB model load after the page, never in its way.
+const Lighty3D = lazy(() => import('../lighty/Lighty3D'));
 
 interface FloatingAiAssistantProps {
   /** A question for Lighty: his page opens and sends it. */
@@ -9,17 +12,24 @@ interface FloatingAiAssistantProps {
   /** Open Lighty's page without a question. */
   onOpenPage?: () => void;
   direction?: 'ltr' | 'rtl';
+  /** Said in his speech bubble while the card is closed (the home page's greeting, LT-269). */
+  greeting?: string;
 }
 
 const QUICK = ['today', 'week', 'leads'] as const;
 
 /**
- * LT-253: Lighty, a tap away on every page — his face on the button; a short
- * card with his greeting, two or three ready questions and a box to ask your
- * own. A question goes to his page, where the answer comes.
+ * LT-253: Lighty, a tap away on every page; a short card with his greeting,
+ * two or three ready questions and a box to ask your own. A question goes to
+ * his page, where the answer comes.
+ * LT-269: the button is the 3D Lighty himself (his 2D face stands in until
+ * the model is on screen, or for good without WebGL), and on the home page he
+ * talks — a speech bubble with the greeting the page used to print at its top.
+ * Tapping him or the bubble opens the card, as before.
  */
-export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr' }: FloatingAiAssistantProps) {
+export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting }: FloatingAiAssistantProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [modelReady, setModelReady] = useState(false);
   const [message, setMessage] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -56,7 +66,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr' }: F
       {isChatOpen && (
         <div
           ref={chatRef}
-          className={`absolute bottom-20 w-[340px] max-w-[calc(100vw-3rem)] ${isRtl ? 'left-0 origin-bottom-left' : 'right-0 origin-bottom-right'}`}
+          className={`absolute bottom-[6.5rem] w-[340px] max-w-[calc(100vw-3rem)] ${isRtl ? 'left-0 origin-bottom-left' : 'right-0 origin-bottom-right'}`}
           style={{ animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
           dir={direction}
           role="dialog"
@@ -123,15 +133,45 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr' }: F
         </div>
       )}
 
+      {greeting && !isChatOpen && (
+        <button
+          type="button"
+          onClick={() => setIsChatOpen(true)}
+          dir={direction}
+          className={`floating-ai-button absolute bottom-14 ${isRtl ? 'left-[4.75rem]' : 'right-[4.75rem]'} w-max max-w-[min(240px,calc(100vw-8rem))] px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-violet-100 dark:border-violet-900/50 shadow-lg text-sm font-semibold text-gray-800 dark:text-white text-start`}
+          style={{ animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
+        >
+          {greeting}
+          {/* the tail, pointing at Lighty */}
+          <span
+            aria-hidden="true"
+            className={`absolute bottom-3 w-3 h-3 rotate-45 bg-white dark:bg-slate-900 border-violet-100 dark:border-violet-900/50 ${isRtl ? '-left-1.5 border-b border-l' : '-right-1.5 border-t border-r'}`}
+          />
+        </button>
+      )}
+
       <button
         type="button"
-        className="floating-ai-button relative w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 shadow-[0_8px_24px_rgba(124,58,237,0.35)] ring-2 ring-violet-200 dark:ring-violet-700/60 transition-transform duration-300 hover:scale-105 active:scale-95"
+        className="floating-ai-button relative block w-20 h-24 transition-transform duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 rounded-2xl"
         onClick={() => setIsChatOpen((prev) => !prev)}
         aria-label={isChatOpen ? t('lighty.close') : t('lighty.ask')}
         aria-expanded={isChatOpen}
       >
-        {isChatOpen ? <X className="w-6 h-6 text-violet-600" /> : <LightyAvatar size={52} className="ring-0" />}
-        {!isChatOpen && <span className="absolute inset-0 rounded-full animate-ping opacity-20 bg-violet-400 pointer-events-none" aria-hidden="true" />}
+        {!modelReady && (
+          <span className="absolute inset-x-0 bottom-1 flex justify-center">
+            <span className="w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 shadow-[0_8px_24px_rgba(124,58,237,0.35)] ring-2 ring-violet-200 dark:ring-violet-700/60">
+              <LightyAvatar size={52} className="ring-0" />
+            </span>
+          </span>
+        )}
+        <Suspense fallback={null}>
+          <Lighty3D
+            thinking={false}
+            cheerKey={0}
+            onReady={() => setModelReady(true)}
+            className="absolute inset-0 pointer-events-none drop-shadow-[0_6px_10px_rgba(124,58,237,0.35)]"
+          />
+        </Suspense>
       </button>
     </div>
   );

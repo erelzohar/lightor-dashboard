@@ -11,6 +11,8 @@ import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
+import { useTranslation } from 'react-i18next';
+import { greetingFor } from '../../lib/greeting';
 
 // Pages that deliberately bleed to the edges: they already cancel the
 // layout's own padding with negative margins and size themselves, so the
@@ -23,6 +25,7 @@ const Layout: React.FC = () => {
   const [welcomeLoading, setWelcomeLoading] = useState(false);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const { t } = useTranslation();
 
   const { direction } = useTheme();
   const { auth, updateUser } = useAuth();
@@ -130,10 +133,17 @@ const Layout: React.FC = () => {
       )}
 
       {/* LT-253: Lighty, a tap away — not over his own page, nor over the
-          site editor, where he already sits in the panel. */}
-      {auth.user?.isVerified && auth.user?.boardingStatus === 'active' && pathname !== '/design' && pathname !== '/lighty' && (
+          site editor, where he already sits in the panel. LT-269: on the home
+          page he also says the greeting the page used to print at its top, so
+          there he shows for every owner (not only active, verified ones) —
+          except under the first-run welcome overlay. */}
+      {pathname !== '/design' && pathname !== '/lighty' && auth.user && (
+        (auth.user.isVerified && auth.user.boardingStatus === 'active') ||
+        (pathname === '/' && !(boardingStatus === 'new' && !welcomeDismissed))
+      ) && (
         <FloatingAiAssistant
           direction={direction}
+          greeting={pathname === '/' ? t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name }) : undefined}
           onSend={(msg) => navigate('/lighty', { state: { lightyMessage: msg } })}
           onOpenPage={() => navigate('/lighty')}
         />

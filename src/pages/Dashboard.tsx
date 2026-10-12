@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { canOfferPurchases } from '../lib/platform';
 import { motion } from 'framer-motion';
-import { Sun, Moon, AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2, Inbox } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowLeft, Crown, ChevronDown, CheckCircle2, Phone, MapPin, Briefcase, Clock, Image, Tag, Mail, Loader2, Inbox } from 'lucide-react';
 import { Appointment } from '../types';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import IncomeStats from '../components/dashboard/IncomeStats';
@@ -26,20 +26,6 @@ import toast from 'react-hot-toast';
 import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { fetchLeads, LeadsPage } from '../services/leadsApi';
 import { isLeadsSite } from '../utils/siteMode';
-
-const getGreeting = (t: any): string => {
-  const hour = new Date().getHours();
-  if (hour < 12 && hour > 4) return t('greetings.morning');
-  if (hour < 12 && hour < 4) return t('greetings.night');
-  if (hour < 18) return t('greetings.afternoon');
-  return t('greetings.evening');
-};
-
-const getGreetingIcon = () => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 18) return Sun;
-  return Moon;
-};
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -147,7 +133,6 @@ const Dashboard: React.FC = () => {
   const showOnboarding = auth.user?.boardingStatus === 'onboarded';
 
 
-  const GreetingIcon = getGreetingIcon();
 
   const dispatch = useAppDispatch();
   const appointments = useAppSelector(state => state.appointments.appointments);
@@ -216,32 +201,119 @@ const Dashboard: React.FC = () => {
       animate="visible"
       className={`space-y-5 ${isEmpty ? 'flex-1 flex flex-col' : ''}`}
     >
-      {/* Page Title */}
-      <div className="mb-2">
-        <div className="flex items-center justify-center gap-3">
-          <motion.div
-            initial={{ rotate: -20, scale: 0.8, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 10, duration: 0.5 }}
-            whileHover={{ scale: 1.1, rotate: 15 }}
-            className={`p-1 rounded-full shadow-sm ${GreetingIcon === Sun
-              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500 shadow-amber-200/50'
-              : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500 shadow-indigo-200/50'
-            }`}
-          >
-            <GreetingIcon className="w-7 h-7" />
-          </motion.div>
-          {/* Never wrap: "<greeting>, <name>" broke onto a second line on a
-              phone. Sized to fit instead — an earlier attempt added `truncate`
-              as a safety net and that was worse, ellipsising the name on the
-              very screens it was meant to help. */}
-          <h1 className="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-white whitespace-nowrap">
-            {t('common.greetingWithName', { greeting: getGreeting(t), name: auth.user.name })}
-          </h1>
-        </div>
-      </div>
-
       <div className={isEmpty ? 'flex-1 flex flex-col justify-center space-y-5' : 'space-y-5'}>
+      {/* Onboarding UI — while it is unfinished it leads, above Lighty's welcome (LT-269) */}
+      {showOnboarding && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 shadow-xl">
+            <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute bottom-0 left-1/2 w-56 h-56 bg-black/10 rounded-full blur-2xl translate-y-1/3 pointer-events-none" />
+
+            <div className="relative z-10 p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex-1 text-white">
+                <h2 className="text-2xl font-bold mb-1 tracking-tight">{t('common.onboardingCardTitle')}</h2>
+                <p className="text-indigo-200 text-sm leading-relaxed">{t('common.onboardingCardDesc')}</p>
+              </div>
+              <div className="hidden lg:block relative shrink-0 w-28 h-28">
+                <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 to-pink-500 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] animate-[spin_8s_linear_infinite] blur-[2px]" />
+                <div className="absolute inset-3 bg-gradient-to-bl from-blue-400 to-purple-400 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] animate-[spin_12s_linear_infinite_reverse] blur-[1px]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-bold text-xl drop-shadow-lg">{progressPct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 px-7 pb-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/80 text-xs font-medium">
+                  {t('onboarding.setupProgress', { done: doneCount, total: setupSteps.length })}
+                </span>
+                <span className="text-white font-bold text-sm">{progressPct}%</span>
+              </div>
+              <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden mb-4">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-green-400"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
+                />
+              </div>
+
+              <button
+                onClick={() => setStepsExpanded(p => {
+                  localStorage.setItem('onboardingExpanded', String(!p));
+                  return !p;
+                })}
+                className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors mb-1"
+              >
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${stepsExpanded ? 'rotate-180' : ''}`} />
+                {stepsExpanded ? t('onboarding.hideDetails') : t('onboarding.showDetails')}
+              </button>
+
+              <motion.div
+                initial={false}
+                animate={{ height: stepsExpanded ? 'auto' : 0, opacity: stepsExpanded ? 1 : 0 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 pb-3">
+                  {setupSteps.map(step => {
+                    const Icon = step.icon;
+                    return (
+                      <motion.button
+                        key={step.key}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate(step.tab)}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-all duration-150 ${
+                          step.done ? 'bg-white/10 opacity-60 cursor-default' : 'bg-white/15 hover:bg-white/25 hover:-translate-y-px cursor-pointer'
+                        }`}
+                        disabled={step.done}
+                      >
+                        <div className={`shrink-0 p-1.5 rounded-full ${step.done ? 'bg-emerald-400/30' : 'bg-white/20'}`}>
+                          {step.done ? <CheckCircle2 className="w-4 h-4 text-emerald-300" /> : <Icon className="w-4 h-4 text-white/80" />}
+                        </div>
+                        <span className={`text-sm font-medium ${step.done ? 'line-through text-white/50' : 'text-white'}`}>
+                          {step.label}
+                        </span>
+                        {!step.done && (
+                          direction === 'rtl'
+                            ? <ArrowLeft className="w-3.5 h-3.5 text-white/50 ms-auto shrink-0" />
+                            : <ArrowRight className="w-3.5 h-3.5 text-white/50 ms-auto shrink-0" />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {progressPct < 100 && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/settings')}
+                    className="mt-1 mb-2 bg-black/80 hover:bg-black text-white font-medium px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-colors text-sm shadow-lg"
+                  >
+                    {t('common.exploreAppBtn')}
+                    {direction === 'rtl' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                  </motion.button>
+                )}
+              </motion.div>
+
+              {progressPct === 100 && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCompleteSetup}
+                  className="mt-2 mb-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-colors text-sm shadow-lg"
+                >
+                  {t('onboarding.allDoneBtn')}
+                  <CheckCircle2 className="w-4 h-4" />
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── New account, no bookings (or, on a leads site, no inquiries) yet:
           Lighty says hello first ── */}
       {isEmpty && (
@@ -392,118 +464,6 @@ const Dashboard: React.FC = () => {
           </div>
           {direction === 'rtl' ? <ArrowLeft className="w-4 h-4 text-gray-400 shrink-0" /> : <ArrowRight className="w-4 h-4 text-gray-400 shrink-0" />}
         </motion.button>
-      )}
-
-      {/* Onboarding UI */}
-      {showOnboarding && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 shadow-xl">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-            <div className="absolute bottom-0 left-1/2 w-56 h-56 bg-black/10 rounded-full blur-2xl translate-y-1/3 pointer-events-none" />
-
-            <div className="relative z-10 p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex-1 text-white">
-                <h2 className="text-2xl font-bold mb-1 tracking-tight">{t('common.onboardingCardTitle')}</h2>
-                <p className="text-indigo-200 text-sm leading-relaxed">{t('common.onboardingCardDesc')}</p>
-              </div>
-              <div className="hidden lg:block relative shrink-0 w-28 h-28">
-                <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 to-pink-500 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] animate-[spin_8s_linear_infinite] blur-[2px]" />
-                <div className="absolute inset-3 bg-gradient-to-bl from-blue-400 to-purple-400 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] animate-[spin_12s_linear_infinite_reverse] blur-[1px]" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl drop-shadow-lg">{progressPct}%</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 px-7 pb-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white/80 text-xs font-medium">
-                  {t('onboarding.setupProgress', { done: doneCount, total: setupSteps.length })}
-                </span>
-                <span className="text-white font-bold text-sm">{progressPct}%</span>
-              </div>
-              <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden mb-4">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-green-400"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPct}%` }}
-                  transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
-                />
-              </div>
-
-              <button
-                onClick={() => setStepsExpanded(p => {
-                  localStorage.setItem('onboardingExpanded', String(!p));
-                  return !p;
-                })}
-                className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors mb-1"
-              >
-                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${stepsExpanded ? 'rotate-180' : ''}`} />
-                {stepsExpanded ? t('onboarding.hideDetails') : t('onboarding.showDetails')}
-              </button>
-
-              <motion.div
-                initial={false}
-                animate={{ height: stepsExpanded ? 'auto' : 0, opacity: stepsExpanded ? 1 : 0 }}
-                transition={{ duration: 0.35, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 pb-3">
-                  {setupSteps.map(step => {
-                    const Icon = step.icon;
-                    return (
-                      <motion.button
-                        key={step.key}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate(step.tab)}
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-all duration-150 ${
-                          step.done ? 'bg-white/10 opacity-60 cursor-default' : 'bg-white/15 hover:bg-white/25 hover:-translate-y-px cursor-pointer'
-                        }`}
-                        disabled={step.done}
-                      >
-                        <div className={`shrink-0 p-1.5 rounded-full ${step.done ? 'bg-emerald-400/30' : 'bg-white/20'}`}>
-                          {step.done ? <CheckCircle2 className="w-4 h-4 text-emerald-300" /> : <Icon className="w-4 h-4 text-white/80" />}
-                        </div>
-                        <span className={`text-sm font-medium ${step.done ? 'line-through text-white/50' : 'text-white'}`}>
-                          {step.label}
-                        </span>
-                        {!step.done && (
-                          direction === 'rtl'
-                            ? <ArrowLeft className="w-3.5 h-3.5 text-white/50 ms-auto shrink-0" />
-                            : <ArrowRight className="w-3.5 h-3.5 text-white/50 ms-auto shrink-0" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {progressPct < 100 && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/settings')}
-                    className="mt-1 mb-2 bg-black/80 hover:bg-black text-white font-medium px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-colors text-sm shadow-lg"
-                  >
-                    {t('common.exploreAppBtn')}
-                    {direction === 'rtl' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                  </motion.button>
-                )}
-              </motion.div>
-
-              {progressPct === 100 && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleCompleteSetup}
-                  className="mt-2 mb-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-colors text-sm shadow-lg"
-                >
-                  {t('onboarding.allDoneBtn')}
-                  <CheckCircle2 className="w-4 h-4" />
-                </motion.button>
-              )}
-            </div>
-          </div>
-        </motion.div>
       )}
 
       {/* ── A leads site's home (LT-199): the summary replaces every booking widget ── */}
