@@ -65,20 +65,23 @@ describe('BottomTabBar', () => {
   });
 
   /**
-   * A leads site (LT-199) has no calendar: Dashboard / Leads / Services /
-   * Hours, with no Appointments and no Customers.
+   * A leads site (LT-199) has no calendar: Dashboard / Leads / Lighty /
+   * Hours, with no Appointments and no Customers. Lighty stands where he
+   * does on a booking site (LT-257) — Services moved to "More" — so the bar
+   * does not swap him out when the site's mode arrives.
    */
-  it('shows Dashboard, Leads, Services and Hours on a leads site', () => {
+  it('shows Dashboard, Leads, Lighty and Hours on a leads site', () => {
     render(
       <MemoryRouter initialEntries={['/leads']}>
         <BottomTabBar leadsSite onMore={vi.fn()} />
       </MemoryRouter>
     );
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['/', '/leads', '/appointment-types', '/schedule-vacations']);
-    for (const key of ['common.dashboard', 'common.leads', 'common.serviceTypes', 'common.openingHours']) {
+    expect(hrefs).toEqual(['/', '/leads', '/lighty', '/schedule-vacations']);
+    for (const key of ['common.dashboard', 'common.leads', 'Lighty', 'common.openingHours']) {
       expect(screen.getByText(key)).toBeInTheDocument();
     }
+    expect(screen.queryByText('common.serviceTypes')).not.toBeInTheDocument();
     expect(screen.queryByText('common.appointments')).not.toBeInTheDocument();
     expect(screen.queryByText('common.customers')).not.toBeInTheDocument();
     expect(screen.queryByText('common.scheduleVacations')).not.toBeInTheDocument();

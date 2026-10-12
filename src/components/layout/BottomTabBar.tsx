@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, Calendar, Menu, Palette, Inbox, Tag } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, Calendar, Menu, Palette, Inbox } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
@@ -37,6 +37,9 @@ interface BottomTabBarProps {
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
+  // LT-256/257: Lighty in the thumb bar on every site, in the same place —
+  // Customers (booking sites) and Services (leads sites) are under "More".
+  const lighty = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' };
 
   const tabs = isRestricted
     ? [
@@ -47,14 +50,13 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       ? [
           { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
           { path: '/leads', Icon: Inbox, label: t('common.leads'), dot: !!newLeads },
-          { path: '/appointment-types', Icon: Tag, label: t('common.serviceTypes') },
+          lighty,
           { path: '/schedule-vacations', Icon: Calendar, label: t('common.openingHours') },
         ]
       : [
           { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
           { path: '/appointments', Icon: CalendarRange, label: t('common.appointments') },
-          // LT-256: Lighty in the thumb bar; Customers moved to "More".
-          { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' },
+          lighty,
           { path: '/schedule-vacations', Icon: Calendar, label: t('common.scheduleVacations') },
         ];
 
