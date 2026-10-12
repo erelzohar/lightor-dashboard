@@ -20,9 +20,12 @@ describe('BottomTabBar', () => {
         <BottomTabBar onMore={onMore} />
       </MemoryRouter>
     );
-    for (const key of ['common.dashboard', 'common.appointments', 'common.customers', 'common.scheduleVacations']) {
+    for (const key of ['common.dashboard', 'common.appointments', 'Lighty', 'common.scheduleVacations']) {
       expect(screen.getByText(key)).toBeInTheDocument();
     }
+    // LT-256: Lighty takes Customers' place; Customers is under "More".
+    expect(screen.getByText('Lighty').closest('a')).toHaveAttribute('href', '/lighty');
+    expect(screen.queryByText('common.customers')).not.toBeInTheDocument();
     const active = screen.getByText('common.appointments').closest('a')!;
     const idle = screen.getByText('common.dashboard').closest('a')!;
     expect(active).toHaveAttribute('aria-current', 'page');

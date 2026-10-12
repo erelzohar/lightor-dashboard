@@ -1268,15 +1268,11 @@
       "count": "{{count}}/{{max}}"
     },
     "ai": {
-      "title": "Ayuda de IA",
-      "placeholder": "Escríbele a Lighty, p. ej.: menciona el aparcamiento",
       "send": "Aplicar",
-      "working": "Pensando…",
       "done": "Actualizado",
       "noChange": "La IA dejó el texto como estaba",
       "failed": "No funcionó — inténtalo de nuevo",
       "budget": "Se agotó la cuota de IA de este mes",
-      "sectionHint": "Puedo cambiar todos los textos de esta sección de una vez. ¿Qué hago?",
       "usage": "Has usado el {{percent}} % de la cuota de IA de este mes",
       "quick": {
         "shorter": "Más corto",
@@ -1290,7 +1286,8 @@
         "formal": "Haz el texto más formal y profesional",
         "fix": "Corrige la redacción, la gramática y la puntuación sin cambiar el sentido"
       },
-      "greetText": "¿Mejoro este texto? Elige una opción o dime qué cambiar."
+      "askHere": "¿Qué cambio aquí? Escríbele a Lighty…",
+      "askSection": "¿Qué cambio en esta sección? Escríbele a Lighty…"
     },
     "image": {
       "replace": "Reemplazar imagen",
@@ -1329,11 +1326,10 @@
     },
     "chat": {
       "title": "Lighty — cambios en todo el sitio",
-      "placeholder": "¿Qué cambiar en el sitio?",
+      "placeholder": "¿Qué cambio en el sitio? Escríbele a Lighty…",
       "changed": "Cambiado: {{list}}",
       "nothingChanged": "No cambió nada.",
-      "look": "el diseño",
-      "greet": "Pídeme un cambio en todo el sitio: colores, estilo, textos. ¿Qué cambio?"
+      "look": "el diseño"
     },
     "site": "Tu sitio",
     "back": "Atrás",

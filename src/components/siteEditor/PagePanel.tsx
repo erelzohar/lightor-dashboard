@@ -62,6 +62,8 @@ function PagePanel<T>({ config, onUpdate, initialMessage }: PagePanelProps<T>) {
 
   return (
     <div className="flex flex-col gap-5" data-testid="page-panel">
+      {/* LT-256: Lighty's line first; the design controls below it. */}
+      <SiteChat config={config} onApply={(next) => onUpdate(next)} initialMessage={initialMessage} />
       <Select
         id="site-theme-preset"
         label={t('siteEditor.theme.preset')}
@@ -88,8 +90,6 @@ function PagePanel<T>({ config, onUpdate, initialMessage }: PagePanelProps<T>) {
         {select('cardStyle', CARD_STYLES, t('siteEditor.theme.cards'))}
         {select('defaultTheme', THEMES, t('siteEditor.theme.mode'))}
       </div>
-
-      <SiteChat config={config} onApply={(next) => onUpdate(next)} initialMessage={initialMessage} />
 
       {usage !== null && (
         <div>

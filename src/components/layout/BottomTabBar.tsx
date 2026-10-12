@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, UsersRound, Calendar, Menu, Palette, Inbox, Tag } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, Calendar, Menu, Palette, Inbox, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
+import LightyIcon from '../lighty/LightyIcon';
 
 interface BottomTabBarProps {
   /** Not-yet-onboarded accounts only get the pages the drawer allows them. */
@@ -52,7 +53,8 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       : [
           { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
           { path: '/appointments', Icon: CalendarRange, label: t('common.appointments') },
-          { path: '/customers', Icon: UsersRound, label: t('common.customers') },
+          // LT-256: Lighty in the thumb bar; Customers moved to "More".
+          { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' },
           { path: '/schedule-vacations', Icon: Calendar, label: t('common.scheduleVacations') },
         ];
 

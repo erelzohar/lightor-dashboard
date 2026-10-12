@@ -1268,15 +1268,11 @@
       "count": "{{count}}/{{max}}"
     },
     "ai": {
-      "title": "AI help",
-      "placeholder": "Tell Lighty, e.g. mention the parking",
       "send": "Apply",
-      "working": "Thinking…",
       "done": "Updated",
       "noChange": "The AI left it as it was",
       "failed": "That didn't work — try again",
       "budget": "This month's AI allowance is used up",
-      "sectionHint": "I can change all the texts in this section at once. What should I do?",
       "usage": "You've used {{percent}}% of this month's AI allowance",
       "quick": {
         "shorter": "Shorter",
@@ -1290,7 +1286,8 @@
         "formal": "Make the text more formal and professional",
         "fix": "Fix the wording, grammar and punctuation without changing the meaning"
       },
-      "greetText": "Want me to improve this text? Pick one or tell me what to change."
+      "askHere": "What should change here? Tell Lighty…",
+      "askSection": "What should change in this section? Tell Lighty…"
     },
     "image": {
       "replace": "Replace picture",
@@ -1329,11 +1326,10 @@
     },
     "chat": {
       "title": "Lighty — changes across the site",
-      "placeholder": "What should change on the site?",
+      "placeholder": "What should change on the site? Tell Lighty…",
       "changed": "Changed: {{list}}",
       "nothingChanged": "Nothing changed.",
-      "look": "the design",
-      "greet": "Ask me for a change across the whole site: colours, style, texts. What should change?"
+      "look": "the design"
     },
     "site": "Your site",
     "back": "Back",

@@ -86,6 +86,18 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
 
   return (
     <div className="flex flex-col gap-5" data-testid="section-panel">
+      {/* LT-256: Lighty's line first — every text of the section at once. */}
+      {aiFields.length > 0 && (
+        <AiBox
+          fields={aiFields}
+          placeholder={t('siteEditor.ai.askSection')}
+          onApply={(values) => {
+            let next = config;
+            for (const [path, value] of Object.entries(values)) next = setAt(next, path, value);
+            onUpdate(next);
+          }}
+        />
+      )}
       {def.variants && def.variants.length > 0 && (composed || def.designToken) && (
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.layout')}</p>
@@ -195,17 +207,6 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         </div>
       )}
 
-      {aiFields.length > 0 && (
-        <AiBox
-          fields={aiFields}
-          hint={t('siteEditor.ai.sectionHint')}
-          onApply={(values) => {
-            let next = config;
-            for (const [path, value] of Object.entries(values)) next = setAt(next, path, value);
-            onUpdate(next);
-          }}
-        />
-      )}
     </div>
   );
 }

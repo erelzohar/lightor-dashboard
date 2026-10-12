@@ -25,6 +25,10 @@ const TextPanel: React.FC<TextPanelProps> = ({ path, value, onChange, onApplyAi 
   };
   return (
     <div className="flex flex-col gap-4" data-testid="text-panel">
+      {/* LT-256: Lighty's line first, then the field. */}
+      {aiEditable(path) && (
+        <AiBox fields={[{ path, value, label, maxLength: info.maxLength }]} onApply={onApplyAi} />
+      )}
       <div>
         <label htmlFor="site-editor-text" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">{label}</label>
         {info.multiline ? <textarea {...common} rows={5} /> : <input {...common} type="text" />}
@@ -34,9 +38,6 @@ const TextPanel: React.FC<TextPanelProps> = ({ path, value, onChange, onApplyAi 
           </p>
         )}
       </div>
-      {aiEditable(path) && (
-        <AiBox fields={[{ path, value, label, maxLength: info.maxLength }]} onApply={onApplyAi} />
-      )}
     </div>
   );
 };
