@@ -120,7 +120,9 @@ describe('the appointments page, opened from a link', () => {
 
     await waitFor(() => expect(detailsOpen()).toBe(true));
     expect(screen.getAllByText('Noa Levi').length).toBeGreaterThan(0);
-    expect(within(grid()).getAllByText('Noa Levi').length).toBeGreaterThan(0);
+    // The calendar moves to the day in its own effect, a render after the
+    // card opens: wait for it rather than catch the render in between.
+    await waitFor(() => expect(within(grid()).getAllByText('Noa Levi').length).toBeGreaterThan(0));
     expect(screen.getByTestId('search')).toHaveTextContent(/^$/);
     // The page's own load was awaited — not doubled.
     expect(getAppointments).toHaveBeenCalledTimes(1);
@@ -147,7 +149,8 @@ describe('the appointments page, opened from a link', () => {
 
     await waitFor(() => expect(detailsOpen()).toBe(true));
     expect(getAppointments).toHaveBeenCalledTimes(2);
-    expect(within(grid()).getAllByText('Maya Bar').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Maya Bar').length).toBeGreaterThan(0);
+    await waitFor(() => expect(within(grid()).getAllByText('Maya Bar').length).toBeGreaterThan(0));
     expect(screen.getByTestId('search')).toHaveTextContent(/^$/);
   });
 });
