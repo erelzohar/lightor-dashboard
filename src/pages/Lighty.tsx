@@ -8,8 +8,9 @@ import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
-import { LightyBubble, LightyText, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
+import { LightyBubble, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
+import { LightyTyped } from '../components/lighty/LightyTyped';
 
 // three.js and the model reach only this page.
 const Lighty3D = lazy(() => import('../components/lighty/Lighty3D'));
@@ -35,6 +36,9 @@ const LightyPage: React.FC = () => {
   const suggestions = isLeadsSite(webConfig) ? LEADS_SUGGESTIONS : BOOKING_SUGGESTIONS;
 
   const [turns, setTurns] = useState<LightyTurn[]>([]);
+  // The answer that just arrived types itself out (LT-271); the thread loaded
+  // from the server shows whole.
+  const [freshTurn, setFreshTurn] = useState<LightyTurn | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -68,6 +72,11 @@ const LightyPage: React.FC = () => {
     if (list) list.scrollTop = list.scrollHeight;
   }, [turns, busy, error]);
 
+  const scrollToEnd = () => {
+    const list = listRef.current;
+    if (list) list.scrollTop = list.scrollHeight;
+  };
+
   const send = async (text: string) => {
     const ask = text.trim();
     if (!ask || busy) return;
@@ -77,7 +86,9 @@ const LightyPage: React.FC = () => {
     setBusy(true);
     try {
       const { reply, handoff } = await assistantService.chat(ask);
-      setTurns((all) => [...all, { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}) }]);
+      const answer: LightyTurn = { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}) };
+      setTurns((all) => [...all, answer]);
+      setFreshTurn(answer);
       lightTick();
       setCheer((n) => n + 1);
     } catch (err) {
@@ -163,7 +174,7 @@ const LightyPage: React.FC = () => {
           <OwnerBubble key={i}>{turn.content}</OwnerBubble>
         ) : (
           <LightyBubble key={i}>
-            <LightyText text={turn.content} />
+            <LightyTyped text={turn.content} animate={turn === freshTurn} onType={scrollToEnd} />
             {turn.handoff && (
               <button
                 type="button"

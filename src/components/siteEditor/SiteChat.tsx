@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Send } from 'lucide-react';
-import { LightyAvatar, LightyBubble, LightyText, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
+import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { useTranslation } from 'react-i18next';
 import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../services/aiApi';
 import { changedLabels } from '../../utils/editorDiff';
 import { fieldLabel } from './labels';
 import { lightTick } from '../../lib/haptics';
+import { LightyTyped } from '../lighty/LightyTyped';
 
 interface SiteChatProps<T> {
   config: T;
@@ -26,6 +27,8 @@ interface SiteChatProps<T> {
 function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatTurn[]>([]);
+  const [fresh, setFresh] = useState<ChatTurn | null>(null); // types out (LT-271)
+  const listRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const started = useRef(false);
@@ -53,10 +56,14 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
       const changed = changedLabels(before, next, (p) => fieldLabel(t, p), t('siteEditor.chat.look'));
       onApply(next);
       const summary = changed.length ? t('siteEditor.chat.changed', { list: changed.slice(0, 6).join(', ') }) : t('siteEditor.chat.nothingChanged');
-      setMessages((m) => [...m, { role: 'assistant', content: [result.message, summary].filter(Boolean).join('\n') }]);
+      const answer: ChatTurn = { role: 'assistant', content: [result.message, summary].filter(Boolean).join('\n') };
+      setMessages((m) => [...m, answer]);
+      setFresh(answer);
       lightTick();
     } catch {
-      setMessages((m) => [...m, { role: 'assistant', content: t('siteEditor.ai.failed') }]);
+      const answer: ChatTurn = { role: 'assistant', content: t('siteEditor.ai.failed') };
+      setMessages((m) => [...m, answer]);
+      setFresh(answer);
     } finally {
       setBusy(false);
     }
@@ -90,10 +97,10 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
         </form>
       </div>
       {messages.length > 0 && (
-        <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
+        <div ref={listRef} className="flex flex-col gap-2 max-h-72 overflow-y-auto">
           {messages.map((m, i) => (m.role === 'user'
             ? <OwnerBubble key={i}>{m.content}</OwnerBubble>
-            : <LightyBubble key={i}><LightyText text={m.content} /></LightyBubble>))}
+            : <LightyBubble key={i}><LightyTyped text={m.content} animate={m === fresh} onType={() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }} /></LightyBubble>))}
         </div>
       )}
       {busy && <LightyTyping />}

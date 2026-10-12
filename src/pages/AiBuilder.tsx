@@ -22,6 +22,7 @@ import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 import { lightTick } from '../lib/haptics';
+import { LightyTyped } from '../components/lighty/LightyTyped';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -94,6 +95,8 @@ const AiBuilder: React.FC = () => {
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // The answer that just arrived types itself out (LT-271).
+  const [freshMessage, setFreshMessage] = useState<Message | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -207,22 +210,20 @@ const AiBuilder: React.FC = () => {
       setDraftConfig(newConfig);
       setGeneratedThisSession(true);
       setLogoFile(null);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          // LT-052: the model writes its own reply, grounded in what it built.
-          // Canned line stays as the fallback for older responses.
-          content: result.message || t('aiBuilder.generatedMessage', { name: newConfig.businessName }),
-        },
-      ]);
+      const answer: Message = {
+        role: 'assistant',
+        // LT-052: the model writes its own reply, grounded in what it built.
+        // Canned line stays as the fallback for older responses.
+        content: result.message || t('aiBuilder.generatedMessage', { name: newConfig.businessName }),
+      };
+      setMessages((prev) => [...prev, answer]);
+      setFreshMessage(answer);
       lightTick();
       if (activeTab === 'chat') setActiveTab('preview');
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: t('aiBuilder.errorMessage') },
-      ]);
+      const answer: Message = { role: 'assistant', content: t('aiBuilder.errorMessage') };
+      setMessages((prev) => [...prev, answer]);
+      setFreshMessage(answer);
     } finally {
       setIsGenerating(false);
     }
@@ -614,7 +615,12 @@ const AiBuilder: React.FC = () => {
                             Lighty AI
                           </span>
                           <div className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm px-5 py-4 text-gray-700 dark:text-slate-200 text-sm shadow-sm border border-gray-100 dark:border-slate-600/50 leading-relaxed rounded-3xl rounded-tl-sm">
-                            {msg.content}
+                            <LightyTyped
+                              plain
+                              text={msg.content}
+                              animate={msg === freshMessage}
+                              onType={() => messagesEndRef.current?.scrollIntoView({ block: 'nearest' })}
+                            />
                           </div>
                           {/* Suggestion pills — first message only, before any user input */}
                           {i === 0 && !hasUserMessage && (

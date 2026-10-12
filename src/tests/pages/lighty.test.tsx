@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import LightyPage from '../../pages/Lighty';
 import { assistantService } from '../../services/assistantApi';
 import { FloatingAiAssistant } from '../../components/ui/glowing-ai-chat-assistant';
+import { typewriterConfig } from '../../components/lighty/LightyTyped';
 import { LightyText } from '../../components/lighty/LightyChat';
 
 /**
@@ -88,6 +89,23 @@ describe("Lighty's page (LT-253)", () => {
     await waitFor(() => expect(assistantService.clear).toHaveBeenCalled());
     expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
     expect(screen.queryByText('Earlier answer')).toBeNull();
+  });
+
+  it('types out only the answer that just arrived; the thread loads whole (LT-271)', async () => {
+    typewriterConfig.enabled = true;
+    try {
+      vi.mocked(assistantService.thread).mockResolvedValue([{ role: 'assistant', content: 'Earlier answer from the thread' }]);
+      vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'A brand new answer that Lighty writes out for you.' });
+      renderPage({ lightyMessage: 'Anything new?' });
+      expect(await screen.findByText('Earlier answer from the thread')).toBeInTheDocument();
+      // The new answer: whole for screen readers at once, typed for the eye.
+      const srOnly = await screen.findByText('A brand new answer that Lighty writes out for you.', { selector: '.sr-only' });
+      expect(srOnly).toBeInTheDocument();
+      await waitFor(() => expect(document.querySelector('.sr-only')).toBeNull(), { timeout: 3000 });
+      expect(screen.getByText('A brand new answer that Lighty writes out for you.')).toBeInTheDocument();
+    } finally {
+      typewriterConfig.enabled = false;
+    }
   });
 
   it('sends with Enter, not with Shift+Enter', async () => {

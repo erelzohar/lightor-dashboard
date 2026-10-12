@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { aiService, type ElementField } from '../../services/aiApi';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { lightTick } from '../../lib/haptics';
+import { LightyTyped } from '../lighty/LightyTyped';
 
 const QUICK = ['shorter', 'warmer', 'formal', 'fix'] as const;
 
@@ -32,6 +33,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
   const [busy, setBusy] = useState(false);
   const [asked, setAsked] = useState<string | null>(null);
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [fresh, setFresh] = useState<Exchange | null>(null); // types out (LT-271)
 
   const run = async (instruction: string, shown: string) => {
     const ask = instruction.trim();
@@ -54,6 +56,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
       answer = { ask: shown.trim(), answer: t(status === 429 ? 'siteEditor.ai.budget' : 'siteEditor.ai.failed'), tone: 'error' };
     }
     setExchanges((all) => [...all, answer].slice(-3));
+    setFresh(answer);
     setAsked(null);
     setBusy(false);
   };
@@ -108,7 +111,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
                   role={i === exchanges.length - 1 ? 'status' : undefined}
                   className={e.tone === 'error' ? 'text-red-600 dark:text-red-400' : e.tone === 'warn' ? 'text-amber-700 dark:text-amber-300' : undefined}
                 >
-                  {e.answer}
+                  <LightyTyped plain text={e.answer} animate={e === fresh} />
                 </span>
               </LightyBubble>
             </React.Fragment>
