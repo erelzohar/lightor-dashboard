@@ -44,23 +44,36 @@ interface Lighty3DProps {
   onReady?: () => void;
 }
 
-// Framing: the model is 1 unit tall with its feet at y=0; the view spans
-// 1.45 units so raised arms stay in frame.
+// Framing: the model is 1 unit tall with its feet at y=0; the box he is
+// given spans 1.45 units so raised arms stay in frame.
 const VIEW_H = 1.45;
 const FOV = 30;
 const LOOK_Y = VIEW_H / 2 - 0.065;
+// LT-270: his clips travel further than the box. Measured over every frame of
+// idle / wave / run / cheer: x −0.67…+0.82, y −0.15…+1.02, and up to 0.38
+// toward the camera (×1.16 in perspective) — the wave's lean ran him off the
+// side of a box narrower than it is tall, feet off the bottom. So the
+// transparent canvas reaches past the box by these margins (in model units)
+// while he keeps exactly the size and place the box gives him. Re-measure
+// when the model or its clips change (lighty-3d-mascot pipeline).
+const BLEED_X = 0.32;
+const BLEED_BOTTOM = 0.15;
+const STAGE_H = VIEW_H + BLEED_BOTTOM;
+const STAGE_Y = LOOK_Y - BLEED_BOTTOM / 2;
 
 export default function Lighty3D({ thinking, cheerKey, className = '', onReady }: Lighty3DProps) {
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
   const hostRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const ctlRef = useRef<{ setThinking: (on: boolean) => void; cheer: () => void } | null>(null);
   const thinkingRef = useRef(thinking);
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
+    const stage = stageRef.current;
+    if (!host || !stage) return;
     let renderer: WebGLRenderer;
     try {
       renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -76,7 +89,7 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.display = 'block';
-    host.appendChild(canvas);
+    stage.appendChild(canvas);
 
     const scene = new Scene();
     const pmrem = new PMREMGenerator(renderer);
@@ -85,8 +98,8 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
     pmrem.dispose();
 
     const camera = new PerspectiveCamera(FOV, 1, 0.1, 20);
-    camera.position.set(0, LOOK_Y, VIEW_H / 2 / Math.tan((FOV / 2) * Math.PI / 180));
-    camera.lookAt(0, LOOK_Y, 0);
+    camera.position.set(0, STAGE_Y, STAGE_H / 2 / Math.tan((FOV / 2) * Math.PI / 180));
+    camera.lookAt(0, STAGE_Y, 0);
 
     const rig = new Group();
     scene.add(rig);
@@ -104,8 +117,14 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
     const resize = () => {
       const w = host.clientWidth, h = host.clientHeight;
       if (!w || !h) return;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
+      // The stage is the box plus the bleed, at the box's own scale.
+      const unit = h / VIEW_H;
+      const bx = Math.round(BLEED_X * unit), bb = Math.round(BLEED_BOTTOM * unit);
+      stage.style.left = `${-bx}px`;
+      stage.style.right = `${-bx}px`;
+      stage.style.bottom = `${-bb}px`;
+      renderer.setSize(w + 2 * bx, h + bb, false);
+      camera.aspect = (w + 2 * bx) / (h + bb);
       camera.updateProjectionMatrix();
       if (!running) draw();
     };
@@ -217,6 +236,13 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
       className={className}
       aria-hidden="true"
       style={{ opacity: ready ? 1 : 0, transition: 'opacity 0.5s ease' }}
-    />
+    >
+      {/* The caller positions the box (the floating button makes it absolute),
+          so the stage's anchor is this inner box. The stage bleeds past it
+          (LT-270) and never takes a click from what is around him. */}
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <div ref={stageRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }} />
+      </div>
+    </div>
   );
 }
