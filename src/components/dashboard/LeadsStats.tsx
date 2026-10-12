@@ -55,8 +55,10 @@ const LeadsStats: React.FC<LeadsStatsProps> = ({ stats, onOpenLeads }) => {
       key: 'month',
       label: t('dashboard.leadsStats.thisMonth'),
       value: String(stats.thisMonth),
-      change: monthChange(stats.thisMonth, stats.lastMonth),
-      sub: t('dashboard.leadsStats.lastMonth', { count: stats.lastMonth }),
+      // Against last month up to the same day and hour (LT-281): a running
+      // month against all of the last one always looked like a drop.
+      change: monthChange(stats.thisMonth, stats.lastMonthToDate ?? stats.lastMonth),
+      sub: t('dashboard.leadsStats.lastMonth', { count: stats.lastMonthToDate ?? stats.lastMonth }),
       series: stats.perDay.map((d) => d.count),
     },
     {

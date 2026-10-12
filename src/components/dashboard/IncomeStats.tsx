@@ -63,15 +63,43 @@ export const incomePeriods = (now: Date) => {
   return { days, weeks, months };
 };
 
+/**
+ * The previous period cut at the point the running one has reached (LT-281):
+ * yesterday up to this hour, last week up to this weekday and hour, last month
+ * up to this day of the month (its last day when it is shorter). Comparing a
+ * running period with the whole of the previous one always looked like a
+ * drop early on. Calendar steps again, never fixed milliseconds.
+ */
+export const samePointIn = (previous: Period, now: Date, unit: 'day' | 'week' | 'month'): Period => {
+  const { start } = previous;
+  const daysIn =
+    unit === 'day'
+      ? 0
+      : unit === 'week'
+        ? now.getDay()
+        : Math.min(now.getDate(), new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate()) - 1;
+  const end = new Date(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate() + daysIn,
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds()
+  );
+  return { start, end: end > previous.end ? previous.end : end };
+};
+
 const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
   const { t } = useTranslation();
 
   const cards = useMemo(() => {
-    const { days, weeks, months } = incomePeriods(new Date());
-    const build = (periods: Period[], label: string, changeLabel: string) => {
+    const now = new Date();
+    const { days, weeks, months } = incomePeriods(now);
+    const build = (periods: Period[], unit: 'day' | 'week' | 'month', label: string, changeLabel: string) => {
       const totals = periods.map((p) => incomeIn(appointments, p));
       const current = totals[totals.length - 1];
-      const previous = totals[totals.length - 2];
+      const previous = incomeIn(appointments, samePointIn(periods[periods.length - 2], now, unit));
       return {
         label,
         changeLabel,
@@ -82,9 +110,9 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       };
     };
     return [
-      build(days, t('incomeStats.today'), t('incomeStats.vsYesterday')),
-      build(weeks, t('incomeStats.weekly'), t('incomeStats.vsLastWeek')),
-      build(months, t('incomeStats.monthly'), t('incomeStats.vsLastMonth')),
+      build(days, 'day', t('incomeStats.today'), t('incomeStats.vsYesterday')),
+      build(weeks, 'week', t('incomeStats.weekly'), t('incomeStats.vsLastWeek')),
+      build(months, 'month', t('incomeStats.monthly'), t('incomeStats.vsLastMonth')),
     ];
   }, [appointments, t]);
 

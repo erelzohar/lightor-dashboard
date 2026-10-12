@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
-import IncomeStats, { incomeIn, incomePeriods } from '../../components/dashboard/IncomeStats';
+import IncomeStats, { incomeIn, incomePeriods, samePointIn } from '../../components/dashboard/IncomeStats';
 import { sparklinePath } from '../../components/ui/stats-widget';
 import { Appointment, AppointmentType } from '../../types';
 
@@ -49,6 +49,29 @@ describe('income periods', () => {
     const cancelled = { ...done(daysAgo(0, 1)), status: 'cancelled' };
     const r = incomeIn([done(daysAgo(0, 1), '120'), done(daysAgo(0, 2), ''), cancelled, done(daysAgo(3))], period);
     expect(r).toEqual({ income: 120, count: 2 });
+  });
+});
+
+describe('the previous period up to the same point (LT-281)', () => {
+  it('cuts yesterday at this hour, last week at this weekday, last month at this day', () => {
+    const now = new Date(2026, 9, 13, 15, 30); // Tuesday 13 October
+    const { days, weeks, months } = incomePeriods(now);
+    expect(samePointIn(days[5], now, 'day').end).toEqual(new Date(2026, 9, 12, 15, 30));
+    expect(samePointIn(weeks[5], now, 'week').end).toEqual(new Date(2026, 9, 6, 15, 30));
+    expect(samePointIn(months[4], now, 'month').end).toEqual(new Date(2026, 8, 13, 15, 30));
+  });
+
+  it("stops at the previous month's last day when it is shorter", () => {
+    const now = new Date(2026, 2, 31, 9, 0);
+    const { months } = incomePeriods(now);
+    expect(samePointIn(months[4], now, 'month').end).toEqual(new Date(2026, 1, 28, 9, 0));
+  });
+
+  it("leaves out yesterday's appointments after this hour", () => {
+    // Today 150 by 01:00; yesterday 100 at 09:00 and another 100 at 20:00.
+    render(<IncomeStats appointments={[done(daysAgo(0, 1), '150'), done(daysAgo(1, 9)), done(daysAgo(1, 20))]} />);
+    const [today] = screen.getAllByTestId('stats-widget');
+    expect(within(today).getByText('50%')).toBeInTheDocument(); // 150 vs 100 by 15:00, not vs 200
   });
 });
 

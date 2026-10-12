@@ -568,9 +568,9 @@
     "weekly": "Weekly Income",
     "monthly": "Monthly Income",
     "appointments": "appointments",
-    "vsYesterday": "vs yesterday",
-    "vsLastWeek": "vs last week",
-    "vsLastMonth": "vs last month"
+    "vsYesterday": "vs yesterday by this time",
+    "vsLastWeek": "vs this point last week",
+    "vsLastMonth": "vs this day last month"
   },
   "donutChart": {
     "title": "By Service Type",
@@ -622,7 +622,7 @@
     },
     "leadsStats": {
       "thisMonth": "Inquiries this month",
-      "lastMonth": "Last month: {{count}}",
+      "lastMonth": "Same point last month: {{count}}",
       "waiting": "Awaiting reply",
       "waitingCta": "Worth answering soon",
       "waitingNone": "All caught up",

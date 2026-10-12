@@ -568,9 +568,9 @@
     "weekly": "הכנסות השבוע",
     "monthly": "הכנסות החודש",
     "appointments": "תורים",
-    "vsYesterday": "לעומת אתמול",
-    "vsLastWeek": "לעומת שבוע שעבר",
-    "vsLastMonth": "לעומת חודש שעבר"
+    "vsYesterday": "לעומת אתמול באותה שעה",
+    "vsLastWeek": "לעומת אותו זמן בשבוע שעבר",
+    "vsLastMonth": "לעומת אותו יום בחודש שעבר"
   },
   "donutChart": {
     "title": "לפי סוג שירות",
@@ -622,7 +622,7 @@
     },
     "leadsStats": {
       "thisMonth": "פניות החודש",
-      "lastMonth": "בחודש שעבר: {{count}}",
+      "lastMonth": "עד אותו יום בחודש שעבר: {{count}}",
       "waiting": "מחכות לתשובה",
       "waitingCta": "כדאי לענות בהקדם",
       "waitingNone": "הכל מטופל",

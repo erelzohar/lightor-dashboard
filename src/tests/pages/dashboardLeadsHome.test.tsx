@@ -107,6 +107,15 @@ beforeEach(() => {
  * card for sharing the site.
  */
 describe('Leads home — the four numbers', () => {
+  it('compares the month with last month up to the same day (LT-281)', async () => {
+    vi.mocked(fetchLeadStats).mockResolvedValue(stats({ lastMonthToDate: 6 }));
+    render(<Dashboard />);
+
+    const month = await screen.findByTestId('leads-stat-month');
+    expect(within(month).getByText('100%')).toBeInTheDocument(); // 12 against 6, not against all 8
+    expect(within(month).getByText('dashboard.leadsStats.lastMonth(6)')).toBeInTheDocument();
+  });
+
   it('shows this month against last month, the waiting inquiries in amber, the response time and the handled share', async () => {
     render(<Dashboard />);
 

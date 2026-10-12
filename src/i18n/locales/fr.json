@@ -568,9 +568,9 @@
     "weekly": "Revenus hebdomadaires",
     "monthly": "Revenus mensuels",
     "appointments": "rendez-vous",
-    "vsYesterday": "vs hier",
-    "vsLastWeek": "vs semaine dernière",
-    "vsLastMonth": "vs mois dernier"
+    "vsYesterday": "vs hier à la même heure",
+    "vsLastWeek": "vs le même moment la semaine dernière",
+    "vsLastMonth": "vs le même jour le mois dernier"
   },
   "donutChart": {
     "title": "Par type de service",
@@ -622,7 +622,7 @@
     },
     "leadsStats": {
       "thisMonth": "Demandes ce mois-ci",
-      "lastMonth": "Le mois dernier : {{count}}",
+      "lastMonth": "Au même jour le mois dernier : {{count}}",
       "waiting": "En attente de réponse",
       "waitingCta": "À traiter rapidement",
       "waitingNone": "Tout est à jour",
