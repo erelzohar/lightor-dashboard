@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
+import { LeaveGuardProvider } from './contexts/LeaveGuardContext';
 import LegacyDashboardRedirect from './components/routing/LegacyDashboardRedirect';
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -62,7 +63,8 @@ function App() {
                   <Route path="/instagram-callback" element={<InstagramCallback />} />
                   <Route path="/verify" element={<VerifyEmail />} />
                   <Route path="/verify/:token" element={<VerifyEmail />} />
-                  <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  {/* LT-267: leaving a page with unsaved work asks first. */}
+                  <Route path="/" element={<ProtectedRoute><LeaveGuardProvider><Layout /></LeaveGuardProvider></ProtectedRoute>}>
                     <Route index element={<Dashboard />} />
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="customers" element={<Customers />} />

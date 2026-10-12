@@ -1,9 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CreditCard, Check, Loader2, CalendarX } from 'lucide-react';
+import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt } from 'lucide-react';
+import type { AxiosError } from 'axios';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchUpgradePlans, openUpgradeCheckout, cancelSubscription, resumeSubscription, UpgradePlan } from '../../services/paddleApi';
+import {
+  fetchUpgradePlans,
+  openUpgradeCheckout,
+  fetchPortalLinks,
+  cancelSubscription,
+  resumeSubscription,
+  UpgradePlan,
+  PortalLinks,
+} from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -24,6 +33,10 @@ const POLL_MAX_TRIES = 24;
  * Activation arrives asynchronously via the Paddle→backend webhook, which is
  * why completing a checkout shows "processing" rather than flipping the badge
  * locally — the badge changes when the server's user record does.
+ *
+ * LT-265: the plans are on offer during the free Plus period too — a
+ * subscription bought then is first charged when the period ends — and the
+ * payment method and invoices are managed in Paddle's customer portal.
  */
 interface BillingSectionProps {
   /**
@@ -43,6 +56,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [resuming, setResuming] = useState(false);
+  const [portalOpening, setPortalOpening] = useState<keyof PortalLinks | null>(null);
   const [entitlements, setEntitlements] = useState<MyEntitlements | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,10 +65,16 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const cancelScheduled = auth.user?.subscription?.cancelAtPeriodEnd === true;
   const nextBillDate = auth.user?.subscription?.nextBillDate;
   // In the app this card only reports the plan (LT-130, App Store 3.1.1): no
-  // prices, no upgrade, and no cancel or resume either, since each of those is
-  // managing a purchase made outside Apple. The usage meter stays — it is the
-  // account's own usage, not an offer.
+  // prices, no upgrade, and no cancel, resume or payment management either,
+  // since each of those is managing a purchase made outside Apple. The usage
+  // meter stays — it is the account's own usage, not an offer.
   const canSell = canOfferPurchases();
+  // Paddle's customer portal (LT-265) is for an account Paddle knows as a
+  // customer: /auth/me says so with customerId, and the statuses stand in for
+  // a record without one. Should Paddle not know it after all, the server
+  // answers 400 and the button says so.
+  const hasBillingAccount =
+    !!auth.user?.subscription?.customerId || ['active', 'past_due', 'canceled'].includes(status);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +108,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const pilot = entitlements?.pilot ?? null;
   const dateLocale =
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  const pilotDate = pilot ? new Date(pilot.until).toLocaleDateString(dateLocale) : null;
 
   // Payment confirmed on Paddle's side; now chase the webhook. Each round
   // re-reads /auth/me — the badge flips through context state the moment the
@@ -180,24 +201,56 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   };
 
   const handleUpgrade = async (priceId: string) => {
-    if (!auth.user?._id) return;
     setOpening(priceId);
-    const opened = await openUpgradeCheckout({
-      priceId,
-      userId: auth.user._id,
-      email: auth.user.email,
-      // Only a *completed* checkout means anything is processing. Opening the
-      // overlay used to fire the toast, which told window-shoppers their
-      // payment was underway before any form existed to fill.
-      onCompleted: () => {
-        toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
-        setAwaitingWebhook(true);
-        pollUntilActive(0);
-      },
-    });
-    setOpening(null);
-    if (!opened) {
-      toast.error(t('billing.checkoutUnavailable'));
+    try {
+      const opened = await openUpgradeCheckout({
+        priceId,
+        email: auth.user?.email,
+        language: i18n.language,
+        // Only a *completed* checkout means anything is processing. Opening the
+        // overlay used to fire the toast, which told window-shoppers their
+        // payment was underway before any form existed to fill.
+        onCompleted: () => {
+          toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
+          setAwaitingWebhook(true);
+          pollUntilActive(0);
+        },
+      });
+      if (!opened) toast.error(t('billing.checkoutUnavailable'));
+    } catch (error) {
+      if ((error as AxiosError)?.response?.status === 409) {
+        // Subscribed already — in another tab, or by a webhook this page has
+        // not seen yet: re-read the account and the card follows.
+        toast(t('billing.alreadySubscribed'));
+        await refreshUser();
+      } else {
+        toast.error(t('billing.checkoutUnavailable'));
+      }
+    } finally {
+      setOpening(null);
+    }
+  };
+
+  // Each visit to the portal gets a fresh, short-lived link from the server,
+  // so the tab is opened blank inside the click — the one moment a popup
+  // blocker allows it — and sent on once the link arrives. Blocked anyway,
+  // the portal opens in this tab instead.
+  const openPortal = async (link: keyof PortalLinks) => {
+    const tab = window.open('', '_blank');
+    if (tab) tab.opener = null;
+    setPortalOpening(link);
+    try {
+      const links = await fetchPortalLinks();
+      const url = links[link] ?? links.overview;
+      if (tab) tab.location.href = url;
+      else window.location.assign(url);
+    } catch (error) {
+      tab?.close();
+      toast.error(
+        t((error as AxiosError)?.response?.status === 400 ? 'billing.portalNoAccount' : 'billing.portalUnavailable')
+      );
+    } finally {
+      setPortalOpening(null);
     }
   };
 
@@ -214,6 +267,79 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     : status === 'past_due'
       ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
       : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
+
+  const manageButton =
+    canSell && hasBillingAccount ? (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => void openPortal('overview')}
+        disabled={portalOpening !== null}
+        leftIcon={<Receipt size={14} />}
+      >
+        {portalOpening === 'overview' ? t('billing.opening') : t('billing.manageBilling')}
+      </Button>
+    ) : null;
+
+  const meters = (
+    <>
+      {/* A leads site has no bookings to count (LT-199). */}
+      {appointmentCap !== null && !leadsSite && (
+        <div className="space-y-1.5" data-testid="appointments-meter">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-700 dark:text-gray-200 font-medium">
+              {t('billing.usageMeter', { used: appointmentsUsed, cap: appointmentCap })}
+            </span>
+            {capRatio >= 0.8 && (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                {capRatio >= 1 ? t('billing.usageFull') : t('billing.usageNearCap')}
+              </span>
+            )}
+          </div>
+          <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                capRatio >= 1
+                  ? 'bg-red-500'
+                  : capRatio >= 0.8
+                    ? 'bg-amber-500'
+                    : 'bg-primary'
+              }`}
+              style={{ width: `${Math.round(capRatio * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Contact-form leads (LT-197). */}
+      {leadsCap !== null && (
+        <div className="space-y-1.5" data-testid="leads-meter">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-700 dark:text-gray-200 font-medium">
+              {t('billing.leadsMeter', { used: leadsUsed, cap: leadsCap })}
+            </span>
+            {leadsRatio >= 0.8 && (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                {leadsRatio >= 1 ? t('billing.leadsFull') : t('billing.usageNearCap')}
+              </span>
+            )}
+          </div>
+          <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                leadsRatio >= 1
+                  ? 'bg-red-500'
+                  : leadsRatio >= 0.8
+                    ? 'bg-amber-500'
+                    : 'bg-primary'
+              }`}
+              style={{ width: `${Math.round(leadsRatio * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   return (
     <Card>
@@ -243,7 +369,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     : t('billing.cancelScheduledDescNoDate')}
                 </p>
                 {canSell && (
-                  <div>
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="primary"
                       onClick={handleResumeSubscription}
@@ -251,6 +377,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     >
                       {resuming ? t('billing.resuming') : t('billing.resumeCta')}
                     </Button>
+                    {manageButton}
                   </div>
                 )}
               </div>
@@ -268,6 +395,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     </p>
                   )}
                 </div>
+                {manageButton && <div>{manageButton}</div>}
                 {canSell && (
                   <button
                     type="button"
@@ -280,6 +408,28 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </>
             )}
           </div>
+        ) : status === 'past_due' && canSell ? (
+          <>
+            {/* A renewal Paddle could not collect (LT-265): the account is on
+                the free plan's limits until the payment method is fixed. The
+                app keeps the free-plan line below (LT-130). */}
+            <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <p>{t('billing.pastDueDesc')}</p>
+            </div>
+            {meters}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="primary"
+                onClick={() => void openPortal('updatePaymentMethod')}
+                disabled={portalOpening !== null}
+                leftIcon={<CreditCard size={16} />}
+              >
+                {portalOpening === 'updatePaymentMethod' ? t('billing.opening') : t('billing.updatePaymentMethod')}
+              </Button>
+              {manageButton}
+            </div>
+          </>
         ) : (
           <>
             {/* Under the pilot grant the free-plan copy would claim a cap the
@@ -287,73 +437,18 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 statement about the account, not an offer, so it shows in the
                 app as well (LT-130). */}
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {pilot
-                ? t('billing.pilotLine', { date: new Date(pilot.until).toLocaleDateString(dateLocale) })
+              {pilotDate
+                ? t('billing.pilotLine', { date: pilotDate })
                 : canSell
                   ? t('billing.freeDesc')
                   : t('billing.freeDescNative')}
             </p>
 
-            {/* A leads site has no bookings to count (LT-199). */}
-            {appointmentCap !== null && !leadsSite && (
-              <div className="space-y-1.5" data-testid="appointments-meter">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 dark:text-gray-200 font-medium">
-                    {t('billing.usageMeter', { used: appointmentsUsed, cap: appointmentCap })}
-                  </span>
-                  {capRatio >= 0.8 && (
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      {capRatio >= 1 ? t('billing.usageFull') : t('billing.usageNearCap')}
-                    </span>
-                  )}
-                </div>
-                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      capRatio >= 1
-                        ? 'bg-red-500'
-                        : capRatio >= 0.8
-                          ? 'bg-amber-500'
-                          : 'bg-primary'
-                    }`}
-                    style={{ width: `${Math.round(capRatio * 100)}%` }}
-                  />
-                </div>
-              </div>
-            )}
+            {meters}
 
-            {/* Contact-form leads (LT-197). */}
-            {leadsCap !== null && (
-              <div className="space-y-1.5" data-testid="leads-meter">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 dark:text-gray-200 font-medium">
-                    {t('billing.leadsMeter', { used: leadsUsed, cap: leadsCap })}
-                  </span>
-                  {leadsRatio >= 0.8 && (
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      {leadsRatio >= 1 ? t('billing.leadsFull') : t('billing.usageNearCap')}
-                    </span>
-                  )}
-                </div>
-                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      leadsRatio >= 1
-                        ? 'bg-red-500'
-                        : leadsRatio >= 0.8
-                          ? 'bg-amber-500'
-                          : 'bg-primary'
-                    }`}
-                    style={{ width: `${Math.round(leadsRatio * 100)}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* While the pilot grant applies there is nothing to sell either:
-                the plans grid would open a checkout for a plan the account
-                already has — and, during the pilot, a sandbox one. */}
-            {!canSell || pilot ? null : awaitingWebhook ? (
+            {/* On sale under the pilot grant too (LT-265): the server starts
+                such a subscription with its first charge at the grant's end. */}
+            {!canSell ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.processingHint')}
@@ -366,44 +461,60 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             ) : plans.length === 0 ? (
               <p className="text-sm text-gray-500">{t('billing.plansUnavailable')}</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {plans.map((plan) => (
-                  <div
-                    key={plan.priceId}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2"
-                  >
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {plan.productName}
-                    </span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {plan.formatted}
-                      {plan.interval && (
-                        <span className="text-sm font-normal text-gray-500">
-                          {' / '}
-                          {t(`billing.per_${plan.interval}`)}
-                        </span>
-                      )}
-                    </span>
-                    <Button
-                      variant="primary"
-                      onClick={() => handleUpgrade(plan.priceId)}
-                      disabled={opening !== null}
+              <div className="space-y-3">
+                {pilotDate && (
+                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                    {t('billing.pilotSubscribeNote', { date: pilotDate })}
+                  </p>
+                )}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {plans.map((plan) => (
+                    <div
+                      key={plan.priceId}
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2"
                     >
-                      {opening === plan.priceId
-                        ? t('billing.opening')
-                        : plan.trialDays
-                          ? t('billing.upgradeTrial', { days: plan.trialDays })
-                          : t('billing.upgrade')}
-                    </Button>
-                    {plan.trialDays && (
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 text-center">
-                        {t('billing.trialNote', { days: plan.trialDays })}
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {plan.productName}
                       </span>
-                    )}
-                  </div>
-                ))}
+                      <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {plan.formatted}
+                        {plan.interval && (
+                          <span className="text-sm font-normal text-gray-500">
+                            {' / '}
+                            {t(`billing.per_${plan.interval}`)}
+                          </span>
+                        )}
+                      </span>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleUpgrade(plan.priceId)}
+                        disabled={opening !== null}
+                      >
+                        {opening === plan.priceId
+                          ? t('billing.opening')
+                          : pilotDate
+                            ? t('billing.subscribe')
+                            : t('billing.upgrade')}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                {/* Paddle asks for the seller's own refund terms beside the plans (LT-265). */}
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <a
+                    href="https://lightor.app/refund.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    {t('billing.refundPolicy')}
+                  </a>
+                </p>
               </div>
             )}
+
+            {/* A plan that ended still has its invoices (LT-265). */}
+            {manageButton && <div>{manageButton}</div>}
           </>
         )}
       </div>

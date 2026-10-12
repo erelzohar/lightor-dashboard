@@ -29,6 +29,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import globals from '../../services/globals';
 import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsCount';
 import { isLeadsSite } from '../../utils/siteMode';
+import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
 
 interface SidebarProps {
@@ -127,13 +128,15 @@ const SidebarFooter: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout, auth } = useAuth();
+  // Unsaved work asks before either button leaves it (LT-267).
+  const { confirmLeave } = useLeaveGuard();
   const closeOnMobile = () => window.innerWidth < 768 && setOpen(false);
   return (
     <div className="flex flex-col gap-1">
       <button
         onClick={() => {
           closeOnMobile();
-          navigate('/account');
+          confirmLeave(() => navigate('/account'), '/account');
         }}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
@@ -149,7 +152,10 @@ const SidebarFooter: React.FC = () => {
       </button>
 
       <button
-        onClick={logout}
+        onClick={() => {
+          closeOnMobile();
+          confirmLeave(logout);
+        }}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-colors"
       >
         <LogOut className={iconClasses} />
@@ -170,6 +176,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { auth } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  // A page with unsaved work (the site editor) is asked about first (LT-267).
+  const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
   // A leads site (LT-199) has no calendar: no Appointments and no Customers
@@ -263,7 +271,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                         badge,
                       }}
                       className={linkClasses}
-                      onClick={() => window.innerWidth < 768 && setOpen(false)}
+                      onClick={(event) => {
+                        guardLinkClick(event, path);
+                        if (window.innerWidth < 768) setOpen(false);
+                      }}
                     />
                   );
                 })}

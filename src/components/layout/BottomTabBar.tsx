@@ -4,6 +4,7 @@ import { LayoutDashboard, CalendarRange, Calendar, Menu, Palette, Inbox } from '
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
+import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
 
 interface BottomTabBarProps {
@@ -37,6 +38,8 @@ interface BottomTabBarProps {
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
+  // A page with unsaved work (the site editor) is asked about first (LT-267).
+  const { guardLinkClick } = useLeaveGuard();
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
   // Customers (booking sites) and Services (leads sites) are under "More".
   const lighty = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' };
@@ -86,6 +89,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
           key={path}
           to={path}
           end={path === '/'}
+          onClick={(event) => guardLinkClick(event, path)}
           className={({ isActive }) => cn(itemClasses, isActive ? activeClasses : idleClasses)}
         >
           {/* The same dot the collapsed sidebar rail puts on the icon. */}

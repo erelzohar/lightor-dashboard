@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import toast from 'react-hot-toast';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import SiteEditor from '../../pages/SiteEditor';
+import BottomTabBar from '../../components/layout/BottomTabBar';
+import { LeaveGuardProvider } from '../../contexts/LeaveGuardContext';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
 import type { WebConfig } from '../../types';
@@ -283,6 +285,72 @@ describe('the site editor (LT-249)', () => {
       { id: 'b2', type: 'faq', source: 'faq', mod: { hidden: true } },
       { id: 'b3', type: 'footer', source: 'footer' },
     ]));
+  });
+
+  // ── LT-267: leaving the editor for another page of the dashboard ──
+  /** The editor inside the dashboard's frame: its pages and the phone tab bar around them. */
+  const renderInDashboard = () => {
+    const view = render(
+      <MemoryRouter initialEntries={['/design']}>
+        <LeaveGuardProvider>
+          <Routes>
+            <Route element={<><Outlet /><BottomTabBar onMore={() => undefined} /></>}>
+              <Route path="/design" element={<SiteEditor />} />
+              <Route path="/appointments" element={<p>appointments page</p>} />
+            </Route>
+          </Routes>
+        </LeaveGuardProvider>
+      </MemoryRouter>
+    );
+    toSite = vi.fn();
+    Object.defineProperty(iframe().contentWindow as Window, 'postMessage', { configurable: true, value: toSite });
+    return view;
+  };
+  const hideFaq = async () => {
+    await fromSite({ type: 'LT_READY' });
+    fireEvent.click(row('b2').getByLabelText('siteEditor.sections.hide'));
+    await waitFor(() => expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled());
+  };
+  const appointmentsTab = () => screen.getByText('common.appointments').closest('a')!;
+
+  it('asks before a tab leaves unsaved changes; staying keeps them', async () => {
+    renderInDashboard();
+    await hideFaq();
+
+    fireEvent.click(appointmentsTab());
+    expect(await screen.findByText('common.unsavedLeaveTitle')).toBeInTheDocument();
+    expect(screen.queryByText('appointments page')).toBeNull();
+
+    fireEvent.click(screen.getByText('common.stay'));
+    await waitFor(() => expect(screen.queryByText('common.unsavedLeaveTitle')).toBeNull());
+    expect(iframe()).toBeInTheDocument();
+    expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled();
+    expect(row('b2').getByText('siteEditor.sections.hiddenTag')).toBeInTheDocument();
+
+    fireEvent.click(appointmentsTab());
+    fireEvent.click(await screen.findByText('common.leaveWithoutSaving'));
+    expect(await screen.findByText('appointments page')).toBeInTheDocument();
+    expect(updateWebConfig).not.toHaveBeenCalled();
+  });
+
+  it('leaves at once with nothing unsaved', async () => {
+    renderInDashboard();
+    await fromSite({ type: 'LT_READY' });
+
+    fireEvent.click(appointmentsTab());
+    expect(await screen.findByText('appointments page')).toBeInTheDocument();
+    expect(screen.queryByText('common.unsavedLeaveTitle')).toBeNull();
+  });
+
+  it('asks nothing once the changes are saved', async () => {
+    renderInDashboard();
+    await hideFaq();
+    fireEvent.click(screen.getByText('siteEditor.save'));
+    await waitFor(() => expect(screen.getByText('siteEditor.saved').closest('button')).toBeDisabled());
+
+    fireEvent.click(appointmentsTab());
+    expect(await screen.findByText('appointments page')).toBeInTheDocument();
+    expect(screen.queryByText('common.unsavedLeaveTitle')).toBeNull();
   });
 });
 

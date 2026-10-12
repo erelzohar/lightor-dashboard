@@ -45,13 +45,13 @@ export interface UpgradePlan {
   formatted: string;
   productName: string;
   interval?: string;
-  /** Only set when Paddle actually grants a trial on this price. */
-  trialDays?: number;
 }
 
-const DAYS_PER_INTERVAL: Record<string, number> = { day: 1, week: 7, month: 30, year: 365 };
-
-/** Live prices for the configured plans; empty when Paddle is unreachable. */
+/**
+ * Live prices for the configured plans; empty when Paddle is unreachable.
+ * No trial is read off the price (LT-265): when the first charge comes is the
+ * server's to say, per checkout — see `createCheckout`.
+ */
 export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
   const priceIds = [
     import.meta.env.VITE_PADDLE_PRICE_ID_BASIC as string | undefined,
@@ -66,17 +66,12 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
       items: priceIds.map((priceId) => ({ priceId, quantity: 1 })),
     });
 
-    return response.data.details.lineItems.map((li) => {
-      const trial = li.price.trialPeriod;
-      return {
-        priceId: li.price.id,
-        formatted: li.formattedUnitTotals.total,
-        productName: li.product.name,
-        interval: li.price.billingCycle?.interval,
-        // Undefined when Paddle has no trial on this price — never invent one.
-        trialDays: trial ? trial.frequency * (DAYS_PER_INTERVAL[trial.interval] ?? 1) : undefined,
-      };
-    });
+    return response.data.details.lineItems.map((li) => ({
+      priceId: li.price.id,
+      formatted: li.formattedUnitTotals.total,
+      productName: li.product.name,
+      interval: li.price.billingCycle?.interval,
+    }));
   } catch {
     // "Price unknown" renders as unavailable; never substitute a number
     // Paddle would not actually charge.
@@ -84,33 +79,96 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
   }
 }
 
+// LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
+const paddlePost = (path: string, body: object = {}) => {
+  const token = localStorage.getItem('lightor');
+  return apiClient.post(
+    `${globals.paddleUrl}${path}`,
+    body,
+    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
+  );
+};
+
+/** The transaction the server prepared for a checkout (LT-265). */
+export interface CheckoutTransaction {
+  transactionId: string;
+  /** Days before the first charge: what is left of the free Plus period, 0 once it is over. */
+  trialDays: number;
+  /** When the first charge comes; null when it comes at checkout. */
+  firstChargeAt: string | null;
+}
+
 /**
- * Open the checkout overlay for one price.
- *
- * `userId` rides along as customData — it is how the webhook, which receives
- * events with no session attached, knows whose subscription to activate.
+ * The server prepares each checkout's transaction (LT-265). It plants
+ * custom_data.userId itself — the webhook, which receives events with no
+ * session attached, knows whose subscription to activate by it — and while
+ * the account's free Plus period lasts it puts the first charge at its end.
+ * Throws the axios error when refused: 409 when the account already has a
+ * subscription, 502/503 when Paddle or billing is unavailable.
+ */
+export async function createCheckout(priceId: string): Promise<CheckoutTransaction> {
+  const response = await paddlePost('checkout', { priceId });
+  const data = response.data?.data;
+  if (!response.data?.success || !data?.transactionId) throw new Error('Checkout failed');
+  return {
+    transactionId: data.transactionId,
+    trialDays: data.trialDays ?? 0,
+    firstChargeAt: data.firstChargeAt ?? null,
+  };
+}
+
+// The dashboard's languages that Paddle's checkout speaks. Hebrew is not one
+// of them, so a Hebrew dashboard leaves the checkout's language to the browser.
+const CHECKOUT_LOCALES = ['en', 'ar', 'fr', 'es'];
+
+/**
+ * Open the checkout overlay for one price, on a transaction the server
+ * prepared. Null when Paddle.js is not set up in this build; a transaction
+ * the server refuses throws (see `createCheckout`).
  */
 export async function openUpgradeCheckout(opts: {
   priceId: string;
-  userId: string;
   email?: string;
+  /** The dashboard's language — the checkout's too, when Paddle speaks it. */
+  language?: string;
   /**
    * Fires when the buyer finishes Paddle's form — the earliest honest moment
    * for any "payment is processing" messaging. Opening the overlay proves
    * nothing; most opens are window-shopping.
    */
   onCompleted?: () => void;
-}): Promise<boolean> {
+}): Promise<CheckoutTransaction | null> {
   const paddle = await getPaddle();
-  if (!paddle) return false;
+  if (!paddle) return null;
 
+  const transaction = await createCheckout(opts.priceId);
+  const locale = opts.language?.split('-')[0];
   pendingCompletedCallback = opts.onCompleted ?? null;
   paddle.Checkout.open({
-    items: [{ priceId: opts.priceId, quantity: 1 }],
+    transactionId: transaction.transactionId,
     ...(opts.email ? { customer: { email: opts.email } } : {}),
-    customData: { userId: opts.userId },
+    ...(locale && CHECKOUT_LOCALES.includes(locale) ? { settings: { locale } } : {}),
   });
-  return true;
+  return transaction;
+}
+
+/** Links into Paddle's customer portal — fresh and short-lived, never kept. */
+export interface PortalLinks {
+  overview: string;
+  updatePaymentMethod?: string;
+  cancel?: string;
+}
+
+/**
+ * A new customer-portal session (LT-265): the payment method, invoices and
+ * the subscription, on Paddle's own pages. Throws the axios error when
+ * refused — 400 when Paddle has no customer for this account yet.
+ */
+export async function fetchPortalLinks(): Promise<PortalLinks> {
+  const response = await paddlePost('portal');
+  const data = response.data?.data;
+  if (!response.data?.success || !data?.overview) throw new Error('Portal unavailable');
+  return data as PortalLinks;
 }
 
 /**
@@ -121,13 +179,7 @@ export async function openUpgradeCheckout(opts: {
  * for the confirmation toast only.
  */
 export async function cancelSubscription(): Promise<{ activeUntil: string | null }> {
-  // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
-  const token = localStorage.getItem('lightor');
-  const response = await apiClient.post(
-    `${globals.paddleUrl}subscription/cancel`,
-    {},
-    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
-  );
+  const response = await paddlePost('subscription/cancel');
   if (!response.data?.success) throw new Error('Cancellation failed');
   return { activeUntil: response.data.data?.activeUntil ?? null };
 }
@@ -138,12 +190,6 @@ export async function cancelSubscription(): Promise<{ activeUntil: string | null
  * fresh checkout instead.
  */
 export async function resumeSubscription(): Promise<void> {
-  // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
-  const token = localStorage.getItem('lightor');
-  const response = await apiClient.post(
-    `${globals.paddleUrl}subscription/resume`,
-    {},
-    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
-  );
+  const response = await paddlePost('subscription/resume');
   if (!response.data?.success) throw new Error('Resume failed');
 }

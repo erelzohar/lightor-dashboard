@@ -33,6 +33,11 @@ import { lightTick } from '../../lib/haptics';
 interface AppointmentCalendarProps {
   appointments: Appointment[];
   onAppointmentClick: (appointment: Appointment) => void;
+  /**
+   * A day to open on, in the day view (LT-267): one a link names. Each new
+   * Date jumps there, so the same day asked for twice is shown twice.
+   */
+  openDay?: Date | null;
 }
 
 // ── Deterministic palette per appointment type ─────────────────────────────
@@ -79,6 +84,7 @@ const STATUS_CFG = [
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments,
   onAppointmentClick,
+  openDay = null,
 }) => {
   const [currentDate, setCurrentDate]           = useState(new Date());
   const [viewMode,    setViewMode]              = useState<ViewMode>('week');
@@ -240,6 +246,16 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setCurrentDate(target);
     lightTick();
   };
+  // A day asked for from outside (LT-267): no slide, the day on its own.
+  useEffect(() => {
+    if (!openDay) return;
+    setSlideDir(0);
+    setSelectedAppt(null);
+    setCurrentDate(openDay);
+    setMiniCalMonth(startOfMonth(openDay));
+    setViewMode('day');
+    setVisibleDays(1);
+  }, [openDay]);
   const prevPeriod = () => goTo(addDays(currentDate, -visibleDays));
   const nextPeriod = () => goTo(addDays(currentDate, visibleDays));
   const goToday    = () => { goTo(new Date()); setMiniCalMonth(startOfMonth(new Date())); };

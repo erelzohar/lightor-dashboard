@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 
 /**
  * LT-253 — Lighty's face and voice wherever the owner talks to the AI: the
@@ -40,7 +41,9 @@ const ltrRanges = (text: string, keyBase: string): React.ReactNode[] => {
   return out;
 };
 
-const inline = (text: string, keyBase: string): React.ReactNode[] => {
+type LinkClick = (event: React.MouseEvent<HTMLAnchorElement>, to: string) => void;
+
+const inline = (text: string, keyBase: string, onLinkClick: LinkClick): React.ReactNode[] => {
   const out: React.ReactNode[] = [];
   let at = 0;
   let n = 0;
@@ -48,7 +51,7 @@ const inline = (text: string, keyBase: string): React.ReactNode[] => {
     if (m.index! > at) out.push(...ltrRanges(text.slice(at, m.index), `${keyBase}-t${n}`));
     if (m[3] !== undefined) {
       // A link may sit inside the bold ("**[the hours](/schedule-vacations)**").
-      out.push(<strong key={`${keyBase}-${n++}`} className="font-semibold">{inline(m[3], `${keyBase}-b${n}`)}</strong>);
+      out.push(<strong key={`${keyBase}-${n++}`} className="font-semibold">{inline(m[3], `${keyBase}-b${n}`, onLinkClick)}</strong>);
     } else {
       const href = m[2];
       const ok = PAGES.includes(href.split(/[?#]/)[0]) && /^[\w/?=&.-]+$/.test(href);
@@ -56,6 +59,7 @@ const inline = (text: string, keyBase: string): React.ReactNode[] => {
         <Link
           key={`${keyBase}-${n++}`}
           to={href}
+          onClick={(event) => onLinkClick(event, href)}
           className="inline-flex items-center mx-0.5 px-2.5 py-0.5 rounded-full bg-white/80 dark:bg-slate-900/60 border border-violet-200 dark:border-violet-700/60 text-violet-700 dark:text-violet-200 text-[0.8125rem] font-medium no-underline hover:bg-white dark:hover:bg-slate-900"
         >
           {m[1]}
@@ -73,6 +77,8 @@ const inline = (text: string, keyBase: string): React.ReactNode[] => {
  * the dashboard's own pages as in-app buttons. Never HTML.
  */
 export const LightyText: React.FC<{ text: string }> = ({ text }) => {
+  // In the site editor's chat a link leaves the editor: unsaved work asks first (LT-267).
+  const { guardLinkClick } = useLeaveGuard();
   const blocks: React.ReactNode[] = [];
   let list: React.ReactNode[] = [];
   const flush = () => {
@@ -82,9 +88,9 @@ export const LightyText: React.FC<{ text: string }> = ({ text }) => {
   text.split('\n').forEach((raw, i) => {
     const line = raw.trim();
     const item = line.match(/^[-•*]\s+(.*)$/);
-    if (item) { list.push(<li key={`li-${i}`}>{inline(item[1], `li-${i}`)}</li>); return; }
+    if (item) { list.push(<li key={`li-${i}`}>{inline(item[1], `li-${i}`, guardLinkClick)}</li>); return; }
     flush();
-    if (line) blocks.push(<p key={`p-${i}`} className="my-0.5">{inline(line, `p-${i}`)}</p>);
+    if (line) blocks.push(<p key={`p-${i}`} className="my-0.5">{inline(line, `p-${i}`, guardLinkClick)}</p>);
   });
   flush();
   return <div className="leading-relaxed break-words">{blocks}</div>;

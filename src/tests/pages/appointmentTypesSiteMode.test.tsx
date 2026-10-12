@@ -9,6 +9,7 @@ import {
   getAppointmentTypes,
   createAppointmentType,
   updateAppointmentType,
+  deleteAppointmentType,
 } from '../../services/appointmentsApi';
 import type { AppointmentType, WebConfig } from '../../types';
 
@@ -208,5 +209,34 @@ describe('Services page — form header', () => {
 
     expect(await screen.findByText('appointmentTypes.tapToAdd')).toBeInTheDocument();
     expect(screen.queryByText(/Click to add|Fill in the details|Editing "/)).toBeNull();
+  });
+});
+
+// LT-267: the empty list's hint was hard-coded English as well, and a
+// service's edit and delete buttons appeared only on hover — which a touch
+// screen does not have.
+describe('Services page — empty list and row actions', () => {
+  it("says the empty list's hint through i18n", async () => {
+    renderPage('book');
+
+    expect(await screen.findByText('appointmentTypes.emptyHint')).toBeInTheDocument();
+    expect(screen.queryByText(/Click the button above/)).toBeNull();
+  });
+
+  it("shows a service's delete button without hover, and still confirms first", async () => {
+    answerTypes(() => [service({ price: '100', durationMS: '3600000' })]);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderPage('book');
+
+    const remove = await screen.findByRole('button', { name: 'common.delete' });
+    const shownWith = remove.parentElement!.className.split(/\s+/);
+    // Visible by default and on any screen without hover; a desktop pointer reveals it on hover.
+    expect(shownWith).toEqual(expect.arrayContaining(['opacity-100', 'md:opacity-0', 'md:group-hover:opacity-100', '[@media(hover:none)]:opacity-100']));
+    expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
+
+    fireEvent.click(remove);
+    expect(confirm).toHaveBeenCalledWith('appointmentTypes.deleteConfirm');
+    expect(deleteAppointmentType).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 });

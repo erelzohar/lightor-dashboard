@@ -1,21 +1,30 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import toast from 'react-hot-toast';
 import BillingSection from '../../components/account/BillingSection';
-import { fetchUpgradePlans } from '../../services/paddleApi';
+import { fetchUpgradePlans, openUpgradeCheckout, fetchPortalLinks, type PortalLinks } from '../../services/paddleApi';
+import { stubLocation } from '../helpers/location';
 
 const { t } = vi.hoisted(() => ({ t: vi.fn((key: string) => key) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
 vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
-const authState = vi.hoisted(() => ({ subscription: { status: 'free' } as Record<string, unknown> }));
+const authState = vi.hoisted(() => ({
+  subscription: { status: 'free' } as Record<string, unknown>,
+  refreshUser: vi.fn(),
+}));
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({ auth: { user: { subscription: authState.subscription } }, refreshUser: vi.fn() }),
+  useAuth: () => ({
+    auth: { user: { email: 'owner@biz.co', subscription: authState.subscription } },
+    refreshUser: authState.refreshUser,
+  }),
 }));
 vi.mock('../../services/paddleApi', () => ({
   fetchUpgradePlans: vi.fn(() =>
     Promise.resolve([{ priceId: 'p1', productName: 'Plus', formatted: '₪49', interval: 'month' }])
   ),
   openUpgradeCheckout: vi.fn(),
+  fetchPortalLinks: vi.fn(),
   cancelSubscription: vi.fn(),
   resumeSubscription: vi.fn(),
 }));
@@ -39,11 +48,17 @@ const inApp = () => {
 
 beforeEach(() => {
   vi.mocked(fetchUpgradePlans).mockClear();
+  vi.mocked(openUpgradeCheckout).mockReset();
+  vi.mocked(fetchPortalLinks).mockReset();
+  vi.mocked(toast).mockClear();
+  vi.mocked(toast.error).mockClear();
+  authState.refreshUser.mockReset();
   authState.subscription = { status: 'free' };
   entitlementsState.data = freeEntitlements();
 });
 afterEach(() => {
   delete w.Capacitor;
+  vi.restoreAllMocks();
 });
 
 /**
@@ -109,6 +124,7 @@ describe('BillingSection pilot grant', () => {
     expect(await screen.findByText('billing.usageMeter')).toBeInTheDocument();
     expect(screen.getByText('billing.freeDesc')).toBeInTheDocument();
     expect(screen.queryByText('billing.pilotLine')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.pilotSubscribeNote')).not.toBeInTheDocument();
   });
 
   it('shows the dated pilot line instead of the free-plan copy while the grant applies', async () => {
@@ -123,13 +139,22 @@ describe('BillingSection pilot grant', () => {
     expect(screen.queryByText('billing.usageMeter')).not.toBeInTheDocument();
   });
 
-  it('offers nothing to buy on the web either while the grant applies', async () => {
+  /**
+   * LT-265: an owner may subscribe during the free period; the first charge
+   * comes when it ends. So the plans are on offer, under a line saying when
+   * the first charge is.
+   */
+  it('offers the plans on the web during the grant too, saying when the first charge comes', async () => {
     entitlementsState.data = pilotEntitlements();
     render(<BillingSection />);
-    expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
+    expect(await screen.findByText('billing.pilotSubscribeNote')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.pilotSubscribeNote', {
+      date: new Date(PILOT_UNTIL).toLocaleDateString('en-GB'),
+    });
+    expect(screen.getByText('₪49')).toBeInTheDocument();
+    // "Subscribe", not "Upgrade": the account has Plus already.
+    expect(screen.getByRole('button', { name: 'billing.subscribe' })).toBeInTheDocument();
     expect(screen.queryByText('billing.upgrade')).not.toBeInTheDocument();
-    expect(screen.queryByText('₪49')).not.toBeInTheDocument();
-    expect(screen.queryByText('billing.loadingPlans')).not.toBeInTheDocument();
   });
 
   it('shows the pilot line in the app too, still with nothing to buy', async () => {
@@ -139,6 +164,8 @@ describe('BillingSection pilot grant', () => {
     expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
     expect(screen.queryByText('billing.freeDescNative')).not.toBeInTheDocument();
     expect(screen.queryByText('billing.upgrade')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.subscribe')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.pilotSubscribeNote')).not.toBeInTheDocument();
     expect(fetchUpgradePlans).not.toHaveBeenCalled();
   });
 });
@@ -191,5 +218,134 @@ describe('BillingSection on a leads site', () => {
     render(<BillingSection />);
     expect(await screen.findByTestId('leads-meter')).toBeInTheDocument();
     expect(screen.getByTestId('appointments-meter')).toBeInTheDocument();
+  });
+});
+
+/**
+ * The checkout (LT-265): the server prepares the transaction, so the card
+ * hands over the plan, the owner's email and the dashboard's language, and
+ * says what a refusal means.
+ */
+describe('BillingSection checkout', () => {
+  it('opens the checkout for the chosen plan, for the signed-in owner, in the dashboard language', async () => {
+    vi.mocked(openUpgradeCheckout).mockResolvedValue({ transactionId: 'txn_1', trialDays: 0, firstChargeAt: null });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(openUpgradeCheckout).toHaveBeenCalledTimes(1));
+    expect(openUpgradeCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ priceId: 'p1', email: 'owner@biz.co', language: 'en' })
+    );
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('says so and re-reads the account when it is subscribed already (409)', async () => {
+    vi.mocked(openUpgradeCheckout).mockRejectedValue({ response: { status: 409 } });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('billing.alreadySubscribed'));
+    expect(authState.refreshUser).toHaveBeenCalled();
+  });
+
+  it('reports an unavailable checkout when billing is down (503)', async () => {
+    vi.mocked(openUpgradeCheckout).mockRejectedValue({ response: { status: 503 } });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.checkoutUnavailable'));
+    // The button is free again for another try.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'billing.upgrade' })).toBeEnabled());
+  });
+});
+
+/**
+ * Paddle's customer portal (LT-265): payment method and invoices for an
+ * account Paddle knows. Its links are fresh per visit, so the new tab is
+ * opened inside the click and sent on when the link arrives.
+ */
+describe('BillingSection payment management', () => {
+  const OVERVIEW = 'https://customer-portal.paddle.com/cpl_1?action=overview';
+  const UPDATE = 'https://customer-portal.paddle.com/cpl_1?action=update';
+  const blankTab = () => ({ opener: window as unknown, location: { href: '' }, close: vi.fn() });
+
+  it('opens the portal in a new tab opened inside the click', async () => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1', nextBillDate: '2026-11-21' };
+    let answer!: (links: PortalLinks) => void;
+    vi.mocked(fetchPortalLinks).mockReturnValue(new Promise((resolve) => { answer = resolve; }));
+    const tab = blankTab();
+    const open = vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
+    render(<BillingSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'billing.manageBilling' }));
+    // Before the link exists: the click is the one moment a popup is allowed.
+    expect(open).toHaveBeenCalledWith('', '_blank');
+    expect(tab.opener).toBeNull();
+    expect(fetchPortalLinks).toHaveBeenCalledTimes(1);
+
+    answer({ overview: OVERVIEW, updatePaymentMethod: UPDATE });
+    await waitFor(() => expect(tab.location.href).toBe(OVERVIEW));
+  });
+
+  it('opens the portal in this tab when the popup is blocked', async () => {
+    authState.subscription = { status: 'canceled', customerId: 'ctm_1' };
+    vi.mocked(fetchPortalLinks).mockResolvedValue({ overview: OVERVIEW });
+    vi.spyOn(window, 'open').mockReturnValue(null);
+    const { assign } = stubLocation('https://dashboard.lightor.app/account');
+    render(<BillingSection />);
+
+    // A plan that ended still has its invoices.
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.manageBilling' }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith(OVERVIEW));
+  });
+
+  it('says when Paddle has no customer for the account yet (400), and closes the blank tab', async () => {
+    authState.subscription = { status: 'active' };
+    vi.mocked(fetchPortalLinks).mockRejectedValue({ response: { status: 400 } });
+    const tab = blankTab();
+    vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
+    render(<BillingSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'billing.manageBilling' }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.portalNoAccount'));
+    expect(tab.close).toHaveBeenCalled();
+    expect(tab.location.href).toBe('');
+  });
+
+  it('is not offered to an account that never paid', async () => {
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.upgrade')).toBeInTheDocument();
+    expect(screen.queryByText('billing.manageBilling')).not.toBeInTheDocument();
+  });
+
+  it('warns a past-due account and opens the payment-method update', async () => {
+    authState.subscription = { status: 'past_due', customerId: 'ctm_1' };
+    vi.mocked(fetchPortalLinks).mockResolvedValue({ overview: OVERVIEW, updatePaymentMethod: UPDATE });
+    const tab = blankTab();
+    vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
+    render(<BillingSection />);
+
+    expect(screen.getByText('billing.pastDueDesc')).toBeInTheDocument();
+    expect(screen.getByText('billing.statusPastDue')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'billing.manageBilling' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'billing.updatePaymentMethod' }));
+    await waitFor(() => expect(tab.location.href).toBe(UPDATE));
+    // Buying again is not the way back: no plans while a payment is due.
+    await waitFor(() => expect(fetchUpgradePlans).toHaveBeenCalled());
+    expect(screen.queryByText('billing.upgrade')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.freeDesc')).not.toBeInTheDocument();
+  });
+
+  it('offers no payment management in the app, past due or paying', async () => {
+    inApp();
+    authState.subscription = { status: 'past_due', customerId: 'ctm_1' };
+    const { unmount } = render(<BillingSection />);
+    expect(await screen.findByText('billing.freeDescNative')).toBeInTheDocument();
+    expect(screen.queryByText('billing.pastDueDesc')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.updatePaymentMethod')).not.toBeInTheDocument();
+    expect(screen.queryByText('billing.manageBilling')).not.toBeInTheDocument();
+    unmount();
+
+    authState.subscription = { status: 'active', customerId: 'ctm_1', nextBillDate: '2026-11-21' };
+    render(<BillingSection />);
+    expect(screen.getByText('billing.activeDesc')).toBeInTheDocument();
+    expect(screen.queryByText('billing.manageBilling')).not.toBeInTheDocument();
   });
 });

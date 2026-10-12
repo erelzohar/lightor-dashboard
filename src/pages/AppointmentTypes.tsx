@@ -703,9 +703,12 @@ const AppointmentTypes: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                  {/* Revealed on hover on a desktop. A touch screen has no
+                      hover, so on a phone or tablet they always show (LT-267). */}
+                  <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity shrink-0 ml-2">
                     <button
                       onClick={e => { e.stopPropagation(); openForEdit(type); }}
+                      aria-label={t('common.edit')}
                       className="p-2 rounded-xl text-gray-400 hover:text-primary transition-colors"
                       style={{ background: 'transparent' }}
                       onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(139,92,246,0.1)')}
@@ -715,6 +718,7 @@ const AppointmentTypes: React.FC = () => {
                     </button>
                     <button
                       onClick={e => { e.stopPropagation(); handleDelete(type); }}
+                      aria-label={t('common.delete')}
                       className="p-2 rounded-xl text-gray-400 hover:text-red-400 transition-colors"
                       style={{ background: 'transparent' }}
                       onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)')}
@@ -747,7 +751,7 @@ const AppointmentTypes: React.FC = () => {
                 {t('appointmentTypes.noServices')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
-                Click the button above to add your first service.
+                {t('appointmentTypes.emptyHint')}
               </p>
             </motion.div>
           )}

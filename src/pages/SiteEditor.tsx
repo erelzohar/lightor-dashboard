@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import type { AxiosError } from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUnsavedChangesGuard } from '../contexts/LeaveGuardContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
@@ -230,6 +231,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [draft.dirty]);
+  // Leaving for another page of the dashboard asks first too (LT-267).
+  useUnsavedChangesGuard(draft.dirty);
 
   /** Uploads of this session that `kept` does not use any more go (best effort). */
   const dropUnusedUploads = async (kept: WebConfig) => {

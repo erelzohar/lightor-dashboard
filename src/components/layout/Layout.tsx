@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
@@ -13,6 +13,7 @@ import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
 import { greetingFor } from '../../lib/greeting';
+import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 
 // Pages that deliberately bleed to the edges: they already cancel the
 // layout's own padding with negative margins and size themselves, so the
@@ -31,6 +32,12 @@ const Layout: React.FC = () => {
   const { auth, updateUser } = useAuth();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  // Leaving a page with unsaved work asks first (LT-267).
+  const { confirmLeave } = useLeaveGuard();
+  const leaveTo = useCallback(
+    (to: string, state?: unknown) => confirmLeave(() => navigate(to, { state }), to),
+    [confirmLeave, navigate]
+  );
 
   const webConfigData = useAppSelector((state) => state.webConfig.data);
   const webConfigLoading = useAppSelector((state) => state.webConfig.loading);
@@ -42,8 +49,8 @@ const Layout: React.FC = () => {
   // notification taps routed to their `data.url`. Both no-ops on the web.
   useAppUrlOpen();
   useEffect(() => {
-    void bindNotificationTaps(navigate);
-  }, [navigate]);
+    void bindNotificationTaps(leaveTo);
+  }, [leaveTo]);
 
   // For new users, fetch their webConfig so we can determine if they have one
   useEffect(() => {
@@ -144,8 +151,8 @@ const Layout: React.FC = () => {
         <FloatingAiAssistant
           direction={direction}
           greeting={pathname === '/' ? t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name }) : undefined}
-          onSend={(msg) => navigate('/lighty', { state: { lightyMessage: msg } })}
-          onOpenPage={() => navigate('/lighty')}
+          onSend={(msg) => leaveTo('/lighty', { lightyMessage: msg })}
+          onOpenPage={() => leaveTo('/lighty')}
         />
       )}
 

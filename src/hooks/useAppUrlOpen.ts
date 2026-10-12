@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { App } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { isNativeApp } from '../lib/platform';
+import { useLeaveGuard } from '../contexts/LeaveGuardContext';
 
 /**
  * Native deep links and the Android back button (LT-128 §6).
@@ -20,6 +21,8 @@ import { isNativeApp } from '../lib/platform';
  */
 export const useAppUrlOpen = (): void => {
   const navigate = useNavigate();
+  // A link that opens the app mid-edit asks before leaving unsaved work (LT-267).
+  const { confirmLeave } = useLeaveGuard();
 
   useEffect(() => {
     if (!isNativeApp()) return;
@@ -29,7 +32,8 @@ export const useAppUrlOpen = (): void => {
       App.addListener('appUrlOpen', ({ url }) => {
         try {
           const parsed = new URL(url);
-          navigate(parsed.pathname + parsed.search + parsed.hash);
+          const to = parsed.pathname + parsed.search + parsed.hash;
+          confirmLeave(() => navigate(to), to);
         } catch {
           // Not a URL we can route; ignore rather than crash the shell.
         }
@@ -46,5 +50,5 @@ export const useAppUrlOpen = (): void => {
     return () => {
       for (const h of handles) void h.then((handle) => handle.remove()).catch(() => {});
     };
-  }, [navigate]);
+  }, [navigate, confirmLeave]);
 };

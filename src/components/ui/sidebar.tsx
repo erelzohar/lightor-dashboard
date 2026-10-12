@@ -172,7 +172,7 @@ export const SidebarLink = ({
   className?: string;
   /** react-router exact matching for the active state. */
   end?: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }) => {
   const { open, animate } = useSidebar();
   return (
