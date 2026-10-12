@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
  * LT-253 — Lighty's face and voice wherever the owner talks to the AI: the
  * Lighty page, the site editor's boxes, the floating button. The avatar is
  * the 3D Lighty rendered small (public/lighty-avatar.webp; casting while he
- * thinks, public/lighty-thinking.webp), so the little one and the live one on
- * his page are the same character.
+ * thinks, public/lighty-thinking.webp — the site editor's line only), so the
+ * little one and the live one on his page are the same character.
  */
 
 export const LightyAvatar: React.FC<{ size?: number; thinking?: boolean; className?: string }> = ({ size = 32, thinking = false, className = '' }) => (
@@ -107,11 +107,15 @@ export const OwnerBubble: React.FC<{ children: React.ReactNode }> = ({ children 
   </div>
 );
 
-/** Lighty is writing: his casting face and three dots. */
+/**
+ * Lighty is writing: three dots beside his still face. One animation per
+ * screen (LT-258) — the moving Lighty is the 3D one on his page, the
+ * editor line's face elsewhere — so the bubble's face keeps still.
+ */
 export const LightyTyping: React.FC<{ avatar?: number }> = ({ avatar = 32 }) => {
   const { t } = useTranslation();
   return (
-    <LightyBubble thinking avatar={avatar}>
+    <LightyBubble avatar={avatar}>
       <span className="inline-flex items-center gap-1 py-1" role="status" aria-label={t('lighty.thinking')}>
         {[0, 1, 2].map((i) => (
           <span key={i} className="w-1.5 h-1.5 rounded-full bg-violet-400 dark:bg-violet-300 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />

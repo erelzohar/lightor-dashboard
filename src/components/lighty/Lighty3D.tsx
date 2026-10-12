@@ -22,8 +22,9 @@ import lightyUrl from '../../assets/lighty.glb?url';
 /**
  * LT-253: the 3D Lighty, as the register wizard shows him (lightor-register
  * components/ui/lighty-3d.tsx, LT-241) — the rigged Meshy mascot with the
- * clips idle / wave / cast / cheer. He waves once when he arrives, then
- * idles; casts while he is thinking; cheers once when an answer lands.
+ * clips idle / wave / run / cheer. He waves once when he arrives, then
+ * idles; runs (in place, facing you) while he is thinking — Erel's pick over
+ * casting (LT-258); cheers once when an answer lands.
  * Reduced motion gets one still pose; without WebGL, or if the model fails
  * to load, he never fades in (the page around him works the same).
  *
@@ -31,10 +32,10 @@ import lightyUrl from '../../assets/lighty.glb?url';
  * show him).
  */
 
-type Clip = 'idle' | 'wave' | 'cast' | 'cheer';
+type Clip = 'idle' | 'wave' | 'run' | 'cheer';
 
 interface Lighty3DProps {
-  /** True while Lighty is working on an answer: he casts instead of idling. */
+  /** True while Lighty is working on an answer: he runs instead of idling. */
   thinking: boolean;
   /** Bumped when an answer lands — he cheers once. */
   cheerKey: number;
@@ -120,7 +121,7 @@ export default function Lighty3D({ thinking, cheerKey, className = '' }: Lighty3
       next.play();
       current = next;
     };
-    const base = (): Clip => (thinkingRef.current ? 'cast' : 'idle');
+    const base = (): Clip => (thinkingRef.current ? 'run' : 'idle');
 
     let last = 0;
     const frame = (now: number) => {
@@ -153,14 +154,14 @@ export default function Lighty3D({ thinking, cheerKey, className = '' }: Lighty3
       rig.add(gltf.scene);
       mixer = new AnimationMixer(gltf.scene);
       for (const clip of gltf.animations) {
-        if (['idle', 'wave', 'cast', 'cheer'].includes(clip.name)) actions[clip.name as Clip] = mixer.clipAction(clip);
+        if (['idle', 'wave', 'run', 'cheer'].includes(clip.name)) actions[clip.name as Clip] = mixer.clipAction(clip);
       }
       // A one-off ends: back to whatever he should be doing now.
       mixer.addEventListener('finished', (e) => {
         if (e.action === current) play(base());
       });
       ctlRef.current = {
-        setThinking: (on) => { if (on || !oneShot) play(on ? 'cast' : 'idle'); },
+        setThinking: (on) => { if (on || !oneShot) play(on ? 'run' : 'idle'); },
         cheer: () => { if (!thinkingRef.current) play('cheer', true); },
       };
       if (still) {
@@ -168,7 +169,7 @@ export default function Lighty3D({ thinking, cheerKey, className = '' }: Lighty3
         mixer.update(0);
         draw();
       } else if (thinkingRef.current) {
-        play('cast');
+        play('run');
       } else {
         play('wave', true);
       }

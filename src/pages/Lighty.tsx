@@ -20,10 +20,10 @@ const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;
  * LT-253 — Lighty, the owner's business chat (lightor-ai-split-plan.md §3):
  * questions about the calendar, free time, customers, leads and the setup,
  * answered from the business's own data. The live 3D Lighty heads the page —
- * big and waving on an empty conversation, small once it starts; he casts
- * while he thinks and cheers when an answer lands. A website request comes
- * back with a button to the site editor; a question typed into the floating
- * Lighty arrives here and is sent at once.
+ * big and waving on an empty conversation, small once it starts; he runs
+ * while he thinks (LT-258) and cheers when an answer lands. A website
+ * request comes back with a button to the site editor; a question typed into
+ * the floating Lighty arrives here and is sent at once.
  */
 const LightyPage: React.FC = () => {
   const { t } = useTranslation();
