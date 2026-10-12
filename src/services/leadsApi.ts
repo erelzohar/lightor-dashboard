@@ -30,6 +30,24 @@ export interface LeadsPage {
   counts: Record<LeadStatus, number>;
 }
 
+/** A leads site's home numbers (LT-274), as `/api/leads/stats` answers them. */
+export interface LeadStats {
+  /** Since the 1st of this month — the count the free plan's leads meter uses. */
+  thisMonth: number;
+  /** The previous calendar month. */
+  lastMonth: number;
+  /** Status 'new', all time. */
+  waiting: number;
+  /** Created in the last 30 days; handled = moved out of 'new'. */
+  last30: { total: number; handled: number };
+  /** Arrival to the first move out of 'new', last 30 days; null until one is measured. */
+  avgResponseMs: number | null;
+  /** 30 Israel calendar days, oldest first, today last. */
+  perDay: { date: string; count: number }[];
+  /** The contact form's first multiple-choice question over the last 30 days: top 4 and the rest. */
+  topic: { label: string; items: { value: string; count: number }[]; other: number } | null;
+}
+
 const authHeaders = () => {
   // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).
   const token = localStorage.getItem('lightor');
@@ -43,6 +61,14 @@ export const fetchLeads = async (params: { status?: LeadStatus; page?: number; l
     params,
   });
   return response.data as LeadsPage;
+};
+
+export const fetchLeadStats = async (): Promise<LeadStats> => {
+  const response = await apiClient.get(`${globals.leadsUrl}stats`, {
+    withCredentials: true,
+    headers: authHeaders(),
+  });
+  return response.data.data as LeadStats;
 };
 
 export const updateLeadStatus = async (id: string, status: LeadStatus): Promise<Lead> => {

@@ -7,6 +7,9 @@ import { ArrowUp, ArrowDown } from 'lucide-react';
  * are gone; it takes real values, sits on the dashboard's glass card, follows
  * dark mode and RTL, and keeps the line-draw animation (skipped under reduced
  * motion).
+ *
+ * The leads home's numbers use it too (LT-274): a figure there may have no
+ * trend to draw, wait on the owner (amber), or open the page behind it.
  */
 
 const W = 150;
@@ -38,21 +41,40 @@ export interface StatsWidgetProps {
   value: string;
   /** Percent change against the previous period; null when there is nothing to compare. */
   change: number | null;
-  /** The same figure over recent periods, oldest first, ending with the current one. */
-  series: number[];
+  /** The same figure over recent periods, oldest first, ending with the current one. Omit for no sparkline. */
+  series?: number[];
   /** A small line under the value, e.g. "4 appointments". */
   sub?: string;
   /** What the change compares with, e.g. "vs yesterday". */
   changeLabel?: string;
+  /** A muted note that may wrap, e.g. why there is no figure yet. */
+  hint?: string;
+  /** 'warning' tints the card amber: something is waiting on the owner. */
+  tone?: 'default' | 'warning';
+  /** Two to a row on phones: tighter there, and the sparkline only from sm up. */
+  compact?: boolean;
+  /** Makes the whole card a button. */
+  onClick?: () => void;
 }
 
-const StatsWidget: React.FC<StatsWidgetProps> = ({ label, value, change, series, sub, changeLabel }) => {
+const StatsWidget: React.FC<StatsWidgetProps> = ({
+  label,
+  value,
+  change,
+  series,
+  sub,
+  changeLabel,
+  hint,
+  tone = 'default',
+  compact = false,
+  onClick,
+}) => {
   const lineRef = useRef<SVGPathElement>(null);
   const areaRef = useRef<SVGPathElement>(null);
   const gradientId = `stats-area-${useId().replace(/:/g, '')}`;
 
   const rising = change === null || change >= 0;
-  const linePath = useMemo(() => sparklinePath(series), [series]);
+  const linePath = useMemo(() => (series ? sparklinePath(series) : ''), [series]);
   const areaPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
 
   // Draw the line in, then fade the area under it, whenever the data changes.
@@ -61,7 +83,12 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({ label, value, change, series,
     const area = areaRef.current;
     if (!line || !area || typeof line.getTotalLength !== 'function') return;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    const length = line.getTotalLength();
+    let length: number;
+    try {
+      length = line.getTotalLength();
+    } catch {
+      return; // a sparkline hidden on phones (compact) may have no geometry to measure
+    }
     line.style.transition = 'none';
     line.style.strokeDasharray = `${length} ${length}`;
     line.style.strokeDashoffset = `${length}`;
@@ -76,36 +103,43 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({ label, value, change, series,
 
   // Green up, orange down — the widget's own pair; neutral violet with nothing to compare.
   const stroke = change === null ? '#8b5cf6' : rising ? '#22c55e' : '#f97316';
+  const warning = tone === 'warning';
 
-  return (
-    <div className="glass-card rounded-3xl p-5 h-full" data-testid="stats-widget">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center flex-wrap gap-x-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-            <span>{label}</span>
-            {change !== null && (
-              <span
-                className={`inline-flex items-center font-semibold ${rising ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'}`}
-                dir="ltr"
-              >
-                {Math.abs(Math.round(change))}%
-                {rising ? <ArrowUp size={14} className="ms-0.5" aria-hidden="true" /> : <ArrowDown size={14} className="ms-0.5" aria-hidden="true" />}
-              </span>
-            )}
-          </div>
-          {/* The line keeps the page's direction (aligned with the label); only
-              the amount is isolated LTR so "₪1,240" never reorders in Hebrew. */}
-          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1.5 tabular-nums truncate">
-            <span dir="ltr">{value}</span>
-          </p>
-          {(sub || changeLabel) && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-              {[sub, changeLabel].filter(Boolean).join(' · ')}
-            </p>
+  const body = (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col min-w-0 flex-1">
+        <div className="flex items-center flex-wrap gap-x-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span>{label}</span>
+          {change !== null && (
+            <span
+              className={`inline-flex items-center font-semibold ${rising ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'}`}
+              dir="ltr"
+            >
+              {Math.abs(Math.round(change))}%
+              {rising ? <ArrowUp size={14} className="ms-0.5" aria-hidden="true" /> : <ArrowDown size={14} className="ms-0.5" aria-hidden="true" />}
+            </span>
           )}
         </div>
+        {/* The line keeps the page's direction (aligned with the label); the
+            figure is isolated with dir="auto": "₪1,240" has no letters and stays
+            LTR, so it never reorders in Hebrew, while "2.5 שעות" reads RTL. */}
+        <p
+          className={`${compact ? 'text-2xl sm:text-3xl' : 'text-3xl'} font-bold mt-1.5 tabular-nums truncate ${
+            warning ? 'text-amber-700 dark:text-amber-300' : 'text-gray-900 dark:text-white'
+          }`}
+        >
+          <span dir="auto">{value}</span>
+        </p>
+        {(sub || changeLabel) && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+            {[sub, changeLabel].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        {hint && <p className="text-xs leading-snug text-gray-400 dark:text-gray-500 mt-0.5">{hint}</p>}
+      </div>
 
-        <div className="w-2/5 max-w-[150px] h-16 shrink-0" aria-hidden="true">
+      {series && (
+        <div className={`w-2/5 max-w-[150px] h-16 shrink-0 ${compact ? 'hidden sm:block' : ''}`} aria-hidden="true">
           {/* SVG coordinates ignore RTL: time runs left to right in every language. */}
           <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
             <defs>
@@ -126,7 +160,27 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({ label, value, change, series,
             />
           </svg>
         </div>
-      </div>
+      )}
+    </div>
+  );
+
+  const card = `glass-card ${warning ? 'glass-tint-amber' : ''} rounded-3xl ${compact ? 'p-4 sm:p-5' : 'p-5'} h-full`;
+
+  // As a button: flex-col keeps the content at the top like the other cards
+  // (a button centres it vertically), and the lift on hover is the cue — a
+  // glass card's own border and shadow win over Tailwind's hover colours.
+  return onClick ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${card} w-full flex flex-col text-start transition-transform hover:-translate-y-0.5`}
+      data-testid="stats-widget"
+    >
+      {body}
+    </button>
+  ) : (
+    <div className={card} data-testid="stats-widget">
+      {body}
     </div>
   );
 };

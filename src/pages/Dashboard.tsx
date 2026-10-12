@@ -9,6 +9,10 @@ import AppointmentsGraph, { TimeRange } from '../components/dashboard/Appointmen
 import DashboardDonutChart from '../components/dashboard/DashboardDonutChart';
 import DashboardAppointmentsList from '../components/dashboard/DashboardAppointmentsList';
 import LeadsSummary from '../components/dashboard/LeadsSummary';
+import LeadsStats from '../components/dashboard/LeadsStats';
+import LeadsChart from '../components/dashboard/LeadsChart';
+import LeadsTopics, { hasTopics } from '../components/dashboard/LeadsTopics';
+import ShareSiteCard from '../components/dashboard/ShareSiteCard';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -24,7 +28,7 @@ import { resendVerification } from '../services/authApi';
 import { fetchMyEntitlements, MyEntitlements } from '../services/entitlementsApi';
 import toast from 'react-hot-toast';
 import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
-import { fetchLeads, LeadsPage } from '../services/leadsApi';
+import { fetchLeads, fetchLeadStats, LeadsPage, LeadStats } from '../services/leadsApi';
 import { isLeadsSite } from '../utils/siteMode';
 
 const Dashboard: React.FC = () => {
@@ -77,8 +81,11 @@ const Dashboard: React.FC = () => {
 
   // The leads summary (LT-199): the newest five, and the counts beside them.
   // `undefined` while it loads — the home shows neither Lighty's empty state
-  // nor the summary until it knows which one applies.
+  // nor the summary until it knows which one applies. The home's numbers
+  // (LT-274) load beside it, only here; a failed read (null) just leaves them
+  // out, and the list and the share card stay.
   const [leadsPage, setLeadsPage] = useState<LeadsPage | null | undefined>(undefined);
+  const [leadStats, setLeadStats] = useState<LeadStats | null | undefined>(undefined);
   useEffect(() => {
     if (!leadsSite) return;
     let cancelled = false;
@@ -91,6 +98,13 @@ const Dashboard: React.FC = () => {
       .catch(() => {
         if (!cancelled) setLeadsPage(null);
       });
+    fetchLeadStats()
+      .then((stats) => {
+        if (!cancelled) setLeadStats(stats);
+      })
+      .catch(() => {
+        if (!cancelled) setLeadStats(null);
+      });
     return () => {
       cancelled = true;
     };
@@ -98,6 +112,14 @@ const Dashboard: React.FC = () => {
   const leadsTotal = leadsPage
     ? (leadsPage.counts?.new ?? 0) + (leadsPage.counts?.contacted ?? 0) + (leadsPage.counts?.closed ?? 0)
     : undefined;
+  // The chart and the topics draw only what they have: neither after 30 days
+  // without an inquiry, and the topics not without an answered question.
+  const leadsPerDay = leadStats?.perDay.some((d) => d.count > 0) ? leadStats.perDay : null;
+  const leadsTopic = leadStats && hasTopics(leadStats.topic) ? leadStats.topic : null;
+
+  // The share card (LT-274) once the site is live: the owner's email is
+  // verified and the site has its address.
+  const shareSubDomain = auth.user?.isVerified ? webConfig?.subDomain?.trim() : undefined;
 
   const setupSteps = [
     { key: 'businessName', label: t('onboarding.step_businessName'), done: !!(webConfig?.businessName?.trim()), icon: Briefcase, tab: '/settings' },
@@ -466,13 +488,49 @@ const Dashboard: React.FC = () => {
         </motion.button>
       )}
 
-      {/* ── A leads site's home (LT-199): the summary replaces every booking widget ── */}
-      {leadsSite && leadsPage !== undefined && !!(leadsTotal || leadsPage === null) && (
-        <ErrorBoundaryWithLanguage
-          fallback={<DashboardFallback language={language} title={t('leads.errors.loadFailed')} />}
-        >
-          <LeadsSummary page={leadsPage} thisMonth={entitlements?.usage.leadsThisMonth} direction={direction} />
-        </ErrorBoundaryWithLanguage>
+      {/* ── A leads site's home (LT-199, LT-274): its numbers, the last 30 days
+          by day and by topic, and the latest inquiries replace every booking
+          widget. Nothing shows until both reads answer, so nothing jumps. ── */}
+      {leadsSite && leadsPage !== undefined && leadStats !== undefined && !!(leadsTotal || leadsPage === null) && (
+        <>
+          {leadStats && (
+            <ErrorBoundaryWithLanguage
+              fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
+            >
+              <LeadsStats stats={leadStats} onOpenLeads={() => navigate('/leads')} />
+            </ErrorBoundaryWithLanguage>
+          )}
+
+          {/* Chart (2/3) + topics (1/3), like the bookings graph and donut */}
+          {(leadsPerDay || leadsTopic) && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+              {leadsPerDay && (
+                <div className={leadsTopic ? 'lg:col-span-2' : 'lg:col-span-3'}>
+                  <ErrorBoundaryWithLanguage
+                    fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
+                  >
+                    <LeadsChart perDay={leadsPerDay} />
+                  </ErrorBoundaryWithLanguage>
+                </div>
+              )}
+              {leadsTopic && (
+                <div className={leadsPerDay ? 'lg:col-span-1' : 'lg:col-span-3'}>
+                  <ErrorBoundaryWithLanguage
+                    fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
+                  >
+                    <LeadsTopics topic={leadsTopic} />
+                  </ErrorBoundaryWithLanguage>
+                </div>
+              )}
+            </div>
+          )}
+
+          <ErrorBoundaryWithLanguage
+            fallback={<DashboardFallback language={language} title={t('leads.errors.loadFailed')} />}
+          >
+            <LeadsSummary page={leadsPage} direction={direction} />
+          </ErrorBoundaryWithLanguage>
+        </>
       )}
 
       {!leadsSite && appointments.length > 0 && (
@@ -526,6 +584,17 @@ const Dashboard: React.FC = () => {
             onAppointmentClick={setSelectedAppointment}
           />
         </ErrorBoundaryWithLanguage>
+      )}
+
+      {/* ── Share the site (LT-274): the foot of both homes once it is live —
+          and, with nothing in yet, the call to action under Lighty's welcome ── */}
+      {shareSubDomain && (!leadsSite || leadsPage !== undefined) && (
+        <ShareSiteCard
+          kind={leadsSite ? 'leads' : 'bookings'}
+          first={isEmpty}
+          businessName={webConfig?.businessName}
+          subDomain={shareSubDomain}
+        />
       )}
 
       </div>

@@ -617,10 +617,49 @@
     "newLeadsDesc": "Visitors left you a message on your site",
     "emptyDescLeads": "When a visitor leaves an inquiry on your site, it shows up here — with a button to call them back.",
     "leadsSummary": {
-      "new": "New",
-      "thisMonth": "This month",
       "latest": "Latest inquiries",
       "viewAll": "View all"
+    },
+    "leadsStats": {
+      "thisMonth": "Inquiries this month",
+      "lastMonth": "Last month: {{count}}",
+      "waiting": "Awaiting reply",
+      "waitingCta": "Worth answering soon",
+      "waitingNone": "All caught up",
+      "responseTime": "Avg. response time",
+      "responseNotYet": "Measured from the next inquiry you handle",
+      "last30": "Last 30 days",
+      "minutes": "{{value}} min",
+      "hour": "{{value}} hour",
+      "hours": "{{value}} hours",
+      "days": "{{value}} days",
+      "handled": "Handled",
+      "handledOf": "{{handled}} of {{total}} in 30 days"
+    },
+    "leadsChart": {
+      "title": "Inquiries in the last 30 days",
+      "dayCount": "Inquiries: {{count}}"
+    },
+    "leadsTopics": {
+      "title": "What people ask about",
+      "other": "Other"
+    },
+    "share": {
+      "titleLeads": "How to get more inquiries",
+      "titleBookings": "How to get more bookings",
+      "firstLeads": "Get your first inquiry",
+      "firstBookings": "Get your first booking",
+      "desc": "Share your site in your status, your Instagram bio and your business's Google profile.",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Could not copy the link",
+      "qr": "QR code",
+      "qrTitle": "Your site's QR code",
+      "qrDesc": "Print it or show it at your business — scanning it opens your site.",
+      "download": "Download image",
+      "qrNativeHint": "To keep it, take a screenshot or long-press the code.",
+      "qrFailed": "Could not create the code",
+      "close": "Close"
     }
   },
   "billing": {

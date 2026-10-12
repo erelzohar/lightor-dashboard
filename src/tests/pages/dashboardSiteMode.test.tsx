@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent, within } from '@testing-library/react';
 import Dashboard from '../../pages/Dashboard';
 import OnboardingWelcome from '../../components/onboarding/OnboardingWelcome';
-import { fetchLeads } from '../../services/leadsApi';
+import { fetchLeads, fetchLeadStats, type LeadStats } from '../../services/leadsApi';
 import { fetchAppointments } from '../../store/slices/appointmentsSlice';
 
 // Stable across renders (pages memoise on `t`); interpolation values are
@@ -25,7 +25,7 @@ vi.mock('../../services/entitlementsApi', () => ({
     })
   ),
 }));
-vi.mock('../../services/leadsApi', () => ({ fetchLeads: vi.fn() }));
+vi.mock('../../services/leadsApi', () => ({ fetchLeads: vi.fn(), fetchLeadStats: vi.fn() }));
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', language: 'en', darkMode: false }),
 }));
@@ -88,11 +88,17 @@ const lead = (id: string, name: string) => ({
 const leadsPage = (data: unknown[], counts: { new: number; contacted: number; closed: number }) => ({
   success: true, data, pagination: { total: data.length, page: 1, limit: 5, pages: 1 }, counts,
 });
+const leadStats: LeadStats = {
+  thisMonth: 6, lastMonth: 4, waiting: 2, last30: { total: 6, handled: 4 }, avgResponseMs: 5_400_000,
+  perDay: Array.from({ length: 30 }, (_, i) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, count: i % 5 ? 0 : 1 })),
+  topic: null,
+};
 
 beforeEach(() => {
   dispatchMock.mockReset().mockImplementation(() => Promise.resolve({}));
   vi.mocked(fetchAppointments).mockClear();
   vi.mocked(fetchLeads).mockReset().mockResolvedValue(leadsPage([], { new: 0, contacted: 0, closed: 0 }) as never);
+  vi.mocked(fetchLeadStats).mockReset().mockResolvedValue(leadStats);
   updateUser.mockReset().mockResolvedValue(undefined);
   user.boardingStatus = 'active';
   state.appointments.appointments = [appointment];
@@ -115,8 +121,10 @@ describe('Dashboard home by site mode', () => {
     }
     expect(screen.queryByTestId('leads-summary')).not.toBeInTheDocument();
     expect(fetchAppointments).toHaveBeenCalledWith({ user_id: 'u1', limit: 5000 });
-    // Only the badge's count read — no summary fetch.
+    // Only the badge's count read — no summary fetch, no leads numbers.
     expect(fetchLeads).not.toHaveBeenCalledWith({ limit: 5 });
+    expect(fetchLeadStats).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('leads-stats')).not.toBeInTheDocument();
   });
 
   it('shows the leads summary instead of every booking widget on a leads site, and no poll', async () => {
@@ -128,8 +136,10 @@ describe('Dashboard home by site mode', () => {
 
     const summary = await screen.findByTestId('leads-summary');
     expect(fetchLeads).toHaveBeenCalledWith({ limit: 5 });
-    expect(within(summary).getByTestId('leads-stat-new')).toHaveTextContent('2');
-    expect(await within(summary).findByText('7')).toBeInTheDocument(); // this month, from the meter
+    // The numbers (LT-274) sit above the list, from the stats read.
+    expect(fetchLeadStats).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('leads-stat-waiting')).toHaveTextContent('2');
+    expect(screen.getByTestId('leads-stat-month')).toHaveTextContent('6');
     const rows = within(summary).getAllByTestId('leads-summary-row');
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getByText('Dana Levi')).toBeInTheDocument();

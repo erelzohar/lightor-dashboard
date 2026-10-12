@@ -617,10 +617,49 @@
     "newLeadsDesc": "Des visiteurs vous ont laissé un message sur votre site",
     "emptyDescLeads": "Quand un visiteur laisse une demande sur votre site, elle apparaît ici, avec un bouton pour le rappeler.",
     "leadsSummary": {
-      "new": "Nouvelles",
-      "thisMonth": "Ce mois-ci",
       "latest": "Dernières demandes",
       "viewAll": "Tout voir"
+    },
+    "leadsStats": {
+      "thisMonth": "Demandes ce mois-ci",
+      "lastMonth": "Le mois dernier : {{count}}",
+      "waiting": "En attente de réponse",
+      "waitingCta": "À traiter rapidement",
+      "waitingNone": "Tout est à jour",
+      "responseTime": "Délai de réponse moyen",
+      "responseNotYet": "Mesuré dès la prochaine demande traitée",
+      "last30": "Sur les 30 derniers jours",
+      "minutes": "{{value}} min",
+      "hour": "{{value}} h",
+      "hours": "{{value}} h",
+      "days": "{{value}} j",
+      "handled": "Traitées",
+      "handledOf": "{{handled}} sur {{total}} en 30 jours"
+    },
+    "leadsChart": {
+      "title": "Demandes sur les 30 derniers jours",
+      "dayCount": "Demandes : {{count}}"
+    },
+    "leadsTopics": {
+      "title": "Les sujets des demandes",
+      "other": "Autre"
+    },
+    "share": {
+      "titleLeads": "Comment recevoir plus de demandes",
+      "titleBookings": "Comment obtenir plus de rendez-vous",
+      "firstLeads": "Recevez votre première demande",
+      "firstBookings": "Obtenez votre premier rendez-vous",
+      "desc": "Partagez votre site dans votre statut, dans votre bio Instagram et sur la fiche Google de votre entreprise.",
+      "copy": "Copier le lien",
+      "copied": "Lien copié",
+      "copyFailed": "Impossible de copier le lien",
+      "qr": "QR code",
+      "qrTitle": "Le QR code de votre site",
+      "qrDesc": "Imprimez-le ou affichez-le dans votre établissement : le scanner ouvre votre site.",
+      "download": "Télécharger l'image",
+      "qrNativeHint": "Pour le garder, faites une capture d'écran ou un appui long sur le code.",
+      "qrFailed": "Impossible de créer le code",
+      "close": "Fermer"
     }
   },
   "billing": {

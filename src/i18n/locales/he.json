@@ -617,10 +617,49 @@
     "newLeadsDesc": "גולשים השאירו לך הודעה באתר",
     "emptyDescLeads": "כשגולש ישאיר פנייה באתר, היא תופיע כאן — עם כפתור לחזור אליו.",
     "leadsSummary": {
-      "new": "חדשות",
-      "thisMonth": "החודש",
       "latest": "הפניות האחרונות",
       "viewAll": "לכל הפניות"
+    },
+    "leadsStats": {
+      "thisMonth": "פניות החודש",
+      "lastMonth": "בחודש שעבר: {{count}}",
+      "waiting": "מחכות לתשובה",
+      "waitingCta": "כדאי לענות בהקדם",
+      "waitingNone": "הכל מטופל",
+      "responseTime": "זמן תגובה ממוצע",
+      "responseNotYet": "יימדד מהפנייה הבאה שתטופל",
+      "last30": "ב-30 הימים האחרונים",
+      "minutes": "{{value}} דק׳",
+      "hour": "{{value}} שעה",
+      "hours": "{{value}} שעות",
+      "days": "{{value}} ימים",
+      "handled": "טופלו",
+      "handledOf": "{{handled}} מתוך {{total}} ב-30 יום"
+    },
+    "leadsChart": {
+      "title": "פניות ב-30 הימים האחרונים",
+      "dayCount": "פניות: {{count}}"
+    },
+    "leadsTopics": {
+      "title": "על מה פונים",
+      "other": "אחר"
+    },
+    "share": {
+      "titleLeads": "איך להביא עוד פניות",
+      "titleBookings": "איך להביא עוד תורים",
+      "firstLeads": "לקבל את הפנייה הראשונה",
+      "firstBookings": "לקבל את התור הראשון",
+      "desc": "שתפו את האתר בסטטוס, בביו של אינסטגרם ובפרופיל Google של העסק.",
+      "copy": "העתקת קישור",
+      "copied": "הקישור הועתק",
+      "copyFailed": "לא הצלחנו להעתיק את הקישור",
+      "qr": "קוד QR",
+      "qrTitle": "קוד QR לאתר",
+      "qrDesc": "הדפיסו אותו או הציגו אותו בעסק — סריקה פותחת את האתר.",
+      "download": "הורדת תמונה",
+      "qrNativeHint": "כדי לשמור את הקוד, צלמו מסך או לחצו עליו לחיצה ארוכה.",
+      "qrFailed": "לא הצלחנו ליצור את הקוד",
+      "close": "סגירה"
     }
   },
   "billing": {

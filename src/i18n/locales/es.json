@@ -617,10 +617,49 @@
     "newLeadsDesc": "Visitantes te dejaron un mensaje en tu sitio",
     "emptyDescLeads": "Cuando un visitante deje una consulta en tu sitio, aparecerá aquí, con un botón para llamarle.",
     "leadsSummary": {
-      "new": "Nuevas",
-      "thisMonth": "Este mes",
       "latest": "Últimas consultas",
       "viewAll": "Ver todas"
+    },
+    "leadsStats": {
+      "thisMonth": "Consultas este mes",
+      "lastMonth": "El mes pasado: {{count}}",
+      "waiting": "Esperando respuesta",
+      "waitingCta": "Conviene responder pronto",
+      "waitingNone": "Todo al día",
+      "responseTime": "Tiempo medio de respuesta",
+      "responseNotYet": "Se medirá desde la próxima consulta que atiendas",
+      "last30": "Últimos 30 días",
+      "minutes": "{{value}} min",
+      "hour": "{{value}} h",
+      "hours": "{{value}} h",
+      "days": "{{value}} días",
+      "handled": "Atendidas",
+      "handledOf": "{{handled}} de {{total}} en 30 días"
+    },
+    "leadsChart": {
+      "title": "Consultas en los últimos 30 días",
+      "dayCount": "Consultas: {{count}}"
+    },
+    "leadsTopics": {
+      "title": "Sobre qué consultan",
+      "other": "Otro"
+    },
+    "share": {
+      "titleLeads": "Cómo recibir más consultas",
+      "titleBookings": "Cómo conseguir más citas",
+      "firstLeads": "Recibe tu primera consulta",
+      "firstBookings": "Consigue tu primera cita",
+      "desc": "Comparte tu sitio en tu estado, en la biografía de Instagram y en el perfil de Google de tu negocio.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "copyFailed": "No se pudo copiar el enlace",
+      "qr": "Código QR",
+      "qrTitle": "El código QR de tu sitio",
+      "qrDesc": "Imprímelo o muéstralo en tu negocio: al escanearlo se abre tu sitio.",
+      "download": "Descargar imagen",
+      "qrNativeHint": "Para guardarlo, haz una captura de pantalla o mantén pulsado el código.",
+      "qrFailed": "No se pudo crear el código",
+      "close": "Cerrar"
     }
   },
   "billing": {

@@ -151,6 +151,17 @@ html[dir="rtl"] body {
   background: rgba(120, 53, 15, 0.35);
   border-color: rgba(251, 191, 36, 0.25);
 }
+/* The brand colour, for a card that is the page's call to action (LT-274).
+   color-mix rather than Tailwind's bg-primary/10: `primary` is a bare CSS
+   variable, so Tailwind emits no opacity variants for it at all. */
+.glass-card.glass-tint-primary {
+  background: color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.55));
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+.dark .glass-card.glass-tint-primary {
+  background: color-mix(in srgb, var(--color-primary) 22%, rgba(51, 65, 85, 0.5));
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
 
 .dark .glass-card {
   background: rgba(51, 65, 85, 0.5); /* dark-surface at half opacity */
