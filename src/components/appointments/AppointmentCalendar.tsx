@@ -41,15 +41,17 @@ interface AppointmentCalendarProps {
 }
 
 // ── Deterministic palette per appointment type ─────────────────────────────
+// emptyDark*: an empty class block (LT-211) turns dark in dark mode while
+// filled ones stay light, so it needs light text of its own hue (LT-278).
 const EVENT_PALETTES = [
-  { bg: 'bg-blue-100',   border: 'border-l-blue-400',   text: 'text-blue-900',   sub: 'text-blue-700',   avatar: 'bg-blue-200 text-blue-800',   dot: 'bg-blue-400',   checkColor: '#60a5fa' },
-  { bg: 'bg-green-100',  border: 'border-l-green-400',  text: 'text-green-900',  sub: 'text-green-700',  avatar: 'bg-green-200 text-green-800',  dot: 'bg-green-400',  checkColor: '#4ade80' },
-  { bg: 'bg-purple-200', border: 'border-l-purple-400', text: 'text-purple-900', sub: 'text-purple-700', avatar: 'bg-purple-200 text-purple-800',dot: 'bg-purple-400', checkColor: '#c084fc' },
-  { bg: 'bg-yellow-100', border: 'border-l-yellow-400', text: 'text-yellow-900', sub: 'text-yellow-700', avatar: 'bg-yellow-200 text-yellow-800',dot: 'bg-yellow-400', checkColor: '#facc15' },
-  { bg: 'bg-pink-100',   border: 'border-l-pink-400',   text: 'text-pink-900',   sub: 'text-pink-700',   avatar: 'bg-pink-200 text-pink-800',   dot: 'bg-pink-400',   checkColor: '#f472b6' },
-  { bg: 'bg-teal-100',   border: 'border-l-teal-400',   text: 'text-teal-900',   sub: 'text-teal-700',   avatar: 'bg-teal-200 text-teal-800',   dot: 'bg-teal-400',   checkColor: '#2dd4bf' },
-  { bg: 'bg-orange-100', border: 'border-l-orange-400', text: 'text-orange-900', sub: 'text-orange-700', avatar: 'bg-orange-200 text-orange-800',dot: 'bg-orange-400', checkColor: '#fb923c' },
-  { bg: 'bg-indigo-100', border: 'border-l-indigo-400', text: 'text-indigo-900', sub: 'text-indigo-700', avatar: 'bg-indigo-200 text-indigo-800',dot: 'bg-indigo-400', checkColor: '#818cf8' },
+  { bg: 'bg-blue-100',   border: 'border-l-blue-400',   text: 'text-blue-900',   sub: 'text-blue-700',   avatar: 'bg-blue-200 text-blue-800',   dot: 'bg-blue-400',   checkColor: '#60a5fa', emptyDark: 'dark:text-blue-200', emptyDarkSub: 'dark:text-blue-300' },
+  { bg: 'bg-green-100',  border: 'border-l-green-400',  text: 'text-green-900',  sub: 'text-green-700',  avatar: 'bg-green-200 text-green-800',  dot: 'bg-green-400',  checkColor: '#4ade80', emptyDark: 'dark:text-green-200', emptyDarkSub: 'dark:text-green-300' },
+  { bg: 'bg-purple-200', border: 'border-l-purple-400', text: 'text-purple-900', sub: 'text-purple-700', avatar: 'bg-purple-200 text-purple-800',dot: 'bg-purple-400', checkColor: '#c084fc', emptyDark: 'dark:text-purple-200', emptyDarkSub: 'dark:text-purple-300' },
+  { bg: 'bg-yellow-100', border: 'border-l-yellow-400', text: 'text-yellow-900', sub: 'text-yellow-700', avatar: 'bg-yellow-200 text-yellow-800',dot: 'bg-yellow-400', checkColor: '#facc15', emptyDark: 'dark:text-yellow-200', emptyDarkSub: 'dark:text-yellow-300' },
+  { bg: 'bg-pink-100',   border: 'border-l-pink-400',   text: 'text-pink-900',   sub: 'text-pink-700',   avatar: 'bg-pink-200 text-pink-800',   dot: 'bg-pink-400',   checkColor: '#f472b6', emptyDark: 'dark:text-pink-200', emptyDarkSub: 'dark:text-pink-300' },
+  { bg: 'bg-teal-100',   border: 'border-l-teal-400',   text: 'text-teal-900',   sub: 'text-teal-700',   avatar: 'bg-teal-200 text-teal-800',   dot: 'bg-teal-400',   checkColor: '#2dd4bf', emptyDark: 'dark:text-teal-200', emptyDarkSub: 'dark:text-teal-300' },
+  { bg: 'bg-orange-100', border: 'border-l-orange-400', text: 'text-orange-900', sub: 'text-orange-700', avatar: 'bg-orange-200 text-orange-800',dot: 'bg-orange-400', checkColor: '#fb923c', emptyDark: 'dark:text-orange-200', emptyDarkSub: 'dark:text-orange-300' },
+  { bg: 'bg-indigo-100', border: 'border-l-indigo-400', text: 'text-indigo-900', sub: 'text-indigo-700', avatar: 'bg-indigo-200 text-indigo-800',dot: 'bg-indigo-400', checkColor: '#818cf8', emptyDark: 'dark:text-indigo-200', emptyDarkSub: 'dark:text-indigo-300' },
 ] as const;
 
 const hashStr = (s: string): number => {
@@ -882,18 +884,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                                 body wo…"), not its start. The room for the badge
                                 is the block's, on the wrapper. */}
                             <div className={grouped ? 'pe-9' : ''}>
-                              <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text}`}>
+                              <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text} ${empty ? pal.emptyDark : ''}`}>
                                 {session.type.name}
                               </p>
                             </div>
                             {height > 42 && (
-                              <p className={`text-[10px] mt-0.5 ${pal.sub}`}>
+                              <p className={`text-[10px] mt-0.5 ${pal.sub} ${empty ? pal.emptyDarkSub : ''}`}>
                                 <span dir="ltr">{format(ts, 'HH:mm')} – {format(endTs, 'HH:mm')}</span>
                               </p>
                             )}
                             {height > 62 && (
                               empty ? (
-                                <p className={`text-[10px] mt-1.5 truncate ${pal.sub}`}>
+                                <p className={`text-[10px] mt-1.5 truncate ${pal.sub} ${pal.emptyDarkSub}`}>
                                   {t('appointments.session.empty')}
                                 </p>
                               ) : grouped ? (

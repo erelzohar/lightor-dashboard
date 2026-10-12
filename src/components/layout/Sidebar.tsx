@@ -39,7 +39,43 @@ interface SidebarProps {
 const ALLOWED_WHEN_RESTRICTED = ['/', '/design'];
 
 const linkClasses =
-  'px-2 rounded-lg text-gray-600 dark:text-dark-gray hover:bg-white dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-dark-text transition-colors';
+  'px-1 rounded-xl text-gray-600 dark:text-dark-gray hover:bg-white dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-dark-text transition-colors';
+
+/**
+ * Each page's icon sits on a small tile of its own colour (LT-278) — the menu
+ * was all grey with only Lighty in colour. The tile owns the colour, so the
+ * active page is marked by a ring around it (and the bold label), never by
+ * recolouring the icon. Lighty keeps his own face.
+ */
+const TILE: Record<string, string> = {
+  '/': 'from-violet-400 to-violet-600',
+  '/design': 'from-pink-400 to-fuchsia-500',
+  '/appointments': 'from-sky-400 to-blue-500',
+  '/customers': 'from-emerald-400 to-green-500',
+  '/leads': 'from-amber-300 to-orange-400',
+  '/schedule-vacations': 'from-cyan-400 to-sky-500',
+  '/appointment-types': 'from-orange-400 to-rose-400',
+  '/portfolio': 'from-rose-400 to-pink-500',
+  '/settings': 'from-teal-400 to-emerald-500',
+  '/admin': 'from-indigo-400 to-violet-500',
+  '/admin/users': 'from-emerald-400 to-teal-500',
+  '/admin/appointments': 'from-sky-400 to-indigo-500',
+  '/admin/subscriptions': 'from-amber-300 to-orange-400',
+  '/admin/costs': 'from-lime-400 to-green-500',
+  '/admin/logs': 'from-slate-400 to-slate-600',
+};
+const tileClasses =
+  'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ring-offset-2 ring-offset-[#f9f9ff] dark:ring-offset-dark-surface group-aria-[current=page]/sidebar:ring-2 group-aria-[current=page]/sidebar:ring-violet-400/80';
+const navIcon = (path: string, Icon: typeof Inbox) =>
+  path === '/lighty' ? (
+    <span className={`${tileClasses} shadow-none`}>
+      <Icon className="w-7 h-7" />
+    </span>
+  ) : (
+    <span className={`${tileClasses} bg-gradient-to-br ${TILE[path] ?? 'from-violet-400 to-violet-600'}`}>
+      <Icon className="h-4 w-4 !text-white" strokeWidth={2.25} />
+    </span>
+  );
 
 const iconClasses = 'h-5 w-5 flex-shrink-0';
 
@@ -60,7 +96,7 @@ const SidebarHeader: React.FC = () => {
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const logoUrl = resolveLogoUrl(webConfig?.logoImageName);
   return (
-    <div className="flex items-center gap-3 py-1 min-w-0 relative z-20">
+    <div className="flex items-center gap-3 py-1 px-1 min-w-0 relative z-20">
       <img
         src={logoUrl || '/lightor.svg'}
         alt={webConfig?.businessName || 'Lightor'}
@@ -138,9 +174,9 @@ const SidebarFooter: React.FC = () => {
           closeOnMobile();
           confirmLeave(() => navigate('/account'), '/account');
         }}
-        className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
+        className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
-        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
           {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
         </div>
         <motion.span
@@ -156,9 +192,11 @@ const SidebarFooter: React.FC = () => {
           closeOnMobile();
           confirmLeave(logout);
         }}
-        className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-colors"
+        className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-colors"
       >
-        <LogOut className={iconClasses} />
+        <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+          <LogOut className={iconClasses} />
+        </span>
         <motion.span
           animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
           className="text-sm whitespace-pre"
@@ -267,7 +305,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                       link={{
                         label: name,
                         href: path,
-                        icon: <Icon className={iconClasses} />,
+                        icon: navIcon(path, Icon),
                         badge,
                       }}
                       className={linkClasses}

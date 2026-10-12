@@ -99,7 +99,8 @@ export const DesktopSidebar = ({
         className
       )}
       animate={{
-        width: animate ? (open ? '300px' : '60px') : '300px',
+        // 68 px collapsed: the nav icons sit on 28 px colour tiles (LT-278).
+        width: animate ? (open ? '300px' : '68px') : '300px',
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}

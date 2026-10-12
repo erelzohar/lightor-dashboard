@@ -127,6 +127,11 @@ describe('a class nobody has booked yet, on the calendar', () => {
     // time range reads left to right in any language.
     expect(within(block).getByText('0/12').hasAttribute('dir')).toBe(false);
     expect(within(block).getByText('10:00 – 11:00').getAttribute('dir')).toBe('ltr');
+    // LT-278: the empty block is dark in dark mode, so its words get a light
+    // shade of their hue there (they were dark-on-dark and unreadable).
+    expect(within(block).getByText('Group training').className).toMatch(/dark:text-\w+-200/);
+    expect(within(block).getByText('10:00 – 11:00').parentElement!.className).toMatch(/dark:text-\w+-300/);
+    expect(within(block).getByText('appointments.session.empty').className).toMatch(/dark:text-\w+-300/);
 
     const [subdomain, from, to] = vi.mocked(getClassSessions).mock.calls[0];
     const today = new Date();
