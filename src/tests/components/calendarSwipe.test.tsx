@@ -24,6 +24,8 @@ vi.mock('../../store/slices/appointmentsSlice', () => ({
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
+const { lightTick } = vi.hoisted(() => ({ lightTick: vi.fn() }));
+vi.mock('../../lib/haptics', () => ({ lightTick }));
 
 beforeAll(() => {
   Element.prototype.scrollTo = vi.fn();
@@ -110,5 +112,16 @@ describe('swiping the calendar grid', () => {
     swipe(grid, 120); // forward in RTL: tomorrow enters from the left
     expect(grid.style.getPropertyValue('--cal-slide-from')).toBe('-48px');
     theme.direction = 'ltr';
+  });
+
+  it('taps once per page turn, not for a stroke that turns nothing (LT-268)', () => {
+    theme.direction = 'ltr';
+    lightTick.mockClear();
+    const { grid } = setup();
+    expect(lightTick).not.toHaveBeenCalled();
+    swipe(grid, -40);
+    expect(lightTick).not.toHaveBeenCalled();
+    swipe(grid, -120);
+    expect(lightTick).toHaveBeenCalledTimes(1);
   });
 });

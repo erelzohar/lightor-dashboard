@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../services/aiApi';
 import { changedLabels } from '../../utils/editorDiff';
 import { fieldLabel } from './labels';
+import { lightTick } from '../../lib/haptics';
 
 interface SiteChatProps<T> {
   config: T;
@@ -53,6 +54,7 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
       onApply(next);
       const summary = changed.length ? t('siteEditor.chat.changed', { list: changed.slice(0, 6).join(', ') }) : t('siteEditor.chat.nothingChanged');
       setMessages((m) => [...m, { role: 'assistant', content: [result.message, summary].filter(Boolean).join('\n') }]);
+      lightTick();
     } catch {
       setMessages((m) => [...m, { role: 'assistant', content: t('siteEditor.ai.failed') }]);
     } finally {

@@ -21,6 +21,7 @@ import { bookingFieldsFromAi } from '../utils/bookingFields';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
+import { lightTick } from '../lib/haptics';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -215,6 +216,7 @@ const AiBuilder: React.FC = () => {
           content: result.message || t('aiBuilder.generatedMessage', { name: newConfig.businessName }),
         },
       ]);
+      lightTick();
       if (activeTab === 'chat') setActiveTab('preview');
     } catch {
       setMessages((prev) => [

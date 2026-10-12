@@ -9,6 +9,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
 import { LightyBubble, LightyText, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
+import { lightTick } from '../lib/haptics';
 
 // three.js and the model reach only this page.
 const Lighty3D = lazy(() => import('../components/lighty/Lighty3D'));
@@ -77,6 +78,7 @@ const LightyPage: React.FC = () => {
     try {
       const { reply, handoff } = await assistantService.chat(ask);
       setTurns((all) => [...all, { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}) }]);
+      lightTick();
       setCheer((n) => n + 1);
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;

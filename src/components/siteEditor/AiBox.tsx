@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { aiService, type ElementField } from '../../services/aiApi';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
+import { lightTick } from '../../lib/haptics';
 
 const QUICK = ['shorter', 'warmer', 'formal', 'fix'] as const;
 
@@ -40,6 +41,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
     let answer: Exchange;
     try {
       const { values, message } = await aiService.editElement(ask, fields);
+      lightTick();
       if (Object.keys(values).length > 0) {
         onApply(values);
         answer = { ask: shown.trim(), answer: message || t('siteEditor.ai.done'), tone: 'ok' };

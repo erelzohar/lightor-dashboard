@@ -15,6 +15,8 @@ import { LightyText } from '../../components/lighty/LightyChat';
 const { t } = vi.hoisted(() => ({ t: (key: string, vars?: Record<string, unknown>) => (vars && 'percent' in vars ? `${key}:${vars.percent}` : key) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'he' } }) }));
 vi.mock('../../components/lighty/Lighty3D', () => ({ default: (): null => null }));
+const { lightTick } = vi.hoisted(() => ({ lightTick: vi.fn() }));
+vi.mock('../../lib/haptics', () => ({ lightTick }));
 vi.mock('../../hooks/useVirtualKeyboard', () => ({ useVirtualKeyboard: () => false }));
 vi.mock('../../services/entitlementsApi', () => ({
   fetchMyEntitlements: vi.fn(async () => ({ plan: 'plus', limits: { aiTokensPerMonth: 1000 }, usage: { aiTokensThisMonth: 250 } })),
@@ -45,6 +47,7 @@ describe("Lighty's page (LT-253)", () => {
     vi.mocked(assistantService.chat).mockReset();
     vi.mocked(assistantService.thread).mockReset().mockResolvedValue([]);
     vi.mocked(assistantService.clear).mockClear();
+    lightTick.mockClear();
   });
 
   it('greets with ready questions; one sends, and the answer comes with its link', async () => {
@@ -55,6 +58,7 @@ describe("Lighty's page (LT-253)", () => {
 
     expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.today');
     expect(await screen.findByText('2 תורים')).toHaveProperty('tagName', 'STRONG');
+    expect(lightTick).toHaveBeenCalledTimes(1); // LT-268: Lighty answered
     expect(screen.getByText('10:00 דנה').tagName).toBe('LI');
     fireEvent.click(screen.getByRole('link', { name: 'ליומן' }));
     expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
@@ -76,6 +80,7 @@ describe("Lighty's page (LT-253)", () => {
     renderPage({ lightyMessage: 'When am I free tomorrow?' });
     await waitFor(() => expect(assistantService.chat).toHaveBeenCalledWith('When am I free tomorrow?'));
     expect(await screen.findByRole('alert')).toHaveTextContent('lighty.budget');
+    expect(lightTick).not.toHaveBeenCalled(); // a refusal is not an answer
     expect(screen.getByText('When am I free tomorrow?')).toBeInTheDocument();
     expect(screen.getByTitle('lighty.usage:25')).toBeInTheDocument();
 

@@ -28,6 +28,7 @@ import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions } from '../../hooks/useClassSessions';
+import { lightTick } from '../../lib/haptics';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -237,6 +238,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const goTo = (target: Date) => {
     setSlideDir(startOfDay(target) < startOfDay(currentDate) ? -1 : 1);
     setCurrentDate(target);
+    lightTick();
   };
   const prevPeriod = () => goTo(addDays(currentDate, -visibleDays));
   const nextPeriod = () => goTo(addDays(currentDate, visibleDays));
