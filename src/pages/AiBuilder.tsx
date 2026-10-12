@@ -87,7 +87,9 @@ const AiBuilder: React.FC = () => {
   const [isLargeScreen, setIsLargeScreen] = useState(() => window.innerWidth >= 768);
   // Track whether the iframe has fully loaded and React inside it has had
   // time to mount + register its message listener (same pattern as Hero.tsx).
-  const [iframeLoaded, setIframeLoaded] = useState(false);
+  // Bumped each time a fresh preview page is ready for the draft (LT-255).
+  const [previewReady, setPreviewReady] = useState(0);
+  const siteSaysReadyRef = useRef(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -138,22 +140,35 @@ const AiBuilder: React.FC = () => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'PREVIEW_DATA', config }, '*');
   };
 
-  // Mirror the Hero.tsx pattern: wait 500 ms after the iframe onLoad fires so
-  // that the React app inside the iframe has time to mount and register its
-  // window.addEventListener('message', …) before we send PREVIEW_DATA.
-  // Without this delay the message arrives before the listener is registered
-  // and is silently dropped — leaving the iframe stuck on the loading spinner.
+  // LT-255 (as the register's LT-254): the site says LT_READY once its
+  // message listener is up — on the first load and on any real reload (the
+  // refresh button) — and that is when it gets the draft. Safari, and so every
+  // iPhone browser, also fires the iframe's `load` for a jump WITHIN the page
+  // (a button in the site that goes to #schedule); answering that `load`
+  // re-sent the whole draft on every such tap. `load` is still the cue, 500 ms
+  // on, for an older site build that never says LT_READY.
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'LT_READY' || event.source !== iframeRef.current?.contentWindow) return;
+      siteSaysReadyRef.current = true;
+      setPreviewReady((n) => n + 1);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   const handleIframeLoad = () => {
-    setIframeLoaded(false);
-    setTimeout(() => setIframeLoaded(true), 500);
+    if (siteSaysReadyRef.current) return;
+    setTimeout(() => {
+      if (!siteSaysReadyRef.current) setPreviewReady((n) => n + 1);
+    }, 500);
   };
 
-  // Send config whenever draftConfig OR iframeLoaded change, but only once
-  // both are truthy (iframe is ready AND we have something to show).
+  // Send the draft whenever it changes or a fresh page is ready, once both are there.
   useEffect(() => {
-    if (!draftConfig || !iframeLoaded) return;
+    if (!draftConfig || !previewReady) return;
     sendConfigToIframe(draftConfig);
-  }, [draftConfig, iframeLoaded]);
+  }, [draftConfig, previewReady]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
