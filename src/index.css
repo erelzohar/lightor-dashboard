@@ -42,6 +42,11 @@
 :root {
   --color-primary: #8b5cf6;
   --color-primary-dark: #7c3aed;
+  /* The same two colours as bare channels (LT-280): tailwind.config.js builds
+     `primary` from these so opacity modifiers (bg-primary/10) work. Change a
+     colour here and its channels with it; ThemeContext sets both at runtime. */
+  --color-primary-rgb: 139 92 246;
+  --color-primary-dark-rgb: 124 58 237;
   --color-light-bg: #ffffff;
   --color-light-surface: #823e3eff;
   --color-light-gray: #64748b;
@@ -152,8 +157,8 @@ html[dir="rtl"] body {
   border-color: rgba(251, 191, 36, 0.25);
 }
 /* The brand colour, for a card that is the page's call to action (LT-274).
-   color-mix rather than Tailwind's bg-primary/10: `primary` is a bare CSS
-   variable, so Tailwind emits no opacity variants for it at all. */
+   color-mix rather than Tailwind's bg-primary/10: the brand is mixed into the
+   glass's own white (slate in dark), which an opacity modifier cannot do. */
 .glass-card.glass-tint-primary {
   background: color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.55));
   border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
@@ -214,16 +219,6 @@ html[dir="rtl"] body {
 
 .dark .hover\:text-primary:hover {
   @apply text-primary-dark;
-}
-
-.dark .hover\:from-primary\/10:hover {
-  --tw-gradient-from: rgb(124 58 237 / 0.1) !important;
-  --tw-gradient-to: rgb(124 58 237 / 0) !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
-}
-
-.dark .hover\:to-primary\/15:hover {
-  --tw-gradient-to: rgb(124 58 237 / 0.15) !important;
 }
 
 .dark .hover\:bg-red-50:hover {

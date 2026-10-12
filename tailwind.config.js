@@ -8,9 +8,13 @@ export default {
         // Never pure black: every bg-/text-/border-black reads as 90% black;
         // an explicit modifier (bg-black/30) still wins.
         black: 'rgba(0, 0, 0, 0.9)',
+        // Built from bare channels, not var(--color-primary): Tailwind can only
+        // apply an opacity modifier (bg-primary/10) to a colour it can put an
+        // alpha into, and silently emits nothing for a bare variable (LT-280).
+        // The channels live in index.css and ThemeContext.
         primary: {
-          DEFAULT: 'var(--color-primary)',
-          dark: 'var(--color-primary-dark)',
+          DEFAULT: 'rgb(var(--color-primary-rgb) / <alpha-value>)',
+          dark: 'rgb(var(--color-primary-dark-rgb) / <alpha-value>)',
         },
         light: {
           bg: 'var(--color-light-bg)',

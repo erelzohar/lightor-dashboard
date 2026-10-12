@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Palette } from '../types';
 import i18n, { isRtlLanguage, SupportedLanguage } from '../i18n/config';
+import { hexToRgbChannels } from '../lib/colorChannels';
 
 /**
  * What the dashboard looks like before (or without) a webConfig — Lightor's
@@ -59,12 +60,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   useEffect(() => {
-    // Apply theme to CSS variables
+    // Apply theme to CSS variables. Each colour also gets an `-rgb` twin with
+    // its bare channels ("139 92 246"): tailwind.config.js builds `primary`
+    // from those so opacity modifiers like bg-primary/10 work (LT-280), and
+    // a colour must never change without its channels.
     Object.entries(palette).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(
-        `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`,
-        value
-      );
+      const name = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+      document.documentElement.style.setProperty(name, value);
+      const channels = hexToRgbChannels(value);
+      if (channels) document.documentElement.style.setProperty(`${name}-rgb`, channels);
+      else console.warn(`ThemeContext: ${key} "${value}" is not a hex colour; ${name}-rgb left as it was`);
     });
 
     // Apply direction + language to HTML (lang helps font selection & a11y)
