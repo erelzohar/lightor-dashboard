@@ -126,4 +126,12 @@ describe("Lighty's text (LT-253)", () => {
     expect(document.querySelector('img')).toBeNull();
     expect(screen.getByText(/<img src=x/)).toBeInTheDocument();
   });
+
+  it('keeps a link that sits inside bold a link', () => {
+    render(<MemoryRouter><LightyText text="אפשר ב**[שעות וחופשות](/schedule-vacations)** בכל רגע." /></MemoryRouter>);
+    const link = screen.getByRole('link', { name: 'שעות וחופשות' });
+    expect(link).toHaveAttribute('href', '/schedule-vacations');
+    expect(link.closest('strong')).not.toBeNull();
+    expect(screen.queryByText(/\]\(/)).toBeNull();
+  });
 });

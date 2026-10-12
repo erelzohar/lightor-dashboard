@@ -47,7 +47,8 @@ const inline = (text: string, keyBase: string): React.ReactNode[] => {
   for (const m of text.matchAll(INLINE)) {
     if (m.index! > at) out.push(...ltrRanges(text.slice(at, m.index), `${keyBase}-t${n}`));
     if (m[3] !== undefined) {
-      out.push(<strong key={`${keyBase}-${n++}`} className="font-semibold">{ltrRanges(m[3], `${keyBase}-b${n}`)}</strong>);
+      // A link may sit inside the bold ("**[the hours](/schedule-vacations)**").
+      out.push(<strong key={`${keyBase}-${n++}`} className="font-semibold">{inline(m[3], `${keyBase}-b${n}`)}</strong>);
     } else {
       const href = m[2];
       const ok = PAGES.includes(href.split(/[?#]/)[0]) && /^[\w/?=&.-]+$/.test(href);
