@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { type AxiosError } from 'axios';
-import { Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { aiService, type ElementField } from '../../services/aiApi';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { lightTick } from '../../lib/haptics';
 import { LightyTyped } from '../lighty/LightyTyped';
+import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 
 const QUICK = ['shorter', 'warmer', 'formal', 'fix'] as const;
 
@@ -82,9 +82,9 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
             type="submit"
             disabled={busy || !text.trim()}
             aria-label={t('siteEditor.ai.send')}
-            className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center bg-gradient-to-r from-primary to-violet-500 text-white disabled:opacity-40"
+            className={`w-9 h-9 ${lightySendButton}`}
           >
-            <Send className="w-4 h-4 rtl:-scale-x-100" />
+            <LightySendIcon />
           </button>
         </form>
         <div className="flex flex-wrap gap-1.5 mt-2 ps-11">

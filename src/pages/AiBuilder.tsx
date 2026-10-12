@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, Send, Paperclip, X, Monitor,
+  Sparkles, Paperclip, X, Monitor,
   Smartphone, Loader2, RotateCcw, CheckCircle2, Save, Eye, EyeOff, Maximize2, Minimize2,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -23,6 +23,7 @@ import type { WebConfig, AppointmentType, Vacation } from '../types';
 import toast from 'react-hot-toast';
 import { lightTick } from '../lib/haptics';
 import { LightyTyped } from '../components/lighty/LightyTyped';
+import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -702,11 +703,11 @@ const AiBuilder: React.FC = () => {
                   <button
                     type="submit"
                     disabled={!input.trim() || isGenerating}
-                    className="p-3.5 bg-gradient-to-r from-primary to-violet-500 text-white rounded-full disabled:opacity-40 hover:shadow-md hover:-translate-y-0.5 transition-all shrink-0 mb-0.5"
+                    className={`w-12 h-12 mb-0.5 ${lightySendButton}`}
                   >
                     {isGenerating
-                      ? <Loader2 className="w-5 h-5 animate-spin" />
-                      : <Send className="w-5 h-5" />
+                      ? <Loader2 className="w-5 h-5 animate-spin text-violet-600" />
+                      : <LightySendIcon className="w-6 h-6" />
                     }
                   </button>
                 </div>

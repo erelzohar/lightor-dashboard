@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { Send, X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
+import { X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LightyAvatar, LightyBubble } from '../lighty/LightyChat';
+import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 
 // three.js and the 1.8 MB model load after the page, never in its way.
 const Lighty3D = lazy(() => import('../lighty/Lighty3D'));
@@ -104,7 +105,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
                 </button>
               ))}
             </div>
-            <form className="flex items-end gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5" onSubmit={(e) => { e.preventDefault(); ask(message); }}>
+            <form className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5" onSubmit={(e) => { e.preventDefault(); ask(message); }}>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -114,19 +115,20 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
                     ask(message);
                   }
                 }}
-                rows={2}
+                // One line (LT-277); grows only for a long question, like his page's box.
+                rows={1}
                 maxLength={1000}
                 placeholder={t('lighty.placeholder')}
                 aria-label={t('lighty.placeholder')}
-                className="flex-1 min-w-0 resize-none bg-transparent px-2 py-1.5 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none"
+                className="flex-1 min-w-0 max-h-24 resize-none bg-transparent px-2 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none [field-sizing:content]"
               />
               <button
                 type="submit"
                 disabled={!message.trim()}
                 aria-label={t('lighty.send')}
-                className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-r from-primary to-violet-500 text-white disabled:opacity-40"
+                className={`w-9 h-9 ${lightySendButton}`}
               >
-                <Send className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+                <LightySendIcon />
               </button>
             </form>
           </div>

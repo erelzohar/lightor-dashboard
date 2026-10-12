@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send } from 'lucide-react';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { useTranslation } from 'react-i18next';
 import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../services/aiApi';
@@ -7,6 +6,7 @@ import { changedLabels } from '../../utils/editorDiff';
 import { fieldLabel } from './labels';
 import { lightTick } from '../../lib/haptics';
 import { LightyTyped } from '../lighty/LightyTyped';
+import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 
 interface SiteChatProps<T> {
   config: T;
@@ -91,8 +91,8 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
             aria-label={t('siteEditor.chat.placeholder')}
             className="flex-1 min-w-0 rounded-full border border-violet-200 dark:border-violet-800/60 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-300/50"
           />
-          <button type="submit" disabled={busy || !input.trim()} aria-label={t('siteEditor.ai.send')} className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center bg-gradient-to-r from-primary to-violet-500 text-white disabled:opacity-40">
-            <Send className="w-4 h-4 rtl:-scale-x-100" />
+          <button type="submit" disabled={busy || !input.trim()} aria-label={t('siteEditor.ai.send')} className={`w-9 h-9 ${lightySendButton}`}>
+            <LightySendIcon />
           </button>
         </form>
       </div>

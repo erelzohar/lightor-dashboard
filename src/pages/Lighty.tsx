@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
-import { Palette, RotateCcw, Send } from 'lucide-react';
+import { Palette, RotateCcw } from 'lucide-react';
 import { assistantService, type LightyTurn } from '../services/assistantApi';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -11,6 +11,7 @@ import { isLeadsSite } from '../utils/siteMode';
 import { LightyBubble, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
 import { LightyTyped } from '../components/lighty/LightyTyped';
+import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 
 // three.js and the model reach only this page.
 const Lighty3D = lazy(() => import('../components/lighty/Lighty3D'));
@@ -217,9 +218,9 @@ const LightyPage: React.FC = () => {
           type="submit"
           disabled={busy || !input.trim()}
           aria-label={t('lighty.send')}
-          className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r from-primary to-violet-500 text-white disabled:opacity-40"
+          className={`w-10 h-10 ${lightySendButton}`}
         >
-          <Send className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+          <LightySendIcon className="w-6 h-6" />
         </button>
       </form>
     </div>
