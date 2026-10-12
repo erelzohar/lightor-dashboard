@@ -19,6 +19,10 @@ interface FloatingAiAssistantProps {
 
 const QUICK = ['today', 'week', 'leads'] as const;
 
+// His greeting says hello, then gets out of the way (LT-283).
+export const GREETING_MS = 5000;
+const GREETING_FADE_MS = 350;
+
 /**
  * LT-253: Lighty, a tap away on every page; a short card with his greeting,
  * two or three ready questions and a box to ask your own. A question goes to
@@ -31,6 +35,16 @@ const QUICK = ['today', 'week', 'leads'] as const;
 export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting }: FloatingAiAssistantProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [modelReady, setModelReady] = useState(false);
+  // 'on' → 'fading' after GREETING_MS → 'off'. Each arrival on the page that
+  // carries a greeting (the home page) says it again.
+  const [bubble, setBubble] = useState<'on' | 'fading' | 'off'>('on');
+  useEffect(() => {
+    if (!greeting) return;
+    setBubble('on');
+    const fade = setTimeout(() => setBubble('fading'), GREETING_MS);
+    const gone = setTimeout(() => setBubble('off'), GREETING_MS + GREETING_FADE_MS);
+    return () => { clearTimeout(fade); clearTimeout(gone); };
+  }, [greeting]);
   const [message, setMessage] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -135,13 +149,18 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
         </div>
       )}
 
-      {greeting && !isChatOpen && (
+      {greeting && !isChatOpen && bubble !== 'off' && (
         <button
           type="button"
           onClick={() => setIsChatOpen(true)}
           dir={direction}
           className={`floating-ai-button absolute bottom-14 ${isRtl ? 'left-[4.75rem]' : 'right-[4.75rem]'} w-max max-w-[min(240px,calc(100vw-8rem))] px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-violet-100 dark:border-violet-900/50 shadow-lg text-sm font-semibold text-gray-800 dark:text-white text-start`}
-          style={{ animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
+          style={{
+            animation: bubble === 'fading'
+              ? `lightyBubbleOut ${GREETING_FADE_MS}ms ease-in forwards`
+              : 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+          }}
+          data-testid="lighty-greeting"
         >
           {greeting}
           {/* the tail, pointing at Lighty */}

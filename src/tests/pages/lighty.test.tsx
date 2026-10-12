@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import LightyPage from '../../pages/Lighty';
 import { assistantService } from '../../services/assistantApi';
@@ -146,6 +146,25 @@ describe('the floating Lighty (LT-253)', () => {
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'lighty.close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByText('Good afternoon, Erel')).toBeNull(); // other pages: no greeting
+  });
+
+  it('lets the greeting go after five seconds (LT-283)', () => {
+    vi.useFakeTimers();
+    try {
+      render(<FloatingAiAssistant onSend={vi.fn()} greeting="Good evening, Erel" />);
+      expect(screen.getByText('Good evening, Erel')).toBeInTheDocument();
+      act(() => { vi.advanceTimersByTime(4900); });
+      expect(screen.getByText('Good evening, Erel')).toBeInTheDocument();
+      act(() => { vi.advanceTimersByTime(200); }); // fading out
+      expect(screen.getByTestId('lighty-greeting').style.animation).toContain('lightyBubbleOut');
+      act(() => { vi.advanceTimersByTime(400); });
+      expect(screen.queryByText('Good evening, Erel')).toBeNull();
+      // Lighty himself stays, and still opens his card.
+      fireEvent.click(screen.getByRole('button', { name: 'lighty.ask' }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

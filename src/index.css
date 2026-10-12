@@ -338,3 +338,11 @@ html[dir="rtl"] body {
 @media (prefers-reduced-motion: reduce) {
   .cal-slide-in { animation: none; }
 }
+
+/* Lighty's greeting bubble leaves after a few seconds (LT-283). Its own
+   keyframes: popIn fills `forwards`, which would pin the opacity a plain
+   transition tries to change. */
+@keyframes lightyBubbleOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.92); }
+}
