@@ -371,18 +371,18 @@
     "allDoneBtn": "¡Todo listo! Cerrar panel",
     "lightyWelcomeTitle": "¡Bienvenido, {{name}}!",
     "lightyWelcomeSubtitle": "Construyamos tu sitio con Lighty",
-    "lightyWelcomeDescription": "Lighty es tu asistente de IA que crea tu sitio profesional en segundos — solo describe tu negocio.",
+    "lightyWelcomeDescription": "Lighty es tu asistente de IA que crea tu sitio profesional en segundos - solo describe tu negocio, tu evento o tu idea.",
     "lightyAssistantName": "Lighty — tu asistente de IA",
-    "lightyAssistantDesc": "Cuéntale a Lighty sobre tu negocio y generará un sitio completo para ti, listo para publicar.",
+    "lightyAssistantDesc": "Cuéntale a Lighty sobre tu negocio, tu evento o tu idea y generará un sitio completo para ti, listo para publicar.",
     "lightyGetStarted": "Construir con Lighty"
   },
   "aiBuilder": {
     "title": "Lighty — Asistente de IA",
     "chatTab": "Chat",
     "previewTab": "Vista previa",
-    "lightyWelcome": "¡Hola! Soy Lighty, tu asistente de IA. Describe tu negocio y crearé tu sitio en segundos. También puedes adjuntar un logo para mejores resultados.",
-    "welcomeMessage": "¡Hola! Soy Lighty, tu asistente de IA. Describe tu negocio y crearé tu sitio en segundos. También puedes adjuntar un logo para mejores resultados.",
-    "firstPromptPlaceholder": "Describe tu negocio (p. ej. peluquería en Tel Aviv para mujeres)...",
+    "lightyWelcome": "¡Hola! Soy Lighty, tu asistente de IA. Describe tu negocio, tu evento o tu idea y crearé tu sitio en segundos. También puedes adjuntar un logo para mejores resultados.",
+    "welcomeMessage": "¡Hola! Soy Lighty, tu asistente de IA. Describe tu negocio, tu evento o tu idea y crearé tu sitio en segundos. También puedes adjuntar un logo para mejores resultados.",
+    "firstPromptPlaceholder": "Describe para qué es el sitio (p. ej. peluquería en Tel Aviv para mujeres, o una conferencia de emprendimiento en Haifa)...",
     "refinePlaceholder": "¿Qué te gustaría que Lighty cambiara?",
     "generatedMessage": "¡Tu sitio {{name}} está listo! Puedes seguir refinándolo con Lighty o guardarlo para aplicar los cambios.",
     "errorMessage": "Algo salió mal. Inténtalo de nuevo.",
@@ -394,7 +394,7 @@
     "saved": "¡Guardado!",
     "skip": "Omitir por ahora",
     "previewEmpty": "La vista previa aparecerá aquí",
-    "previewEmptyDesc": "Describe tu negocio a Lighty y la vista previa en vivo de tu sitio aparecerá aquí",
+    "previewEmptyDesc": "Cuéntale a Lighty para qué es el sitio y la vista previa en vivo aparecerá aquí",
     "editWelcome": "¡Bienvenido de nuevo! Tu sitio {{name}} está activo. ¿Qué te gustaría actualizar o mejorar hoy?",
     "suggestion_new_1": "Crear un sitio de reservas para mi estudio de fotografía",
     "suggestion_new_2": "Crear un sitio para mi peluquería",
@@ -1311,7 +1311,7 @@
       "serviceName": "Nombre del servicio",
       "servicePrice": "Precio",
       "serviceImage": "Imagen del servicio",
-      "businessName": "Nombre del negocio",
+      "businessName": "Nombre del negocio o del sitio",
       "logo": "Logo",
       "text": "Texto"
     },
@@ -1396,7 +1396,7 @@
         "content": "Contenido",
         "images": "Imágenes",
         "services": "Servicios y reservas",
-        "info": "Datos del negocio"
+        "info": "Datos generales"
       },
       "badge": {
         "ai": "La IA escribe un borrador",
@@ -1429,7 +1429,7 @@
   "lighty": {
     "hello": "¡Hola! Soy Lighty",
     "intro": "Pregúntame por tus citas, tus horas libres, tus clientes y tus contactos.",
-    "subtitle": "Tu asistente para el negocio",
+    "subtitle": "Tu asistente inteligente",
     "thinking": "Lighty está pensando…",
     "placeholder": "Pregúntale a Lighty…",
     "send": "Enviar",

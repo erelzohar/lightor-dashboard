@@ -371,18 +371,18 @@
     "allDoneBtn": "All set! Close panel",
     "lightyWelcomeTitle": "Welcome, {{name}}!",
     "lightyWelcomeSubtitle": "Let's build your website with Lighty",
-    "lightyWelcomeDescription": "Lighty is your AI assistant that builds your professional website in seconds — just describe your business.",
+    "lightyWelcomeDescription": "Lighty is your AI assistant that builds your professional website in seconds - just describe your business, event or idea.",
     "lightyAssistantName": "Lighty — your AI assistant",
-    "lightyAssistantDesc": "Tell Lighty about your business and it will generate a complete website for you, ready to go live.",
+    "lightyAssistantDesc": "Tell Lighty about your business, event or idea and it will generate a complete website for you, ready to go live.",
     "lightyGetStarted": "Build with Lighty"
   },
   "aiBuilder": {
     "title": "Lighty — AI Assistant",
     "chatTab": "Chat",
     "previewTab": "Preview",
-    "lightyWelcome": "Hi! I'm Lighty, your AI website assistant. Describe your business and I'll build your website in seconds. You can also attach a logo for better results.",
-    "welcomeMessage": "Hi! I'm Lighty, your AI website assistant. Describe your business and I'll build your website in seconds. You can also attach a logo for better results.",
-    "firstPromptPlaceholder": "Describe your business (e.g. hair salon in Tel Aviv for women)...",
+    "lightyWelcome": "Hi! I'm Lighty, your AI website assistant. Describe your business, event or idea and I'll build your website in seconds. You can also attach a logo for better results.",
+    "welcomeMessage": "Hi! I'm Lighty, your AI website assistant. Describe your business, event or idea and I'll build your website in seconds. You can also attach a logo for better results.",
+    "firstPromptPlaceholder": "Describe what the site is for (e.g. hair salon in Tel Aviv for women, or a startup conference in Haifa)...",
     "refinePlaceholder": "What would you like Lighty to change?",
     "generatedMessage": "Your {{name}} website is ready! You can keep refining it with Lighty or save it to apply the changes.",
     "errorMessage": "Something went wrong. Please try again.",
@@ -394,7 +394,7 @@
     "saved": "Saved!",
     "skip": "Skip for now",
     "previewEmpty": "Preview will appear here",
-    "previewEmptyDesc": "Describe your business to Lighty and your live website preview will show up here",
+    "previewEmptyDesc": "Tell Lighty what the site is for and your live website preview will show up here",
     "editWelcome": "Welcome back! Your {{name}} website is live. What would you like to update or improve today?",
     "suggestion_new_1": "Build a booking site for my photography studio",
     "suggestion_new_2": "Create a website for my hair salon",
@@ -1311,7 +1311,7 @@
       "serviceName": "Service name",
       "servicePrice": "Price",
       "serviceImage": "Service picture",
-      "businessName": "Business name",
+      "businessName": "Business or site name",
       "logo": "Logo",
       "text": "Text"
     },
@@ -1396,7 +1396,7 @@
         "content": "Content",
         "images": "Images",
         "services": "Services and booking",
-        "info": "Business details"
+        "info": "General details"
       },
       "badge": {
         "ai": "AI writes a draft",
@@ -1429,7 +1429,7 @@
   "lighty": {
     "hello": "Hi! I'm Lighty",
     "intro": "Ask me about your appointments, free times, customers and leads.",
-    "subtitle": "Your business assistant",
+    "subtitle": "Your smart assistant",
     "thinking": "Lighty is thinking…",
     "placeholder": "Ask Lighty…",
     "send": "Send",

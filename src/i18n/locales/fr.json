@@ -371,18 +371,18 @@
     "allDoneBtn": "Tout est prêt ! Fermer le panneau",
     "lightyWelcomeTitle": "Bienvenue, {{name}} !",
     "lightyWelcomeSubtitle": "Construisons votre site avec Lighty",
-    "lightyWelcomeDescription": "Lighty est votre assistant IA qui crée votre site professionnel en quelques secondes — décrivez simplement votre entreprise.",
+    "lightyWelcomeDescription": "Lighty est votre assistant IA qui crée votre site professionnel en quelques secondes - décrivez simplement votre entreprise, votre événement ou votre idée.",
     "lightyAssistantName": "Lighty — votre assistant IA",
-    "lightyAssistantDesc": "Parlez de votre entreprise à Lighty et il générera un site complet pour vous, prêt à être mis en ligne.",
+    "lightyAssistantDesc": "Parlez à Lighty de votre entreprise, de votre événement ou de votre idée et il générera un site complet pour vous, prêt à être mis en ligne.",
     "lightyGetStarted": "Construire avec Lighty"
   },
   "aiBuilder": {
     "title": "Lighty — Assistant IA",
     "chatTab": "Discussion",
     "previewTab": "Aperçu",
-    "lightyWelcome": "Bonjour ! Je suis Lighty, votre assistant IA. Décrivez votre entreprise et je créerai votre site en quelques secondes. Vous pouvez aussi joindre un logo pour de meilleurs résultats.",
-    "welcomeMessage": "Bonjour ! Je suis Lighty, votre assistant IA. Décrivez votre entreprise et je créerai votre site en quelques secondes. Vous pouvez aussi joindre un logo pour de meilleurs résultats.",
-    "firstPromptPlaceholder": "Décrivez votre entreprise (par ex. salon de coiffure à Tel Aviv pour femmes)...",
+    "lightyWelcome": "Bonjour ! Je suis Lighty, votre assistant IA. Décrivez votre entreprise, votre événement ou votre idée et je créerai votre site en quelques secondes. Vous pouvez aussi joindre un logo pour de meilleurs résultats.",
+    "welcomeMessage": "Bonjour ! Je suis Lighty, votre assistant IA. Décrivez votre entreprise, votre événement ou votre idée et je créerai votre site en quelques secondes. Vous pouvez aussi joindre un logo pour de meilleurs résultats.",
+    "firstPromptPlaceholder": "Décrivez à quoi sert le site (par ex. salon de coiffure à Tel Aviv pour femmes, ou une conférence sur l'entrepreneuriat à Haïfa)...",
     "refinePlaceholder": "Que souhaitez-vous que Lighty modifie ?",
     "generatedMessage": "Votre site {{name}} est prêt ! Vous pouvez continuer à l'affiner avec Lighty ou l'enregistrer pour appliquer les modifications.",
     "errorMessage": "Un problème est survenu. Veuillez réessayer.",
@@ -394,7 +394,7 @@
     "saved": "Enregistré !",
     "skip": "Ignorer pour l'instant",
     "previewEmpty": "L'aperçu apparaîtra ici",
-    "previewEmptyDesc": "Décrivez votre entreprise à Lighty et l'aperçu en direct de votre site s'affichera ici",
+    "previewEmptyDesc": "Dites à Lighty à quoi sert le site et l'aperçu en direct s'affichera ici",
     "editWelcome": "Bon retour ! Votre site {{name}} est en ligne. Que souhaitez-vous mettre à jour ou améliorer aujourd'hui ?",
     "suggestion_new_1": "Créer un site de réservation pour mon studio de photographie",
     "suggestion_new_2": "Créer un site pour mon salon de coiffure",
@@ -1311,7 +1311,7 @@
       "serviceName": "Nom du service",
       "servicePrice": "Prix",
       "serviceImage": "Image du service",
-      "businessName": "Nom de l'entreprise",
+      "businessName": "Nom de l'entreprise ou du site",
       "logo": "Logo",
       "text": "Texte"
     },
@@ -1396,7 +1396,7 @@
         "content": "Contenu",
         "images": "Images",
         "services": "Services et réservation",
-        "info": "Infos de l'entreprise"
+        "info": "Infos générales"
       },
       "badge": {
         "ai": "L'IA rédige un brouillon",
@@ -1429,7 +1429,7 @@
   "lighty": {
     "hello": "Salut ! Je suis Lighty",
     "intro": "Posez-moi vos questions sur vos rendez-vous, vos créneaux libres, vos clients et vos demandes.",
-    "subtitle": "Votre assistant de gestion",
+    "subtitle": "Votre assistant intelligent",
     "thinking": "Lighty réfléchit…",
     "placeholder": "Demandez à Lighty…",
     "send": "Envoyer",
