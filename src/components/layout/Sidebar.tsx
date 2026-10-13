@@ -288,7 +288,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   return (
     <SidebarRoot open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10 bg-[#f9f9ff] dark:bg-dark-surface border-e border-gray-200 dark:border-gray-800/60">
-        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        {/* -mx-1 px-1: the clip box (overflow-x-hidden, for the collapse) reaches
+            4 px past the content, so the active tile's ring is not cut at the
+            rail's edge (LT-285). */}
+        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide -mx-1 px-1">
           <SidebarHeader />
           <div className="flex flex-col">
             {navSections.map((section, sIdx) => (

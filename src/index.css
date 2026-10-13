@@ -186,7 +186,10 @@ html[dir="rtl"] body {
 }
 
 .dark .text-primary {
-  @apply text-primary-dark;
+  /* LT-285: was text-primary-dark — the DARKER purple (#7c3aed), dark-on-dark
+     and unreadable since the first commit. As text on dark surfaces purple
+     must go lighter. (Buttons keep bg-primary-dark below: white on it reads.) */
+  @apply text-violet-300;
 }
 
 .dark .bg-light-surface {
@@ -218,7 +221,7 @@ html[dir="rtl"] body {
 }
 
 .dark .hover\:text-primary:hover {
-  @apply text-primary-dark;
+  @apply text-violet-300; /* LT-285, as .dark .text-primary */
 }
 
 .dark .hover\:bg-red-50:hover {
