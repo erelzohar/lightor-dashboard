@@ -84,6 +84,7 @@ const STATUS_CFG = [
 
 // ══════════════════════════════════════════════════════════════════════════
 const NEXT_HIDDEN_KEY = 'lightor.nextApptHidden';
+const NEXT_WINDOW_MS = 14 * 24 * 3_600_000;
 
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments,
@@ -127,9 +128,14 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const rangeStart = startOfDay(weekDays[0]).valueOf();
   const rangeEnd   = endOfDay(weekDays[weekDays.length - 1]).valueOf();
   const listed     = useClassSessions(rangeStart, rangeEnd);
+  // LT-293: the classes of the next two weeks, wherever the grid is — the
+  // next-appointment card counts a class nobody has booked yet, too.
+  const soonFrom   = startOfDay(new Date()).valueOf();
+  const soonListed = useClassSessions(soonFrom, soonFrom + NEXT_WINDOW_MS);
+  const rosterable = useMemo(() => withListedSessions(listed, soonListed), [listed, soonListed]);
   // The open roster follows every booking, whatever the filters show (LT-204):
   // a walk-in seated from it appears once the appointments are fetched again.
-  const { openSession, openRoster, closeRoster } = useOpenSession(appointments, listed);
+  const { openSession, openRoster, closeRoster } = useOpenSession(appointments, rosterable);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
@@ -231,32 +237,48 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const miniHasAppts = (day: Date) =>
     appointments.some(a => isSameDay(new Date(parseInt(a.timestamp)), day));
 
-  const nextAppt = useMemo(() =>
-    appointments
-      .filter(a => getDisplayStatus(a) === 'scheduled' && parseInt(a.timestamp) > Date.now())
-      .sort((a, b) => parseInt(a.timestamp) - parseInt(b.timestamp))[0]
-  , [appointments]);
+  // What comes next: a booking, or a class — booked into or not (LT-293:
+  // a class with no one in it yet holds no appointment, so the card said
+  // nothing was coming while one was on the grid tomorrow).
+  const nextSession = useMemo((): Session | null => {
+    const now = Date.now();
+    return withListedSessions(
+      groupSessions(appointments.filter(a => getDisplayStatus(a) === 'scheduled' && parseInt(a.timestamp) > now)),
+      soonListed.filter(s => s.startMs > now),
+    )[0] ?? null;
+  }, [appointments, soonListed, nowPx]); // nowPx: looked at again each minute, so one that started moves on
+  const nextIsGroup = !!nextSession && isGroupSession(nextSession);
+  const nextEndMs = nextSession ? nextSession.startMs + nextSession.durationMS : 0;
+  // Who: the customer; for a class, how full it is.
+  const nextWho = !nextSession ? '' : nextSession.type?.kind === 'class'
+    ? `${activeParticipants(nextSession).length}/${Number(nextSession.type.capacity) || 0} ${language === 'he' ? 'משתתפים' : 'booked'}`
+    : nextSession.participants.map(p => p.name).join(', ');
+  const openNext = () => {
+    if (!nextSession) return;
+    if (nextIsGroup) { setSelectedAppt(null); openRoster(nextSession); }
+    else onAppointmentClick(nextSession.participants[0]);
+  };
 
   // How soon, within the next day; further off, the day itself says it (LT-287).
   const minutesUntilNext = useMemo(() => {
-    if (!nextAppt) return null;
-    const diff = parseInt(nextAppt.timestamp) - Date.now();
+    if (!nextSession) return null;
+    const diff = nextSession.startMs - Date.now();
     if (diff <= 0 || diff >= 24 * 3_600_000) return null;
     const mins = Math.floor(diff / 60000);
     const h = Math.floor(mins / 60), m = mins % 60;
     if (language === 'he') return mins < 60 ? `בעוד ${mins} דק׳` : `בעוד ${h} ש׳${m ? ` ו-${m} דק׳` : ''}`;
     return mins < 60 ? `in ${mins} min` : `in ${h}h${m ? ` ${m}m` : ''}`;
-  }, [nextAppt, nowPx, language]);
+  }, [nextSession, nowPx, language]);
 
   // Which day — the card used to show only the hours, so a booking days
   // away read like one today (LT-287).
   const nextDay = useMemo(() => {
-    if (!nextAppt) return null;
-    const start = new Date(parseInt(nextAppt.timestamp));
+    if (!nextSession) return null;
+    const start = new Date(nextSession.startMs);
     if (isToday(start)) return language === 'he' ? 'היום' : 'Today';
     if (isTomorrow(start)) return language === 'he' ? 'מחר' : 'Tomorrow';
     return format(start, language === 'he' ? 'EEEE d/M' : 'EEE d MMM', { locale });
-  }, [nextAppt, language, locale, nowPx]);
+  }, [nextSession, language, locale, nowPx]);
 
   const getSessionPos = (session: Session) => {
     const ts   = new Date(session.startMs);
@@ -505,7 +527,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         </div>
 
         {/* ── Upcoming appointment card ────────────────────────────── */}
-        {nextAppt && !nextHidden && (
+        {nextSession && !nextHidden && (
           <div className="mx-4 mb-4 rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg,#1f2035,#252840)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex items-center justify-between mb-2">
@@ -514,9 +536,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 <span className="font-medium" style={{ color: '#c7d2fe' }}>{nextDay}</span>
                 {' · '}
                 <span dir="ltr">
-                  {format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}
+                  {format(new Date(nextSession.startMs), 'HH:mm')}
                   {' – '}
-                  {format(new Date(parseInt(nextAppt.timestamp) + Number(nextAppt.type.durationMS)), 'HH:mm')}
+                  {format(new Date(nextEndMs), 'HH:mm')}
                 </span>
               </span>
               {minutesUntilNext && (
@@ -528,8 +550,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               )}
             </div>
             <h4 className="text-sm font-medium mb-4 pe-10 leading-snug" style={{ color: '#f1f5f9' }}>
-              {nextAppt.type.name}
-              <span className="block text-xs font-normal mt-0.5" style={{ color: '#6b7280' }}>{nextAppt.name}</span>
+              {nextSession.type.name}
+              <span className="block text-xs font-normal mt-0.5" style={{ color: '#6b7280' }}>{nextWho}</span>
             </h4>
             <div className="flex gap-2 relative z-10">
               <button className="px-4 py-1.5 rounded-full text-xs transition-colors"
@@ -540,7 +562,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               </button>
               <button className="px-4 py-1.5 rounded-full text-xs text-white transition-colors"
                 style={{ background: '#6366f1' }}
-                onClick={e => { e.stopPropagation(); onAppointmentClick(nextAppt); }}
+                onClick={e => { e.stopPropagation(); openNext(); }}
               >
                 {language === 'he' ? 'פרטים' : 'Details'}
               </button>
@@ -555,7 +577,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {language === 'he' ? 'הצג את התור הבא' : 'Show the next appointment'}
             </button>
           </div>
-        ) : !nextAppt && (
+        ) : !nextSession && (
           <div className="mx-4 mb-4 rounded-2xl px-4 py-3 text-xs"
             style={{ background: 'linear-gradient(135deg,#1f2035,#252840)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af' }}>
             {language === 'he' ? 'אין תורים קרובים' : 'No upcoming appointments'}
@@ -771,17 +793,17 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         {/* LT-287: on a phone the side panel is a drawer, so the next
             appointment rides above the grid. Tap: its details; ✕: hide it
             (the same remembered choice as the panel's "Hide"). */}
-        {nextAppt && !nextHidden && (
+        {nextSession && !nextHidden && (
           <div className="lg:hidden flex items-center gap-1 ps-3 pe-1.5 py-1.5 shrink-0 bg-indigo-50 dark:bg-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50" data-testid="next-appt-bar">
             <button type="button" className="flex-1 min-w-0 flex items-center gap-2 text-start"
-              onClick={e => { e.stopPropagation(); onAppointmentClick(nextAppt); }}>
+              onClick={e => { e.stopPropagation(); openNext(); }}>
               <Clock size={14} className="text-indigo-500 dark:text-indigo-300 shrink-0" />
               <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">
                 {language === 'he' ? 'התור הבא' : 'Next'}
               </span>
               <span className="text-xs text-gray-700 dark:text-gray-200 truncate">
-                {nextDay} <span dir="ltr">{format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}</span>
-                {' · '}{nextAppt.type.name}{' · '}{nextAppt.name}
+                {nextDay} <span dir="ltr">{format(new Date(nextSession.startMs), 'HH:mm')}</span>
+                {' · '}{nextSession.type.name}{' · '}{nextWho}
               </span>
               {minutesUntilNext && (
                 <span className="shrink-0 rounded-full bg-white/80 dark:bg-white/10 px-2 py-0.5 text-[10px] text-indigo-700 dark:text-indigo-200">
