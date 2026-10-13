@@ -244,11 +244,13 @@ const AdminAppointments: React.FC = () => {
                 ]}
               />
               <Legend
-                formatter={(value) =>
-                  value === 'scheduled'
-                    ? t('admin.appointments.scheduledSeries')
-                    : t('admin.appointments.cancelledSeries')
-                }
+                iconType="circle"
+                iconSize={10}
+                formatter={(value) => (
+                  <span style={{ paddingInlineStart: 4 }}>
+                    {value === 'scheduled' ? t('admin.appointments.scheduledSeries') : t('admin.appointments.cancelledSeries')}
+                  </span>
+                )}
                 wrapperStyle={{ paddingTop: '8px', fontSize: '0.85rem' }}
               />
               <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={24} />

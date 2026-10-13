@@ -325,14 +325,17 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                   );
                 }}
               />
+              {/* Dots, with room between dot and word — in Hebrew too (LT-301). */}
               <Legend
+                iconType="circle"
+                iconSize={10}
                 formatter={(value: string) => {
                   const labels: Record<string, string> = {
                     scheduled: t('appointmentsGraph.scheduled'),
                     completed: t('appointmentsGraph.completed'),
                     cancelled: t('appointmentsGraph.cancelled'),
                   };
-                  return labels[value] || value;
+                  return <span style={{ paddingInlineStart: 4 }}>{labels[value] || value}</span>;
                 }}
                 wrapperStyle={{ paddingTop: '8px', fontSize: '1rem' }}
               />
