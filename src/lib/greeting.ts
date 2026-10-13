@@ -11,3 +11,15 @@ export const greetingFor = (t: TFunction, hour = new Date().getHours()): string 
   if (hour < 18) return t('greetings.afternoon');
   return t('greetings.evening');
 };
+
+/**
+ * LT-294: a sun or a moon after Lighty's greeting — three kinds, as Erel
+ * asked: sunrise for the morning, the sun for the afternoon, the moon for
+ * the evening and the night. Same hours as greetingFor.
+ */
+export const greetingEmoji = (hour = new Date().getHours()): string => {
+  if (hour < 5) return '🌙';
+  if (hour < 12) return '🌅';
+  if (hour < 18) return '☀️';
+  return '🌙';
+};

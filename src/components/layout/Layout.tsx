@@ -12,7 +12,7 @@ import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
-import { greetingFor } from '../../lib/greeting';
+import { greetingEmoji, greetingFor } from '../../lib/greeting';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 
 // Pages that deliberately bleed to the edges: they already cancel the
@@ -150,7 +150,7 @@ const Layout: React.FC = () => {
       ) && (
         <FloatingAiAssistant
           direction={direction}
-          greeting={pathname === '/' ? t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name }) : undefined}
+          greeting={pathname === '/' ? `${t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name })} ${greetingEmoji()}` : undefined}
           onSend={(msg) => leaveTo('/lighty', { lightyMessage: msg })}
           onOpenPage={() => leaveTo('/lighty')}
         />
