@@ -807,7 +807,8 @@
       "costs": "Costes",
       "backToDashboard": "Volver a mi panel",
       "userDetail": "Detalles del usuario",
-      "logs": "Registros"
+      "logs": "Registros",
+      "reports": "Informes de sitios"
     },
     "table": {
       "search": "Buscar…",
@@ -1109,6 +1110,29 @@
         "info": "Info",
         "debug": "Depuración",
         "raw": "Sin procesar"
+      }
+    },
+    "reports": {
+      "title": "Informes de sitios",
+      "subtitle": "Problemas que los visitantes informaron mediante Lighty en los sitios de los negocios: nos llegan solo a nosotros, nunca al dueño",
+      "open": "{{count}} abiertos",
+      "contact": "Responder a",
+      "markHandled": "Marcar como resuelto",
+      "reopen": "Reabrir",
+      "markedHandled": "Informe marcado como resuelto",
+      "reopened": "Informe reabierto",
+      "emptyOpen": "No hay informes abiertos 🎉",
+      "empty": "No hay informes",
+      "columns": {
+        "when": "Cuándo",
+        "site": "Sitio",
+        "problem": "Problema",
+        "browser": "Navegador"
+      },
+      "filters": {
+        "new": "Abiertos",
+        "handled": "Resueltos",
+        "all": "Todos"
       }
     }
   },

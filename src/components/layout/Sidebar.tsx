@@ -19,6 +19,7 @@ import {
   Coins,
   ScrollText,
   Inbox,
+  Flag,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar from './BottomTabBar';
@@ -251,6 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               { path: '/admin/subscriptions', Icon: CreditCard, name: t('admin.nav.subscriptions') },
               { path: '/admin/costs', Icon: Coins, name: t('admin.nav.costs') },
               { path: '/admin/logs', Icon: ScrollText, name: t('admin.nav.logs') },
+              { path: '/admin/reports', Icon: Flag, name: t('admin.nav.reports') },
             ],
           },
         ]

@@ -807,7 +807,8 @@
       "costs": "Coûts",
       "backToDashboard": "Retour à mon tableau de bord",
       "userDetail": "Détails de l'utilisateur",
-      "logs": "Journaux"
+      "logs": "Journaux",
+      "reports": "Signalements des sites"
     },
     "table": {
       "search": "Rechercher…",
@@ -1109,6 +1110,29 @@
         "info": "Info",
         "debug": "Débogage",
         "raw": "Brut"
+      }
+    },
+    "reports": {
+      "title": "Signalements des sites",
+      "subtitle": "Problèmes signalés par les visiteurs via Lighty sur les sites des entreprises — ils n'arrivent qu'à nous, jamais au propriétaire",
+      "open": "{{count}} ouverts",
+      "contact": "Répondre à",
+      "markHandled": "Marquer comme traité",
+      "reopen": "Rouvrir",
+      "markedHandled": "Signalement marqué comme traité",
+      "reopened": "Signalement rouvert",
+      "emptyOpen": "Aucun signalement ouvert 🎉",
+      "empty": "Aucun signalement",
+      "columns": {
+        "when": "Quand",
+        "site": "Site",
+        "problem": "Problème",
+        "browser": "Navigateur"
+      },
+      "filters": {
+        "new": "Ouverts",
+        "handled": "Traités",
+        "all": "Tous"
       }
     }
   },

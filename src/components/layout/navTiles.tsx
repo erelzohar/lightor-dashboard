@@ -23,6 +23,7 @@ export const TILE: Record<string, string> = {
   '/admin/subscriptions': 'from-amber-300 to-orange-400',
   '/admin/costs': 'from-lime-400 to-green-500',
   '/admin/logs': 'from-slate-400 to-slate-600',
+  '/admin/reports': 'from-amber-400 to-red-500',
 };
 
 /** The tile's frame. `ring` marks the active page — the caller's group selector. */

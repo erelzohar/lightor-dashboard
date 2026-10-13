@@ -439,3 +439,27 @@ export const clearLogFile = async (
     'post',
     `logs/${file}/clear`
   )).data;
+
+// ------------------------------------------------------------ site reports --
+
+/** LT-302: a visitor's report of a problem with a business's site, sent through the site's Lighty. */
+export interface SiteReportRow {
+  _id: string;
+  subDomain: string;
+  message: string;
+  contact?: string;
+  pageUrl?: string;
+  language?: string;
+  browser?: string;
+  status: 'new' | 'handled';
+  createdAt: string;
+  user_id: string;
+}
+
+export const fetchSiteReports = (
+  query: { page?: number; limit?: number; status?: 'new' | 'handled' } = {}
+): Promise<Paginated<SiteReportRow> & { summary: { open: number } }> =>
+  get<Paginated<SiteReportRow> & { summary: { open: number } }>('site-reports', query as Record<string, unknown>);
+
+export const updateSiteReport = async (id: string, status: 'new' | 'handled'): Promise<SiteReportRow> =>
+  (await send<{ data: SiteReportRow }>('patch', `site-reports/${id}`, { status })).data;

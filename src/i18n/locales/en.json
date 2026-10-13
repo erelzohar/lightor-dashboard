@@ -807,7 +807,8 @@
       "costs": "Costs",
       "backToDashboard": "Back to my dashboard",
       "userDetail": "User details",
-      "logs": "Logs"
+      "logs": "Logs",
+      "reports": "Site reports"
     },
     "table": {
       "search": "Search…",
@@ -1109,6 +1110,29 @@
         "info": "Info",
         "debug": "Debug",
         "raw": "Raw"
+      }
+    },
+    "reports": {
+      "title": "Site reports",
+      "subtitle": "Problems visitors reported through Lighty on businesses' sites — they reach us only, never the owner",
+      "open": "{{count}} open",
+      "contact": "Reply to",
+      "markHandled": "Mark handled",
+      "reopen": "Reopen",
+      "markedHandled": "Report marked handled",
+      "reopened": "Report reopened",
+      "emptyOpen": "No open reports 🎉",
+      "empty": "No reports",
+      "columns": {
+        "when": "When",
+        "site": "Site",
+        "problem": "Problem",
+        "browser": "Browser"
+      },
+      "filters": {
+        "new": "Open",
+        "handled": "Handled",
+        "all": "All"
       }
     }
   },
