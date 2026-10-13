@@ -6,7 +6,7 @@ import {
   Check, XCircle, ChevronDown, CalendarDays, Menu,
 } from 'lucide-react';
 import {
-  format, addDays, isToday, isSameDay, getHours, getMinutes,
+  format, addDays, isToday, isTomorrow, isSameDay, getHours, getMinutes,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addMonths, subMonths, eachDayOfInterval, isSameMonth,
   startOfDay, endOfDay,
@@ -83,6 +83,8 @@ const STATUS_CFG = [
 ];
 
 // ══════════════════════════════════════════════════════════════════════════
+const NEXT_HIDDEN_KEY = 'lightor.nextApptHidden';
+
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments,
   onAppointmentClick,
@@ -104,7 +106,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [calSecOpen,  setCalSecOpen]            = useState(true);
   const [catSecOpen,  setCatSecOpen]            = useState(true);
   const [sidebarOpen, setSidebarOpen]           = useState(false);
-  const [laterApptId, setLaterApptId]           = useState<string | null>(null);
+  // LT-287: the next appointment always shows — beside the calendar, and on a
+  // phone above the grid — until the owner hides it; that choice is remembered.
+  const [nextHidden, setNextHiddenState] = useState(() => {
+    try { return localStorage.getItem(NEXT_HIDDEN_KEY) === '1'; } catch { return false; }
+  });
+  const setNextHidden = (hidden: boolean) => {
+    setNextHiddenState(hidden);
+    try {
+      if (hidden) localStorage.setItem(NEXT_HIDDEN_KEY, '1');
+      else localStorage.removeItem(NEXT_HIDDEN_KEY);
+    } catch { /* private mode: the choice lasts this visit */ }
+  };
 
   const weekDays    = useMemo(() => Array.from({ length: visibleDays }, (_, i) => addDays(currentDate, i)), [currentDate, visibleDays]);
 
@@ -224,13 +237,26 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       .sort((a, b) => parseInt(a.timestamp) - parseInt(b.timestamp))[0]
   , [appointments]);
 
+  // How soon, within the next day; further off, the day itself says it (LT-287).
   const minutesUntilNext = useMemo(() => {
     if (!nextAppt) return null;
     const diff = parseInt(nextAppt.timestamp) - Date.now();
-    if (diff <= 0) return null;
+    if (diff <= 0 || diff >= 24 * 3_600_000) return null;
     const mins = Math.floor(diff / 60000);
-    return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
-  }, [nextAppt, nowPx]);
+    const h = Math.floor(mins / 60), m = mins % 60;
+    if (language === 'he') return mins < 60 ? `בעוד ${mins} דק׳` : `בעוד ${h} ש׳${m ? ` ו-${m} דק׳` : ''}`;
+    return mins < 60 ? `in ${mins} min` : `in ${h}h${m ? ` ${m}m` : ''}`;
+  }, [nextAppt, nowPx, language]);
+
+  // Which day — the card used to show only the hours, so a booking days
+  // away read like one today (LT-287).
+  const nextDay = useMemo(() => {
+    if (!nextAppt) return null;
+    const start = new Date(parseInt(nextAppt.timestamp));
+    if (isToday(start)) return language === 'he' ? 'היום' : 'Today';
+    if (isTomorrow(start)) return language === 'he' ? 'מחר' : 'Tomorrow';
+    return format(start, language === 'he' ? 'EEEE d/M' : 'EEE d MMM', { locale });
+  }, [nextAppt, language, locale, nowPx]);
 
   const getSessionPos = (session: Session) => {
     const ts   = new Date(session.startMs);
@@ -479,15 +505,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         </div>
 
         {/* ── Upcoming appointment card ────────────────────────────── */}
-        {nextAppt && nextAppt._id !== laterApptId && (
+        {nextAppt && !nextHidden && (
           <div className="mx-4 mb-4 rounded-2xl p-4 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg,#1f2035,#252840)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex items-center justify-between mb-2">
               {/* A range reads left to right in Hebrew too (LT-211): "19:00 – 19:30". */}
-              <span className="text-xs" style={{ color: '#6b7280' }} dir="ltr">
-                {format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}
-                {' – '}
-                {format(new Date(parseInt(nextAppt.timestamp) + Number(nextAppt.type.durationMS)), 'HH:mm')}
+              <span className="text-xs" style={{ color: '#9ca3af' }} data-testid="next-appt-when">
+                <span className="font-medium" style={{ color: '#c7d2fe' }}>{nextDay}</span>
+                {' · '}
+                <span dir="ltr">
+                  {format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}
+                  {' – '}
+                  {format(new Date(parseInt(nextAppt.timestamp) + Number(nextAppt.type.durationMS)), 'HH:mm')}
+                </span>
               </span>
               {minutesUntilNext && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1"
@@ -504,9 +534,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             <div className="flex gap-2 relative z-10">
               <button className="px-4 py-1.5 rounded-full text-xs transition-colors"
                 style={{ border: '1px solid rgba(255,255,255,0.18)', color: '#9ca3af' }}
-                onClick={e => { e.stopPropagation(); setLaterApptId(nextAppt._id); }}
+                onClick={e => { e.stopPropagation(); setNextHidden(true); }}
               >
-                {language === 'he' ? 'אחר כך' : 'Later'}
+                {language === 'he' ? 'הסתר' : 'Hide'}
               </button>
               <button className="px-4 py-1.5 rounded-full text-xs text-white transition-colors"
                 style={{ background: '#6366f1' }}
@@ -515,6 +545,20 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {language === 'he' ? 'פרטים' : 'Details'}
               </button>
             </div>
+          </div>
+        )}
+
+        {nextHidden ? (
+          <div className="mx-4 mb-4">
+            <button className="text-xs underline-offset-2 hover:underline" style={{ color: '#9ca3af' }}
+              onClick={e => { e.stopPropagation(); setNextHidden(false); }}>
+              {language === 'he' ? 'הצג את התור הבא' : 'Show the next appointment'}
+            </button>
+          </div>
+        ) : !nextAppt && (
+          <div className="mx-4 mb-4 rounded-2xl px-4 py-3 text-xs"
+            style={{ background: 'linear-gradient(135deg,#1f2035,#252840)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af' }}>
+            {language === 'he' ? 'אין תורים קרובים' : 'No upcoming appointments'}
           </div>
         )}
 
@@ -723,6 +767,35 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             </div>
           </div>
         </header>
+
+        {/* LT-287: on a phone the side panel is a drawer, so the next
+            appointment rides above the grid. Tap: its details; ✕: hide it
+            (the same remembered choice as the panel's "Hide"). */}
+        {nextAppt && !nextHidden && (
+          <div className="lg:hidden flex items-center gap-1 ps-3 pe-1.5 py-1.5 shrink-0 bg-indigo-50 dark:bg-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50" data-testid="next-appt-bar">
+            <button type="button" className="flex-1 min-w-0 flex items-center gap-2 text-start"
+              onClick={e => { e.stopPropagation(); onAppointmentClick(nextAppt); }}>
+              <Clock size={14} className="text-indigo-500 dark:text-indigo-300 shrink-0" />
+              <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">
+                {language === 'he' ? 'התור הבא' : 'Next'}
+              </span>
+              <span className="text-xs text-gray-700 dark:text-gray-200 truncate">
+                {nextDay} <span dir="ltr">{format(new Date(parseInt(nextAppt.timestamp)), 'HH:mm')}</span>
+                {' · '}{nextAppt.type.name}{' · '}{nextAppt.name}
+              </span>
+              {minutesUntilNext && (
+                <span className="shrink-0 rounded-full bg-white/80 dark:bg-white/10 px-2 py-0.5 text-[10px] text-indigo-700 dark:text-indigo-200">
+                  {minutesUntilNext}
+                </span>
+              )}
+            </button>
+            <button type="button" aria-label={language === 'he' ? 'הסתר את התור הבא' : 'Hide the next appointment'}
+              className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-gray-400 hover:bg-white/70 dark:hover:bg-white/10"
+              onClick={e => { e.stopPropagation(); setNextHidden(true); }}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* ── Scrollable calendar body ───────────────────────────────── */}
         <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-900" onClick={() => setSelectedAppt(null)}

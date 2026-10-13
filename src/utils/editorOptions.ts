@@ -83,6 +83,24 @@ export const THEMES: Named = {
 };
 
 /** Layout names across sections (a value means the same look wherever it appears). */
+/**
+ * The hero's animated background (LT-287) — `components.hero.bgType`, drawn by
+ * the public site's Vanta effects (lightor-front Hero.tsx VANTA_IMPORTERS).
+ * 'gradient', 'rings' and anything unknown render fog there, so they read as fog here.
+ */
+export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk', 'birds', 'net'] as const;
+export const HERO_BACKGROUND_NAMES: Named = {
+  fog: { he: 'ערפל', en: 'Fog' },
+  clouds: { he: 'עננים', en: 'Clouds' },
+  clouds2: { he: 'שמיים', en: 'Sky' },
+  topology: { he: 'קווי מתאר', en: 'Contours' },
+  trunk: { he: 'ספירלה', en: 'Spiral' },
+  birds: { he: 'ציפורים', en: 'Birds' },
+  net: { he: 'רשת', en: 'Network' },
+};
+export const heroBackgroundOf = (raw: unknown): string =>
+  typeof raw === 'string' && (HERO_BACKGROUNDS as readonly string[]).includes(raw) ? raw : 'fog';
+
 export const LAYOUTS: Named = {
   // hero
   'image-right': { he: 'תמונה בצד', en: 'Image beside' },

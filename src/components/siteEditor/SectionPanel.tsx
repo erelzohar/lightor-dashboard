@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { DEFAULT_VARIANT, LAYOUTS, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
 import { fieldLabel, vocabLang } from './labels';
@@ -118,6 +118,23 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
                 {optionLabel(LAYOUTS, v, lang)}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* LT-287: the hero's animated background, which the editor never offered. */}
+      {type === 'hero' && (
+        <div>
+          <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.heroBackground')}</p>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.heroBackground')}>
+            {HERO_BACKGROUNDS.map((v) => {
+              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType')) === v;
+              return (
+                <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={() => onUpdate(setAt(config, 'components.hero.bgType', v))}>
+                  {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

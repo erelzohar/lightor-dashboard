@@ -1349,6 +1349,7 @@
       "uploadFailed": "فشل الرفع، حاول مرة أخرى"
     },
     "section": {
+      "heroBackground": "تأثير الخلفية",
       "layout": "النمط",
       "visible": "معروض في الموقع",
       "tone": "الخلفية",

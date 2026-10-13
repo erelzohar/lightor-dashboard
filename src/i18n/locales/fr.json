@@ -1349,6 +1349,7 @@
       "uploadFailed": "Échec de l'envoi — réessayez"
     },
     "section": {
+      "heroBackground": "Effet d'arrière-plan",
       "layout": "Style",
       "visible": "Affichée sur le site",
       "tone": "Fond",

@@ -1349,6 +1349,7 @@
       "uploadFailed": "Upload failed — try again"
     },
     "section": {
+      "heroBackground": "Background effect",
       "layout": "Style",
       "visible": "Shown on the site",
       "tone": "Background",

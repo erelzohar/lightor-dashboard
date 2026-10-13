@@ -1349,6 +1349,7 @@
       "uploadFailed": "Error al subir — inténtalo de nuevo"
     },
     "section": {
+      "heroBackground": "Efecto de fondo",
       "layout": "Estilo",
       "visible": "Visible en el sitio",
       "tone": "Fondo",
