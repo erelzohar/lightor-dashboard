@@ -147,7 +147,12 @@ export async function openUpgradeCheckout(opts: {
   paddle.Checkout.open({
     transactionId: transaction.transactionId,
     ...(opts.email ? { customer: { email: opts.email } } : {}),
-    ...(locale && CHECKOUT_LOCALES.includes(locale) ? { settings: { locale } } : {}),
+    settings: {
+      // Details and payment on one page (LT-299); Paddle's default asks for
+      // the email and country first and the payment on a second page.
+      variant: 'one-page',
+      ...(locale && CHECKOUT_LOCALES.includes(locale) ? { locale } : {}),
+    },
   });
   return transaction;
 }

@@ -38,7 +38,7 @@ describe('openUpgradeCheckout', () => {
     expect(paddle.Checkout.open).toHaveBeenCalledWith({
       transactionId: 'txn_01',
       customer: { email: 'owner@biz.co' },
-      settings: { locale: 'fr' },
+      settings: { variant: 'one-page', locale: 'fr' },
     });
     expect(paddle.Checkout.open.mock.calls[0][0]).not.toHaveProperty('customData');
     expect(post.mock.invocationCallOrder[0]).toBeLessThan(paddle.Checkout.open.mock.invocationCallOrder[0]);
@@ -50,7 +50,11 @@ describe('openUpgradeCheckout', () => {
 
     await openUpgradeCheckout({ priceId: 'pri_month', email: 'owner@biz.co', language: 'he' });
 
-    expect(paddle.Checkout.open).toHaveBeenCalledWith({ transactionId: 'txn_01', customer: { email: 'owner@biz.co' } });
+    expect(paddle.Checkout.open).toHaveBeenCalledWith({
+      transactionId: 'txn_01',
+      customer: { email: 'owner@biz.co' },
+      settings: { variant: 'one-page' },
+    });
   });
 
   it('opens nothing when the server refuses the checkout', async () => {
