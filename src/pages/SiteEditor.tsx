@@ -22,6 +22,7 @@ import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
 import { addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
 import { aiService } from '../services/aiApi';
+import { fetchMyEntitlements } from '../services/entitlementsApi';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import TextPanel from '../components/siteEditor/TextPanel';
 import ImagePanel from '../components/siteEditor/ImagePanel';
@@ -123,7 +124,16 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       scrollRef.current(next.kind === 'section' ? { section: next.section, block: 'start' } : { path: next.path, block: 'start' });
     }
   }, [select]);
-  const bridge = usePreviewBridge({ iframeRef, siteOrigin, config: draft.value, selection, onSelect: selectFromSite });
+  // LT-312: a Plus site's corner is Lighty, not the contact button — the
+  // preview shows it as the live site does (the draft itself carries no plan).
+  const [plus, setPlus] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void fetchMyEntitlements().then((e) => { if (live) setPlus(e?.plan === 'plus'); });
+    return () => { live = false; };
+  }, []);
+  const previewConfig = useMemo(() => (plus ? { ...draft.value, assistant: true } : draft.value), [draft.value, plus]);
+  const bridge = usePreviewBridge({ iframeRef, siteOrigin, config: previewConfig, selection, onSelect: selectFromSite });
   scrollRef.current = bridge.scrollTo;
 
   const update = useCallback((next: WebConfig, mergeKey?: string) => draft.set(next, mergeKey), [draft]);

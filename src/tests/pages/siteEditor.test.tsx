@@ -7,6 +7,7 @@ import BottomTabBar from '../../components/layout/BottomTabBar';
 import { LeaveGuardProvider } from '../../contexts/LeaveGuardContext';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
+import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import type { WebConfig } from '../../types';
 
 /**
@@ -112,6 +113,16 @@ describe('the site editor (LT-249)', () => {
     // A message from anywhere else selects nothing.
     await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero' }, 'https://evil.example');
     expect(screen.queryByTestId('text-panel')).toBeNull();
+    // A free site's draft goes as it is: its corner is the contact button.
+    expect((posted('PREVIEW_DATA')[0][0] as { config: { assistant?: boolean } }).config.assistant).toBeUndefined();
+  });
+
+  it("tells the preview that a Plus site's corner is Lighty (LT-312)", async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce({ plan: 'plus' } as never);
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await waitFor(() => expect((lastPosted('PREVIEW_DATA')?.[0] as { config: { assistant?: boolean } } | undefined)?.config.assistant).toBe(true));
+    expect(state.webConfig.data).not.toHaveProperty('assistant');
   });
 
   it('a click on the site opens the field; typing updates the draft and the preview; undo takes it back', async () => {

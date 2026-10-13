@@ -108,7 +108,10 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
     if (!p || e.pointerId !== p.id) return;
     press.current = null;
     if (!p.moved) return;
-    justDragged.current = true; // the click that follows is the drop, not a tap
+    // The click that follows is the drop, not a tap — when one follows at all:
+    // a touch drag fires none, and the next real tap must not be swallowed (LT-312).
+    justDragged.current = true;
+    setTimeout(() => { justDragged.current = false; }, 100);
     setDragging(false);
     saveOffset(offsetRef.current);
   };

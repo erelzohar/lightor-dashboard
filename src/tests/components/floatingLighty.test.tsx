@@ -121,4 +121,14 @@ describe('the floating Lighty, dragged', () => {
     render(<FloatingAiAssistant onSend={vi.fn()} />);
     expect(wrap().style.transform).toBe(`translate(${8 - HOME.left}px, ${8 - HOME.top}px)`);
   });
+
+  it('a tap after a touch drag (which fires no click) still opens his card (LT-312)', async () => {
+    render(<FloatingAiAssistant onSend={vi.fn()} />);
+    pointer('pointerDown', 930, 740);
+    pointer('pointerMove', 700, 500);
+    pointer('pointerUp', 700, 500);
+    await act(() => new Promise((r) => setTimeout(r, 150)));
+    fireEvent.click(lighty());
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
 });
