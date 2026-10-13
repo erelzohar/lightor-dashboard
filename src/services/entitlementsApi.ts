@@ -48,6 +48,11 @@ export interface MyEntitlements {
    * `upgradeFrom` (LT-290): when the plans open — a week before `until`.
    */
   pilot?: { until: string; upgradeFrom?: string | null } | null;
+  /**
+   * LT-310: Plus that is not bought — the operator's own account. Nothing is
+   * offered or managed for it. Optional so an older API still parses.
+   */
+  complimentary?: boolean;
 }
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {

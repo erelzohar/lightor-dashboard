@@ -732,7 +732,8 @@
       "renews_month": "Renouvelé chaque mois. Résiliable à tout moment.",
       "renews_year": "Renouvelé chaque année. Résiliable à tout moment.",
       "loading": "Chargement des détails du paiement…"
-    }
+    },
+    "complimentary": "Compte administrateur : toutes les fonctionnalités Plus, toujours, sans frais."
   },
   "danger": {
     "title": "Zone de danger",

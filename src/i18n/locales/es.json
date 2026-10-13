@@ -732,7 +732,8 @@
       "renews_month": "Se renueva cada mes. Cancela cuando quieras.",
       "renews_year": "Se renueva cada año. Cancela cuando quieras.",
       "loading": "Cargando los detalles del pago…"
-    }
+    },
+    "complimentary": "Cuenta de administrador: todas las funciones de Plus, siempre, sin pagar."
   },
   "danger": {
     "title": "Zona de peligro",

@@ -732,7 +732,8 @@
       "renews_month": "Renews every month. Cancel any time.",
       "renews_year": "Renews every year. Cancel any time.",
       "loading": "Loading the payment details…"
-    }
+    },
+    "complimentary": "Admin account: every Plus feature, always, at no charge."
   },
   "danger": {
     "title": "Danger zone",

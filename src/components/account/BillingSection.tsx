@@ -76,6 +76,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
 
   const status = auth.user?.subscription?.status ?? 'free';
   const isPaid = status === 'active';
+  // LT-310: Plus that is not bought (the server says so; the operator's account).
+  const complimentary = entitlements?.complimentary === true;
   const cancelScheduled = auth.user?.subscription?.cancelAtPeriodEnd === true;
   const nextBillDate = auth.user?.subscription?.nextBillDate;
   // In the app this card only reports the plan (LT-130, App Store 3.1.1): no
@@ -96,8 +98,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       if (cancelled) return;
       setEntitlements(data);
       // Paddle is not even loaded while the free 60 days are the system's own
-      // (LT-290): the plans open in their last week.
-      if (canOfferPurchases() && upgradeIsOpen(data?.pilot)) {
+      // (LT-290): the plans open in their last week. Nor for an account whose
+      // Plus is not bought (LT-310).
+      if (!data?.complimentary && canOfferPurchases() && upgradeIsOpen(data?.pilot)) {
         fetchUpgradePlans().then((fetched) => {
           if (!cancelled) {
             setPlans(fetched);
@@ -412,12 +415,18 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               {t('billing.title')}
             </h2>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badgeClasses}`}>
-            {statusLabel[status] ?? status}
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${complimentary ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : badgeClasses}`}>
+            {complimentary ? <bdi>Plus</bdi> : (statusLabel[status] ?? status)}
           </span>
         </div>
 
-        {isPaid ? (
+        {/* LT-310: the operator's own account — Plus for good, nothing to buy,
+            cancel or manage, whatever an old subscription record says. */}
+        {complimentary ? (
+          <p className="text-sm text-gray-600 dark:text-gray-300" data-testid="billing-complimentary">
+            {t('billing.complimentary')}
+          </p>
+        ) : isPaid ? (
           <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3">
             {cancelScheduled ? (
               <div className="space-y-3">

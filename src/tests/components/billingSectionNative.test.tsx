@@ -442,3 +442,24 @@ describe('BillingSection payment management', () => {
     expect(screen.queryByText('billing.manageBilling')).not.toBeInTheDocument();
   });
 });
+
+/**
+ * LT-310 — the operator's account is Plus for good: the card says so and
+ * offers nothing to buy, cancel or manage, even over an old subscription
+ * record left from the sandbox days.
+ */
+describe('BillingSection for the admin account', () => {
+  it('shows Plus and nothing to buy, cancel or manage', async () => {
+    entitlementsState.data = { ...freeEntitlements(), plan: 'plus', complimentary: true, limits: { monthlyAppointments: null } };
+    authState.subscription = { status: 'active', subscriptionId: 'sub_old', customerId: 'ctm_old' };
+    render(<BillingSection />);
+
+    expect(await screen.findByTestId('billing-complimentary')).toHaveTextContent('billing.complimentary');
+    expect(screen.getByText('Plus')).toBeInTheDocument();
+    expect(fetchUpgradePlans).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'billing.upgrade' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'billing.subscribe' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'billing.manageBilling' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'billing.cancelCta' })).toBeNull();
+  });
+});
