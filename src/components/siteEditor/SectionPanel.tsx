@@ -86,7 +86,18 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
 
   return (
     <div className="flex flex-col gap-5" data-testid="section-panel">
-      {/* LT-256: Lighty's line first — every text of the section at once. */}
+      {/* LT-286: whether the section shows at all comes first, above Lighty. */}
+      {canHide && (
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('siteEditor.section.visible')}</p>
+            {!visible && <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{t('siteEditor.section.hiddenNote')}</p>}
+          </div>
+          <ToggleSwitch checked={visible} onChange={setVisible} ariaLabel={t('siteEditor.section.visible')} />
+        </div>
+      )}
+
+      {/* LT-256: then Lighty's line — every text of the section at once. */}
       {aiFields.length > 0 && (
         <AiBox
           fields={aiFields}
@@ -108,16 +119,6 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
               </button>
             ))}
           </div>
-        </div>
-      )}
-
-      {canHide && (
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('siteEditor.section.visible')}</p>
-            {!visible && <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{t('siteEditor.section.hiddenNote')}</p>}
-          </div>
-          <ToggleSwitch checked={visible} onChange={setVisible} ariaLabel={t('siteEditor.section.visible')} />
         </div>
       )}
 

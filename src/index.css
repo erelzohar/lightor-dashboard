@@ -344,3 +344,18 @@ html[dir="rtl"] body {
   from { opacity: 1; transform: scale(1); }
   to   { opacity: 0; transform: scale(0.92); }
 }
+
+/* Lighty's send button (LT-286): while there is something to send, the bolt
+   glints — a quick golden flash and a small bounce every few seconds. Never
+   on a disabled button; never under reduced motion. */
+@keyframes lightyBoltGlint {
+  0%, 78%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(250, 204, 21, 0)); }
+  84% { transform: scale(1.18) rotate(-8deg); filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.95)) brightness(1.15); }
+  90% { transform: scale(0.96) rotate(3deg); filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.6)); }
+}
+.lighty-send:not(:disabled) .lighty-bolt {
+  animation: lightyBoltGlint 2.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lighty-send:not(:disabled) .lighty-bolt { animation: none; }
+}
