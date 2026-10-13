@@ -135,7 +135,9 @@ const Account: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6"
+      // One centred column, every card as wide as the profile card (LT-309):
+      // the others ran the full width and the profile sat at 2/3 on one side.
+      className="w-full max-w-3xl mx-auto space-y-6"
     >
       <div className="mb-6">
         <div className="flex items-center gap-3">
@@ -181,132 +183,128 @@ const Account: React.FC = () => {
 
       <BillingSection leadsSite={leadsSite} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-medium shadow-lg shadow-primary/20">
-                  {auth.user?.name.charAt(0).toUpperCase() || 'A'}
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">{auth.user?.name}</h2>
-                </div>
-              </div>
-              <Button
-                variant={isEditing ? 'secondary' : 'primary'}
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                {isEditing ? t('common.cancel') : t('account.editDetails')}
+      <Card>
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-medium shadow-lg shadow-primary/20">
+              {auth.user?.name.charAt(0).toUpperCase() || 'A'}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">{auth.user?.name}</h2>
+            </div>
+          </div>
+          <Button
+            variant={isEditing ? 'secondary' : 'primary'}
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? t('common.cancel') : t('account.editDetails')}
+          </Button>
+        </div>
+
+        {isEditing ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label={t('account.name')}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              leftIcon={<User size={18} />}
+              required
+            />
+
+            <Input
+              label={t('account.phone')}
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              leftIcon={<Phone size={18} />}
+              required
+            />
+
+            <div className="flex justify-end">
+              <Button type="submit">
+                {t('account.saveChanges')}
               </Button>
             </div>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Phone size={18} className="text-light-gray dark:text-dark-gray" />
+              <span className="text-light-text dark:text-dark-text">{auth.user?.phone}</span>
+            </div>
+          </div>
+        )}
 
-            {isEditing ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  label={t('account.name')}
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  leftIcon={<User size={18} />}
-                  required
-                />
+        {/* Change Password Section */}
+        <div className="mt-8 pt-6 border-t border-light-gray/10 dark:border-dark-gray/10">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <KeyRound size={20} className="text-primary" />
+              <h3 className="font-semibold text-lg text-light-text dark:text-dark-text">
+                {t('account.changePassword')}
+              </h3>
+            </div>
+            <Button
+              variant={isChangingPassword ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setIsChangingPassword(!isChangingPassword)}
+            >
+              {isChangingPassword ? t('common.cancel') : t('account.changePassword')}
+            </Button>
+          </div>
 
-                <Input
-                  label={t('account.phone')}
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  leftIcon={<Phone size={18} />}
-                  required
-                />
+          {isChangingPassword && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <Input
+                label={t('account.currentPassword')}
+                name="currentPassword"
+                type={showCurrentPassword ? 'text' : 'password'}
+                value={passwordData.currentPassword}
+                onChange={handlePasswordChange}
+                leftIcon={<KeyRound size={18} />}
+                rightIcon={
+                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="focus:outline-none">
+                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                }
+                required
+              />
 
-                <div className="flex justify-end">
-                  <Button type="submit">
-                    {t('account.saveChanges')}
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Phone size={18} className="text-light-gray dark:text-dark-gray" />
-                  <span className="text-light-text dark:text-dark-text">{auth.user?.phone}</span>
-                </div>
-              </div>
-            )}
+              <Input
+                label={t('account.newPassword')}
+                name="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
+                leftIcon={<KeyRound size={18} />}
+                rightIcon={
+                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="focus:outline-none">
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                }
+                required
+              />
 
-            {/* Change Password Section */}
-            <div className="mt-8 pt-6 border-t border-light-gray/10 dark:border-dark-gray/10">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                  <KeyRound size={20} className="text-primary" />
-                  <h3 className="font-semibold text-lg text-light-text dark:text-dark-text">
-                    {t('account.changePassword')}
-                  </h3>
-                </div>
-                <Button
-                  variant={isChangingPassword ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsChangingPassword(!isChangingPassword)}
-                >
-                  {isChangingPassword ? t('common.cancel') : t('account.changePassword')}
+              <Input
+                label={t('account.confirmPassword')}
+                name="confirmPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
+                leftIcon={<KeyRound size={18} />}
+                required
+              />
+
+              <div className="flex justify-end">
+                <Button type="submit" variant="primary">
+                  {t('account.updatePassword')}
                 </Button>
               </div>
-
-              {isChangingPassword && (
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                  <Input
-                    label={t('account.currentPassword')}
-                    name="currentPassword"
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    leftIcon={<KeyRound size={18} />}
-                    rightIcon={
-                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="focus:outline-none">
-                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    }
-                    required
-                  />
-
-                  <Input
-                    label={t('account.newPassword')}
-                    name="newPassword"
-                    type={showNewPassword ? 'text' : 'password'}
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    leftIcon={<KeyRound size={18} />}
-                    rightIcon={
-                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="focus:outline-none">
-                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    }
-                    required
-                  />
-
-                  <Input
-                    label={t('account.confirmPassword')}
-                    name="confirmPassword"
-                    type={showNewPassword ? 'text' : 'password'}
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    leftIcon={<KeyRound size={18} />}
-                    required
-                  />
-
-                  <div className="flex justify-end">
-                    <Button type="submit" variant="primary">
-                      {t('account.updatePassword')}
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </Card>
+            </form>
+          )}
         </div>
-      </div>
+      </Card>
 
       <DangerZoneSection />
 
