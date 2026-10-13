@@ -10,9 +10,20 @@ import { isNativeApp } from './platform';
  * older app build without the plugin, haptics switched off — is silent: a tap
  * is a nicety, never something a flow waits on.
  */
-export const lightTick = (): void => {
+export const lightTick = (): void => impact('light');
+
+/**
+ * An impact of a given weight (LT-313) — the floating Lighty is picked up
+ * with a medium one, bumps the screen's edge and lands with light ones.
+ */
+let plugin: Promise<typeof import('@capacitor/haptics')> | null = null;
+
+export const impact = (weight: 'light' | 'medium' | 'heavy'): void => {
   if (!isNativeApp()) return;
-  void import('@capacitor/haptics')
-    .then(({ Haptics, ImpactStyle }) => Haptics.impact({ style: ImpactStyle.Light }))
+  // Loaded once: a pick-up and a bump can come a frame apart.
+  void (plugin ??= import('@capacitor/haptics'))
+    .then(({ Haptics, ImpactStyle }) =>
+      Haptics.impact({ style: weight === 'heavy' ? ImpactStyle.Heavy : weight === 'medium' ? ImpactStyle.Medium : ImpactStyle.Light })
+    )
     .catch(() => {});
 };

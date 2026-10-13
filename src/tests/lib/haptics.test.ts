@@ -7,7 +7,7 @@ vi.mock('@capacitor/haptics', () => ({
   ImpactStyle: { Light: 'LIGHT', Medium: 'MEDIUM', Heavy: 'HEAVY' },
 }));
 
-import { lightTick } from '../../lib/haptics';
+import { impact as play, lightTick } from '../../lib/haptics';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -37,5 +37,14 @@ describe('lightTick', () => {
     expect(() => lightTick()).not.toThrow();
     await flush();
     expect(impact).toHaveBeenCalled();
+  });
+
+  it('plays the weight asked for (LT-313)', async () => {
+    native.on = true;
+    play('medium');
+    play('heavy');
+    await vi.waitFor(() => expect(impact).toHaveBeenCalledTimes(2));
+    expect(impact).toHaveBeenCalledWith({ style: 'MEDIUM' });
+    expect(impact).toHaveBeenCalledWith({ style: 'HEAVY' });
   });
 });

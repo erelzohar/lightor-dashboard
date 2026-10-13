@@ -5,7 +5,7 @@ import { Toggle } from '../../components/ui/liquid-toggle';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
 
 const { lightTick } = vi.hoisted(() => ({ lightTick: vi.fn() }));
-vi.mock('../../lib/haptics', () => ({ lightTick }));
+vi.mock('../../lib/haptics', () => ({ lightTick, impact: vi.fn() }));
 
 /** LT-311 — the dashboard's one switch: the liquid toggle. */
 describe('the liquid toggle', () => {

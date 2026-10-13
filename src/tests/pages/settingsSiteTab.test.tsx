@@ -87,7 +87,8 @@ const serverAnswer = (saved: WebConfig, payload: Partial<WebConfig>): WebConfig 
 
 const sentPayload = (call = 0) => vi.mocked(updateWebConfig).mock.calls[call][0] as unknown as Partial<WebConfig>;
 
-const openSiteTab = () => fireEvent.click(screen.getByText('settings.tabs.site'));
+// A tab is chosen on press (Radix Tabs, LT-313), as a finger or mouse goes down.
+const openSiteTab = () => fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.site/ }));
 const modeCard = (key: 'settings.site.modeBook' | 'settings.site.modeLead') =>
   screen.getByRole('radio', { name: new RegExp(key.replace(/\./g, '\\.')) });
 

@@ -10,6 +10,7 @@ import Button from '../ui/Button';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
+import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 
 export type TimeRange = 'week' | 'month' | 'year' | 'all';
 
@@ -249,18 +250,13 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
               </Button>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-2">
-            {timeRangeOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={timeRange === option.value ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => onTimeRangeChange(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
+          <Tabs value={timeRange} onValueChange={(range) => onTimeRangeChange(range as TimeRange)}>
+            <TabsList>
+              {timeRangeOptions.map((option) => (
+                <TabsTrigger key={option.value} value={option.value}>{option.label}</TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* min-h, not h (LT-084): with flex-1, flex-basis:0% overrides a

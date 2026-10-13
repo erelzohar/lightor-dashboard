@@ -8,6 +8,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { canOfferPurchases, isNativeApp } from '../../lib/platform';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import type { NotificationPrefs, OwnerChannel } from '../../types';
+import { tabsListVariants, tabsTriggerVariants } from '../ui/segmented-tabs';
+import { cn } from '../../lib/utils';
+import { lightTick } from '../../lib/haptics';
 
 /**
  * How and about what the owner hears about their business (LT-129, LT-213).
@@ -123,7 +126,8 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
         role="radiogroup"
         aria-label={t('account.notifications.channel')}
         data-testid="notification-channel"
-        className={`flex flex-wrap rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-fit text-sm ${saving ? 'opacity-60 pointer-events-none' : ''}`}
+        // The segmented tabs' look (LT-313), as a radio group: a pick here saves.
+        className={cn(tabsListVariants(), 'w-fit max-w-full flex-wrap', saving ? 'opacity-60 pointer-events-none' : '')}
       >
         {channels.map(({ value, icon: Icon }) => {
           const locked = value !== 'email' && (planLocked || phoneLocked);
@@ -135,14 +139,9 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
               role="radio"
               aria-checked={active}
               disabled={locked || saving !== null}
-              onClick={() => pickChannel(value)}
-              className={`flex items-center gap-1.5 px-4 py-2 font-medium transition-colors ${
-                active
-                  ? 'bg-primary text-white'
-                  : locked
-                    ? 'bg-white dark:bg-dark-surface text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                    : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-              }`}
+              onClick={() => { if (!active) lightTick(); pickChannel(value); }}
+              data-state={active ? 'active' : 'inactive'}
+              className={cn(tabsTriggerVariants(), locked && 'disabled:opacity-60 disabled:pointer-events-auto cursor-not-allowed')}
             >
               {locked ? <Lock size={14} aria-hidden /> : <Icon size={14} aria-hidden />}
               {t(`account.notifications.channels.${value}`)}

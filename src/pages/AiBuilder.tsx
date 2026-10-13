@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import { lightTick } from '../lib/haptics';
 import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -399,28 +400,12 @@ const AiBuilder: React.FC = () => {
 
         <div className="flex items-center gap-3">
           {/* Mobile tab toggle */}
-          <div className="flex md:hidden items-center gap-1 bg-white/70 dark:bg-slate-800/70 rounded-full p-1 border border-gray-200/60 dark:border-slate-700/50 backdrop-blur-sm">
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                activeTab === 'chat'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-gray-500 dark:text-slate-400'
-              }`}
-            >
-              {t('aiBuilder.chatTab')}
-            </button>
-            <button
-              onClick={() => setActiveTab('preview')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                activeTab === 'preview'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-gray-500 dark:text-slate-400'
-              }`}
-            >
-              {t('aiBuilder.previewTab')}
-            </button>
-          </div>
+          <Tabs value={activeTab} onValueChange={(tab) => setActiveTab(tab as typeof activeTab)} className="md:hidden">
+            <TabsList size="sm">
+              <TabsTrigger value="chat">{t('aiBuilder.chatTab')}</TabsTrigger>
+              <TabsTrigger value="preview">{t('aiBuilder.previewTab')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           {/* Desktop preview toggle */}
           <button

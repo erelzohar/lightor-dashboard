@@ -19,7 +19,7 @@ vi.mock('../../store/slices/appointmentsSlice', () => ({
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
-vi.mock('../../lib/haptics', () => ({ lightTick: vi.fn() }));
+vi.mock('../../lib/haptics', () => ({ lightTick: vi.fn(), impact: vi.fn() }));
 
 beforeAll(() => {
   Element.prototype.scrollTo = vi.fn();

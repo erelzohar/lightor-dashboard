@@ -3,7 +3,7 @@ import { X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LightyAvatar, LightyBubble } from '../lighty/LightyChat';
 import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
-import { lightTick } from '../../lib/haptics';
+import { impact, lightTick } from '../../lib/haptics';
 import { DRAG_START_PX, cardPlacement, clampOffset, readOffset, saveOffset, type Home, type Offset } from '../../utils/floatingLighty';
 
 // three.js and the 1.8 MB model load after the page, never in its way.
@@ -63,7 +63,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
   offsetRef.current = offset;
   const [dragging, setDragging] = useState(false);
   const [vw, setVw] = useState(() => window.innerWidth);
-  const press = useRef<{ id: number; x: number; y: number; from: Offset; home: Home; moved: boolean } | null>(null);
+  const press = useRef<{ id: number; x: number; y: number; from: Offset; home: Home; moved: boolean; atEdge?: boolean } | null>(null);
   const justDragged = useRef(false);
   const homeOf = (): Home | null => {
     const r = wrapRef.current?.getBoundingClientRect();
@@ -99,9 +99,15 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
       e.currentTarget.setPointerCapture?.(e.pointerId);
       setDragging(true);
       setIsChatOpen(false);
-      lightTick();
+      impact('medium'); // picked up (LT-313)
     }
-    setOffset(clampOffset(p.home, p.from.x + dx, p.from.y + dy, window.innerWidth, window.innerHeight));
+    const wanted = { x: p.from.x + dx, y: p.from.y + dy };
+    const next = clampOffset(p.home, wanted.x, wanted.y, window.innerWidth, window.innerHeight);
+    // Held against the screen's edge: one light bump as he reaches it.
+    const atEdge = next.x !== Math.round(wanted.x) || next.y !== Math.round(wanted.y);
+    if (atEdge && !p.atEdge) lightTick();
+    p.atEdge = atEdge;
+    setOffset(next);
   };
   const onPointerEnd = (e: React.PointerEvent<HTMLButtonElement>) => {
     const p = press.current;
@@ -113,6 +119,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
     justDragged.current = true;
     setTimeout(() => { justDragged.current = false; }, 100);
     setDragging(false);
+    lightTick(); // put down
     saveOffset(offsetRef.current);
   };
   // Which side of him has room: his card, and his greeting.

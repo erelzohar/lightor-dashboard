@@ -33,6 +33,7 @@ import AddSectionPanel from '../components/siteEditor/AddSectionPanel';
 import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/labels';
 import AiBuilder from './AiBuilder';
 import type { WebConfig } from '../types';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -330,23 +331,14 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       return <AddSectionPanel config={draft.value} rows={rows} after={adding.after} drafting={drafting} onAdd={(type, at) => void addNewSection(type, at)} />;
     }
     if (!selection) {
-      const tab = (key: 'sections' | 'design', label: string) => (
-        <button
-          type="button"
-          role="tab"
-          aria-selected={siteTab === key}
-          onClick={() => setSiteTab(key)}
-          className={`h-9 rounded-full text-sm font-medium transition-colors ${siteTab === key ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
-        >
-          {label}
-        </button>
-      );
       return (
         <>
-          <div role="tablist" className="grid grid-cols-2 gap-1 p-1 mb-4 rounded-full bg-gray-100 dark:bg-slate-800">
-            {tab('sections', t('siteEditor.sections.tab'))}
-            {tab('design', t('siteEditor.pageSettings'))}
-          </div>
+          <Tabs value={siteTab} onValueChange={(key) => setSiteTab(key as 'sections' | 'design')} className="mb-4">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="sections">{t('siteEditor.sections.tab')}</TabsTrigger>
+              <TabsTrigger value="design">{t('siteEditor.pageSettings')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {siteTab === 'sections' ? (
             <SectionsPanel
               rows={rows}

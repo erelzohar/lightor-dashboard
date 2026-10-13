@@ -29,6 +29,7 @@ import AnswersList from './AnswersList';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
+import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -758,19 +759,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
           <div className="flex items-center gap-3 shrink-0">
             {/* View tabs */}
-            <div className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 gap-0.5">
-              {(['week', 'day'] as ViewMode[]).map(m => (
-                <button key={m}
-                  onClick={e => { e.stopPropagation(); handleViewMode(m); }}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all
-                    ${viewMode === m
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
-                >
-                  {m === 'week' ? (language === 'he' ? 'שבוע' : 'Week') : (language === 'he' ? 'יום' : 'Day')}
-                </button>
-              ))}
-            </div>
+            <Tabs value={viewMode} onValueChange={m => handleViewMode(m as ViewMode)} className="hidden sm:block" onClick={e => e.stopPropagation()}>
+              <TabsList>
+                {(['week', 'day'] as ViewMode[]).map(m => (
+                  <TabsTrigger key={m} value={m} className="px-4">
+                    {m === 'week' ? (language === 'he' ? 'שבוע' : 'Week') : (language === 'he' ? 'יום' : 'Day')}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
             {/* Navigation */}
             <div className="flex items-center gap-1" dir="ltr">

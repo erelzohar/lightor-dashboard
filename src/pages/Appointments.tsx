@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { localDateKey } from '../utils/bookingSlots';
 import type { RootState } from '../store/store';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 
 /** A local calendar day from "YYYY-MM-DD"; null for anything else, 2026-02-31 included. */
 const parseDay = (value: string): Date | null => {
@@ -160,28 +161,26 @@ const Appointments: React.FC = () => {
           </button>
 
           {/* View toggle */}
-          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shrink-0">
-            <button
-              onClick={() => { setViewMode('calendar'); localStorage.setItem('appointments_view_mode', 'calendar'); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-                ${viewMode === 'calendar'
-                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            >
-              <Calendar size={15} />
-              <span className="hidden sm:inline">{t('appointments.calendarView') || 'Calendar'}</span>
-            </button>
-            <button
-              onClick={() => { setViewMode('list'); localStorage.setItem('appointments_view_mode', 'list'); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-                ${viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            >
-              <List size={15} />
-              <span className="hidden sm:inline">{t('appointments.listView') || 'List'}</span>
-            </button>
-          </div>
+          <Tabs
+            value={viewMode}
+            onValueChange={(mode) => {
+              const next = mode === 'list' ? 'list' : 'calendar';
+              setViewMode(next);
+              localStorage.setItem('appointments_view_mode', next);
+            }}
+            className="shrink-0"
+          >
+            <TabsList>
+              <TabsTrigger value="calendar" aria-label={t('appointments.calendarView') || 'Calendar'}>
+                <Calendar />
+                <span className="hidden sm:inline">{t('appointments.calendarView') || 'Calendar'}</span>
+              </TabsTrigger>
+              <TabsTrigger value="list" aria-label={t('appointments.listView') || 'List'}>
+                <List />
+                <span className="hidden sm:inline">{t('appointments.listView') || 'List'}</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 

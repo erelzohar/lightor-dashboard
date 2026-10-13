@@ -9,7 +9,8 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 
 vi.mock('../../components/lighty/Lighty3D', () => ({
   default: ({ dragging }: { dragging?: boolean }) => <div data-testid="lighty-3d" data-dragging={String(!!dragging)} />,
 }));
-vi.mock('../../lib/haptics', () => ({ lightTick: vi.fn() }));
+const { lightTick, impact } = vi.hoisted(() => ({ lightTick: vi.fn(), impact: vi.fn() }));
+vi.mock('../../lib/haptics', () => ({ lightTick, impact }));
 
 const VW = 1000, VH = 800;
 const HOME = { left: VW - 24 - 80, top: VH - 24 - 96, width: 80, height: 96 };
@@ -106,6 +107,25 @@ describe('the floating Lighty, dragged', () => {
     pointer('pointerMove', 3000, 3000);
     expect(wrap().style.transform).toBe(`translate(${VW - 80 - 8 - HOME.left}px, 0px)`);
     pointer('pointerUp', 3000, 3000);
+  });
+
+  it('is felt: picked up, bumping the edge once, put down (LT-313)', () => {
+    lightTick.mockClear();
+    impact.mockClear();
+    render(<FloatingAiAssistant onSend={vi.fn()} />);
+    pointer('pointerDown', 930, 740);
+    pointer('pointerMove', 830, 640);
+    expect(impact).toHaveBeenCalledWith('medium');
+    expect(lightTick).not.toHaveBeenCalled();
+    pointer('pointerMove', 3000, 3000); // against the edge
+    pointer('pointerMove', 3100, 3100); // still there: no second bump
+    expect(lightTick).toHaveBeenCalledTimes(1);
+    pointer('pointerMove', 600, 400);   // off the edge, and back
+    pointer('pointerMove', 3000, 3000);
+    expect(lightTick).toHaveBeenCalledTimes(2);
+    pointer('pointerUp', 3000, 3000);
+    expect(lightTick).toHaveBeenCalledTimes(3); // landed
+    expect(impact).toHaveBeenCalledTimes(1);
   });
 
   it('comes back where he was left, and opens his card below him near the top', () => {

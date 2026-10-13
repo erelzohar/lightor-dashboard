@@ -17,7 +17,7 @@ const { t } = vi.hoisted(() => ({ t: (key: string, vars?: Record<string, unknown
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'he' } }) }));
 vi.mock('../../components/lighty/Lighty3D', () => ({ default: (): null => null }));
 const { lightTick } = vi.hoisted(() => ({ lightTick: vi.fn() }));
-vi.mock('../../lib/haptics', () => ({ lightTick }));
+vi.mock('../../lib/haptics', () => ({ lightTick, impact: vi.fn() }));
 vi.mock('../../hooks/useVirtualKeyboard', () => ({ useVirtualKeyboard: () => false }));
 vi.mock('../../services/entitlementsApi', () => ({
   fetchMyEntitlements: vi.fn(async () => ({ plan: 'plus', limits: { aiTokensPerMonth: 1000 }, usage: { aiTokensThisMonth: 250 } })),

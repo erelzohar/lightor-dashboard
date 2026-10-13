@@ -82,7 +82,7 @@ describe('Leads page', () => {
     renderAt(<Leads />);
     await screen.findAllByTestId('lead-card');
 
-    fireEvent.click(screen.getByRole('tab', { name: /leads\.status\.closed/ }));
+    fireEvent.mouseDown(screen.getByRole('tab', { name: /leads\.status\.closed/ })); // chosen on press (LT-313)
 
     await waitFor(() => expect(fetchLeads).toHaveBeenLastCalledWith({ status: 'closed', page: 1, limit: 20 }));
   });

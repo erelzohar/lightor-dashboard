@@ -15,6 +15,7 @@ import { fetchWebConfig } from '../store/slices/webConfigSlice';
 import { fetchLeads, updateLeadStatus, deleteLead, Lead, LeadStatus, LeadsPage, LEAD_STATUSES } from '../services/leadsApi';
 import { setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../utils/phone';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 
 const PAGE_SIZE = 20;
 
@@ -23,8 +24,6 @@ const STATUS_TINT: Record<LeadStatus, string> = {
   contacted: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700/40',
   closed: 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 };
-
-const CHIP = 'px-3 py-1.5 rounded-full text-sm font-medium border transition-colors whitespace-nowrap';
 
 /**
  * Leads (LT-197): the messages visitors left through the site's contact form,
@@ -136,32 +135,25 @@ const Leads: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="tablist" aria-label={t('leads.filter.label')}>
-          {filters.map((f) => {
-            const active = status === f.value;
-            return (
-              <button
-                key={f.value || 'all'}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  setStatus(f.value);
-                  setPage(1);
-                  setSearchParams(f.value ? { status: f.value } : {}, { replace: true });
-                }}
-                className={`${CHIP} ${
-                  active
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary/50'
-                }`}
-              >
+        {/* "All" is the empty status; a tab needs a name, so it is 'all' here. */}
+        <Tabs
+          value={status || 'all'}
+          onValueChange={(v) => {
+            const next = (v === 'all' ? '' : v) as LeadStatus | '';
+            setStatus(next);
+            setPage(1);
+            setSearchParams(next ? { status: next } : {}, { replace: true });
+          }}
+        >
+          <TabsList aria-label={t('leads.filter.label')} className="w-fit max-w-full overflow-x-auto scrollbar-hide">
+            {filters.map((f) => (
+              <TabsTrigger key={f.value || 'all'} value={f.value || 'all'}>
                 {f.label}
-                {f.count !== undefined && <span className="ms-1.5 tabular-nums opacity-80">{f.count}</span>}
-              </button>
-            );
-          })}
-        </div>
+                {f.count !== undefined && <span className="tabular-nums opacity-70">{f.count}</span>}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {loading && !result ? (
           <div className="flex justify-center py-16">

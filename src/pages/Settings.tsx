@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -26,6 +26,7 @@ import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import { Toggle } from '../components/ui/liquid-toggle';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -455,23 +456,18 @@ const Settings: React.FC = () => {
               )}
 
               {/* Mode toggle */}
-              <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-fit text-sm">
-                <button
-                  type="button"
-                  onClick={() => { setLogoInputMode('upload'); setLogoUrlError(null); }}
-                  className={`px-3 py-1.5 font-medium transition-colors flex items-center gap-1.5 ${logoInputMode === 'upload' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <ImageIcon width={13} />
-                  {t('settings.uploadLogo')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setLogoInputMode('url'); setImageToUpload(null); }}
-                  className={`px-3 py-1.5 font-medium transition-colors ${logoInputMode === 'url' ? 'bg-primary text-white' : 'bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  {t('settings.logoUrlMode')}
-                </button>
-              </div>
+              <Tabs
+                value={logoInputMode}
+                onValueChange={(mode) => {
+                  if (mode === 'upload') { setLogoInputMode('upload'); setLogoUrlError(null); }
+                  else { setLogoInputMode('url'); setImageToUpload(null); }
+                }}
+              >
+                <TabsList className="w-fit">
+                  <TabsTrigger value="upload"><ImageIcon />{t('settings.uploadLogo')}</TabsTrigger>
+                  <TabsTrigger value="url"><Link2 />{t('settings.logoUrlMode')}</TabsTrigger>
+                </TabsList>
+              </Tabs>
 
               {/* Upload input */}
               {logoInputMode === 'upload' && (
