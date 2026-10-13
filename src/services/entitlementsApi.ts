@@ -45,8 +45,9 @@ export interface MyEntitlements {
    * until this ISO date although nothing was bought — `plan` above already
    * reflects it. Null on a paid plan, once the window lapses, or with the
    * grant off. Optional so an API deployed before this build still parses.
+   * `upgradeFrom` (LT-290): when the plans open — a week before `until`.
    */
-  pilot?: { until: string } | null;
+  pilot?: { until: string; upgradeFrom?: string | null } | null;
 }
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {

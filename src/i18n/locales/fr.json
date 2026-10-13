@@ -606,6 +606,12 @@
     "placeholder": "Que souhaitez-vous modifier ?"
   },
   "dashboard": {
+    "trialEnding": {
+      "title": "Votre période gratuite se termine le {{date}}",
+      "body": "Pour garder toutes les fonctionnalités, vous pouvez vous abonner maintenant. Le premier prélèvement aura lieu seulement le {{date}}.",
+      "bodyApp": "D'ici là, toutes les fonctionnalités Plus sont à vous.",
+      "cta": "Choisir une formule"
+    },
     "emptyTitle": "Bienvenue sur Lightor !",
     "emptySubtitle": "Commencez à utiliser Lightor pour voir vos statistiques",
     "emptyDesc": "Dès que des clients vous contacteront via votre site, vos statistiques et analyses apparaîtront ici.",
@@ -673,7 +679,8 @@
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
     "pilotLine": "Essai gratuit : toutes les fonctionnalités Plus sont gratuites jusqu’au {{date}}.",
-    "pilotSubscribeNote": "Vous pouvez vous abonner dès maintenant : le premier prélèvement aura lieu le {{date}}, et vous pouvez annuler d’ici là sans rien payer.",
+    "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
+    "pilotUpgradeLater": "Une semaine avant la fin, nous vous le rappellerons et vous pourrez choisir de continuer.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
     "upgrade": "Améliorer",

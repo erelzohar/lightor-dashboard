@@ -606,6 +606,12 @@
     "placeholder": "¿Qué te gustaría editar?"
   },
   "dashboard": {
+    "trialEnding": {
+      "title": "Tu periodo gratuito termina el {{date}}",
+      "body": "Para mantener todas las funciones puedes suscribirte ahora. El primer cobro será recién el {{date}}.",
+      "bodyApp": "Hasta entonces todas las funciones Plus son tuyas.",
+      "cta": "Elegir un plan"
+    },
     "emptyTitle": "¡Bienvenido a Lightor!",
     "emptySubtitle": "Empieza a usar Lightor para ver tus estadísticas",
     "emptyDesc": "En cuanto los clientes empiecen a llegarte a través de tu sitio, tus estadísticas y análisis aparecerán aquí.",
@@ -673,7 +679,8 @@
     "freeDesc": "Estás en el plan gratuito, con límites mensuales de citas y consultas. Mejora tu plan para quitarlos.",
     "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
     "pilotLine": "Prueba gratuita: todas las funciones Plus son gratis hasta el {{date}}.",
-    "pilotSubscribeNote": "Puedes suscribirte ya: el primer cobro será el {{date}} y hasta entonces puedes cancelar sin pagar nada.",
+    "pilotSubscribeNote": "Tu prueba termina el {{date}}. Si te suscribes ahora, el primer cobro será recién el {{date}}; hasta entonces puedes cancelar sin pagar.",
+    "pilotUpgradeLater": "Una semana antes de que termine te lo recordaremos y podrás elegir si continuar.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
     "upgrade": "Mejorar",

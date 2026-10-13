@@ -112,11 +112,15 @@ describe('BillingSection', () => {
  */
 describe('BillingSection pilot grant', () => {
   const PILOT_UNTIL = '2026-11-21T10:00:00.000Z';
-  const pilotEntitlements = (): Record<string, unknown> => ({
+  // LT-290: the plans open a week before the grant ends; `open` puts today in that week.
+  const pilotEntitlements = (open = false): Record<string, unknown> => ({
     plan: 'plus',
     limits: { monthlyAppointments: null },
     usage: { appointmentsThisMonth: 12 },
-    pilot: { until: PILOT_UNTIL },
+    pilot: {
+      until: PILOT_UNTIL,
+      upgradeFrom: open ? new Date(Date.now() - 60_000).toISOString() : new Date(Date.now() + 86_400_000).toISOString(),
+    },
   });
 
   it('says nothing about a pilot when the server reports none', async () => {
@@ -140,12 +144,25 @@ describe('BillingSection pilot grant', () => {
   });
 
   /**
-   * LT-265: an owner may subscribe during the free period; the first charge
-   * comes when it ends. So the plans are on offer, under a line saying when
-   * the first charge is.
+   * LT-290: the free period is the system's own — nothing to buy, and Paddle
+   * not even loaded, until its last week.
    */
-  it('offers the plans on the web during the grant too, saying when the first charge comes', async () => {
-    entitlementsState.data = pilotEntitlements();
+  it('offers nothing before the last week, saying a reminder will come', async () => {
+    entitlementsState.data = pilotEntitlements(false);
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.pilotUpgradeLater')).toBeInTheDocument();
+    expect(screen.queryByText('billing.pilotSubscribeNote')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'billing.subscribe' })).not.toBeInTheDocument();
+    expect(fetchUpgradePlans).not.toHaveBeenCalled();
+  });
+
+  /**
+   * LT-265 + LT-290: in the last week an owner may subscribe; the first charge
+   * comes when the free period ends. So the plans are on offer, under a line
+   * saying when the first charge is.
+   */
+  it('offers the plans on the web in the last week, saying when the first charge comes', async () => {
+    entitlementsState.data = pilotEntitlements(true);
     render(<BillingSection />);
     expect(await screen.findByText('billing.pilotSubscribeNote')).toBeInTheDocument();
     expect(t).toHaveBeenCalledWith('billing.pilotSubscribeNote', {

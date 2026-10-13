@@ -132,3 +132,47 @@ describe('Dashboard upgrade banner under the pilot grant', () => {
     expect(await screen.findByText('common.upgradePlanTitle')).toBeInTheDocument();
   });
 });
+
+/**
+ * The free period's last week (LT-290): the owner is told when it ends — on
+ * the web with the way to the plans, in the app as a fact only — and not a
+ * day before the week starts.
+ */
+describe('Dashboard — the free period ends in a week', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const grant = (untilInDays: number) => {
+    const until = new Date(Date.now() + untilInDays * DAY).toISOString();
+    const upgradeFrom = new Date(Date.now() + (untilInDays - 7) * DAY).toISOString();
+    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce({ plan: 'plus', limits: {}, usage: {}, pilot: { until, upgradeFrom } } as never);
+  };
+
+  it('shows the date and the way to the plans in the last week', async () => {
+    grant(5);
+    render(<Dashboard />);
+    const card = await screen.findByTestId('trial-ending-card');
+    expect(card).toHaveTextContent('dashboard.trialEnding.title');
+    expect(card).toHaveTextContent('dashboard.trialEnding.body');
+    expect(card).toHaveTextContent('dashboard.trialEnding.cta');
+  });
+
+  it('says nothing earlier in the free period', async () => {
+    grant(30);
+    render(<Dashboard />);
+    await act(async () => {});
+    expect(screen.queryByTestId('trial-ending-card')).not.toBeInTheDocument();
+  });
+
+  it('keeps the date in the app, without the button', async () => {
+    const w = window as unknown as { Capacitor?: unknown };
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
+    try {
+      grant(3);
+      render(<Dashboard />);
+      const card = await screen.findByTestId('trial-ending-card');
+      expect(card).toHaveTextContent('dashboard.trialEnding.bodyApp');
+      expect(card).not.toHaveTextContent('dashboard.trialEnding.cta');
+    } finally {
+      delete w.Capacitor;
+    }
+  });
+});

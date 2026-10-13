@@ -26,13 +26,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { resendVerification } from '../services/authApi';
 import { fetchMyEntitlements, MyEntitlements } from '../services/entitlementsApi';
+import { upgradeIsOpen } from '../lib/upgradeWindow';
 import toast from 'react-hot-toast';
 import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { fetchLeads, fetchLeadStats, LeadsPage, LeadStats } from '../services/leadsApi';
 import { isLeadsSite } from '../utils/siteMode';
 
 const Dashboard: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth, updateUser } = useAuth();
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [stepsExpanded, setStepsExpanded] = useState(() => localStorage.getItem('onboardingExpanded') === 'true');
@@ -55,6 +56,14 @@ const Dashboard: React.FC = () => {
   }, []);
   const onFreePlan =
     entitlements !== undefined && (entitlements?.plan ?? auth.user?.subscription?.status) === 'free';
+  // The grant's last week (LT-290): the owner is told when the free period
+  // ends; on the web with the way to the plans, in the app as a fact only.
+  const trialEnding = entitlements?.pilot && upgradeIsOpen(entitlements.pilot) ? entitlements.pilot : null;
+  const trialEndDate = trialEnding
+    ? new Date(trialEnding.until).toLocaleDateString(
+        i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB'
+      )
+    : null;
 
   const webConfig = useAppSelector(state => state.webConfig.data);
   // A leads site (LT-199) has no calendar: its home is the leads summary, not
@@ -365,7 +374,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* ── Account notices: verify + upgrade share one row when both apply ── */}
-      {(!auth.user?.isVerified || (onFreePlan && canOfferPurchases())) && (
+      {(!auth.user?.isVerified || (onFreePlan && canOfferPurchases()) || trialEnding) && (
         <div className="flex flex-col lg:flex-row gap-4 items-stretch">
           {/* Unverified Alert */}
           {!auth.user?.isVerified && (
@@ -402,6 +411,38 @@ const Dashboard: React.FC = () => {
                 }
                 {t('common.resendVerification')}
               </button>
+            </motion.div>
+          )}
+
+          {/* The free period's last week (LT-290). The button is a call to buy, so
+              never in the app (App Store 3.1.1); the date is a fact and is. */}
+          {trialEnding && trialEndDate && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0" data-testid="trial-ending-card">
+              <div className="glass-card glass-tint-amber h-full rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 dark:bg-amber-800/40 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
+                      {t('dashboard.trialEnding.title', { date: trialEndDate })}
+                    </h3>
+                    <p className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
+                      {canOfferPurchases()
+                        ? t('dashboard.trialEnding.body', { date: trialEndDate })
+                        : t('dashboard.trialEnding.bodyApp')}
+                    </p>
+                  </div>
+                </div>
+                {canOfferPurchases() && (
+                  <button
+                    onClick={() => navigate('/account')}
+                    className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors bg-amber-500 hover:bg-amber-600 text-white"
+                  >
+                    {t('dashboard.trialEnding.cta')}
+                  </button>
+                )}
+              </div>
             </motion.div>
           )}
 

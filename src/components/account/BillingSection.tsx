@@ -14,6 +14,7 @@ import {
   PortalLinks,
 } from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
+import { upgradeIsOpen } from '../../lib/upgradeWindow';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
@@ -78,16 +79,21 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
 
   useEffect(() => {
     let cancelled = false;
-    if (canOfferPurchases()) {
-      fetchUpgradePlans().then((fetched) => {
-        if (!cancelled) {
-          setPlans(fetched);
-          setLoadingPlans(false);
-        }
-      });
-    }
     fetchMyEntitlements().then((data) => {
-      if (!cancelled) setEntitlements(data);
+      if (cancelled) return;
+      setEntitlements(data);
+      // Paddle is not even loaded while the free 60 days are the system's own
+      // (LT-290): the plans open in their last week.
+      if (canOfferPurchases() && upgradeIsOpen(data?.pilot)) {
+        fetchUpgradePlans().then((fetched) => {
+          if (!cancelled) {
+            setPlans(fetched);
+            setLoadingPlans(false);
+          }
+        });
+      } else {
+        setLoadingPlans(false);
+      }
     });
     return () => {
       cancelled = true;
@@ -109,6 +115,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const dateLocale =
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const pilotDate = pilot ? new Date(pilot.until).toLocaleDateString(dateLocale) : null;
+  // LT-290: nothing to buy until the grant's last week.
+  const plansOpen = upgradeIsOpen(pilot);
 
   // Payment confirmed on Paddle's side; now chase the webhook. Each round
   // re-reads /auth/me — the badge flips through context state the moment the
@@ -443,12 +451,16 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   ? t('billing.freeDesc')
                   : t('billing.freeDescNative')}
             </p>
+            {/* Before the grant's last week there is nothing to choose yet (LT-290). */}
+            {pilotDate && canSell && !plansOpen && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.pilotUpgradeLater')}</p>
+            )}
 
             {meters}
 
-            {/* On sale under the pilot grant too (LT-265): the server starts
-                such a subscription with its first charge at the grant's end. */}
-            {!canSell ? null : awaitingWebhook ? (
+            {/* On sale in the grant's last week (LT-290): the server starts such
+                a subscription with its first charge at the grant's end. */}
+            {!canSell || !plansOpen ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.processingHint')}
