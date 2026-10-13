@@ -3,6 +3,7 @@ import {
   AnimationMixer,
   Group,
   LoopOnce,
+  LoopPingPong,
   LoopRepeat,
   Mesh,
   NeutralToneMapping,
@@ -24,7 +25,10 @@ import lightyUrl from '../../assets/lighty.glb?url';
  * components/ui/lighty-3d.tsx, LT-241) — the rigged Meshy mascot with the
  * clips idle / wave / run / cheer. He waves once when he arrives, then
  * idles; runs (in place, facing you) while he is thinking — Erel's pick over
- * casting (LT-258); cheers once when an answer lands.
+ * casting (LT-258); cheers once when an answer lands. LT-292: while the
+ * floating Lighty is dragged he throws a tantrum in the air — the sitting
+ * part of Meshy's Angry_To_Tantrum_Sit, held up at standing height (clip
+ * `drag`), played back and forth since it has no seamless loop point.
  * Reduced motion gets one still pose; without WebGL, or if the model fails
  * to load, he never fades in (the page around him works the same).
  *
@@ -32,7 +36,7 @@ import lightyUrl from '../../assets/lighty.glb?url';
  * show him).
  */
 
-type Clip = 'idle' | 'wave' | 'run' | 'cheer';
+type Clip = 'idle' | 'wave' | 'run' | 'cheer' | 'drag';
 
 interface Lighty3DProps {
   /** True while Lighty is working on an answer: he runs instead of idling. */
@@ -42,6 +46,8 @@ interface Lighty3DProps {
   className?: string;
   /** Called once the model is on screen — the floating Lighty swaps his 2D face out then (LT-269). */
   onReady?: () => void;
+  /** LT-292: he is being dragged — the tantrum plays while this is true. */
+  dragging?: boolean;
 }
 
 // Framing: the model is 1 unit tall with its feet at y=0; the box he is
@@ -61,14 +67,15 @@ const BLEED_BOTTOM = 0.15;
 const STAGE_H = VIEW_H + BLEED_BOTTOM;
 const STAGE_Y = LOOK_Y - BLEED_BOTTOM / 2;
 
-export default function Lighty3D({ thinking, cheerKey, className = '', onReady }: Lighty3DProps) {
+export default function Lighty3D({ thinking, cheerKey, className = '', onReady, dragging = false }: Lighty3DProps) {
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
   const hostRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
-  const ctlRef = useRef<{ setThinking: (on: boolean) => void; cheer: () => void } | null>(null);
+  const ctlRef = useRef<{ setThinking: (on: boolean) => void; cheer: () => void; setDragging: (on: boolean) => void } | null>(null);
   const thinkingRef = useRef(thinking);
+  const draggingRef = useRef(dragging);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -132,19 +139,19 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
     ro.observe(host);
     resize();
 
-    const play = (name: Clip, once = false) => {
+    const play = (name: Clip, once = false, fade = 0.35) => {
       const next = actions[name];
       if (!next || !mixer) return;
       oneShot = once;
       if (next === current) return;
       next.reset();
-      next.setLoop(once ? LoopOnce : LoopRepeat, once ? 1 : Infinity);
+      next.setLoop(once ? LoopOnce : name === 'drag' ? LoopPingPong : LoopRepeat, once ? 1 : Infinity);
       next.clampWhenFinished = once;
-      if (current) next.crossFadeFrom(current, 0.35, false);
+      if (current) next.crossFadeFrom(current, fade, false);
       next.play();
       current = next;
     };
-    const base = (): Clip => (thinkingRef.current ? 'run' : 'idle');
+    const base = (): Clip => (draggingRef.current ? 'drag' : thinkingRef.current ? 'run' : 'idle');
 
     let last = 0;
     const frame = (now: number) => {
@@ -177,15 +184,17 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
       rig.add(gltf.scene);
       mixer = new AnimationMixer(gltf.scene);
       for (const clip of gltf.animations) {
-        if (['idle', 'wave', 'run', 'cheer'].includes(clip.name)) actions[clip.name as Clip] = mixer.clipAction(clip);
+        if (['idle', 'wave', 'run', 'cheer', 'drag'].includes(clip.name)) actions[clip.name as Clip] = mixer.clipAction(clip);
       }
       // A one-off ends: back to whatever he should be doing now.
       mixer.addEventListener('finished', (e) => {
         if (e.action === current) play(base());
       });
       ctlRef.current = {
-        setThinking: (on) => { if (on || !oneShot) play(on ? 'run' : 'idle'); },
-        cheer: () => { if (!thinkingRef.current) play('cheer', true); },
+        setThinking: (on) => { if (!draggingRef.current && (on || !oneShot)) play(on ? 'run' : 'idle'); },
+        cheer: () => { if (!thinkingRef.current && !draggingRef.current) play('cheer', true); },
+        // Picked up: straight into the tantrum. Put down: back to what he was doing.
+        setDragging: (on) => play(on ? 'drag' : base(), false, on ? 0.15 : 0.35),
       };
       if (still) {
         play('idle');
@@ -229,6 +238,10 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady }
     ctlRef.current?.setThinking(thinking);
   }, [thinking]);
   useEffect(() => { if (cheerKey > 0) ctlRef.current?.cheer(); }, [cheerKey]);
+  useEffect(() => {
+    draggingRef.current = dragging;
+    ctlRef.current?.setDragging(dragging);
+  }, [dragging]);
 
   return (
     <div
