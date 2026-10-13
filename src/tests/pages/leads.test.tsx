@@ -1,6 +1,12 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Leads from '../../pages/Leads';
+
+/** The page reads its filter from the address (LT-288), so it renders inside a router. */
+const renderAt = (ui: React.ReactElement, path = '/leads') =>
+  render(<MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>);
 import { fetchLeads, updateLeadStatus, deleteLead } from '../../services/leadsApi';
 import { useNewLeadsCount } from '../../hooks/useNewLeadsCount';
 
@@ -59,7 +65,7 @@ describe('Leads page', () => {
   });
 
   it('lists leads with call and WhatsApp links, message and answers, and feeds the badge', async () => {
-    render(<><Leads /><Badge /></>);
+    renderAt(<><Leads /><Badge /></>);
 
     const cards = await screen.findAllByTestId('lead-card');
     expect(cards).toHaveLength(2);
@@ -73,7 +79,7 @@ describe('Leads page', () => {
   });
 
   it('filters by status', async () => {
-    render(<Leads />);
+    renderAt(<Leads />);
     await screen.findAllByTestId('lead-card');
 
     fireEvent.click(screen.getByRole('tab', { name: /leads\.status\.closed/ }));
@@ -81,8 +87,18 @@ describe('Leads page', () => {
     await waitFor(() => expect(fetchLeads).toHaveBeenLastCalledWith({ status: 'closed', page: 1, limit: 20 }));
   });
 
+  it('opens on the filter the link names, and ignores one it does not know (LT-288)', async () => {
+    const { unmount } = renderAt(<Leads />, '/leads?status=new');
+    await waitFor(() => expect(fetchLeads).toHaveBeenLastCalledWith({ status: 'new', page: 1, limit: 20 }));
+    expect(screen.getByRole('tab', { name: /leads\.status\.new/ })).toHaveAttribute('aria-selected', 'true');
+    unmount();
+
+    renderAt(<Leads />, '/leads?status=spam');
+    await waitFor(() => expect(fetchLeads).toHaveBeenLastCalledWith({ status: undefined, page: 1, limit: 20 }));
+  });
+
   it('changes a status and reloads', async () => {
-    render(<Leads />);
+    renderAt(<Leads />);
     const cards = await screen.findAllByTestId('lead-card');
 
     fireEvent.click(within(cards[0]).getByRole('button', { name: 'leads.status.contacted' }));
@@ -92,7 +108,7 @@ describe('Leads page', () => {
   });
 
   it('deletes only after the confirmation', async () => {
-    render(<Leads />);
+    renderAt(<Leads />);
     const cards = await screen.findAllByTestId('lead-card');
 
     fireEvent.click(within(cards[1]).getByRole('button', { name: 'leads.delete' }));
@@ -105,7 +121,7 @@ describe('Leads page', () => {
 
   it('shows the empty state', async () => {
     vi.mocked(fetchLeads).mockResolvedValue(page([], { new: 0, contacted: 0, closed: 0 }) as never);
-    render(<Leads />);
+    renderAt(<Leads />);
     expect(await screen.findByTestId('leads-empty')).toBeInTheDocument();
     expect(screen.getByText('leads.empty')).toBeInTheDocument();
   });

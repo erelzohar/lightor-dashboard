@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -40,7 +41,13 @@ const Leads: React.FC = () => {
 
   const [result, setResult] = useState<LeadsPage | null>(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<LeadStatus | ''>('');
+  // The filter lives in the address too (LT-288): the home's "waiting" card
+  // opens /leads?status=new, and a refresh keeps the chosen tab.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linked = searchParams.get('status');
+  const [status, setStatus] = useState<LeadStatus | ''>(() =>
+    (LEAD_STATUSES as readonly string[]).includes(linked ?? '') ? (linked as LeadStatus) : ''
+  );
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Lead | null>(null);
@@ -141,6 +148,7 @@ const Leads: React.FC = () => {
                 onClick={() => {
                   setStatus(f.value);
                   setPage(1);
+                  setSearchParams(f.value ? { status: f.value } : {}, { replace: true });
                 }}
                 className={`${CHIP} ${
                   active

@@ -162,11 +162,11 @@ describe('Leads home — the four numbers', () => {
     expect(within(handled).getByText('—')).toBeInTheDocument();
   });
 
-  it('opens the leads page from the waiting card', async () => {
+  it('opens the new leads from the waiting card (LT-288)', async () => {
     render(<Dashboard />);
     const waiting = await screen.findByTestId('leads-stat-waiting');
     fireEvent.click(within(waiting).getByRole('button'));
-    expect(navigate).toHaveBeenCalledWith('/leads');
+    expect(navigate).toHaveBeenCalledWith('/leads?status=new');
   });
 
   it('leaves the numbers out quietly when they cannot be read, keeping the list and the share card', async () => {

@@ -473,7 +473,7 @@ const Dashboard: React.FC = () => {
           type="button"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={() => navigate('/leads')}
+          onClick={() => navigate('/leads?status=new')}
           data-testid="leads-home-card"
           className="glass-card w-full p-4 rounded-3xl flex items-center gap-3 text-start hover:border-primary/40 transition-colors"
         >
@@ -497,7 +497,7 @@ const Dashboard: React.FC = () => {
             <ErrorBoundaryWithLanguage
               fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
             >
-              <LeadsStats stats={leadStats} onOpenLeads={() => navigate('/leads')} />
+              <LeadsStats stats={leadStats} onOpenLeads={() => navigate('/leads?status=new')} />
             </ErrorBoundaryWithLanguage>
           )}
 
