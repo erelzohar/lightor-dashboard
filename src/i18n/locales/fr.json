@@ -722,7 +722,17 @@
     "usageNearCap": "Approche de la limite",
     "usageFull": "Limite atteinte — les nouvelles réservations sont bloquées ce mois-ci",
     "leadsMeter": "{{used}}/{{cap}} demandes ce mois-ci",
-    "leadsFull": "Limite atteinte — le formulaire de contact est fermé ce mois-ci"
+    "leadsFull": "Limite atteinte — le formulaire de contact est fermé ce mois-ci",
+    "checkout": {
+      "title": "Finaliser l'abonnement",
+      "back": "Retour aux offres",
+      "dueToday": "À payer aujourd'hui",
+      "firstCharge": "Premier prélèvement, le {{date}}",
+      "cancelBefore": "Annulez avant le {{date}} et vous ne payez rien.",
+      "renews_month": "Renouvelé chaque mois. Résiliable à tout moment.",
+      "renews_year": "Renouvelé chaque année. Résiliable à tout moment.",
+      "loading": "Chargement des détails du paiement…"
+    }
   },
   "danger": {
     "title": "Zone de danger",

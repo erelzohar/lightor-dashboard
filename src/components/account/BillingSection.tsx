@@ -1,17 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt } from 'lucide-react';
 import type { AxiosError } from 'axios';
+import type { CheckoutEventsData } from '@paddle/paddle-js';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   fetchUpgradePlans,
-  openUpgradeCheckout,
+  createCheckout,
+  openInlineCheckout,
+  closeCheckout,
+  onCheckoutEvent,
   fetchPortalLinks,
   cancelSubscription,
   resumeSubscription,
   UpgradePlan,
   PortalLinks,
+  CheckoutTransaction,
 } from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { upgradeIsOpen } from '../../lib/upgradeWindow';
@@ -25,6 +30,9 @@ import { canOfferPurchases } from '../../lib/platform';
 // rather than spinning forever.
 const POLL_INTERVAL_MS = 2500;
 const POLL_MAX_TRIES = 24;
+
+// The element Paddle draws the embedded checkout into (LT-303).
+const CHECKOUT_FRAME = 'paddle-checkout-frame';
 
 /**
  * Subscription state + upgrade checkout (LT-004).
@@ -59,6 +67,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const [resuming, setResuming] = useState(false);
   const [portalOpening, setPortalOpening] = useState<keyof PortalLinks | null>(null);
   const [entitlements, setEntitlements] = useState<MyEntitlements | null>(null);
+  // LT-303: the checkout embedded in this card — the plan picked and the
+  // transaction the server prepared for it — and the checkout's own numbers,
+  // from Paddle's events.
+  const [checkout, setCheckout] = useState<{ plan: UpgradePlan; transaction: CheckoutTransaction } | null>(null);
+  const [checkoutData, setCheckoutData] = useState<CheckoutEventsData | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const status = auth.user?.subscription?.status ?? 'free';
@@ -208,23 +221,15 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     }
   };
 
-  const handleUpgrade = async (priceId: string) => {
-    setOpening(priceId);
+  // Picking a plan asks the server for the transaction (when the first charge
+  // comes is its to say), then the card makes room for the checkout; the
+  // effect below opens Paddle into it.
+  const handleUpgrade = async (plan: UpgradePlan) => {
+    setOpening(plan.priceId);
     try {
-      const opened = await openUpgradeCheckout({
-        priceId,
-        email: auth.user?.email,
-        language: i18n.language,
-        // Only a *completed* checkout means anything is processing. Opening the
-        // overlay used to fire the toast, which told window-shoppers their
-        // payment was underway before any form existed to fill.
-        onCompleted: () => {
-          toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
-          setAwaitingWebhook(true);
-          pollUntilActive(0);
-        },
-      });
-      if (!opened) toast.error(t('billing.checkoutUnavailable'));
+      const transaction = await createCheckout(plan.priceId);
+      setCheckoutData(null);
+      setCheckout({ plan, transaction });
     } catch (error) {
       if ((error as AxiosError)?.response?.status === 409) {
         // Subscribed already — in another tab, or by a webhook this page has
@@ -238,6 +243,54 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       setOpening(null);
     }
   };
+
+  // LT-303: Paddle draws the checkout once its element is on the page, and it
+  // goes with the panel — back to the plans, a finished payment, leaving.
+  const checkoutTransactionId = checkout?.transaction.transactionId;
+  useEffect(() => {
+    if (!checkoutTransactionId) return;
+    const off = onCheckoutEvent((event) => {
+      if ((event.name === 'checkout.loaded' || event.name === 'checkout.updated') && event.data) {
+        setCheckoutData(event.data);
+      }
+    });
+    void openInlineCheckout({
+      transactionId: checkoutTransactionId,
+      email: auth.user?.email,
+      language: i18n.language,
+      frameTarget: CHECKOUT_FRAME,
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      // Only a *completed* checkout means anything is processing.
+      onCompleted: () => {
+        setCheckout(null);
+        toast(t('billing.processingHint'), { icon: '⏳', duration: 6000 });
+        setAwaitingWebhook(true);
+        pollUntilActive(0);
+      },
+    }).then((opened) => {
+      if (opened) return;
+      setCheckout(null);
+      toast.error(t('billing.checkoutUnavailable'));
+    });
+    return () => {
+      off();
+      closeCheckout();
+    };
+    // The checkout belongs to its transaction; nothing else re-opens it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkoutTransactionId]);
+
+  // Paddle's numbers in the page's language; the currency is the checkout's.
+  const money = (amount: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(dateLocale, { style: 'currency', currency }).format(amount);
+    } catch {
+      return `${amount} ${currency}`;
+    }
+  };
+  const firstChargeDate = checkout?.transaction.firstChargeAt
+    ? new Date(checkout.transaction.firstChargeAt).toLocaleDateString(dateLocale)
+    : null;
 
   // Each visit to the portal gets a fresh, short-lived link from the server,
   // so the tab is opened blank inside the click — the one moment a popup
@@ -472,6 +525,80 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </div>
             ) : plans.length === 0 ? (
               <p className="text-sm text-gray-500">{t('billing.plansUnavailable')}</p>
+            ) : checkout ? (
+              <div className="space-y-4" data-testid="inline-checkout">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    {t('billing.checkout.title')}
+                  </h3>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCheckout(null)}
+                  >
+                    {t('billing.checkout.back')}
+                  </Button>
+                </div>
+                <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start">
+                  {/* Paddle draws only the payment form in the page, so the
+                      summary is ours — with the checkout's own numbers. */}
+                  <div
+                    className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3 text-sm"
+                    data-testid="checkout-summary"
+                  >
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {/* "Lightor+" beside Hebrew reads "+Lightor" without an isolate. */}
+                      <bdi>{checkout.plan.productName}</bdi>
+                      {checkout.plan.interval && (
+                        <span className="font-normal text-gray-500 dark:text-gray-400">
+                          {' · '}
+                          {t(`billing.per_${checkout.plan.interval}`)}
+                        </span>
+                      )}
+                    </div>
+                    {checkoutData ? (
+                      <>
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="text-gray-600 dark:text-gray-300">{t('billing.checkout.dueToday')}</span>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white" data-testid="checkout-due-today">
+                            {money(checkoutData.totals.total, checkoutData.currency_code)}
+                          </span>
+                        </div>
+                        {firstChargeDate && checkoutData.recurring_totals && (
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="text-gray-600 dark:text-gray-300">
+                              {t('billing.checkout.firstCharge', { date: firstChargeDate })}
+                            </span>
+                            <span className="font-semibold text-gray-900 dark:text-white" data-testid="checkout-first-charge">
+                              {money(checkoutData.recurring_totals.total, checkoutData.currency_code)}
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {firstChargeDate
+                            ? t('billing.checkout.cancelBefore', { date: firstChargeDate })
+                            : t(`billing.checkout.renews_${checkout.plan.interval === 'year' ? 'year' : 'month'}`)}
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Loader2 size={14} className="animate-spin shrink-0" />
+                        {t('billing.checkout.loading')}
+                      </div>
+                    )}
+                    <a
+                      href="https://lightor.app/refund.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-xs text-gray-500 dark:text-gray-400 underline hover:text-primary"
+                    >
+                      {t('billing.refundPolicy')}
+                    </a>
+                  </div>
+                  {/* Paddle needs 312px; on a phone the frame takes the card's padding too. */}
+                  <div className={`${CHECKOUT_FRAME} -mx-6 sm:mx-0 min-w-0`} data-testid="checkout-frame" />
+                </div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {pilotDate && (
@@ -486,7 +613,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                       className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2"
                     >
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {plan.productName}
+                        <bdi>{plan.productName}</bdi>
                       </span>
                       <span className="text-2xl font-bold text-gray-900 dark:text-white">
                         {plan.formatted}
@@ -499,7 +626,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                       </span>
                       <Button
                         variant="primary"
-                        onClick={() => handleUpgrade(plan.priceId)}
+                        onClick={() => handleUpgrade(plan)}
                         disabled={opening !== null}
                       >
                         {opening === plan.priceId

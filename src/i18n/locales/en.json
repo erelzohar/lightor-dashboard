@@ -722,7 +722,17 @@
     "usageNearCap": "Approaching the limit",
     "usageFull": "Limit reached — new bookings are blocked this month",
     "leadsMeter": "{{used}}/{{cap}} inquiries this month",
-    "leadsFull": "Limit reached — the contact form is closed this month"
+    "leadsFull": "Limit reached — the contact form is closed this month",
+    "checkout": {
+      "title": "Complete your subscription",
+      "back": "Back to plans",
+      "dueToday": "Due today",
+      "firstCharge": "First charge, on {{date}}",
+      "cancelBefore": "Cancel before {{date}} and you pay nothing.",
+      "renews_month": "Renews every month. Cancel any time.",
+      "renews_year": "Renews every year. Cancel any time.",
+      "loading": "Loading the payment details…"
+    }
   },
   "danger": {
     "title": "Danger zone",

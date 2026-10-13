@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { initializePaddle, type Paddle } from '@paddle/paddle-js';
+import { initializePaddle, type Paddle, type PaddleEventData } from '@paddle/paddle-js';
 import globals from './globals';
 
 /**
@@ -17,6 +17,18 @@ let paddleInstance: Paddle | undefined;
 // routed through this module-level slot — set per checkout, cleared on fire.
 let pendingCompletedCallback: (() => void) | null = null;
 
+// Every checkout event, for a page that shows the checkout's own numbers
+// (LT-303: the embedded checkout's order summary).
+const checkoutListeners = new Set<(event: PaddleEventData) => void>();
+
+/** Hear Paddle's checkout events (`checkout.loaded`, `.updated`, …). Returns the unsubscribe. */
+export function onCheckoutEvent(listener: (event: PaddleEventData) => void): () => void {
+  checkoutListeners.add(listener);
+  return () => {
+    checkoutListeners.delete(listener);
+  };
+}
+
 export async function getPaddle(): Promise<Paddle | undefined> {
   if (paddleInstance) return paddleInstance;
 
@@ -33,6 +45,7 @@ export async function getPaddle(): Promise<Paddle | undefined> {
         pendingCompletedCallback();
         pendingCompletedCallback = null;
       }
+      checkoutListeners.forEach((listener) => listener(event));
     },
   });
 
@@ -122,39 +135,56 @@ export async function createCheckout(priceId: string): Promise<CheckoutTransacti
 const CHECKOUT_LOCALES = ['en', 'ar', 'fr', 'es'];
 
 /**
- * Open the checkout overlay for one price, on a transaction the server
- * prepared. Null when Paddle.js is not set up in this build; a transaction
- * the server refuses throws (see `createCheckout`).
+ * Open Paddle's checkout INSIDE the account page, on a transaction the server
+ * prepared (`createCheckout`) — LT-303, Erel 2026-10-13: "embedded in the
+ * page, like the express". The express design shows first the one-tap ways to
+ * pay that the buyer's device offers (Apple Pay, Google Pay, PayPal) and the
+ * card under "pay another way"; it exists only for a checkout drawn in the
+ * page. Paddle draws just the payment form in this mode, so the page shows the
+ * order summary itself, from the checkout's own events (onCheckoutEvent).
+ * The element with the class `frameTarget` must be on the page. False when
+ * Paddle.js is not set up in this build.
  */
-export async function openUpgradeCheckout(opts: {
-  priceId: string;
+export async function openInlineCheckout(opts: {
+  transactionId: string;
   email?: string;
   /** The dashboard's language — the checkout's too, when Paddle speaks it. */
   language?: string;
+  frameTarget: string;
+  theme: 'light' | 'dark';
   /**
    * Fires when the buyer finishes Paddle's form — the earliest honest moment
-   * for any "payment is processing" messaging. Opening the overlay proves
-   * nothing; most opens are window-shopping.
+   * for any "payment is processing" messaging.
    */
   onCompleted?: () => void;
-}): Promise<CheckoutTransaction | null> {
+}): Promise<boolean> {
   const paddle = await getPaddle();
-  if (!paddle) return null;
+  if (!paddle) return false;
 
-  const transaction = await createCheckout(opts.priceId);
   const locale = opts.language?.split('-')[0];
   pendingCompletedCallback = opts.onCompleted ?? null;
   paddle.Checkout.open({
-    transactionId: transaction.transactionId,
+    transactionId: opts.transactionId,
     ...(opts.email ? { customer: { email: opts.email } } : {}),
     settings: {
-      // Details and payment on one page (LT-299); Paddle's default asks for
-      // the email and country first and the payment on a second page.
-      variant: 'one-page',
+      displayMode: 'inline',
+      variant: 'express',
+      frameTarget: opts.frameTarget,
+      frameInitialHeight: 450,
+      // Paddle's floor for a frame with its own padding; the merchant-of-record
+      // line at its foot must stay in view, so the height is Paddle's to grow.
+      frameStyle: 'width: 100%; min-width: 312px; background-color: transparent; border: none;',
+      theme: opts.theme,
       ...(locale && CHECKOUT_LOCALES.includes(locale) ? { locale } : {}),
     },
   });
-  return transaction;
+  return true;
+}
+
+/** Take the embedded checkout off the page (the buyer went back to the plans). */
+export function closeCheckout(): void {
+  pendingCompletedCallback = null;
+  paddleInstance?.Checkout.close();
 }
 
 /** Links into Paddle's customer portal — fresh and short-lived, never kept. */

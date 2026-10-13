@@ -722,7 +722,17 @@
     "usageNearCap": "Acercándose al límite",
     "usageFull": "Límite alcanzado — las nuevas reservas están bloqueadas este mes",
     "leadsMeter": "{{used}}/{{cap}} consultas este mes",
-    "leadsFull": "Límite alcanzado: el formulario de contacto está cerrado este mes"
+    "leadsFull": "Límite alcanzado: el formulario de contacto está cerrado este mes",
+    "checkout": {
+      "title": "Completar la suscripción",
+      "back": "Volver a los planes",
+      "dueToday": "A pagar hoy",
+      "firstCharge": "Primer cobro, el {{date}}",
+      "cancelBefore": "Cancela antes del {{date}} y no pagas nada.",
+      "renews_month": "Se renueva cada mes. Cancela cuando quieras.",
+      "renews_year": "Se renueva cada año. Cancela cuando quieras.",
+      "loading": "Cargando los detalles del pago…"
+    }
   },
   "danger": {
     "title": "Zona de peligro",

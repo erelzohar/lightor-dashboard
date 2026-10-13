@@ -1,8 +1,15 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import toast from 'react-hot-toast';
 import BillingSection from '../../components/account/BillingSection';
-import { fetchUpgradePlans, openUpgradeCheckout, fetchPortalLinks, type PortalLinks } from '../../services/paddleApi';
+import {
+  fetchUpgradePlans,
+  createCheckout,
+  openInlineCheckout,
+  closeCheckout,
+  fetchPortalLinks,
+  type PortalLinks,
+} from '../../services/paddleApi';
 import { stubLocation } from '../helpers/location';
 
 const { t } = vi.hoisted(() => ({ t: vi.fn((key: string) => key) }));
@@ -19,11 +26,19 @@ vi.mock('../../contexts/AuthContext', () => ({
     refreshUser: authState.refreshUser,
   }),
 }));
+// The embedded checkout's events (LT-303): the test plays Paddle.
+const checkoutEvents = vi.hoisted(() => ({ emit: (() => {}) as (event: { name: string; data?: unknown }) => void }));
 vi.mock('../../services/paddleApi', () => ({
   fetchUpgradePlans: vi.fn(() =>
     Promise.resolve([{ priceId: 'p1', productName: 'Plus', formatted: '₪49', interval: 'month' }])
   ),
-  openUpgradeCheckout: vi.fn(),
+  createCheckout: vi.fn(),
+  openInlineCheckout: vi.fn(() => Promise.resolve(true)),
+  closeCheckout: vi.fn(),
+  onCheckoutEvent: vi.fn((listener: (event: { name: string; data?: unknown }) => void) => {
+    checkoutEvents.emit = listener;
+    return () => {};
+  }),
   fetchPortalLinks: vi.fn(),
   cancelSubscription: vi.fn(),
   resumeSubscription: vi.fn(),
@@ -48,7 +63,9 @@ const inApp = () => {
 
 beforeEach(() => {
   vi.mocked(fetchUpgradePlans).mockClear();
-  vi.mocked(openUpgradeCheckout).mockReset();
+  vi.mocked(createCheckout).mockReset();
+  vi.mocked(openInlineCheckout).mockClear();
+  vi.mocked(closeCheckout).mockClear();
   vi.mocked(fetchPortalLinks).mockReset();
   vi.mocked(toast).mockClear();
   vi.mocked(toast.error).mockClear();
@@ -239,32 +256,91 @@ describe('BillingSection on a leads site', () => {
 });
 
 /**
- * The checkout (LT-265): the server prepares the transaction, so the card
- * hands over the plan, the owner's email and the dashboard's language, and
- * says what a refusal means.
+ * The checkout (LT-265, LT-303): the server prepares the transaction, the card
+ * makes room and Paddle draws the checkout into it, with the order summary
+ * beside it in Paddle's own numbers; the card says what a refusal means.
  */
 describe('BillingSection checkout', () => {
-  it('opens the checkout for the chosen plan, for the signed-in owner, in the dashboard language', async () => {
-    vi.mocked(openUpgradeCheckout).mockResolvedValue({ transactionId: 'txn_1', trialDays: 0, firstChargeAt: null });
+  const trial = { transactionId: 'txn_1', trialDays: 5, firstChargeAt: '2026-10-18T13:48:00.000Z' };
+  const loaded = {
+    name: 'checkout.loaded',
+    data: {
+      currency_code: 'ILS',
+      totals: { subtotal: 0, tax: 0, discount: 0, total: 0 },
+      recurring_totals: { subtotal: 119, tax: 0, discount: 0, total: 119 },
+      items: [] as unknown[],
+    },
+  };
+
+  it('draws the checkout into the card for the chosen plan, the signed-in owner and the dashboard language', async () => {
+    vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_1', trialDays: 0, firstChargeAt: null });
     render(<BillingSection />);
     fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
-    await waitFor(() => expect(openUpgradeCheckout).toHaveBeenCalledTimes(1));
-    expect(openUpgradeCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({ priceId: 'p1', email: 'owner@biz.co', language: 'en' })
+
+    expect(await screen.findByTestId('inline-checkout')).toBeInTheDocument();
+    expect(createCheckout).toHaveBeenCalledWith('p1');
+    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalledTimes(1));
+    expect(openInlineCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transactionId: 'txn_1',
+        email: 'owner@biz.co',
+        language: 'en',
+        frameTarget: 'paddle-checkout-frame',
+        theme: 'light',
+      })
     );
+    expect(document.querySelector('.paddle-checkout-frame')).not.toBeNull();
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  it("sums the order up in Paddle's numbers, with the first charge on the server's date", async () => {
+    vi.mocked(createCheckout).mockResolvedValue(trial);
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalled());
+    expect(screen.getByText('billing.checkout.loading')).toBeInTheDocument();
+
+    act(() => checkoutEvents.emit(loaded));
+    expect(screen.getByTestId('checkout-due-today')).toHaveTextContent(/0\.00/);
+    expect(screen.getByTestId('checkout-first-charge')).toHaveTextContent(/119\.00/);
+    expect(t).toHaveBeenCalledWith('billing.checkout.firstCharge', { date: '18/10/2026' });
+    expect(t).toHaveBeenCalledWith('billing.checkout.cancelBefore', { date: '18/10/2026' });
+  });
+
+  it('goes back to the plans and closes the checkout', async () => {
+    vi.mocked(createCheckout).mockResolvedValue(trial);
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.checkout.back' }));
+
+    expect(screen.queryByTestId('inline-checkout')).toBeNull();
+    expect(closeCheckout).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'billing.upgrade' })).toBeInTheDocument();
+  });
+
+  it('waits for the webhook once the payment is done', async () => {
+    vi.mocked(createCheckout).mockResolvedValue(trial);
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalled());
+
+    const { onCompleted } = vi.mocked(openInlineCheckout).mock.calls[0][0];
+    act(() => onCompleted?.());
+    expect(screen.queryByTestId('inline-checkout')).toBeNull();
+    expect(screen.getByText('billing.processingHint')).toBeInTheDocument();
+  });
+
   it('says so and re-reads the account when it is subscribed already (409)', async () => {
-    vi.mocked(openUpgradeCheckout).mockRejectedValue({ response: { status: 409 } });
+    vi.mocked(createCheckout).mockRejectedValue({ response: { status: 409 } });
     render(<BillingSection />);
     fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith('billing.alreadySubscribed'));
     expect(authState.refreshUser).toHaveBeenCalled();
+    expect(openInlineCheckout).not.toHaveBeenCalled();
   });
 
   it('reports an unavailable checkout when billing is down (503)', async () => {
-    vi.mocked(openUpgradeCheckout).mockRejectedValue({ response: { status: 503 } });
+    vi.mocked(createCheckout).mockRejectedValue({ response: { status: 503 } });
     render(<BillingSection />);
     fireEvent.click(await screen.findByRole('button', { name: 'billing.upgrade' }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.checkoutUnavailable'));
