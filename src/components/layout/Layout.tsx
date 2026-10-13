@@ -18,7 +18,11 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 // Pages that deliberately bleed to the edges: they already cancel the
 // layout's own padding with negative margins and size themselves, so the
 // shared bottom padding would only add a dead gap under them.
-const FULL_BLEED_ROUTES = ['/design', '/lighty'];
+// Pages that size themselves off the pane and keep their own bottom room.
+// The appointments page (LT-307): its calendar scrolls inside a bounded box,
+// so the day row stays on top — in a growable box the grid was as tall as
+// its day and the page scrolled the dates away.
+const FULL_BLEED_ROUTES = ['/design', '/lighty', '/appointments'];
 
 const Layout: React.FC = () => {
   const { pathname } = useLocation();

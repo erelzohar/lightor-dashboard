@@ -6,6 +6,11 @@ interface PullToRefreshProps {
   children: React.ReactNode;
   /** Pull distance (px) that triggers a refresh. */
   threshold?: number;
+  /**
+   * Pass the pane's height through (LT-307): a page whose content scrolls
+   * inside a bounded box — the calendar — needs every box above it bounded.
+   */
+  fill?: boolean;
 }
 
 /** Distance the finger has to travel before we start treating it as a pull. */
@@ -23,7 +28,7 @@ const SLOP = 8;
  *
  * Pure UI: the parent decides what "refresh" means (a Redux thunk, a fetch).
  */
-const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, threshold = 72 }) => {
+const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, threshold = 72, fill = false }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const startY = useRef<number | null>(null);
   const [pull, setPull] = useState(0);
@@ -98,7 +103,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, thre
   const visible = pull > 0 || refreshing;
 
   return (
-    <div ref={hostRef} className="relative">
+    <div ref={hostRef} className={fill ? 'relative flex flex-col flex-1 min-h-0' : 'relative'}>
       <div
         aria-hidden={!refreshing}
         role={refreshing ? 'status' : undefined}
@@ -117,7 +122,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, thre
           />
         </span>
       </div>
-      <div style={{ transform: visible ? `translateY(${Math.min(pull, threshold) * 0.4}px)` : undefined, transition: pull ? undefined : 'transform 150ms' }}>
+      <div className={fill ? 'flex flex-col flex-1 min-h-0' : undefined} style={{ transform: visible ? `translateY(${Math.min(pull, threshold) * 0.4}px)` : undefined, transition: pull ? undefined : 'transform 150ms' }}>
         {children}
       </div>
     </div>

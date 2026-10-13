@@ -70,13 +70,16 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
     if (!r) return null;
     return { left: r.left - offsetRef.current.x, top: r.top - offsetRef.current.y, width: r.width, height: r.height };
   };
-  // A smaller window keeps him on screen.
+  // A smaller window keeps him on screen — and so does a place saved on a
+  // bigger one (LT-307: he was only pulled back on a resize, so a spot
+  // left on a wide window could start him off a narrow one's edge).
   useEffect(() => {
     const onResize = () => {
       setVw(window.innerWidth);
       const home = homeOf();
       if (home) setOffset((o) => clampOffset(home, o.x, o.y, window.innerWidth, window.innerHeight));
     };
+    onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);

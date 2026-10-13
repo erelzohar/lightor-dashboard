@@ -115,4 +115,10 @@ describe('the floating Lighty, dragged', () => {
     fireEvent.click(lighty());
     expect(screen.getByRole('dialog').className).toContain('top-[6.5rem]');
   });
+
+  it('starts on screen though his saved place was off this one (LT-307)', () => {
+    saveOffset({ x: -5000, y: -5000 }); // left on a much bigger window
+    render(<FloatingAiAssistant onSend={vi.fn()} />);
+    expect(wrap().style.transform).toBe(`translate(${8 - HOME.left}px, ${8 - HOME.top}px)`);
+  });
 });
