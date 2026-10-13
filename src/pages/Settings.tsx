@@ -25,6 +25,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
+import { Toggle } from '../components/ui/liquid-toggle';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -741,13 +742,10 @@ const Settings: React.FC = () => {
                 </div>
 
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
+                  <Toggle
                     checked={localWebConfig.components?.introPopup?.visible ?? false}
-                    onChange={(e) => handleChange('components.introPopup', 'visible', e.target.checked)}
+                    onCheckedChange={(on) => handleChange('components.introPopup', 'visible', on)}
                   />
-                  <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
                   <span className="ms-2 text-sm text-light-text">
                     {localWebConfig.components?.introPopup?.visible
                       ? t('settings.active')
@@ -988,19 +986,12 @@ const Settings: React.FC = () => {
                 </span>
               </span>
               <span className="relative inline-flex items-center shrink-0 mt-0.5">
-                <input
+                <Toggle
                   id="site-hide-from-search"
-                  type="checkbox"
-                  role="switch"
-                  className="sr-only peer"
                   checked={!!localWebConfig.hideFromSearch}
                   aria-labelledby="site-hide-from-search-label"
                   aria-describedby="site-hide-from-search-help"
-                  onChange={(e) => handleChange('root', 'hideFromSearch', e.target.checked)}
-                />
-                <span
-                  aria-hidden="true"
-                  className="block w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"
+                  onCheckedChange={(on) => handleChange('root', 'hideFromSearch', on)}
                 />
               </span>
             </label>

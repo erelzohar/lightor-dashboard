@@ -21,6 +21,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTranslation } from 'react-i18next';
 import { isBookableService, isLeadsSite } from '../utils/siteMode';
 import { resolveImage } from '../utils/images';
+import { Toggle } from '../components/ui/liquid-toggle';
 
 
 const GLASS: React.CSSProperties = {
@@ -567,15 +568,11 @@ const AppointmentTypes: React.FC = () => {
                           <p className="text-xs font-semibold text-gray-900 dark:text-white">{t('appointmentTypes.class.toggle')}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">{t('appointmentTypes.class.toggleHint')}</p>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={isClass}
-                            onChange={() => setIsClass(v => !v)}
-                          />
-                          <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary" />
-                        </label>
+                        <Toggle
+                          checked={isClass}
+                          onCheckedChange={setIsClass}
+                          aria-label={t('appointmentTypes.class.toggle')}
+                        />
                       </div>
                     )}
 

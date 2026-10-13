@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { Toggle } from './liquid-toggle';
 
 interface ToggleSwitchProps {
   checked: boolean;
@@ -12,90 +11,21 @@ interface ToggleSwitchProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
-  checked,
-  onChange,
-  label,
-  ariaLabel,
-  disabled = false,
-  size = 'md'
-}) => {
-  const { direction } = useTheme();
-
-  const getSizeClasses = () => {
-    switch (size) {
-      case 'sm':
-        return {
-          track: 'w-8 h-4',
-          thumb: 'w-3 h-3',
-          translateX: '1rem' // 16px (w-4 difference)
-        };
-      case 'md':
-        return {
-          track: 'w-11 h-6',
-          thumb: 'w-5 h-5',
-          translateX: '1.25rem' // 44px track - 4px inset - 20px thumb
-        };
-      case 'lg':
-        return {
-          track: 'w-14 h-7',
-          thumb: 'w-6 h-6',
-          translateX: '1.75rem' // 28px (7 * 4px)
-        };
-    }
-  };
-
-  const sizeClasses = getSizeClasses();
-
-  // Calculate the correct translation based on direction and state
-  const getTranslateX = () => {
-    if (direction === 'rtl') {
-      // In RTL, when checked, move to the left (negative value)
-      return checked ? `-${sizeClasses.translateX}` : '0';
-    } else {
-      // In LTR, when checked, move to the right (positive value)
-      return checked ? sizeClasses.translateX : '0';
-    }
-  };
-
+/**
+ * The dashboard's switch, with an optional label beside it — drawn by the
+ * liquid toggle since LT-311 (same props as before, so no caller changed).
+ * Logical spacing: the label sits after the switch in either direction.
+ */
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, label, ariaLabel, disabled = false, size = 'md' }) => {
+  const toggle = (
+    <Toggle checked={checked} onCheckedChange={onChange} disabled={disabled} size={size} aria-label={ariaLabel} />
+  );
+  if (!label) return <div className="flex items-center">{toggle}</div>;
   return (
-    <div className={`flex items-center ${direction === 'rtl' ? 'flex-row-reverse' : ''}`}>
-      <button
-        type="button"
-        className={`
-          relative inline-flex ${sizeClasses.track} items-center rounded-full p-0.5 shrink-0
-          transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/30
-          ${checked 
-            ? 'bg-primary' 
-            : 'bg-light-gray'
-          }
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-        onClick={() => !disabled && onChange(!checked)}
-        disabled={disabled}
-        aria-checked={checked}
-        aria-label={ariaLabel}
-        role="switch"
-        dir={direction}
-      >
-        <motion.span
-          className={`
-            ${sizeClasses.thumb} inline-block rounded-full bg-white shadow-lg
-            transform transition-transform duration-200 ease-in-out
-          `}
-          animate={{
-            x: getTranslateX()
-          }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        />
-      </button>
-      
-      {label && (
-        <span className={`${direction === 'rtl' ? 'mr-3' : 'ml-3'} text-sm font-medium text-light-text dark:text-dark-text ${disabled ? 'opacity-50' : ''}`}>
-          {label}
-        </span>
-      )}
-    </div>
+    <label className={`flex items-center gap-3 ${disabled ? '' : 'cursor-pointer'}`}>
+      {toggle}
+      <span className={`text-sm font-medium text-light-text dark:text-dark-text ${disabled ? 'opacity-50' : ''}`}>{label}</span>
+    </label>
   );
 };
 

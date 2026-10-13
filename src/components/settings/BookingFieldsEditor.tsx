@@ -19,6 +19,7 @@ import {
   newBookingField,
   rememberedDetails,
 } from '../../utils/bookingFields';
+import { Toggle } from '../ui/liquid-toggle';
 
 interface BookingFieldsEditorProps {
   value: BookingField[];
@@ -313,14 +314,12 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
 
                 <div className="ps-9 flex flex-wrap items-center gap-x-6 gap-y-3">
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
+                    <Toggle
+                      size="sm"
                       checked={field.required}
-                      onChange={(e) => update(index, { required: e.target.checked })}
+                      onCheckedChange={(on) => update(index, { required: on })}
                       aria-label={t('settings.bookingFields.required')}
                     />
-                    <div className="w-9 h-5 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
                     <span className="ms-2 text-sm text-gray-700 dark:text-gray-300">
                       {t('settings.bookingFields.required')}
                     </span>
@@ -333,15 +332,13 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
                     ['remember', field.remember === true],
                   ] as const).filter(([flag]) => flag !== 'remember' || rememberedDetails.offered).map(([flag, on]) => (
                     <label key={flag} className="relative inline-flex items-center cursor-pointer" title={t(`settings.bookingFields.${flag}Hint`)}>
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
+                      <Toggle
+                        size="sm"
                         checked={on}
-                        onChange={(e) => update(index, { [flag]: e.target.checked })}
+                        onCheckedChange={(next) => update(index, { [flag]: next })}
                         aria-label={t(`settings.bookingFields.${flag}`)}
                         data-testid={`field-${flag}-${index}`}
                       />
-                      <div className="w-9 h-5 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[0.125rem] after:start-[0.125rem] after:bg-white dark:after:bg-gray-100 after:border-gray-300 dark:after:border-dark-gray/50 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
                       <span className="ms-2 text-sm text-gray-700 dark:text-gray-300">
                         {t(`settings.bookingFields.${flag}`)}
                       </span>
