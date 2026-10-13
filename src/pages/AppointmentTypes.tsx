@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
@@ -103,6 +103,14 @@ const AppointmentTypes: React.FC = () => {
   // The skeleton only stands in for a list we do not have yet.
   const showSkeleton = isLoading && appointmentTypes.length === 0;
 
+  // The form empties a beat after it closes, once its exit animation is done.
+  // The timer is kept so it never outlives the page (LT-308: it fired after a
+  // test's teardown, `window is not defined`) and so reopening within that
+  // beat does not have the new form wiped by the old close.
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const cancelReset = () => clearTimeout(resetTimer.current);
+  useEffect(() => cancelReset, []);
+
   const resetClassFields = (type?: AppointmentType | null) => {
     setIsClass(type?.kind === 'class');
     setCapacity(type?.capacity ? String(type.capacity) : '12');
@@ -110,6 +118,7 @@ const AppointmentTypes: React.FC = () => {
   };
 
   const openForNew = () => {
+    cancelReset();
     setCurrentType(null);
     setFormData({ name: '', price: '', durationMS: '1800000', image: '' });
     resetClassFields(null);
@@ -117,6 +126,7 @@ const AppointmentTypes: React.FC = () => {
   };
 
   const openForEdit = (type: AppointmentType) => {
+    cancelReset();
     setCurrentType(type);
     setFormData({ name: type.name, price: type.price, durationMS: type.durationMS, image: type.image ?? '' });
     resetClassFields(type);
@@ -126,7 +136,8 @@ const AppointmentTypes: React.FC = () => {
 
   const closeForm = () => {
     setIsFormOpen(false);
-    setTimeout(() => {
+    cancelReset();
+    resetTimer.current = setTimeout(() => {
       setCurrentType(null);
       setFormData({ name: '', price: '', durationMS: '1800000', image: '' });
       resetClassFields(null);

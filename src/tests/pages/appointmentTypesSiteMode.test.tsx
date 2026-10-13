@@ -41,12 +41,12 @@ const renderPage = (conversion?: 'book' | 'lead') => {
       webConfig: { data: { _id: 'wc1', conversion } as WebConfig, loading: false, error: null },
     },
   });
-  render(
+  const view = render(
     <Provider store={store}>
       <AppointmentTypes />
     </Provider>
   );
-  return store;
+  return Object.assign(store, { unmount: view.unmount });
 };
 
 const service = (over: Partial<AppointmentType> = {}): AppointmentType => ({
@@ -238,5 +238,39 @@ describe('Services page — empty list and row actions', () => {
     expect(confirm).toHaveBeenCalledWith('appointmentTypes.deleteConfirm');
     expect(deleteAppointmentType).not.toHaveBeenCalled();
     confirm.mockRestore();
+  });
+});
+
+// LT-308: closing the form empties it 300 ms later, and that timer outlived
+// the page — in CI it fired after the test environment was torn down
+// (`window is not defined`), failing a green run.
+describe('Services page — the form\'s delayed reset', () => {
+  it('is cancelled when the page goes away', async () => {
+    answerTypes(() => [service({ price: '100', durationMS: '3600000' })]);
+    const set = vi.spyOn(window, 'setTimeout');
+    const clear = vi.spyOn(window, 'clearTimeout');
+    const page = renderPage('book');
+
+    fireEvent.click(await screen.findByText('Kitchen renovation'));
+    fireEvent.click(screen.getByText('common.cancel'));
+    const at = set.mock.calls.map((call) => call[1]).lastIndexOf(300);
+    const reset = set.mock.results[at].value;
+    page.unmount();
+
+    expect(clear).toHaveBeenCalledWith(reset);
+    set.mockRestore();
+    clear.mockRestore();
+  });
+
+  it('does not empty a form reopened before it fires', async () => {
+    answerTypes(() => [service({ price: '100', durationMS: '3600000' })]);
+    renderPage('book');
+
+    fireEvent.click(await screen.findByText('Kitchen renovation'));
+    fireEvent.click(screen.getByText('common.cancel'));
+    fireEvent.click(screen.getByText('Kitchen renovation'));
+    await act(() => new Promise((r) => setTimeout(r, 350)));
+
+    expect(input('name')).toHaveValue('Kitchen renovation');
   });
 });
