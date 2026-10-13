@@ -151,38 +151,7 @@ const Account: React.FC = () => {
         </p>
       </div>
 
-      {/* How and about what the owner hears — email, SMS or WhatsApp, one
-          switch per event (LT-129, LT-213) */}
-      <NotificationsCard leadsSite={leadsSite} />
-
-      {/* Dashboard Language Card */}
-      <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Languages className="w-5 h-5 text-primary shrink-0" />
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
-                {t('account.language')}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {t('account.languageDesc')}
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full sm:w-48 shrink-0">
-            <Select
-              value={language}
-              disabled={isSavingLanguage}
-              onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
-              options={SUPPORTED_LANGUAGES.map((lng) => ({ value: lng, label: LANGUAGE_NAMES[lng] }))}
-            />
-          </div>
-        </div>
-      </Card>
-
-      <BillingSection leadsSite={leadsSite} />
-
+      {/* The profile first (LT-309): who you are, then how you hear and pay. */}
       <Card>
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-4">
@@ -305,6 +274,38 @@ const Account: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* How and about what the owner hears — email, SMS or WhatsApp, one
+          switch per event (LT-129, LT-213) */}
+      <NotificationsCard leadsSite={leadsSite} />
+
+      {/* Dashboard Language Card */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Languages className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                {t('account.language')}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {t('account.languageDesc')}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full sm:w-48 shrink-0">
+            <Select
+              value={language}
+              disabled={isSavingLanguage}
+              onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+              options={SUPPORTED_LANGUAGES.map((lng) => ({ value: lng, label: LANGUAGE_NAMES[lng] }))}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <BillingSection leadsSite={leadsSite} />
 
       <DangerZoneSection />
 
