@@ -1,7 +1,7 @@
 {
   "common": {
     "dashboard": "לוח בקרה",
-    "appointments": "התורים שלך",
+    "appointments": "יומן",
     "scheduleVacations": "לוח זמנים וחופשות",
     "serviceTypes": "סוגי שירותים",
     "portfolio": "גלריה",
@@ -280,7 +280,7 @@
     "noDuration": "אין משך — עוד אי אפשר לקבוע תור"
   },
   "appointments": {
-    "title": "ניהול התורים שלך",
+    "title": "יומן",
     "description": "צפייה וניהול",
     "newAppointment": "תור חדש",
     "all": "הכל",

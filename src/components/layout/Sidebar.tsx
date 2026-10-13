@@ -236,6 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
 
   const navSections = [
     {
+      id: 'navigation',
       label: t('sidebar.navigation'),
       items: leadsSite
         ? [
@@ -252,6 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
           ],
     },
     {
+      id: 'manage',
       label: t('sidebar.manage'),
       items: [
         ...(leadsSite
@@ -271,6 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
     ...(auth.user?.role === 'admin'
       ? [
           {
+            id: 'admin',
             label: t('sidebar.admin'),
             items: [
               { path: '/admin', Icon: ShieldCheck, name: t('admin.nav.overview') },
@@ -296,8 +299,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
           <div className="flex flex-col">
             {navSections.map((section, sIdx) => (
               // One group per section, named by its caption, so the grouping
-              // is announced and not only drawn.
-              <div key={section.label} role="group" aria-label={section.label} className="flex flex-col">
+              // is announced and not only drawn. Keyed by a fixed id, never the
+              // caption (LT-291): two captions can read the same in one
+              // language (Arabic's "manage" and "admin"), and a duplicate key
+              // left a stale group of nameless icons behind after a switch.
+              <div key={section.id} role="group" aria-label={section.label} className="flex flex-col">
                 <SectionLabel label={section.label} first={sIdx === 0} />
                 {section.items.map(({ path, Icon, name, badge }: { path: string; Icon: typeof Inbox; name: string; badge?: number }) => {
                   if (isRestricted && !ALLOWED_WHEN_RESTRICTED.includes(path)) return null;
