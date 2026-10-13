@@ -31,6 +31,7 @@ import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsC
 import { isLeadsSite } from '../../utils/siteMode';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
+import { navTile } from './navTiles';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -41,41 +42,9 @@ const ALLOWED_WHEN_RESTRICTED = ['/', '/design'];
 const linkClasses =
   'px-1 rounded-xl text-gray-600 dark:text-dark-gray hover:bg-white dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-dark-text transition-colors';
 
-/**
- * Each page's icon sits on a small tile of its own colour (LT-278) — the menu
- * was all grey with only Lighty in colour. The tile owns the colour, so the
- * active page is marked by a ring around it (and the bold label), never by
- * recolouring the icon. Lighty keeps his own face.
- */
-const TILE: Record<string, string> = {
-  '/': 'from-violet-400 to-violet-600',
-  '/design': 'from-pink-400 to-fuchsia-500',
-  '/appointments': 'from-sky-400 to-blue-500',
-  '/customers': 'from-emerald-400 to-green-500',
-  '/leads': 'from-amber-300 to-orange-400',
-  '/schedule-vacations': 'from-cyan-400 to-sky-500',
-  '/appointment-types': 'from-orange-400 to-rose-400',
-  '/portfolio': 'from-rose-400 to-pink-500',
-  '/settings': 'from-teal-400 to-emerald-500',
-  '/admin': 'from-indigo-400 to-violet-500',
-  '/admin/users': 'from-emerald-400 to-teal-500',
-  '/admin/appointments': 'from-sky-400 to-indigo-500',
-  '/admin/subscriptions': 'from-amber-300 to-orange-400',
-  '/admin/costs': 'from-lime-400 to-green-500',
-  '/admin/logs': 'from-slate-400 to-slate-600',
-};
-const tileClasses =
-  'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ring-offset-2 ring-offset-[#f9f9ff] dark:ring-offset-dark-surface group-aria-[current=page]/sidebar:ring-2 group-aria-[current=page]/sidebar:ring-violet-400/80';
+// The active page's ring, by the link's aria-current (LT-278).
 const navIcon = (path: string, Icon: typeof Inbox) =>
-  path === '/lighty' ? (
-    <span className={`${tileClasses} shadow-none`}>
-      <Icon className="w-7 h-7" />
-    </span>
-  ) : (
-    <span className={`${tileClasses} bg-gradient-to-br ${TILE[path] ?? 'from-violet-400 to-violet-600'}`}>
-      <Icon className="h-4 w-4 !text-white" strokeWidth={2.25} />
-    </span>
-  );
+  navTile(path, Icon, 'group-aria-[current=page]/sidebar:ring-2 group-aria-[current=page]/sidebar:ring-violet-400/80');
 
 const iconClasses = 'h-5 w-5 flex-shrink-0';
 

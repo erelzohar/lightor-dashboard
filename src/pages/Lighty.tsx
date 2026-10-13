@@ -135,7 +135,7 @@ const LightyPage: React.FC = () => {
 
   return (
     <div
-      className={`h-full max-w-3xl w-full mx-auto flex flex-col ${keyboardOpen ? '' : 'pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0'}`}
+      className={`h-full max-w-3xl w-full mx-auto flex flex-col ${keyboardOpen ? '' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0'}`}
       data-testid="lighty-page"
     >
       {/* Lighty himself: big on an empty conversation, small at the top once it runs. */}

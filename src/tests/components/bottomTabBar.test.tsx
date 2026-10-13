@@ -114,19 +114,22 @@ describe('BottomTabBar', () => {
     expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/design']);
   });
 
-  it('clears the home indicator via the safe-area inset', () => {
+  it('floats clear of the home indicator, frosted in both themes (LT-304)', () => {
     render(
       <MemoryRouter>
         <BottomTabBar onMore={vi.fn()} />
       </MemoryRouter>
     );
     const bar = screen.getByTestId('bottom-tab-bar');
-    // Split across top and bottom, not all below the icons: the whole inset
-    // sitting underneath made the bar look top-heavy on a real phone.
-    expect(bar.className).toContain('py-[calc(env(safe-area-inset-bottom)/2)]');
-    expect(bar.className).not.toContain('pb-[env(safe-area-inset-bottom)]');
-    // Theme colours are bare CSS vars, so `/95` on them emits no CSS at all.
-    expect(bar.className).toContain('dark:bg-dark-surface');
+    // Off the edges, half the inset above the bottom (pages clear 4.5rem + the inset).
+    expect(bar.className).toContain('inset-x-3');
+    expect(bar.className).toContain('bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)]');
+    // Glass from stock colours: the theme's are bare CSS vars, and `/80` on them emits nothing.
+    expect(bar.className).toContain('bg-white/80');
+    expect(bar.className).toContain('dark:bg-slate-900/80');
     expect(bar.className).not.toMatch(/dark:bg-dark-surface\/\d/);
+    // Each page on its coloured tile, as in the sidebar; Lighty keeps his face.
+    const home = screen.getByText('common.dashboard').closest('a') as HTMLElement;
+    expect(home.querySelector('.bg-gradient-to-br.from-violet-400')).not.toBeNull();
   });
 });

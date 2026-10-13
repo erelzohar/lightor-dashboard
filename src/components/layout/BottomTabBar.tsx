@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
+import { navTile } from './navTiles';
 
 interface BottomTabBarProps {
   /** Not-yet-onboarded accounts only get the pages the drawer allows them. */
@@ -68,21 +69,23 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   // Colour lives on the active/idle branches, never on the shared classes:
   // an idle `dark:text-gray-400` would outrank `text-primary` in dark mode.
   const itemClasses =
-    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1 text-[10px] font-medium leading-tight transition-colors';
+    'group/tab flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1 rounded-[1.25rem] text-[10px] font-medium leading-tight transition-colors';
   const idleClasses = 'text-gray-500 dark:text-gray-400';
-  const activeClasses = 'text-primary dark:text-primary font-semibold';
+  const activeClasses = 'text-primary dark:text-primary font-semibold bg-violet-500/10 dark:bg-white/10';
+  // The active page: a ring around its tile, as in the sidebar (LT-278).
+  const ring = 'group-aria-[current=page]/tab:ring-2 group-aria-[current=page]/tab:ring-violet-400/80';
 
   return (
     <nav
       aria-label={t('sidebar.navigation')}
       data-testid="bottom-tab-bar"
-      // The home-indicator inset is split between top and bottom rather than
-      // all sitting below the icons, which made the bar look top-heavy. Same
-      // total height, balanced gaps.
-      // No `/95` on the dark surface: the theme colours are bare CSS variables
-      // (no <alpha-value>), so an opacity modifier silently emits nothing and
-      // the bar stayed light in dark mode. Solid surfaces on both themes.
-      className="md:hidden fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-gray-200 dark:border-gray-800/60 bg-[#f9f9ff] dark:bg-dark-surface py-[calc(env(safe-area-inset-bottom)/2)]"
+      // LT-304: a floating bar — off the edges, rounded, frosted glass, the
+      // sidebar's coloured tiles. It floats half the home-indicator inset
+      // above the bottom (the other half is the bar's own margin), so pages
+      // clearing 4.5rem + the inset still clear it. Stock colours with alpha
+      // (white, slate): the theme's own are bare CSS variables, and an
+      // opacity modifier on them emits nothing.
+      className="md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] z-40 flex items-stretch gap-0.5 p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]"
     >
       {tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink
@@ -94,10 +97,10 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
         >
           {/* The same dot the collapsed sidebar rail puts on the icon. */}
           <span className="relative flex shrink-0">
-            <Icon className="h-6 w-6" aria-hidden="true" />
+            {navTile(path, Icon, ring)}
             {dot && (
               <span
-                className="absolute -top-0.5 -end-0.5 w-2 h-2 rounded-full bg-rose-500"
+                className="absolute -top-1 -end-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900"
                 aria-hidden="true"
                 data-testid="tab-dot"
               />
@@ -107,7 +110,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
         </NavLink>
       ))}
       <button type="button" onClick={onMore} className={cn(itemClasses, idleClasses)} aria-label={t('sidebar.openSidebar')}>
-        <Menu className="h-6 w-6 shrink-0" aria-hidden="true" />
+        {navTile('more', Menu, '', 'from-slate-400 to-slate-500')}
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
     </nav>
