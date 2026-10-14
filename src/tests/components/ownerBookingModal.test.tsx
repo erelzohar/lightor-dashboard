@@ -6,6 +6,7 @@ import OwnerBookingModal from '../../components/customers/OwnerBookingModal';
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { fetchAddressSuggestions, loadPlaces, resolveAddressSuggestion } from '../../services/places';
 import type { BookingField } from '../../types';
+import { businessTimeToMs } from '../../utils/businessTime';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'en', direction: 'ltr' }) }));
@@ -36,8 +37,10 @@ vi.mock('../../services/customersApi', async (importOriginal) => {
 // A fixed clock (only Date is faked; timers stay real for the debounces and
 // waitFor): Monday 2030-03-04, 08:00. The business opens 09:00–12:00 daily,
 // so today offers an hour-long service at 09:00, 10:00 and 11:00.
-const NOW = new Date(2030, 2, 4, 8, 0);
-const at = (day: number, hour: number, extraMs = 0) => String(new Date(2030, 2, day, hour).valueOf() + extraMs);
+// Instants on Israel's clock (LT-315): the booking flow works in Asia/Jerusalem
+// whatever zone the machine running the tests is in.
+const NOW = new Date(businessTimeToMs(2030, 2, 4, 8, 0));
+const at = (day: number, hour: number, extraMs = 0) => String(businessTimeToMs(2030, 2, day, hour) + extraMs);
 const FREE: Availability = { busy: [], classes: [] };
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -373,8 +376,8 @@ describe('OwnerBookingModal: a group class', () => {
     // The month on show, first to last millisecond, addressed by subdomain.
     expect(getAvailability).toHaveBeenLastCalledWith(
       'studio',
-      String(new Date(2030, 2, 1).valueOf()),
-      String(new Date(2030, 3, 1).valueOf() - 1)
+      String(businessTimeToMs(2030, 2, 1)),
+      String(businessTimeToMs(2030, 3, 1) - 1)
     );
     const offered = within(screen.getByRole('group', { name: 'customers.booking.pickSession' }))
       .getAllByRole('button')
@@ -526,8 +529,8 @@ describe("OwnerBookingModal: the site's calendar", () => {
     await waitFor(() =>
       expect(getAvailability).toHaveBeenLastCalledWith(
         'studio',
-        String(new Date(2030, 3, 1).valueOf()),
-        String(new Date(2030, 4, 1).valueOf() - 1)
+        String(businessTimeToMs(2030, 3, 1)),
+        String(businessTimeToMs(2030, 4, 1) - 1)
       )
     );
     expect(screen.getByRole('button', { name: 'customers.booking.prevMonth' })).not.toBeDisabled();
@@ -536,15 +539,15 @@ describe("OwnerBookingModal: the site's calendar", () => {
   });
 
   it('moves to next month by itself when this one has no day left, and lets the owner turn back', async () => {
-    vi.setSystemTime(new Date(2030, 2, 31, 20, 0));
+    vi.setSystemTime(new Date(businessTimeToMs(2030, 2, 31, 20, 0)));
     renderModal();
     chooseService('Massage');
 
     await waitFor(() =>
       expect(getAvailability).toHaveBeenLastCalledWith(
         'studio',
-        String(new Date(2030, 3, 1).valueOf()),
-        String(new Date(2030, 4, 1).valueOf() - 1)
+        String(businessTimeToMs(2030, 3, 1)),
+        String(businessTimeToMs(2030, 4, 1) - 1)
       )
     );
     fireEvent.click(screen.getByRole('button', { name: 'customers.booking.prevMonth' }));

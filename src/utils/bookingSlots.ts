@@ -1,4 +1,5 @@
 import type { DateOverride } from '../types';
+import { businessTimeToMs } from './businessTime';
 
 /**
  * Dates and opening hours for an owner-made booking (LT-122). The start
@@ -13,7 +14,10 @@ interface OpeningHours {
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-/** Local calendar date as "YYYY-MM-DD" (no timezone shift). */
+/**
+ * A calendar day's "YYYY-MM-DD", read off its components (no timezone
+ * shift). For an instant's day in the business's zone, businessDateKey.
+ */
 export const localDateKey = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
@@ -34,10 +38,11 @@ export const hoursForDate = (hours: OpeningHours, date: Date): string | null => 
   return hours.workingDays[date.getDay()] ?? null;
 };
 
-/** Combine a calendar date and "HH:MM" into an epoch-ms timestamp (local time). */
+/**
+ * Combine a calendar date and "HH:MM" into an epoch-ms timestamp — the
+ * business's wall clock, Asia/Jerusalem, not the device's (LT-315).
+ */
 export const slotTimestamp = (date: Date, hhmm: string): number => {
   const minutes = toMinutes(hhmm) ?? 0;
-  const d = new Date(date);
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return d.valueOf();
+  return businessTimeToMs(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(minutes / 60), minutes % 60);
 };

@@ -15,6 +15,7 @@ import { fetchAppointments, fetchAppointmentTypes } from '../../store/slices/app
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
+import { businessDateKey, businessDay, businessTimeToMs } from '../../utils/businessTime';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -112,8 +113,9 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // one has no day left with room (the last days of a month).
   const [autoTurned, setAutoTurned] = useState(false);
   const [typeId, setTypeId] = useState('');
-  const [month, setMonth] = useState(() => monthOf(new Date()));
-  const [dateKey, setDateKey] = useState(localDateKey(new Date()));
+  // Today and its month by Israel's calendar, whatever the device's zone (LT-315).
+  const [month, setMonth] = useState(() => monthOf(businessDay()));
+  const [dateKey, setDateKey] = useState(() => businessDateKey(Date.now()));
   const [time, setTime] = useState('');
   // A class's session is the server's own timestamp string (LT-204).
   const [sessionTs, setSessionTs] = useState('');
@@ -152,7 +154,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     const presetType = presetTypeId && appointmentTypes.some((ty) => ty._id === presetTypeId) ? presetTypeId : '';
     // Nothing chosen for the owner: the first step is the services (LT-211).
     setTypeId(presetType);
-    const day = presetType && presetTimestamp ? new Date(Number(presetTimestamp)) : new Date();
+    const day = businessDay(presetType && presetTimestamp ? Number(presetTimestamp) : Date.now());
     setMonth(monthOf(day));
     setDateKey(presetType ? localDateKey(day) : '');
     setTime('');
@@ -181,8 +183,9 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // and all, by the server. Signed in as the owner, the sessions also include
   // those that began up to a day ago and those past the customers' window.
   const subDomain = webConfig?.subDomain;
-  const monthStart = month.valueOf();
-  const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 1).valueOf() - 1;
+  // The month's first and last instants in Israel (LT-315), not the device's.
+  const monthStart = businessTimeToMs(month.getFullYear(), month.getMonth(), 1);
+  const monthEnd = businessTimeToMs(month.getFullYear(), month.getMonth() + 1, 1) - 1;
   const availabilityKey = `${monthStart}|${availabilityVersion}`;
   useEffect(() => {
     if (!open || !subDomain || fixedSession) return;
@@ -315,7 +318,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
 
   // Back to this month (a class's walk-in may still go to one that began
   // yesterday, LT-204), ahead a year.
-  const thisMonth = monthOf(new Date());
+  const thisMonth = monthOf(businessDay());
   const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + MONTHS_AHEAD, 1);
   const turnMonth = (next: Date) => {
     setMonth(next);

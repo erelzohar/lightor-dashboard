@@ -8,14 +8,16 @@ import {
   sessionsOnDay,
   type ScheduleFacts,
 } from '../../utils/ownerSchedule';
+import { businessTimeToMs } from '../../utils/businessTime';
 
 // Sunday 2030-03-03 and Monday 2030-03-04; "now" is the Saturday before.
 const SUNDAY = new Date(2030, 2, 3);
 const MONDAY = new Date(2030, 2, 4);
-const NOW = new Date(2030, 2, 2, 12).valueOf();
+// Instants on Israel's clock (LT-315), whatever zone runs the tests.
+const NOW = businessTimeToMs(2030, 2, 2, 12);
 const MIN = 60_000;
 const HOUR = 60 * MIN;
-const at = (day: Date, h: number, m = 0) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m).valueOf();
+const at = (day: Date, h: number, m = 0) => businessTimeToMs(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
 
 const facts = (over: Partial<ScheduleFacts> = {}): ScheduleFacts => ({
   workingDays: ['09:00-12:00', '10:00-11:00,14:00-15:00', null, null, null, null, null],

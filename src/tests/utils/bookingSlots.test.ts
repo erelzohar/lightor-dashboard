@@ -29,10 +29,9 @@ describe('owner booking dates and hours (LT-122)', () => {
     expect(hoursForDate(withOverrides, new Date(2030, 2, 5))).toBe('16:00-17:00');
   });
 
-  it('keys dates locally and combines a slot into a local timestamp', () => {
+  it("keys dates by their components and puts a slot on Israel's clock (LT-315)", () => {
     expect(localDateKey(SUNDAY)).toBe('2030-03-03');
-    const ts = slotTimestamp(SUNDAY, '09:30');
-    const d = new Date(ts);
-    expect([d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()]).toEqual([2030, 2, 3, 9, 30]);
+    // 09:30 in Israel in March 2030 (UTC+2, before the clocks go forward).
+    expect(slotTimestamp(SUNDAY, '09:30')).toBe(Date.UTC(2030, 2, 3, 7, 30));
   });
 });

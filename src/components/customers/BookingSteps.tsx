@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { ClassSessionAvailability } from '../../services/appointmentsApi';
 import type { AppointmentType } from '../../types';
 import { localDateKey } from '../../utils/bookingSlots';
-import { formatTime } from '../../utils/dateUtils';
+import { BUSINESS_TZ, businessDateKey, businessTimeOfDay } from '../../utils/businessTime';
 import { resolveImage } from '../../utils/images';
 import { isPastDay, type DayStatus } from '../../utils/ownerSchedule';
 
@@ -39,10 +39,15 @@ const chip = (chosen: boolean) =>
 
 const hint = (text: string) => <p className="text-sm text-gray-500 dark:text-gray-400 ms-0.5">{text}</p>;
 
-/** A day as the site names it: "Sunday, 25 October". */
+/**
+ * A day as the site names it: "Sunday, 25 October". A calendar day is read
+ * off its components (the device's zone, in which it was built); an instant
+ * is named by its day in Israel, the business's clock (LT-315).
+ */
 const useLongDate = () => {
   const { language } = useTheme();
-  return (day: Date) => new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
+  return (day: Date, instant = false) =>
+    new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long', ...(instant ? { timeZone: BUSINESS_TZ } : {}) }).format(day);
 };
 
 /** "30 min · ₪80 · Group class" — a service as the site describes it. */
@@ -162,7 +167,7 @@ export const MonthDays: React.FC<MonthDaysProps> = ({
   }, [language]);
 
   const monthLabel = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(month);
-  const todayKey = localDateKey(new Date());
+  const todayKey = businessDateKey(Date.now());
   const turn = (by: number) => onMonthChange(new Date(month.getFullYear(), month.getMonth() + by, 1));
   const navButton =
     'w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors';
@@ -292,9 +297,9 @@ export const DayTimes: React.FC<DayTimesProps> = ({
         ) : sessions.length ? (
           <div role="group" aria-label={t('customers.booking.pickSession')} className="grid grid-cols-3 gap-2">
             {sessions.map((session) => {
-              // Display only: the time is read off the server's timestamp in
-              // the owner's browser; the booking sends the timestamp.
-              const at = formatTime(Number(session.timestamp));
+              // Display only: the server's timestamp on Israel's clock (LT-315);
+              // the booking sends the timestamp.
+              const at = businessTimeOfDay(Number(session.timestamp));
               const seats = `${session.booked}/${session.capacity}`;
               return (
                 <button
@@ -346,6 +351,7 @@ export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, 
   const metaOf = useServiceMeta();
   const durationMS = Number(service.durationMS) || 0;
   const when = startMs !== undefined ? new Date(startMs) : day;
+  const whenLabel = when ? longDate(when, startMs !== undefined) : '';
   return (
     <div
       data-testid="booking-summary"
@@ -357,12 +363,12 @@ export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, 
         {!when && <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">{metaOf(service)}</span>}
         {when && (
           <span className="block text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-            {longDate(when)}
+            {whenLabel}
             {startMs !== undefined && (
               <>
                 {' · '}
                 <span dir="ltr">
-                  {formatTime(startMs)} – {formatTime(startMs + durationMS)}
+                  {businessTimeOfDay(startMs)} – {businessTimeOfDay(startMs + durationMS)}
                 </span>
               </>
             )}

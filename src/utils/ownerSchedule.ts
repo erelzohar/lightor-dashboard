@@ -1,6 +1,7 @@
 import type { DateOverride } from '../types';
 import type { BusySlot, ClassSessionAvailability } from '../services/appointmentsApi';
-import { hoursForDate } from './bookingSlots';
+import { hoursForDate, localDateKey } from './bookingSlots';
+import { businessDateKey, businessTimeToMs } from './businessTime';
 
 /**
  * The site's booking calendar, for the owner's own bookings (LT-211).
@@ -16,6 +17,10 @@ import { hoursForDate } from './bookingSlots';
  * booking window (the server spares the owner it), and a class session that
  * began up to a day ago is still offered, for a walk-in (LT-204) — the
  * server lists those to the owner only.
+ *
+ * The clock is the business's, Asia/Jerusalem, not the device's (LT-315):
+ * a day is a calendar date (its components), and its hours become instants
+ * through businessTime.ts.
  */
 export interface ScheduleFacts {
   workingDays: (string | null)[];
@@ -59,28 +64,18 @@ export const parseIntervals = (hours: string | null | undefined): WorkingInterva
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-const at = (date: Date, minutes: number): number => {
-  const d = new Date(date);
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return d.getTime();
-};
+/** That day at that many minutes past midnight, Israeli time, as an instant. */
+const at = (date: Date, minutes: number): number =>
+  businessTimeToMs(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(minutes / 60), minutes % 60);
 
 const overlaps = (start: number, end: number, otherStart: number, otherEnd: number): boolean =>
   start < otherEnd && otherStart < end;
 
-const sameDay = (ms: number, date: Date): boolean => {
-  const d = new Date(ms);
-  return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
-};
+/** Does this instant fall on this calendar day in Israel? */
+const sameDay = (ms: number, date: Date): boolean => businessDateKey(ms) === localDateKey(date);
 
-/** Before today, by the local calendar. */
-export const isPastDay = (date: Date, now = Date.now()): boolean => {
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
-  const day = new Date(date);
-  day.setHours(0, 0, 0, 0);
-  return day.getTime() < today.getTime();
-};
+/** Before today, by Israel's calendar ("YYYY-MM-DD" keys compare as strings). */
+export const isPastDay = (date: Date, now = Date.now()): boolean => localDateKey(date) < businessDateKey(now);
 
 /**
  * Start times ("HH:MM") a service of this length can take on this day. A
