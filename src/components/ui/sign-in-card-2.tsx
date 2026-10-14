@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { META_FEATURES_ENABLED } from '../../config/metaFeatures';
@@ -208,9 +209,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                 </div>
               </div>
 
-              {/* Remember me */}
-              {!hideRememberMe && (
-              <div className="flex items-center justify-between pt-1">
+              {/* Remember me, and the way back in without the password (LT-315) */}
+              <div className="flex items-center justify-between gap-3 pt-1">
+                {hideRememberMe ? <span /> : (
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <input
@@ -237,8 +238,16 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                     {t('login.rememberMe')}
                   </label>
                 </div>
+                )}
+                <Link
+                  to="/forgot-password"
+                  // What was typed here fills the next page's field.
+                  state={{ email }}
+                  className="text-xs text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  {t('login.forgotPassword')}
+                </Link>
               </div>
-              )}
 
               {/* Sign in button */}
               <motion.button

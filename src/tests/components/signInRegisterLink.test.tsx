@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { SignInCard } from '../../components/ui/sign-in-card-2';
 
 vi.mock('react-i18next', () => ({
@@ -7,7 +8,12 @@ vi.mock('react-i18next', () => ({
 }));
 
 const renderCard = () =>
-  render(<SignInCard onSubmit={async () => {}} onGoogleLogin={() => {}} onFacebookLogin={() => {}} />);
+  // The card links to /forgot-password (LT-315), so it needs a router.
+  render(
+    <MemoryRouter>
+      <SignInCard onSubmit={async () => {}} onGoogleLogin={() => {}} onFacebookLogin={() => {}} />
+    </MemoryRouter>
+  );
 
 /**
  * LT-233: register.lightor.app sells the plans (live Paddle prices and

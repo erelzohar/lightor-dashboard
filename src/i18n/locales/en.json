@@ -348,7 +348,8 @@
     "rememberMe": "Remember me",
     "noAccount": "Don't have an account?",
     "registerHere": "Register here",
-    "sessionExpired": "Your session has expired. Please sign in again."
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "forgotPassword": "Forgot password?"
   },
   "onboarding": {
     "welcomeTitle": "Welcome, {{name}}!",
@@ -1497,5 +1498,31 @@
       "services": "What are my services and prices?",
       "howHours": "How do I change my hours?"
     }
+  },
+  "forgotPassword": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your account's email and we'll send you a link to set a new password.",
+    "submit": "Send reset link",
+    "sent": "If an account exists for this address, we've sent it a link to set a new password. The link is valid for a short time — check your inbox and spam folder.",
+    "tooMany": "Too many attempts. Please try again later.",
+    "failed": "We couldn't send the email right now. Please try again.",
+    "backToLogin": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "subtitle": "Choose a new password for your account. You'll be signed in right after.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "rules": "At least 6 characters, with both letters and numbers.",
+    "rule": {
+      "min": "The password must be at least 6 characters.",
+      "ascii": "Use English letters, numbers and symbols only.",
+      "complex": "The password must contain both letters and numbers."
+    },
+    "mismatch": "The passwords don't match.",
+    "submit": "Save and sign in",
+    "failed": "Something went wrong. Please try again.",
+    "invalidLink": "This reset link is invalid or has expired.",
+    "requestNew": "Send me a new link"
   }
 }

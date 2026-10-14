@@ -348,7 +348,8 @@
     "rememberMe": "Recuérdame",
     "noAccount": "¿No tienes cuenta?",
     "registerHere": "Regístrate aquí",
-    "sessionExpired": "Tu sesión ha caducado. Inicia sesión de nuevo."
+    "sessionExpired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+    "forgotPassword": "¿Olvidaste tu contraseña?"
   },
   "onboarding": {
     "welcomeTitle": "¡Bienvenido, {{name}}!",
@@ -1497,5 +1498,31 @@
       "services": "¿Cuáles son mis servicios y precios?",
       "howHours": "¿Cómo cambio mi horario?"
     }
+  },
+  "forgotPassword": {
+    "title": "¿Olvidaste tu contraseña?",
+    "subtitle": "Introduce el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.",
+    "submit": "Enviar enlace",
+    "sent": "Si existe una cuenta con esta dirección, le hemos enviado un enlace para elegir una contraseña nueva. El enlace es válido por poco tiempo: revisa tu bandeja de entrada y la carpeta de spam.",
+    "tooMany": "Demasiados intentos. Inténtalo de nuevo más tarde.",
+    "failed": "No pudimos enviar el correo ahora. Inténtalo de nuevo.",
+    "backToLogin": "Volver a iniciar sesión"
+  },
+  "resetPassword": {
+    "title": "Elige una contraseña nueva",
+    "subtitle": "Elige una contraseña nueva para tu cuenta. Iniciarás sesión justo después.",
+    "newPassword": "Contraseña nueva",
+    "confirmPassword": "Confirma la contraseña nueva",
+    "rules": "Al menos 6 caracteres, con letras y números.",
+    "rule": {
+      "min": "La contraseña debe tener al menos 6 caracteres.",
+      "ascii": "Usa solo letras sin acentos, números y símbolos.",
+      "complex": "La contraseña debe contener letras y números."
+    },
+    "mismatch": "Las contraseñas no coinciden.",
+    "submit": "Guardar e iniciar sesión",
+    "failed": "Algo salió mal. Inténtalo de nuevo.",
+    "invalidLink": "Este enlace de restablecimiento no es válido o ha caducado.",
+    "requestNew": "Envíame un enlace nuevo"
   }
 }

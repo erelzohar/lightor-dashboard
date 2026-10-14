@@ -348,7 +348,8 @@
     "rememberMe": "Se souvenir de moi",
     "noAccount": "Vous n'avez pas de compte ?",
     "registerHere": "Inscrivez-vous ici",
-    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "forgotPassword": "Mot de passe oublié ?"
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue, {{name}} !",
@@ -1497,5 +1498,31 @@
       "services": "Quels sont mes services et tarifs ?",
       "howHours": "Comment changer mes horaires ?"
     }
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié ?",
+    "subtitle": "Saisissez l'e-mail de votre compte et nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+    "submit": "Envoyer le lien",
+    "sent": "Si un compte existe pour cette adresse, nous lui avons envoyé un lien pour choisir un nouveau mot de passe. Le lien est valable peu de temps — vérifiez votre boîte de réception et vos spams.",
+    "tooMany": "Trop de tentatives. Veuillez réessayer plus tard.",
+    "failed": "Impossible d'envoyer l'e-mail pour le moment. Veuillez réessayer.",
+    "backToLogin": "Retour à la connexion"
+  },
+  "resetPassword": {
+    "title": "Choisir un nouveau mot de passe",
+    "subtitle": "Choisissez un nouveau mot de passe pour votre compte. Vous serez connecté juste après.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "rules": "Au moins 6 caractères, avec des lettres et des chiffres.",
+    "rule": {
+      "min": "Le mot de passe doit contenir au moins 6 caractères.",
+      "ascii": "Utilisez uniquement des lettres latines sans accents, des chiffres et des symboles.",
+      "complex": "Le mot de passe doit contenir des lettres et des chiffres."
+    },
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "submit": "Enregistrer et se connecter",
+    "failed": "Une erreur s'est produite. Veuillez réessayer.",
+    "invalidLink": "Ce lien de réinitialisation est invalide ou a expiré.",
+    "requestNew": "M'envoyer un nouveau lien"
   }
 }

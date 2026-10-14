@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { handoffLogin } from '../services/authApi';
 import { saveSession } from '../services/nativeSession';
+import { setSessionHint } from '../services/sessionHint';
 import Button from '../components/ui/Button';
 
 /**
@@ -40,6 +41,10 @@ const Handoff: React.FC = () => {
       // below hydrates from; no-op on the web.
       .then(({ token }) => saveSession(token))
       .then(() => {
+        // The next load must probe /auth/me: without the hint (LT-164) a
+        // browser that never signed in before skips it and lands a brand
+        // new signup on the login page (LT-315).
+        setSessionHint();
         // Full navigation, not client-side routing: the exchange set the
         // HttpOnly session cookie (LT-009), and a fresh load makes
         // AuthContext initialise from it everywhere at once.

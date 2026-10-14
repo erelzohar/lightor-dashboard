@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import Handoff from '../../pages/Handoff';
 import { handoffLogin } from '../../services/authApi';
 import { stubLocation } from '../helpers/location';
+import { hasSessionHint } from '../../services/sessionHint';
 
 vi.mock('../../services/authApi', () => ({ handoffLogin: vi.fn() }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ direction: 'ltr' }) }));
@@ -45,6 +46,19 @@ describe('Handoff', () => {
     render(<Handoff />);
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/'));
+  });
+
+  it('marks the browser as signed in, so the next load asks /auth/me (LT-315)', async () => {
+    // Without the LT-164 hint a browser that never signed in skips the probe,
+    // and a brand new signup landed on the login page instead of its account.
+    const { replace } = stubLocation('https://dashboard.lightor.app/handoff#t=ho_abc123');
+    vi.mocked(handoffLogin).mockResolvedValue({ token: 'jwt', user: { _id: 'u1' } as never });
+    expect(hasSessionHint()).toBe(false);
+
+    render(<Handoff />);
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/'));
+    expect(hasSessionHint()).toBe(true);
   });
 
   it('reads a token that is not the first fragment parameter', async () => {

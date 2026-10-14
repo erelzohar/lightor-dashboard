@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { SignInCard } from '../../components/ui/sign-in-card-2';
 
@@ -21,11 +22,14 @@ const noop = () => {};
 
 const renderCard = () =>
   render(
-    <SignInCard
-      onSubmit={async () => {}}
-      onGoogleLogin={noop}
-      onFacebookLogin={noop}
-    />
+    // The card links to /forgot-password (LT-315), so it needs a router.
+    <MemoryRouter>
+      <SignInCard
+        onSubmit={async () => {}}
+        onGoogleLogin={noop}
+        onFacebookLogin={noop}
+      />
+    </MemoryRouter>
   );
 
 describe('LT-091 Meta feature switch', () => {

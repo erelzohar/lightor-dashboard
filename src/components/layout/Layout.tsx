@@ -9,7 +9,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
-import { useAppUrlOpen } from '../../hooks/useAppUrlOpen';
+import { useDeepLinkLeaveGuard } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
 import { greetingEmoji, greetingFor } from '../../lib/greeting';
@@ -49,9 +49,10 @@ const Layout: React.FC = () => {
 
   const boardingStatus = auth.user?.boardingStatus;
 
-  // Native shell (LT-128 §6 / LT-129): deep links + Android back button, and
+  // Native shell (LT-128 §6 / LT-129): deep links (listened for at the app
+  // root since LT-315; here they only pass the unsaved-work guard), and
   // notification taps routed to their `data.url`. Both no-ops on the web.
-  useAppUrlOpen();
+  useDeepLinkLeaveGuard();
   useEffect(() => {
     void bindNotificationTaps(leaveTo);
   }, [leaveTo]);

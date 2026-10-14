@@ -38,6 +38,9 @@ import AdminReports from './pages/admin/AdminReports';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import AppUrlOpenListener from './components/routing/AppUrlOpenListener';
 import InstagramCallback from './pages/InstagramCallback';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
@@ -56,11 +59,16 @@ function App() {
               position="top-center"
               containerStyle={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
             />
+            {/* Native deep links for every route, signed in or not (LT-315). */}
+            <AppUrlOpenListener />
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/handoff" element={<Handoff />} />
+                  {/* LT-315: signed-out pages — the emailed link lands on the second. */}
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password/:token" element={<ResetPassword />} />
                   <Route path="/instagram-callback" element={<InstagramCallback />} />
                   <Route path="/verify" element={<VerifyEmail />} />
                   <Route path="/verify/:token" element={<VerifyEmail />} />
