@@ -8,6 +8,7 @@ import { LeaveGuardProvider } from '../../contexts/LeaveGuardContext';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
+import { uploadImage } from '../../services/imagesApi';
 import type { WebConfig } from '../../types';
 
 /**
@@ -236,10 +237,11 @@ describe('the site editor (LT-249)', () => {
     await fromSite({ type: 'LT_READY' });
     fireEvent.click(screen.getByText('siteEditor.sections.add'));
     const list = await screen.findByTestId('add-section-panel');
-    // The page has an FAQ already: not offered again. A gallery needs photos first.
+    // The page has an FAQ already: not offered again. A gallery without photos
+    // comes empty, for the owner's photos (LT-320).
     expect(within(list).queryByText('שאלות נפוצות')).toBeNull();
-    expect(within(list).getByText('גלריה').closest('button')).toBeDisabled();
-    expect(within(list).getByText('siteEditor.sections.reasons.noPhotos')).toBeInTheDocument();
+    expect(within(list).getByText('גלריה').closest('button')).toBeEnabled();
+    expect(within(list).getByText('siteEditor.sections.badge.photos')).toBeInTheDocument();
 
     fireEvent.click(within(list).getByText('שלבים'));
     expect(aiService.draftSection).toHaveBeenCalledWith('process');
@@ -247,6 +249,22 @@ describe('the site editor (LT-249)', () => {
     expect(lastConfig().blocks?.[1]).toEqual({ id: 'b3', type: 'process', variant: 'rail', props: { title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] } });
     expect(await screen.findByTestId('section-panel')).toBeInTheDocument();
     expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: null, section: 'b3', block: 'start' });
+  });
+
+  it('adds an empty gallery, then a photo uploaded from its panel (LT-320)', async () => {
+    vi.mocked(uploadImage).mockResolvedValue({ imageName: 'new.webp' } as Awaited<ReturnType<typeof uploadImage>>);
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    fireEvent.click(screen.getByText('siteEditor.sections.add'));
+    fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('גלריה'));
+    const panel = await screen.findByTestId('section-panel');
+    expect(within(panel).getByText('siteEditor.image.addToGallery')).toBeInTheDocument();
+
+    const photo = new File(['x'], 'nails.jpg', { type: 'image/jpeg' });
+    fireEvent.change(within(panel).getByTestId('add-photo-input'), { target: { files: [photo] } });
+    await waitFor(() => expect(lastConfig().components?.portfolio?.items?.map((i) => i.url)).toEqual(['new.webp']));
+    expect(uploadImage).toHaveBeenCalledWith(photo, 'photo');
+    expect(lastConfig().blocks?.filter((b) => b.type === 'gallery')).toHaveLength(1);
   });
 
   it("opens the owner's fields when the AI cannot draft, and reviews are always the owner's; Save leaves empty ones out", async () => {

@@ -310,7 +310,8 @@
     "customerDetails": "פרטי לקוח",
     "answers": {
       "title": "פרטים נוספים",
-      "openInMaps": "פתיחה במפות Google"
+      "openInMaps": "פתיחה במפות Google",
+      "openInWaze": "ניווט ב-Waze"
     },
     "price": "מחיר",
     "currencySymbol": "₪",
@@ -1401,7 +1402,8 @@
       "choose": "או בחרו תמונה שכבר באתר:",
       "use": "שימוש בתמונה הזו",
       "removeFromGallery": "הסרה מהגלריה",
-      "uploadFailed": "ההעלאה נכשלה, נסו שוב"
+      "uploadFailed": "ההעלאה נכשלה, נסו שוב",
+      "addToGallery": "הוספת תמונה לגלריה"
     },
     "section": {
       "heroBackground": "אפקט רקע",
@@ -1456,7 +1458,8 @@
       },
       "badge": {
         "ai": "AI כותב טיוטה",
-        "owner": "אתם כותבים"
+        "owner": "אתם כותבים",
+        "photos": "מעלים תמונות"
       },
       "drafting": "ה-AI כותב טיוטה…",
       "aiFailed": "ה-AI לא הצליח לכתוב טיוטה. האזור נוסף, מלאו אותו בעצמכם.",

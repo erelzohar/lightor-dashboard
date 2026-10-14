@@ -6,6 +6,7 @@ import { aiEditable, fieldInfo } from '../../utils/editorFields';
 import { DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
+import AddPhotoButton from './AddPhotoButton';
 import { fieldLabel, vocabLang } from './labels';
 
 interface SectionPanelProps<T> {
@@ -23,6 +24,8 @@ interface SectionPanelProps<T> {
   onMove?: (by: -1 | 1) => void;
   /** LT-252: open the add-section list, placed below this section. */
   onAddBelow?: () => void;
+  /** LT-320: a photo uploaded for the gallery. */
+  onAddPhoto?: (imageName: string) => void;
 }
 
 const chip = (on: boolean) =>
@@ -37,7 +40,7 @@ const chip = (on: boolean) =>
  * the design token on a legacy one), whether it shows, its background and
  * place on a composed page, the fields inside it, and AI over all its texts.
  */
-function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSelectField, onMove, onAddBelow }: SectionPanelProps<T>) {
+function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSelectField, onMove, onAddBelow, onAddPhoto }: SectionPanelProps<T>) {
   const { t, i18n } = useTranslation();
   const lang = vocabLang(i18n.language);
   const type = sectionType ?? section;
@@ -96,6 +99,9 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
           <ToggleSwitch checked={visible} onChange={setVisible} ariaLabel={t('siteEditor.section.visible')} />
         </div>
       )}
+
+      {/* LT-320: the gallery's own action — a photo from the phone or the computer. */}
+      {onAddPhoto && (type === 'gallery' || type === 'portfolio') && <AddPhotoButton onAdded={onAddPhoto} />}
 
       {/* LT-256: then Lighty's line — every text of the section at once. */}
       {aiFields.length > 0 && (

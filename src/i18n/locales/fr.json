@@ -310,7 +310,8 @@
     "customerDetails": "Détails du client",
     "answers": {
       "title": "Détails",
-      "openInMaps": "Ouvrir dans Google Maps"
+      "openInMaps": "Ouvrir dans Google Maps",
+      "openInWaze": "Naviguer avec Waze"
     },
     "price": "Prix",
     "currencySymbol": "₪",
@@ -1401,7 +1402,8 @@
       "choose": "Ou choisissez une image déjà sur votre site :",
       "use": "Utiliser cette image",
       "removeFromGallery": "Retirer de la galerie",
-      "uploadFailed": "Échec de l'envoi — réessayez"
+      "uploadFailed": "Échec de l'envoi — réessayez",
+      "addToGallery": "Ajouter une photo à la galerie"
     },
     "section": {
       "heroBackground": "Effet d'arrière-plan",
@@ -1456,7 +1458,8 @@
       },
       "badge": {
         "ai": "L'IA rédige un brouillon",
-        "owner": "Vous l'écrivez"
+        "owner": "Vous l'écrivez",
+        "photos": "Ajoutez des photos"
       },
       "drafting": "L'IA rédige un brouillon…",
       "aiFailed": "L'IA n'a pas pu rédiger de brouillon. La section est ajoutée : remplissez-la vous-même.",

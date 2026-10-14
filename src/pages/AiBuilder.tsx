@@ -26,6 +26,7 @@ import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { deviceTimeZone } from '../utils/businessTime';
+import { switchFade, useDeviceSwitch } from '../hooks/useDeviceSwitch';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -85,7 +86,8 @@ const AiBuilder: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [generatedThisSession, setGeneratedThisSession] = useState(false);
-  const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const { device: previewDevice, picked: pickedDevice, hidden: switchingDevice, switchTo: switchDevice } = useDeviceSwitch<'desktop' | 'phone'>('desktop');
+  const isMobilePreview = previewDevice === 'phone';
   const [showPreview, setShowPreview] = useState(() => window.innerWidth >= 768);
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('chat');
@@ -473,9 +475,9 @@ const AiBuilder: React.FC = () => {
               </button>
               <div className="hidden md:block w-px h-5 bg-gray-200 dark:bg-slate-600 mx-1" />
               <button
-                onClick={() => setIsMobilePreview(false)}
+                onClick={() => switchDevice('desktop')}
                 className={`hidden md:flex p-2 rounded-full transition-colors ${
-                  !isMobilePreview
+                  pickedDevice === 'desktop'
                     ? 'text-primary bg-violet-50 dark:bg-violet-900/20'
                     : 'text-gray-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20'
                 }`}
@@ -484,9 +486,9 @@ const AiBuilder: React.FC = () => {
                 <Monitor size={16} />
               </button>
               <button
-                onClick={() => setIsMobilePreview(true)}
+                onClick={() => switchDevice('phone')}
                 className={`hidden md:flex p-2 rounded-full transition-colors ${
-                  isMobilePreview
+                  pickedDevice === 'phone'
                     ? 'text-primary bg-violet-50 dark:bg-violet-900/20'
                     : 'text-gray-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20'
                 }`}
@@ -514,19 +516,22 @@ const AiBuilder: React.FC = () => {
             <div className="flex-1 relative overflow-hidden mx-4 mb-4 rounded-xl bg-gray-100 dark:bg-slate-900">
               <div
                 className="absolute overflow-hidden"
-                style={showPhoneShell ? {
-                  width: 280, height: 560,
-                  top: '50%', left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  borderRadius: 34,
-                  border: '10px solid #1e1e22',
-                  boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px rgba(0,0,0,0.6)',
-                  background: '#09090f',
-                } : {
-                  top: 0, right: 0, bottom: 0, left: 0,
-                  borderRadius: 12,
-                  border: '1px solid rgba(0,0,0,0.08)',
-                  background: '#fff',
+                style={{
+                  ...(showPhoneShell ? {
+                    width: 280, height: 560,
+                    top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    borderRadius: 34,
+                    border: '10px solid #1e1e22',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px rgba(0,0,0,0.6)',
+                    background: '#09090f',
+                  } : {
+                    top: 0, right: 0, bottom: 0, left: 0,
+                    borderRadius: 12,
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    background: '#fff',
+                  }),
+                  ...switchFade(switchingDevice),
                 }}
               >
                 {showPhoneShell && (

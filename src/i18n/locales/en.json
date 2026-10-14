@@ -310,7 +310,8 @@
     "customerDetails": "Customer Details",
     "answers": {
       "title": "Details",
-      "openInMaps": "Open in Google Maps"
+      "openInMaps": "Open in Google Maps",
+      "openInWaze": "Navigate with Waze"
     },
     "price": "Price",
     "currencySymbol": "₪",
@@ -1401,7 +1402,8 @@
       "choose": "Or pick a picture already on your site:",
       "use": "Use this picture",
       "removeFromGallery": "Remove from gallery",
-      "uploadFailed": "Upload failed — try again"
+      "uploadFailed": "Upload failed — try again",
+      "addToGallery": "Add a photo to the gallery"
     },
     "section": {
       "heroBackground": "Background effect",
@@ -1456,7 +1458,8 @@
       },
       "badge": {
         "ai": "AI writes a draft",
-        "owner": "You write it"
+        "owner": "You write it",
+        "photos": "Upload photos"
       },
       "drafting": "The AI is writing a draft…",
       "aiFailed": "The AI couldn't write a draft. The section is added; fill it in yourself.",

@@ -18,9 +18,10 @@ import globals from '../services/globals';
 import { removedStoredImages } from '../utils/aiReconcile';
 import { useDraft } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
+import { switchFade, useDeviceSwitch } from '../hooks/useDeviceSwitch';
 import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
-import { addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
+import { addGalleryPhoto, addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
 import { aiService } from '../services/aiApi';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -84,7 +85,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const baseRef = useRef<WebConfig>(saved);
   const [selection, setSelection] = useState<SiteSelection | null>(null);
   const [pageOpen, setPageOpen] = useState(false);
-  const [device, setDevice] = useState<'desktop' | 'phone'>('desktop');
+  const { device, picked: pickedDevice, hidden: switchingDevice, switchTo: setDevice } = useDeviceSwitch<'desktop' | 'phone'>('desktop');
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -138,6 +139,11 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   scrollRef.current = bridge.scrollTo;
 
   const update = useCallback((next: WebConfig, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
+  // LT-320: a gallery photo uploaded here lands on the draft as it is once the upload is done.
+  const addPhoto = (imageName: string) => {
+    uploads.current.add(imageName);
+    update(addGalleryPhoto(draftRef.current, imageName));
+  };
   const setField = (path: string, value: unknown) => update(setAt(draft.value, path, value), path);
 
   // ── LT-252: the page's sections ──
@@ -366,6 +372,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           onSelectField={openField}
           onMove={moveSelected}
           onAddBelow={() => setAdding({ after: section })}
+          onAddPhoto={addPhoto}
         />
       );
     }
@@ -380,6 +387,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           onChange={(name) => setField(path, name)}
           onUploaded={(name) => uploads.current.add(name)}
           onRemove={galleryItem ? () => { update(removeAt(draft.value, galleryItem)); setSelection(null); } : undefined}
+          onAddPhoto={galleryItem ? addPhoto : undefined}
         />
       );
     }
@@ -444,10 +452,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         </div>
         <div className="flex items-center gap-1">
           <div className="hidden md:flex items-center gap-1 me-2">
-            <button type="button" className={`${iconButton} ${device === 'desktop' ? 'text-primary' : ''}`} onClick={() => setDevice('desktop')} title={t('siteEditor.desktop')} aria-label={t('siteEditor.desktop')} aria-pressed={device === 'desktop'}>
+            <button type="button" className={`${iconButton} ${pickedDevice === 'desktop' ? 'text-primary' : ''}`} onClick={() => setDevice('desktop')} title={t('siteEditor.desktop')} aria-label={t('siteEditor.desktop')} aria-pressed={pickedDevice === 'desktop'}>
               <Monitor className="w-4 h-4" />
             </button>
-            <button type="button" className={`${iconButton} ${device === 'phone' ? 'text-primary' : ''}`} onClick={() => setDevice('phone')} title={t('siteEditor.phone')} aria-label={t('siteEditor.phone')} aria-pressed={device === 'phone'}>
+            <button type="button" className={`${iconButton} ${pickedDevice === 'phone' ? 'text-primary' : ''}`} onClick={() => setDevice('phone')} title={t('siteEditor.phone')} aria-label={t('siteEditor.phone')} aria-pressed={pickedDevice === 'phone'}>
               <Smartphone className="w-4 h-4" />
             </button>
           </div>
@@ -481,10 +489,13 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           <div className="flex-1 relative overflow-hidden bg-gray-100 dark:bg-slate-900">
             <div
               className="absolute overflow-hidden bg-white"
-              style={device === 'phone' ? {
-                width: 375, height: 'min(740px, calc(100% - 32px))', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                borderRadius: 28, border: '8px solid #1e1e22', boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
-              } : { inset: 0 }}
+              style={{
+                ...(device === 'phone' ? {
+                  width: 375, height: 'min(740px, calc(100% - 32px))', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                  borderRadius: 28, border: '8px solid #1e1e22', boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
+                } : { inset: 0 }),
+                ...switchFade(switchingDevice),
+              }}
             >
               <iframe
                 ref={iframeRef}

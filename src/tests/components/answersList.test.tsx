@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import AnswersList from '../../components/appointments/AnswersList';
 import type { BookingField } from '../../types';
 
@@ -40,6 +40,17 @@ describe('AnswersList', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     expect(link).toHaveAttribute('title', 'appointments.answers.openInMaps');
+  });
+
+  it('offers Waze under an address in the full list, not in a compact row (LT-320)', () => {
+    render(<AnswersList answers={[{ key: 'address', label: 'Address', value: ADDRESS, lat: 32.0668, lng: 34.7778 }]} />);
+    const waze = screen.getByRole('link', { name: 'appointments.answers.openInWaze' });
+    expect(waze).toHaveAttribute('href', 'https://waze.com/ul?ll=32.0668,34.7778&navigate=yes');
+    expect(waze).toHaveAttribute('target', '_blank');
+
+    const row = render(<AnswersList compact answers={[{ key: 'address', label: 'Address', value: ADDRESS }]} />);
+    expect(within(row.container).queryAllByRole('link', { name: 'appointments.answers.openInWaze' })).toHaveLength(0);
+    expect(within(row.container).getByRole('link', { name: /Herzl 12, Tel Aviv/ })).toBeInTheDocument();
   });
 
   it('opens an address chosen from Google at its exact place (LT-191)', () => {

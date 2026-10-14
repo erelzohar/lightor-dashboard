@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { WebConfig } from '../../types';
 import {
-  MAX_BLOCKS, addSection, availabilityOf, canonicalLayout, cleanForSave, defaultInsertIndex, moveBlockTo, rowsOf, toBlocks,
+  MAX_BLOCKS, addGalleryPhoto, addSection, availabilityOf, canonicalLayout, cleanForSave, defaultInsertIndex, moveBlockTo, rowsOf, toBlocks,
   type LayoutBlock,
 } from '../../utils/siteSections';
 
@@ -64,6 +64,36 @@ describe('what can be added (LT-252)', () => {
     expect(availabilityOf(site({ address: undefined }), 'mapStrip', 5)).toEqual({ ok: false, reason: 'noAddress' });
     expect(availabilityOf(c, 'social', 5)).toEqual({ ok: false, reason: 'noSocial' });
     expect(availabilityOf(c, 'faq', MAX_BLOCKS)).toEqual({ ok: false, reason: 'max' });
+  });
+});
+
+/** LT-320: a gallery emptied in the editor had no way back from there. */
+describe('the gallery without photos', () => {
+  const empty = () => site({ components: { ...site().components, portfolio: { visible: true, title: 'Work', description: 'd', items: [] } } });
+
+  it('can be added empty, for the owner to upload photos into', () => {
+    expect(availabilityOf(empty(), 'gallery', 5)).toEqual({ ok: true, source: 'photos' });
+    expect(availabilityOf(empty(), 'photoPair', 5)).toEqual({ ok: false, reason: 'twoPhotos' });
+  });
+
+  it('takes an uploaded photo and puts the gallery back on a page that lost it', () => {
+    const next = addGalleryPhoto(empty(), 'new.webp');
+    expect(next.components?.portfolio?.items).toEqual([{ url: 'new.webp', title: '', description: '' }]);
+    const types = (next.blocks ?? []).map((b) => b.type);
+    expect(types.filter((t) => t === 'gallery')).toHaveLength(1);
+    expect(types.indexOf('gallery')).toBe(defaultInsertIndex(['hero', 'intro', 'schedule', 'contact', 'footer'], 'gallery'));
+  });
+
+  it('adds to a gallery that is on the page without a second block, and shows a hidden one', () => {
+    const withBlock = site({ blocks: [...(site().blocks ?? []), { id: 'b9', type: 'gallery', source: 'portfolio' }] as WebConfig['blocks'] });
+    const next = addGalleryPhoto(withBlock, 'two.webp');
+    expect(next.components?.portfolio?.items?.map((i) => i.url)).toEqual(['one.webp', 'two.webp']);
+    expect((next.blocks ?? []).filter((b) => b.type === 'gallery')).toHaveLength(1);
+    const hidden = site({ components: { ...site().components, portfolio: { visible: false, title: '', description: '', items: [] } }, blocks: undefined });
+    const shown = addGalleryPhoto(hidden, 'x.webp');
+    expect(shown.components?.portfolio?.visible).toBe(true);
+    expect(shown.components?.portfolio?.title).toBe('גלריה');
+    expect(shown.blocks).toBeUndefined();
   });
 });
 
