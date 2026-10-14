@@ -76,6 +76,8 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   const dispatch = useAppDispatch();
   const locale = language === 'he' ? he : undefined;
   const [adding, setAdding] = React.useState(false);
+  // The row whose cancel/complete is on its way (LT-315): its buttons wait.
+  const [pending, setPending] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -98,14 +100,21 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   const capacity = Number(session.type?.capacity) || 0;
   const full = capacity > 0 && going.length >= capacity;
 
-  const setStatus = (appointment: Appointment, next: 'completed' | 'cancelled', confirmText?: string) => {
+  // Success only once the server agrees (LT-315): the thunk was not awaited,
+  // so "Remove from class" said done even offline, and the customer stayed
+  // booked and kept getting reminders.
+  const setStatus = async (appointment: Appointment, next: 'completed' | 'cancelled', confirmText?: string) => {
+    if (pending) return;
     if (next === 'cancelled' && !window.confirm(confirmText ?? t('appointments.cancelConfirm'))) return;
+    setPending(appointment._id);
     try {
-      dispatch(updateAppointmentStatus({ id: appointment._id, status: next }));
+      await dispatch(updateAppointmentStatus({ id: appointment._id, status: next })).unwrap();
       toast.success(t('appointments.updateSuccess'));
       onUpdate?.();
     } catch {
       toast.error(t('appointments.updateError'));
+    } finally {
+      setPending(null);
     }
   };
 
@@ -267,9 +276,10 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                         <button
                           type="button"
                           onClick={() =>
-                            setStatus(participant, 'cancelled', t('appointments.session.removeConfirm', { name: participant.name }))
+                            void setStatus(participant, 'cancelled', t('appointments.session.removeConfirm', { name: participant.name }))
                           }
-                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors"
+                          disabled={pending !== null}
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors disabled:opacity-50"
                         >
                           <UserMinus size={14} className="shrink-0" />
                           {t('appointments.session.remove')}
@@ -279,20 +289,22 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                       <>
                         {!cancelled && rowStatus !== 'completed' && (
                           <button
-                            onClick={() => setStatus(participant, 'completed')}
+                            onClick={() => void setStatus(participant, 'completed')}
+                            disabled={pending !== null}
                             title={t('appointments.markCompleted')}
                             aria-label={t('appointments.markCompleted')}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors disabled:opacity-50"
                           >
                             <Check size={14} />
                           </button>
                         )}
                         {!cancelled && (
                           <button
-                            onClick={() => setStatus(participant, 'cancelled')}
+                            onClick={() => void setStatus(participant, 'cancelled')}
+                            disabled={pending !== null}
                             title={t('appointments.cancelAppointment')}
                             aria-label={t('appointments.cancelAppointment')}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors disabled:opacity-50"
                           >
                             <XCircle size={14} />
                           </button>

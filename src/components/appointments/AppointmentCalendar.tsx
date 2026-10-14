@@ -68,6 +68,11 @@ const getPalette = (appt: Appointment) => paletteOf(appt.type);
 const HOUR_START = 6;
 const HOUR_END   = 22;
 const HOUR_PX    = 88;
+/** Where the now-line sits on the grid, in px from its top. */
+const nowLinePx = (): number => {
+  const now = new Date();
+  return (getHours(now) + getMinutes(now) / 60 - HOUR_START) * HOUR_PX;
+};
 const TIME_GUTTER = 80;
 
 const fmtHour = (h: number) => `${h.toString().padStart(2, '0')}:00`;
@@ -95,7 +100,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [currentDate, setCurrentDate]           = useState(new Date());
   const [viewMode,    setViewMode]              = useState<ViewMode>('week');
   const [visibleDays, setVisibleDays]           = useState(7);
-  const [nowPx,       setNowPx]                 = useState(0);
+  // Measured at once (LT-315): the first auto-scroll reads it on mount.
+  const [nowPx,       setNowPx]                 = useState(nowLinePx);
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
   const [selectedAppt,setSelectedAppt]          = useState<Appointment | null>(null);
   const [popupPos,    setPopupPos]              = useState<{ x: number; y: number } | null>(null);
@@ -159,19 +165,26 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   // ── Now indicator ─────────────────────────────────────────────────────
   useEffect(() => {
-    const tick = () => {
-      const h = getHours(new Date()) + getMinutes(new Date()) / 60;
-      setNowPx((h - HOUR_START) * HOUR_PX);
-    };
+    const tick = () => setNowPx(nowLinePx());
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
   }, []);
 
   // ── Auto-scroll ───────────────────────────────────────────────────────
+  // To the hours around now: on opening, when the days on show change, and
+  // on "Today" (LT-315). Not on the minute tick, which moves only the line —
+  // since the grid scrolls inside its own box (LT-307), following the tick
+  // snapped an owner reading 17:00 back to the morning every minute.
+  const [scrollAsk, setScrollAsk] = useState(0);
+  const scrolledFor = useRef<string | null>(null);
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: Math.max(0, nowPx - 160) });
-  }, [nowPx]);
+    const grid = scrollRef.current;
+    const key = `${startOfDay(currentDate).valueOf()}|${scrollAsk}`;
+    if (!grid || scrolledFor.current === key) return;
+    scrolledFor.current = key;
+    grid.scrollTo({ top: Math.max(0, nowPx - 160) });
+  }, [currentDate, scrollAsk, nowPx]);
 
   // ── Close popup on Escape ─────────────────────────────────────────────
   useEffect(() => {
@@ -309,7 +322,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   }, [openDay]);
   const prevPeriod = () => goTo(addDays(currentDate, -visibleDays));
   const nextPeriod = () => goTo(addDays(currentDate, visibleDays));
-  const goToday    = () => { goTo(new Date()); setMiniCalMonth(startOfMonth(new Date())); };
+  const goToday    = () => { goTo(new Date()); setMiniCalMonth(startOfMonth(new Date())); setScrollAsk((n) => n + 1); };
   // Forward content enters from the end side: the right in LTR, the left in RTL.
   const slideFrom = `${slideDir * (direction === 'rtl' ? -1 : 1) * 48}px`;
   const slideClass = slideDir ? ' cal-slide-in' : '';
@@ -403,14 +416,23 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     openRoster(session);
   };
 
+  // Success is said only once the server agrees (LT-315): the thunk was not
+  // awaited, so an offline phone or a refused request still read "updated"
+  // and closed, with the customer still booked.
+  const [statusBusy, setStatusBusy] = useState(false);
   const handleStatus = async (status: 'completed' | 'cancelled') => {
-    if (!selectedAppt) return;
+    if (!selectedAppt || statusBusy) return;
     if (status === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
+    setStatusBusy(true);
     try {
-      dispatch(updateAppointmentStatus({ id: selectedAppt._id, status }));
+      await dispatch(updateAppointmentStatus({ id: selectedAppt._id, status })).unwrap();
       toast.success(t('appointments.updateSuccess'));
       setSelectedAppt(null);
-    } catch { toast.error(t('appointments.updateError')); }
+    } catch {
+      toast.error(t('appointments.updateError'));
+    } finally {
+      setStatusBusy(false);
+    }
   };
 
   const initials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -1150,15 +1172,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             {/* Action buttons */}
             {getDisplayStatus(selectedAppt) === 'scheduled' ? (
               <div className="flex gap-2 px-5 pb-5">
-                <button onClick={() => handleStatus('completed')}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-white transition-colors hover:opacity-90"
+                <button onClick={() => handleStatus('completed')} disabled={statusBusy}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
                   style={{ background: '#111827' }}>
                   <Check size={14} />
                   {t('appointments.markCompleted')}
                 </button>
-                <button onClick={() => handleStatus('cancelled')}
+                <button onClick={() => handleStatus('cancelled')} disabled={statusBusy}
                   title={t('appointments.cancelAppointment')}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors disabled:opacity-60">
                   <XCircle size={16} className="text-rose-500" />
                 </button>
               </div>

@@ -31,10 +31,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   const status = getDisplayStatus(appointment);
 
   const handleStatusChange = async (s: 'completed' | 'cancelled') => {
+    if (loading) return;
     if (s === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
     setLoading(true);
     try {
-      dispatch(updateAppointmentStatus({ id: appointment._id, status: s }));
+      // Awaited and unwrapped (LT-315): a refused or offline request used to
+      // read "updated" and close, with nothing changed.
+      await dispatch(updateAppointmentStatus({ id: appointment._id, status: s })).unwrap();
       toast.success(t('appointments.updateSuccess'));
       onUpdate();
       onClose();

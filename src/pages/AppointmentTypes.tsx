@@ -156,7 +156,8 @@ const AppointmentTypes: React.FC = () => {
   const handleDelete = async (type: AppointmentType) => {
     if (!confirm(t('appointmentTypes.deleteConfirm', { name: type.name }))) return;
     try {
-      await dispatch(deleteAppointmentType(type._id));
+      // unwrap(): a refused delete must not read "deleted" (LT-315).
+      await dispatch(deleteAppointmentType(type._id)).unwrap();
       toast.success(t('appointmentTypes.deleteSuccess'));
       if (currentType?._id === type._id) closeForm();
     } catch {
