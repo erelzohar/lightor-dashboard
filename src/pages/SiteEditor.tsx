@@ -15,8 +15,8 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import { updateAppointmentType } from '../services/appointmentsApi';
 import { deleteImage } from '../services/imagesApi';
 import globals from '../services/globals';
-import { removedStoredImages } from '../utils/aiReconcile';
-import { useDraft } from '../hooks/useDraft';
+import { removedStoredImages, unreferencedImages } from '../utils/aiReconcile';
+import { useDraft, type DraftUpdate } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
 import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
@@ -92,7 +92,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // A request typed in the floating assistant (it still lands here until Lighty, phase 2).
-  const [initialMessage] = useState(() => (location.state as { floatingMessage?: string } | null)?.floatingMessage);
+  // Forgotten once sent (LT-315): the design tab re-mounts its chat on every
+  // tab switch or selection, and each new chat would send it again.
+  const [initialMessage, setInitialMessage] = useState(() => (location.state as { floatingMessage?: string } | null)?.floatingMessage);
+  const initialMessageSent = useCallback(() => setInitialMessage(undefined), []);
   // LT-252: with nothing selected the panel is the whole site — its sections, or its design.
   const [siteTab, setSiteTab] = useState<'sections' | 'design'>(initialMessage ? 'design' : 'sections');
   // The add-section list, placed below a section (`after`) or where each one belongs (null).
@@ -137,8 +140,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const bridge = usePreviewBridge({ iframeRef, siteOrigin, config: previewConfig, selection, onSelect: selectFromSite });
   scrollRef.current = bridge.scrollTo;
 
-  const update = useCallback((next: WebConfig, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
-  const setField = (path: string, value: unknown) => update(setAt(draft.value, path, value), path);
+  const update = useCallback((next: DraftUpdate<WebConfig>, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
+  // On the draft as it is when the value lands (LT-315): an upload or an AI
+  // answer can arrive after other edits, which must not be reverted.
+  const setField = (path: string, value: unknown) => update((prev) => setAt(prev, path, value), path);
 
   // ── LT-252: the page's sections ──
   const rows = useMemo(() => rowsOf(draft.value, bridge.layout), [draft.value, bridge.layout]);
@@ -245,9 +250,9 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // Leaving for another page of the dashboard asks first too (LT-267).
   useUnsavedChangesGuard(draft.dirty);
 
-  /** Uploads of this session that `kept` does not use any more go (best effort). */
-  const dropUnusedUploads = async (kept: WebConfig) => {
-    const used = JSON.stringify(kept);
+  /** Uploads of this session that none of `kept` uses any more go (best effort). */
+  const dropUnusedUploads = async (...kept: WebConfig[]) => {
+    const used = kept.map((k) => JSON.stringify(k)).join('\n');
     const unused = Array.from(uploads.current).filter((name) => !used.includes(name));
     uploads.current = new Set(Array.from(uploads.current).filter((name) => used.includes(name)));
     await Promise.all(unused.map((name) => deleteImage(name).catch(() => undefined)));
@@ -256,9 +261,11 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const save = async () => {
     if (saving) return;
     setSaving(true);
+    // What this save sends. The owner may go on editing while it runs.
+    const sent = draft.value;
     try {
       // Empty FAQ items, reviews and steps left by an added section stay behind (LT-252).
-      const d = cleanForSave(draft.value);
+      const d = cleanForSave(sent);
       const before = baseRef.current;
       // Services first: the config's answer below brings them back populated.
       const changedServices = (d.appointmentTypes ?? []).filter((s) => {
@@ -281,18 +288,34 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       if (updateWebConfig.rejected.match(result)) throw new Error(result.error?.message ?? 'Web config update refused');
       const stored = result.payload as WebConfig;
 
-      const removed = removedStoredImages(
-        (before.components?.portfolio?.items ?? []).map((i) => i.url),
-        (stored.components?.portfolio?.items ?? []).map((i) => i.url),
-        globals.imagesUrl
+      // A photo gone from the gallery may still be the hero, the logo or a
+      // service's picture: only what nothing saved uses any more is deleted
+      // (LT-315). The draft rides along for the services' pictures.
+      const removed = unreferencedImages(
+        removedStoredImages(
+          (before.components?.portfolio?.items ?? []).map((i) => i.url),
+          (stored.components?.portfolio?.items ?? []).map((i) => i.url),
+          globals.imagesUrl
+        ),
+        stored,
+        d,
+        draftRef.current
       );
       await Promise.all(removed.map((name) => deleteImage(name).catch(() => undefined)));
-      await dropUnusedUploads(stored);
+      // Edits made while saving count as in use too (LT-315).
+      await dropUnusedUploads(stored, draftRef.current);
 
       baseRef.current = stored;
-      draft.reset(stored);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
+      // Nothing changed meanwhile: start over from the stored config. Edits
+      // made while saving stay, with their undo history, and still need a
+      // save (LT-315 — the reset used to throw them away).
+      if (draftRef.current === sent) {
+        draft.reset(stored);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+      } else {
+        draft.rebase(stored);
+      }
     } catch (err) {
       console.error('Site editor save failed:', err);
       toast.error(t('siteEditor.saveFailed'));
@@ -349,7 +372,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
               onAdd={() => setAdding({ after: null })}
             />
           ) : (
-            <PagePanel config={draft.value} onUpdate={update} initialMessage={initialMessage} />
+            <PagePanel config={draft.value} onUpdate={update} initialMessage={initialMessage} onInitialMessageSent={initialMessageSent} />
           )}
         </>
       );
@@ -379,7 +402,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           siteImages={siteImagesOf(draft.value)}
           onChange={(name) => setField(path, name)}
           onUploaded={(name) => uploads.current.add(name)}
-          onRemove={galleryItem ? () => { update(removeAt(draft.value, galleryItem)); setSelection(null); } : undefined}
+          onRemove={galleryItem ? () => { update((prev) => removeAt(prev, galleryItem)); setSelection(null); } : undefined}
         />
       );
     }
@@ -388,11 +411,11 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         path={path}
         value={String(getAt(draft.value, path) ?? '')}
         onChange={(value) => setField(path, value)}
-        onApplyAi={(values) => {
-          let next = draft.value;
+        onApplyAi={(values) => update((prev) => {
+          let next = prev;
           for (const [p, v] of Object.entries(values)) next = setAt(next, p, v);
-          update(next);
-        }}
+          return next;
+        })}
       />
     );
   };

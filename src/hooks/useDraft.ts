@@ -6,10 +6,17 @@ import { useCallback, useMemo, useRef, useState } from 'react';
  * carrying the same merge key within a moment fold into the step before — so
  * undo takes back the edit, not a letter. `dirty` compares against the last
  * saved (or discarded-to) config.
+ *
+ * LT-315: `set` also takes an updater, `set(prev => next)`, applied to the
+ * draft as it is when the change lands. Anything that answers late — an AI
+ * reply, an upload — uses it, so what the owner did while waiting (a section
+ * hidden, another text typed) is built on, not reverted.
  */
+export type DraftUpdate<T> = T | ((prev: T) => T);
+
 export interface Draft<T> {
   value: T;
-  set: (next: T, mergeKey?: string) => void;
+  set: (next: DraftUpdate<T>, mergeKey?: string) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -17,6 +24,12 @@ export interface Draft<T> {
   dirty: boolean;
   /** A new starting point (after a save or a discard): history cleared. */
   reset: (base: T) => void;
+  /**
+   * A new saved point that keeps the present and its history (LT-315): a
+   * save that finished while the owner went on editing must not throw the
+   * newer edits away. `dirty` then compares them against what was stored.
+   */
+  rebase: (base: T) => void;
 }
 
 const LIMIT = 50;
@@ -28,16 +41,20 @@ export function useDraft<T>(initial: T): Draft<T> {
   const [state, setState] = useState<State<T>>({ past: [], present: initial, future: [], base: initial });
   const last = useRef<{ key?: string; at: number }>({ at: 0 });
 
-  const set = useCallback((next: T, mergeKey?: string) => {
+  const set = useCallback((update: DraftUpdate<T>, mergeKey?: string) => {
     const now = Date.now();
     const merge = !!mergeKey && last.current.key === mergeKey && now - last.current.at < MERGE_MS;
     last.current = { key: mergeKey, at: now };
-    setState((s) => (next === s.present ? s : {
-      ...s,
-      past: merge ? s.past : [...s.past, s.present].slice(-LIMIT),
-      present: next,
-      future: [],
-    }));
+    setState((s) => {
+      // The updater must stay pure: React may call this twice in StrictMode.
+      const next = typeof update === 'function' ? (update as (prev: T) => T)(s.present) : update;
+      return next === s.present ? s : {
+        ...s,
+        past: merge ? s.past : [...s.past, s.present].slice(-LIMIT),
+        present: next,
+        future: [],
+      };
+    });
   }, []);
 
   const undo = useCallback(() => {
@@ -59,6 +76,10 @@ export function useDraft<T>(initial: T): Draft<T> {
     setState({ past: [], present: base, future: [], base });
   }, []);
 
+  const rebase = useCallback((base: T) => {
+    setState((s) => ({ ...s, base }));
+  }, []);
+
   const dirty = useMemo(() => JSON.stringify(state.present) !== JSON.stringify(state.base), [state.present, state.base]);
 
   return {
@@ -70,5 +91,6 @@ export function useDraft<T>(initial: T): Draft<T> {
     canRedo: state.future.length > 0,
     dirty,
     reset,
+    rebase,
   };
 }

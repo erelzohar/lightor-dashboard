@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   reconcileAppointmentTypes,
   removedStoredImages,
+  unreferencedImages,
   storedImageName,
   vacationsToCreate,
 } from '../../utils/aiReconcile';
@@ -153,5 +154,25 @@ describe('vacationsToCreate', () => {
   it('keeps a vacation that shares only its start with a stored one', () => {
     const longer = { title: 'Summer, longer', startDate: '1780000000000', endDate: '1780900000000' };
     expect(vacationsToCreate([longer], stored)).toEqual([longer]);
+  });
+});
+
+describe('unreferencedImages (LT-315)', () => {
+  const config = {
+    logoImageName: 'logo.webp',
+    components: { hero: { heroImageSrc: 'https://api.lightor.app/api/images/hero%20photo.webp' } },
+    appointmentTypes: [{ name: 'Gel', image: 'svc.webp' }],
+  };
+
+  it('keeps a removed gallery photo the hero, logo or a service still shows', () => {
+    expect(unreferencedImages(['logo.webp', 'svc.webp', 'gone.webp'], config)).toEqual(['gone.webp']);
+  });
+
+  it('matches a name stored percent-encoded in a URL', () => {
+    expect(unreferencedImages(['hero photo.webp'], config)).toEqual([]);
+  });
+
+  it('checks every config it is given', () => {
+    expect(unreferencedImages(['a.webp', 'b.webp'], { x: 'a.webp' }, null, { y: ['b.webp'] })).toEqual([]);
   });
 });

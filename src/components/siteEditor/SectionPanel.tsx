@@ -14,7 +14,8 @@ interface SectionPanelProps<T> {
   section: string;
   sectionType: string | null;
   fields: SiteField[];
-  onUpdate: (next: T, mergeKey?: string) => void;
+  /** A value, or an updater for answers that land late (LT-315). */
+  onUpdate: (next: T | ((prev: T) => T), mergeKey?: string) => void;
   onSelectField: (field: SiteField) => void;
   /**
    * LT-252: move the section one place — on a legacy page too, which the
@@ -102,11 +103,13 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         <AiBox
           fields={aiFields}
           placeholder={t('siteEditor.ai.askSection')}
-          onApply={(values) => {
-            let next = config;
+          // On the draft as it is when the answer lands, not as it was
+          // when asked: a switch flipped meanwhile stays flipped (LT-315).
+          onApply={(values) => onUpdate((prev) => {
+            let next = prev;
             for (const [path, value] of Object.entries(values)) next = setAt(next, path, value);
-            onUpdate(next);
-          }}
+            return next;
+          })}
         />
       )}
       {def.variants && def.variants.length > 0 && (composed || def.designToken) && (

@@ -37,3 +37,38 @@ export const changedLabels = (before: unknown, after: unknown, label: (path: str
   if (look(before) !== look(after)) names.push(lookLabel);
   return names;
 };
+
+/**
+ * Lands a whole-site AI answer on the draft as it is now (LT-315).
+ *
+ * The answer is a full config built from `before`, the draft when the
+ * request left. Replacing the draft with it reverted whatever the owner did
+ * while Lighty was thinking. Instead, only the parts the answer changed
+ * travel — each top-level key, and each section under `components`, taken
+ * whole from `after` when it differs from `before` — and every other part
+ * stays as it is in `prev`. Where both touched the same section, the answer
+ * wins, as it would have before.
+ */
+export const applyAiAnswer = <T,>(prev: T, before: T, after: T): T => {
+  const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  const p = { ...(prev as Record<string, unknown>) };
+  const b = (before ?? {}) as Record<string, unknown>;
+  const a = (after ?? {}) as Record<string, unknown>;
+  const put = (target: Record<string, unknown>, key: string, value: unknown) => {
+    if (value === undefined) delete target[key];
+    else target[key] = value;
+  };
+  for (const key of new Set([...Object.keys(b), ...Object.keys(a)])) {
+    if (key === 'components') continue;
+    if (!same(b[key], a[key])) put(p, key, a[key]);
+  }
+  const bc = (b.components ?? {}) as Record<string, unknown>;
+  const ac = (a.components ?? {}) as Record<string, unknown>;
+  const changed = [...new Set([...Object.keys(bc), ...Object.keys(ac)])].filter((k) => !same(bc[k], ac[k]));
+  if (changed.length) {
+    const components = { ...((p.components ?? {}) as Record<string, unknown>) };
+    for (const k of changed) put(components, k, ac[k]);
+    p.components = components;
+  }
+  return p as T;
+};

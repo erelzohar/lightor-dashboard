@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { useTranslation } from 'react-i18next';
 import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../services/aiApi';
-import { changedLabels } from '../../utils/editorDiff';
+import { applyAiAnswer, changedLabels } from '../../utils/editorDiff';
 import { fieldLabel } from './labels';
 import { lightTick } from '../../lib/haptics';
 import { LightyTyped } from '../lighty/LightyTyped';
@@ -10,21 +10,29 @@ import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 
 interface SiteChatProps<T> {
   config: T;
-  onApply: (next: T) => void;
+  /** Gets an updater: the answer lands on the draft as it is by then (LT-315). */
+  onApply: (update: (prev: T) => T) => void;
   /** A request typed in the floating assistant before arriving here. */
   initialMessage?: string;
+  /**
+   * The floating request has been sent (LT-315). The editor forgets it then:
+   * this panel re-mounts on every tab switch or field selection, and a ref
+   * here reset with it, so the same whole-site rewrite ran again each time.
+   */
+  onInitialMessageSent?: () => void;
 }
 
 /**
  * LT-249: today's whole-site AI chat, moved into the editor's page panel
  * (LT-253: a conversation with Lighty; LT-256: his line at the top of the
  * design tab, staying there while it scrolls).
- * The answer replaces the draft (one undo step) and the owner is told what
- * changed. Services, vacations and booking questions stay as the draft has
+ * The answer lands on the draft (one undo step) and the owner is told what
+ * changed — only the parts it changed, on the draft as it is when it
+ * arrives (LT-315: replacing the whole draft undid edits made meanwhile). Services, vacations and booking questions stay as the draft has
  * them: the editor does not save those, so the preview must not show them
  * changed either.
  */
-function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
+function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: SiteChatProps<T>) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [fresh, setFresh] = useState<ChatTurn | null>(null); // types out (LT-271)
@@ -54,7 +62,7 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
         leadFields: kept.leadFields,
       } as unknown as T;
       const changed = changedLabels(before, next, (p) => fieldLabel(t, p), t('siteEditor.chat.look'));
-      onApply(next);
+      onApply((prev) => applyAiAnswer(prev, before as unknown as T, next));
       const summary = changed.length ? t('siteEditor.chat.changed', { list: changed.slice(0, 6).join(', ') }) : t('siteEditor.chat.nothingChanged');
       const answer: ChatTurn = { role: 'assistant', content: [result.message, summary].filter(Boolean).join('\n') };
       setMessages((m) => [...m, answer]);
@@ -73,6 +81,7 @@ function SiteChat<T>({ config, onApply, initialMessage }: SiteChatProps<T>) {
     if (initialMessage && !started.current) {
       started.current = true;
       void send(initialMessage);
+      onInitialMessageSent?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialMessage]);

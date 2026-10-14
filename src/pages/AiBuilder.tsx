@@ -16,7 +16,7 @@ import { createAppointmentType, updateAppointmentType, deleteAppointmentType } f
 import { deleteImage } from '../services/imagesApi';
 import { createVacation } from '../services/vacationsApi';
 import globals from '../services/globals';
-import { reconcileAppointmentTypes, removedStoredImages, vacationsToCreate } from '../utils/aiReconcile';
+import { reconcileAppointmentTypes, removedStoredImages, unreferencedImages, vacationsToCreate } from '../utils/aiReconcile';
 import { bookingFieldsFromAi } from '../utils/bookingFields';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import type { WebConfig, AppointmentType, Vacation } from '../types';
@@ -331,10 +331,18 @@ const AiBuilder: React.FC = () => {
       // "unchanged", never "wipe the gallery".
       const draftPortfolio = (draftConfig as unknown as WebConfig).components?.portfolio?.items;
       if (isEdit && draftPortfolio) {
-        const removedImages = removedStoredImages(
-          (webConfig?.components?.portfolio?.items ?? []).map((i) => i.url),
-          draftPortfolio.map((i) => i.url),
-          globals.imagesUrl
+        // Still the hero, the logo or a service's picture → kept (LT-315).
+        // The stored config counts without its gallery: a part the AI left
+        // out of the draft is unchanged, not gone.
+        const removedImages = unreferencedImages(
+          removedStoredImages(
+            (webConfig?.components?.portfolio?.items ?? []).map((i) => i.url),
+            draftPortfolio.map((i) => i.url),
+            globals.imagesUrl
+          ),
+          configToSave,
+          appointmentTypes,
+          webConfig && { ...webConfig, components: { ...webConfig.components, portfolio: undefined } }
         );
         await Promise.all(removedImages.map((name) => deleteImage(name)));
       }

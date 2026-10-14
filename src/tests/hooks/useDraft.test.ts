@@ -47,4 +47,28 @@ describe('useDraft (LT-249)', () => {
     expect(result.current.dirty).toBe(false);
     expect(result.current.canUndo).toBe(false);
   });
+
+  it('applies an updater to the draft as it is when the change lands (LT-315)', () => {
+    const { result } = renderHook(() => useDraft({ a: 'x', b: 'y' }));
+    const late = (prev: { a: string; b: string }) => ({ ...prev, a: 'AI' });
+    act(() => result.current.set({ a: 'x', b: 'typed meanwhile' }));
+    act(() => result.current.set(late));
+    expect(result.current.value).toEqual({ a: 'AI', b: 'typed meanwhile' });
+    // One step each: undo takes back the late answer, not the owner's edit.
+    act(() => result.current.undo());
+    expect(result.current.value).toEqual({ a: 'x', b: 'typed meanwhile' });
+  });
+
+  it('rebases onto a stored config without losing the present or its history (LT-315)', () => {
+    const { result } = renderHook(() => useDraft({ n: 1 }));
+    act(() => result.current.set({ n: 2 }));
+    act(() => result.current.set({ n: 3 }));
+    act(() => result.current.rebase({ n: 2 }));
+    expect(result.current.value).toEqual({ n: 3 });
+    expect(result.current.dirty).toBe(true);
+    expect(result.current.canUndo).toBe(true);
+    act(() => result.current.undo());
+    expect(result.current.dirty).toBe(false);
+  });
 });
+

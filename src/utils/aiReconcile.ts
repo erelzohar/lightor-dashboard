@@ -136,3 +136,19 @@ export function vacationsToCreate<V extends Pick<Vacation, 'startDate' | 'endDat
     return true;
   });
 }
+
+/**
+ * The names in `names` that nothing in `configs` refers to any more (LT-315).
+ *
+ * A gallery photo can also be the hero, the logo, a service's picture or a
+ * block's image (the image picker offers every site image), so "gone from the
+ * gallery" is not "unused": deleting such a file broke the live site with no
+ * way back. A name counts as used when it appears anywhere in the configs,
+ * as stored or percent-encoded — the same whole-config test the editor's
+ * upload clean-up uses. When in doubt a file stays: an orphan in storage is
+ * cheap, a hole in the site is not.
+ */
+export function unreferencedImages(names: string[], ...configs: unknown[]): string[] {
+  const used = configs.map((c) => JSON.stringify(c ?? null)).join('\n');
+  return names.filter((name) => !used.includes(name) && !used.includes(encodeURIComponent(name)));
+}

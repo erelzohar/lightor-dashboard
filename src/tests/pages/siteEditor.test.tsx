@@ -8,6 +8,7 @@ import { LeaveGuardProvider } from '../../contexts/LeaveGuardContext';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
+import { deleteImage } from '../../services/imagesApi';
 import type { WebConfig } from '../../types';
 
 /**
@@ -363,5 +364,92 @@ describe('the site editor (LT-249)', () => {
     expect(await screen.findByText('appointments page')).toBeInTheDocument();
     expect(screen.queryByText('common.unsavedLeaveTitle')).toBeNull();
   });
-});
 
+  it('a photo taken out of the gallery is deleted only when nothing else uses it (LT-315)', async () => {
+    // The hero shows a gallery photo (the image picker offers every site image).
+    state.webConfig.data = {
+      ...saved,
+      components: { ...saved.components, portfolio: { visible: true, title: 'Work', items: [{ url: 'hero.webp' }, { url: 'old.webp' }] } },
+      blocks: [...(saved.blocks ?? []), { id: 'b3', type: 'portfolio' }],
+    } as unknown as WebConfig;
+    vi.mocked(deleteImage).mockClear();
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    for (const index of [1, 0]) {
+      await fromSite({ type: 'LT_SELECT', kind: 'image', path: `components.portfolio.items.${index}.url`, section: 'b3', sectionType: 'portfolio', count: 1 });
+      fireEvent.click(await screen.findByText('siteEditor.image.removeFromGallery'));
+    }
+
+    fireEvent.click(screen.getByText('siteEditor.save'));
+    await waitFor(() => expect(deleteImage).toHaveBeenCalledWith('old.webp'));
+    expect(deleteImage).not.toHaveBeenCalledWith('hero.webp');
+  });
+
+  describe('answers that land late (LT-315)', () => {
+    const renderWithRequest = (floatingMessage: string) => {
+      render(
+        <MemoryRouter initialEntries={[{ pathname: '/design', state: { floatingMessage } }]}>
+          <SiteEditor />
+        </MemoryRouter>
+      );
+      toSite = vi.fn();
+      Object.defineProperty(iframe().contentWindow as Window, 'postMessage', { configurable: true, value: toSite });
+    };
+    const warmer = { ...saved, components: { ...saved.components, hero: { ...saved.components.hero, title: 'Warm title' } } };
+
+    it("Lighty's whole-site answer keeps what the owner changed while he was thinking", async () => {
+      let answer!: (value: unknown) => void;
+      vi.mocked(aiService.editSite).mockReset().mockImplementation(() => new Promise((resolve) => { answer = resolve; }) as never);
+      renderWithRequest('Warmer headline');
+      await fromSite({ type: 'LT_READY' });
+      await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
+
+      fireEvent.change(screen.getByLabelText('siteEditor.theme.headingFont'), { target: { value: 'playfair' } });
+      await act(async () => answer({ config: warmer, message: 'Done' }));
+
+      await waitFor(() => {
+        const last = lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig };
+        expect(last.config.components.hero.title).toBe('Warm title');
+        expect((last.config.design as Record<string, unknown>).headingFont).toBe('playfair');
+      });
+    });
+
+    it("the floating Lighty's request is sent once, however often the design tab re-mounts", async () => {
+      vi.mocked(aiService.editSite).mockReset().mockResolvedValue({ config: warmer, message: 'Done' } as never);
+      renderWithRequest('Warmer headline');
+      await fromSite({ type: 'LT_READY' });
+      await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
+
+      for (let i = 0; i < 2; i++) {
+        // Radix tabs switch on mouse down.
+        fireEvent.mouseDown(screen.getByRole('tab', { name: 'siteEditor.sections.tab' }));
+        expect(await screen.findByTestId('sections-panel')).toBeInTheDocument();
+        fireEvent.mouseDown(screen.getByRole('tab', { name: 'siteEditor.pageSettings' }));
+        expect(await screen.findByTestId('page-panel')).toBeInTheDocument();
+        await act(async () => {});
+      }
+      expect(screen.getByTestId('page-panel')).toBeInTheDocument();
+      expect(aiService.editSite).toHaveBeenCalledTimes(1);
+    });
+
+    it('edits made while Save runs stay, still unsaved', async () => {
+      let stored!: () => void;
+      dispatchMock.mockImplementation((action: { type: string; payload?: Record<string, unknown> }) => (action.type === 'webConfig/update'
+        ? new Promise((resolve) => { stored = () => resolve({ type: 'webConfig/update/fulfilled', payload: { ...saved, ...action.payload } }); })
+        : Promise.resolve(action)));
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero', count: 1 });
+      const field = await screen.findByRole('textbox', { name: 'siteEditor.fields.heroTitle' });
+      fireEvent.change(field, { target: { value: 'First' } });
+      fireEvent.click(screen.getByText('siteEditor.save'));
+      await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+
+      fireEvent.change(field, { target: { value: 'First, then more' } });
+      await act(async () => stored());
+
+      await waitFor(() => expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled());
+      expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toHaveValue('First, then more');
+    });
+  });
+});

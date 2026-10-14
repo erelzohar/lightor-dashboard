@@ -10,8 +10,10 @@ import { vocabLang } from './labels';
 
 interface PagePanelProps<T> {
   config: T;
-  onUpdate: (next: T, mergeKey?: string) => void;
+  /** A value, or an updater for answers that land late (LT-315). */
+  onUpdate: (next: T | ((prev: T) => T), mergeKey?: string) => void;
   initialMessage?: string;
+  onInitialMessageSent?: () => void;
 }
 
 /**
@@ -20,7 +22,7 @@ interface PagePanelProps<T> {
  * the look over: the other design choices and every section's own layout
  * give way to the style's (the AI editor does the same on a style change).
  */
-function PagePanel<T>({ config, onUpdate, initialMessage }: PagePanelProps<T>) {
+function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }: PagePanelProps<T>) {
   const { t, i18n } = useTranslation();
   const lang = vocabLang(i18n.language);
   const design = (getAt(config, 'design') ?? {}) as Record<string, string | undefined>;
@@ -63,7 +65,7 @@ function PagePanel<T>({ config, onUpdate, initialMessage }: PagePanelProps<T>) {
   return (
     <div className="flex flex-col gap-5" data-testid="page-panel">
       {/* LT-256: Lighty's line first; the design controls below it. */}
-      <SiteChat config={config} onApply={(next) => onUpdate(next)} initialMessage={initialMessage} />
+      <SiteChat config={config} onApply={(update) => onUpdate(update)} initialMessage={initialMessage} onInitialMessageSent={onInitialMessageSent} />
       <Select
         id="site-theme-preset"
         label={t('siteEditor.theme.preset')}
