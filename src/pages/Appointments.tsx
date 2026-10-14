@@ -45,6 +45,7 @@ const Appointments: React.FC = () => {
   const dispatch = useAppDispatch();
   const appointments = useAppSelector(state => state.appointments.appointments);
   const isLoading = useAppSelector(state => state.appointments.loading);
+  const loaded = useAppSelector(state => state.appointments.loaded);
 
   useAppointmentsAutoRefresh(auth.user?._id);
 
@@ -213,6 +214,7 @@ const Appointments: React.FC = () => {
           <AppointmentsList
             appointments={upcomingAppointments}
             onAppointmentClick={setSelectedAppointment}
+            loading={!loaded || isLoading}
           />
         </motion.div>
       )}

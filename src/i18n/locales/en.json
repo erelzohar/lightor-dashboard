@@ -51,7 +51,8 @@
     "customers": "Customers",
     "leads": "Inquiries",
     "openingHours": "Opening hours",
-    "siteDesign": "Site design"
+    "siteDesign": "Site design",
+    "comingSoon": "Coming soon"
   },
   "greetings": {
     "morning": "Good morning",
@@ -248,6 +249,11 @@
       "siteBasicsDesc": "Your site's address and the language it shows in",
       "bookingRules": "Booking rules",
       "bookingRulesDesc": "How late customers can cancel, and how far ahead they can book"
+    },
+    "customDomain": {
+      "title": "Your own domain",
+      "desc": "Connect your own address to the site, like www.mybusiness.com.",
+      "placeholder": "www.mybusiness.com"
     }
   },
   "appointmentTypes": {
@@ -293,7 +299,14 @@
       "hint": "Optional — shown next to the service on your site"
     },
     "priceOptional": "Price (optional)",
-    "noDuration": "No duration — can't be booked yet"
+    "noDuration": "No duration — can't be booked yet",
+    "payment": {
+      "title": "Payment when booking",
+      "desc": "Take a deposit or the full price when a customer books this service.",
+      "none": "None",
+      "deposit": "Deposit",
+      "full": "Full payment"
+    }
   },
   "appointments": {
     "title": "Appointments",
@@ -347,7 +360,8 @@
       "failed": "The export failed, please try again",
       "rangeInvalid": "You can export up to a year at a time",
       "upgradeToast": "Exporting appointments is part of Plus"
-    }
+    },
+    "loading": "Loading appointments…"
   },
   "login": {
     "title": "Login",

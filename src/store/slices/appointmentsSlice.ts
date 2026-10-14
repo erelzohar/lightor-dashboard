@@ -7,6 +7,8 @@ interface AppointmentsState {
   appointments: Appointment[];
   appointmentTypes: AppointmentType[];
   loading: boolean;
+  /** The appointments have been read at least once (LT-331): before that an empty list means "not yet", not "none". */
+  loaded: boolean;
   error: string | null;
 }
 
@@ -18,6 +20,7 @@ const initialState: AppointmentsState = {
   appointments: USE_MOCK_DATA ? MOCK_APPOINTMENTS : [],
   appointmentTypes: USE_MOCK_DATA ? MOCK_APPOINTMENT_TYPES : [],
   loading: false,
+  loaded: USE_MOCK_DATA,
   error: null,
 };
 
@@ -122,10 +125,12 @@ const appointmentsSlice = createSlice({
       .addCase(fetchAppointments.fulfilled, (state, action) => {
         state.appointments = action.payload;
         state.loading = false;
+        state.loaded = true;
         state.error = null;
       })
       .addCase(fetchAppointments.rejected, (state, action) => {
         state.loading = false;
+        state.loaded = true;
         state.error = action.error.message || 'Failed to fetch appointments';
       })
       .addCase(fetchAppointmentTypes.fulfilled, (state, action) => {

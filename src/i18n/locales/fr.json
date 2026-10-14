@@ -51,7 +51,8 @@
     "customers": "Clients",
     "leads": "Demandes",
     "openingHours": "Horaires",
-    "siteDesign": "Design du site"
+    "siteDesign": "Design du site",
+    "comingSoon": "Bientôt"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -248,6 +249,11 @@
       "siteBasicsDesc": "L'adresse de votre site et la langue dans laquelle il s'affiche",
       "bookingRules": "Règles de réservation",
       "bookingRulesDesc": "Jusqu'à quand annuler, et combien de temps à l'avance réserver"
+    },
+    "customDomain": {
+      "title": "Votre propre domaine",
+      "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr.",
+      "placeholder": "www.monentreprise.fr"
     }
   },
   "appointmentTypes": {
@@ -293,7 +299,14 @@
       "hint": "Facultatif — affichée à côté du service sur votre site"
     },
     "priceOptional": "Prix (facultatif)",
-    "noDuration": "Sans durée — pas encore réservable"
+    "noDuration": "Sans durée — pas encore réservable",
+    "payment": {
+      "title": "Paiement à la réservation",
+      "desc": "Encaissez un acompte ou le montant total lorsqu'un client réserve ce service.",
+      "none": "Aucun",
+      "deposit": "Acompte",
+      "full": "Paiement complet"
+    }
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -347,7 +360,8 @@
       "failed": "L’export a échoué, veuillez réessayer",
       "rangeInvalid": "Vous pouvez exporter jusqu’à un an à la fois",
       "upgradeToast": "L’export des rendez-vous fait partie de Plus"
-    }
+    },
+    "loading": "Chargement des rendez-vous…"
   },
   "login": {
     "title": "Connexion",

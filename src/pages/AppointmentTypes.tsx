@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus } from 'lucide-react';
+import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus, CreditCard } from 'lucide-react';
+import { cn } from '../lib/utils';
 import imageCompression from 'browser-image-compression';
 import { uploadImage } from '../services/imagesApi';
 import { AppointmentType, ClassSession } from '../types';
@@ -22,6 +23,8 @@ import { useTranslation } from 'react-i18next';
 import { isBookableService, isLeadsSite } from '../utils/siteMode';
 import { resolveImage } from '../utils/images';
 import { Toggle } from '../components/ui/liquid-toggle';
+import { ComingSoonRow } from '../components/ui/ComingSoon';
+import { tabsListVariants, tabsTriggerVariants } from '../components/ui/segmented-tabs';
 
 
 const GLASS: React.CSSProperties = {
@@ -553,6 +556,25 @@ const AppointmentTypes: React.FC = () => {
                         )}
                       </div>
                     </div>
+                  )}
+
+                  {/* Coming soon (LT-331): a deposit or the full price taken when this
+                      service is booked — a booking site's only. */}
+                  {!leadsSite && (
+                    <ComingSoonRow
+                      icon={CreditCard}
+                      title={t('appointmentTypes.payment.title')}
+                      description={t('appointmentTypes.payment.desc')}
+                      preview={
+                        <div className={cn(tabsListVariants(), 'w-fit')}>
+                          {(['none', 'deposit', 'full'] as const).map((k) => (
+                            <span key={k} data-state={k === 'none' ? 'active' : 'inactive'} className={tabsTriggerVariants({ size: 'sm' })}>
+                              {t(`appointmentTypes.payment.${k}`)}
+                            </span>
+                          ))}
+                        </div>
+                      }
+                    />
                   )}
 
                   {/* Class toggle + action buttons on same row (no classes on a leads site) */}

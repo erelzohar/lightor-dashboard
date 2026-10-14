@@ -20,6 +20,8 @@ import AnswersList from './AnswersList';
 interface AppointmentsListProps {
   appointments: Appointment[];
   onAppointmentClick: (appointment: Appointment) => void;
+  /** Still reading the book (LT-331): an empty list shows a loader, not "no appointments". */
+  loading?: boolean;
 }
 
 const DAY_MS = 86_400_000;
@@ -29,7 +31,8 @@ const EMPTY_CLASSES_DAYS = 7;
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
   appointments,
-  onAppointmentClick
+  onAppointmentClick,
+  loading = false,
 }) => {
   const { language, direction } = useTheme();
   const { t } = useTranslation();
@@ -197,6 +200,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               </motion.div>
               );
             })}
+          </div>
+        ) : loading ? (
+          <div className="py-16 flex flex-col items-center gap-3" role="status" data-testid="appointments-loading">
+            <span className="w-9 h-9 rounded-full border-[3px] border-primary/25 border-t-primary animate-spin" aria-hidden="true" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('appointments.loading')}</p>
           </div>
         ) : (
           <div className="py-12 text-center">

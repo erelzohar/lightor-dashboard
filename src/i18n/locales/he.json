@@ -51,7 +51,8 @@
     "customers": "לקוחות",
     "leads": "פניות",
     "openingHours": "שעות פעילות",
-    "siteDesign": "עיצוב האתר"
+    "siteDesign": "עיצוב האתר",
+    "comingSoon": "בקרוב"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -248,6 +249,11 @@
       "siteBasicsDesc": "הכתובת של האתר שלך והשפה שבה הוא מוצג",
       "bookingRules": "כללי הזמנה",
       "bookingRulesDesc": "עד מתי אפשר לבטל, וכמה זמן מראש אפשר לקבוע"
+    },
+    "customDomain": {
+      "title": "דומיין משלך",
+      "desc": "חברו כתובת משלכם לאתר, כמו www.mybusiness.co.il.",
+      "placeholder": "www.mybusiness.co.il"
     }
   },
   "appointmentTypes": {
@@ -293,7 +299,14 @@
       "hint": "לא חובה — תוצג ליד השירות באתר שלך"
     },
     "priceOptional": "מחיר (לא חובה)",
-    "noDuration": "אין משך — עוד אי אפשר לקבוע תור"
+    "noDuration": "אין משך — עוד אי אפשר לקבוע תור",
+    "payment": {
+      "title": "תשלום בקביעת תור",
+      "desc": "גביית מקדמה או תשלום מלא כשהלקוח קובע את השירות.",
+      "none": "ללא",
+      "deposit": "מקדמה",
+      "full": "תשלום מלא"
+    }
   },
   "appointments": {
     "title": "יומן",
@@ -347,7 +360,8 @@
       "failed": "הייצוא נכשל, נסו שוב",
       "rangeInvalid": "אפשר לייצא עד שנה אחת בכל פעם",
       "upgradeToast": "ייצוא התורים זמין במסלול Plus"
-    }
+    },
+    "loading": "טוען תורים…"
   },
   "login": {
     "title": "התחברות",

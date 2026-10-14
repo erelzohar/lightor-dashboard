@@ -29,6 +29,7 @@ import { Toggle } from '../components/ui/liquid-toggle';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { businessTimeZone } from '../utils/businessTime';
 import { timeZoneOptions } from '../utils/timeZoneOptions';
+import { ComingSoonRow } from '../components/ui/ComingSoon';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -876,6 +877,17 @@ const Settings: React.FC = () => {
                   onChange={(e) => handleChange('root', 'defaultLanguage', e.target.value)}
                 />
               </div>
+              {/* Coming soon (LT-331): the site at the owner's own address. */}
+              <ComingSoonRow
+                icon={Globe}
+                title={t('settings.customDomain.title')}
+                description={t('settings.customDomain.desc')}
+                preview={
+                  <div dir="ltr" className="max-w-md flex items-center px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-dark-surface text-gray-400 text-[0.9375rem]">
+                    {t('settings.customDomain.placeholder')}
+                  </div>
+                }
+              />
             </SettingsSection>
 
             <SettingsSection icon={Globe} title={t('settings.site.modeTitle')} titleId="site-mode-title">
