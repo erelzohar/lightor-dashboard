@@ -256,6 +256,8 @@
   "appointmentTypes": {
     "title": "Service Types",
     "description": "Manage the different services your business offers",
+    "namePlaceholder": "e.g. Men's haircut",
+    "durationPlaceholder": "min",
     "editService": "Edit Service",
     "newService": "New Service",
     "editingNamed": "Editing \"{{name}}\"",
@@ -365,6 +367,8 @@
     "welcome": "Welcome Back",
     "subtitle": "Sign in to manage your business",
     "invalidCredentials": "Invalid credentials",
+    "tooManyAttempts": "Too many attempts. Try again in a few minutes.",
+    "networkError": "Can't reach the server. Check your connection and try again.",
     "email": "Email",
     "enterEmail": "Enter email",
     "password": "Password",
@@ -1172,6 +1176,7 @@
     "subtitle": "{{count}} customers",
     "search": "Search by name or phone…",
     "empty": "No customers yet — they appear here after their first booking",
+    "noMatch": "No customers match your search",
     "filter": {
       "all": "All customers",
       "active": "Active",

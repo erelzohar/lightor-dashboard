@@ -200,10 +200,26 @@ describe('authApi', () => {
   });
 
   describe('failure handling', () => {
-    it('reports bad credentials as such', async () => {
-      vi.spyOn(apiClient, 'post').mockRejectedValue(new Error('401'));
+    // A code per cause, worded by the sign-in card (LT-340); every failure
+    // used to read "Invalid credentials".
+    const refused = (status: number) => Object.assign(new Error(String(status)), { response: { status } });
 
-      await expect(loginUser('jane', 'wrong')).rejects.toThrow('Invalid credentials');
+    it('reports bad credentials as such', async () => {
+      vi.spyOn(apiClient, 'post').mockRejectedValue(refused(401));
+
+      await expect(loginUser('jane', 'wrong')).rejects.toThrow('INVALID_CREDENTIALS');
+    });
+
+    it('tells a rate limit from a wrong password', async () => {
+      vi.spyOn(apiClient, 'post').mockRejectedValue(refused(429));
+
+      await expect(loginUser('jane', 'wrong')).rejects.toThrow('TOO_MANY_ATTEMPTS');
+    });
+
+    it('tells no connection from a wrong password', async () => {
+      vi.spyOn(apiClient, 'post').mockRejectedValue(new Error('Network Error'));
+
+      await expect(loginUser('jane', 'secret')).rejects.toThrow('NETWORK');
     });
 
     it('rejects /me rather than returning undefined', async () => {

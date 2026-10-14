@@ -33,6 +33,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** loginUser's failure codes as the sign-in card's keys (LT-340); any other failure reads as a wrong password. */
+const LOGIN_ERROR_KEYS: Record<string, string> = {
+  TOO_MANY_ATTEMPTS: 'login.tooManyAttempts',
+  NETWORK: 'login.networkError',
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<AuthState>({
     user: null,
@@ -156,9 +162,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       navigate('/', { replace: true });
     } catch (error) {
+      // A translation key: the sign-in card says it in the owner's language.
+      const code = error instanceof Error ? error.message : '';
       setAuth(prev => ({
         ...prev,
-        error: 'Invalid credentials',
+        error: LOGIN_ERROR_KEYS[code] ?? 'login.invalidCredentials',
         isLoading: false,
       }));
     } finally {

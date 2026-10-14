@@ -409,7 +409,9 @@ const Settings: React.FC = () => {
         );
       }
       setImageToUpload(null);
-      setLogoUrlValue('');
+      // A logo given as a link stays in its box (LT-340): emptying it after
+      // every save made the logo look gone while it was still on the site.
+      setLogoUrlValue(saved?.logoImageName?.startsWith('http') ? saved.logoImageName : '');
       toast.success(t('settings.saveSuccess'));
     } catch (error) {
       console.log(error);

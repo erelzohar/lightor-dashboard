@@ -369,7 +369,7 @@ const AppointmentTypes: React.FC = () => {
                       onChange: handleChange,
                       required: true,
                       autoFocus: true,
-                      placeholder: 'e.g. Executive Haircut',
+                      placeholder: t('appointmentTypes.namePlaceholder'),
                     }}
                   />
 
@@ -470,7 +470,7 @@ const AppointmentTypes: React.FC = () => {
                           value: getDurationMinutes(),
                           onChange: handleChange,
                           required: true,
-                          placeholder: 'min',
+                          placeholder: t('appointmentTypes.durationPlaceholder'),
                         }}
                       />
                     </div>

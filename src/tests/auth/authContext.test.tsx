@@ -270,15 +270,27 @@ describe('AuthContext', () => {
 
     it('reports bad credentials without navigating', async () => {
       vi.mocked(getCurrentUser).mockRejectedValue(new Error('Invalid token'));
-      vi.mocked(loginUser).mockRejectedValue(new Error('Invalid credentials'));
+      vi.mocked(loginUser).mockRejectedValue(new Error('INVALID_CREDENTIALS'));
 
       renderAuth();
       await settled();
       await userEvent.click(screen.getByText('login'));
 
-      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent('Invalid credentials'));
+      // A key: the sign-in card words it in the owner's language (LT-340).
+      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent('login.invalidCredentials'));
       expect(screen.getByTestId('state')).toHaveTextContent('out');
       expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('says too many attempts rather than a wrong password (LT-340)', async () => {
+      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Invalid token'));
+      vi.mocked(loginUser).mockRejectedValue(new Error('TOO_MANY_ATTEMPTS'));
+
+      renderAuth();
+      await settled();
+      await userEvent.click(screen.getByText('login'));
+
+      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent('login.tooManyAttempts'));
     });
 
     it('signs in with Google', async () => {

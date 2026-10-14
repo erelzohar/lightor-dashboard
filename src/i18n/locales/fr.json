@@ -256,6 +256,8 @@
   "appointmentTypes": {
     "title": "Types de services",
     "description": "Gérez les différents services proposés par votre entreprise",
+    "namePlaceholder": "ex. Coupe homme",
+    "durationPlaceholder": "min",
     "editService": "Modifier le service",
     "newService": "Nouveau service",
     "editingNamed": "Modification de « {{name}} »",
@@ -365,6 +367,8 @@
     "welcome": "Bon retour",
     "subtitle": "Connectez-vous pour gérer votre entreprise",
     "invalidCredentials": "Identifiants invalides",
+    "tooManyAttempts": "Trop de tentatives. Réessayez dans quelques minutes.",
+    "networkError": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
     "email": "E-mail",
     "enterEmail": "Saisir l'e-mail",
     "password": "Mot de passe",
@@ -1172,6 +1176,7 @@
     "subtitle": "{{count}} clients",
     "search": "Rechercher par nom ou téléphone…",
     "empty": "Aucun client pour l’instant — ils apparaissent ici après leur première réservation",
+    "noMatch": "Aucun client ne correspond à votre recherche",
     "filter": {
       "all": "Tous les clients",
       "active": "Actifs",

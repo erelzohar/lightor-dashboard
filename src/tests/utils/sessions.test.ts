@@ -85,9 +85,10 @@ describe('grouping bookings into sessions', () => {
 
   it('sorts cancelled people to the end of the roster', () => {
     const at = String(Date.now() + 24 * HOUR);
+    const pilates: AppointmentType = { ...type('c1'), kind: 'class', capacity: 8 };
     const sessions = groupSessions([
-      appt({ _id: 'a', name: 'Zoe', status: 'cancelled', timestamp: at }),
-      appt({ _id: 'b', name: 'Avi', timestamp: at }),
+      appt({ _id: 'a', name: 'Zoe', status: 'cancelled', timestamp: at, type: pilates }),
+      appt({ _id: 'b', name: 'Avi', timestamp: at, type: pilates }),
     ]);
 
     expect(sessions[0].participants.map(p => p.name)).toEqual(['Avi', 'Zoe']);
@@ -96,18 +97,44 @@ describe('grouping bookings into sessions', () => {
 
   it('reads as cancelled only when everyone has dropped out', () => {
     const at = String(Date.now() + 24 * HOUR);
-
-    const partly = groupSessions([
-      appt({ _id: 'a', status: 'cancelled', timestamp: at }),
+    // Two people booked in at once: only an owner's double booking does that
+    // to a one-to-one service.
+    const both = groupSessions([
+      appt({ _id: 'a', timestamp: at }),
       appt({ _id: 'b', timestamp: at }),
     ]);
-    expect(sessionDisplayStatus(partly[0])).toBe('scheduled');
+    expect(both).toHaveLength(1);
+    expect(sessionDisplayStatus(both[0])).toBe('scheduled');
 
+    const gone = groupSessions([appt({ _id: 'a', status: 'cancelled', timestamp: at })]);
+    expect(sessionDisplayStatus(gone[0])).toBe('cancelled');
+  });
+
+  it('keeps a cancelled one-to-one booking apart from the one that took its slot (LT-340)', () => {
+    const at = String(Date.now() + 24 * HOUR);
+
+    // Zoe cancelled, Avi booked the freed slot: Avi's booking, not "1 participant".
+    const rebooked = groupSessions([
+      appt({ _id: 'a', name: 'Zoe', status: 'cancelled', timestamp: at }),
+      appt({ _id: 'b', name: 'Avi', timestamp: at }),
+    ]);
+    expect(rebooked).toHaveLength(2);
+    expect(rebooked.some(isGroupSession)).toBe(false);
+    expect(rebooked.map(sessionDisplayStatus).sort()).toEqual(['cancelled', 'scheduled']);
+
+    // Two cancellations of one slot: two rows, not "0 participants".
     const gone = groupSessions([
       appt({ _id: 'a', status: 'cancelled', timestamp: at }),
       appt({ _id: 'b', status: 'cancelled', timestamp: at }),
     ]);
-    expect(sessionDisplayStatus(gone[0])).toBe('cancelled');
+    expect(gone).toHaveLength(2);
+    expect(gone.some(isGroupSession)).toBe(false);
+    expect(gone.map(sessionDisplayStatus)).toEqual(['cancelled', 'cancelled']);
+
+    // Each is found again by its own id.
+    const cancelledA = appt({ _id: 'a', status: 'cancelled', timestamp: at });
+    expect(sessionKeyOf(cancelledA)).toBe(`t1|${at}|a`);
+    expect(findSession([cancelledA, appt({ _id: 'b', status: 'cancelled', timestamp: at })], `t1|${at}|a`)?.participants.map(p => p._id)).toEqual(['a']);
   });
 
   it('counts sessions rather than people', () => {

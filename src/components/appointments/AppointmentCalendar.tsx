@@ -17,6 +17,8 @@ import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { hoursForDate } from '../../utils/bookingSlots';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -148,6 +150,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const { direction, language } = useTheme();
   const { t }    = useTranslation();
   const dispatch = useAppDispatch();
+  // The business's own hours (LT-340), to grey out the days it is closed.
+  const openingHours = useAppSelector(state => state.webConfig.data);
   const { auth } = useAuth();
   const locale   = language === 'he' ? he : undefined;
 
@@ -919,15 +923,17 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {weekDays.map((day) => {
                 const tod = isToday(day);
                 const daySessions = getDaySessions(day);
-                // Alternate subtle background for visual separation
-                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                // Greyed when the business is closed that day (LT-340). It
+                // was Saturday and Sunday for everyone — a working Sunday in
+                // Israel read as a day off.
+                const isClosed = openingHours?.workingDays?.length === 7 && hoursForDate(openingHours, day) === null;
 
                 return (
                   <div key={day.toISOString()} className={`relative border-l border-gray-100 dark:border-gray-800/60${slideClass}`}
                     style={{
                       background: tod
                         ? 'rgba(99,102,241,0.02)'
-                        : isWeekend
+                        : isClosed
                           ? 'rgba(249,250,251,0.6)'
                           : undefined,
                     }}>

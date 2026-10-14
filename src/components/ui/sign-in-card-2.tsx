@@ -139,7 +139,8 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                 animate={{ opacity: 1, height: 'auto' }}
                 className="mb-4 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center"
               >
-                {error}
+                {/* A key from the email sign-in (LT-340); the native Google path passes its message as is. */}
+                {i18n.exists(error) ? t(error) : error}
               </motion.div>
             )}
 

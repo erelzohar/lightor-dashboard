@@ -95,8 +95,20 @@ export const loginUser = async (email: string, password: string, staySignedIn = 
     }
 
   } catch (error) {
-    throw new Error('Invalid credentials');
+    throw new Error(loginFailure(error));
   }
+};
+
+/**
+ * Why a sign-in failed, as a code the sign-in card words in the owner's
+ * language (LT-340). Every failure used to read "Invalid credentials", in
+ * English — a rate limit and a dropped connection included.
+ */
+const loginFailure = (error: unknown): 'INVALID_CREDENTIALS' | 'TOO_MANY_ATTEMPTS' | 'NETWORK' => {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  if (status === 429) return 'TOO_MANY_ATTEMPTS';
+  if (status === undefined) return 'NETWORK';
+  return 'INVALID_CREDENTIALS';
 };
 
 export const googleLogin = async (token: string): Promise<{ token: string; user: User }> => {

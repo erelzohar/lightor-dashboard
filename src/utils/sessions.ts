@@ -34,8 +34,17 @@ export interface Session {
 const typeIdOf = (appointment: Appointment): string =>
   appointment.type?._id || appointment.type?.name || 'unknown';
 
+/**
+ * A cancelled booking of a one-to-one service is a session of its own
+ * (LT-340): the customer who rebooks the freed slot is the booking there, not
+ * a "1 participant" roster beside the cancelled one, and two cancellations of
+ * one slot are two rows, not "0 participants". A class keeps its dropouts in
+ * its roster.
+ */
 export const sessionKeyOf = (appointment: Appointment): string =>
-  `${typeIdOf(appointment)}|${appointment.timestamp}`;
+  appointment.status === 'cancelled' && appointment.type?.kind !== 'class'
+    ? `${typeIdOf(appointment)}|${appointment.timestamp}|${appointment._id}`
+    : `${typeIdOf(appointment)}|${appointment.timestamp}`;
 
 /**
  * True when the roster is worth showing as a session rather than one booking:

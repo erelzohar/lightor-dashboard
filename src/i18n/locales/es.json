@@ -256,6 +256,8 @@
   "appointmentTypes": {
     "title": "Tipos de servicio",
     "description": "Gestiona los distintos servicios que ofrece tu negocio",
+    "namePlaceholder": "p. ej. Corte de caballero",
+    "durationPlaceholder": "min",
     "editService": "Editar servicio",
     "newService": "Nuevo servicio",
     "editingNamed": "Editando \"{{name}}\"",
@@ -365,6 +367,8 @@
     "welcome": "Bienvenido de nuevo",
     "subtitle": "Inicia sesión para gestionar tu negocio",
     "invalidCredentials": "Credenciales no válidas",
+    "tooManyAttempts": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
+    "networkError": "No se puede conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
     "email": "Correo electrónico",
     "enterEmail": "Introduce el correo",
     "password": "Contraseña",
@@ -1172,6 +1176,7 @@
     "subtitle": "{{count}} clientes",
     "search": "Buscar por nombre o teléfono…",
     "empty": "Aún no hay clientes — aparecerán aquí tras su primera reserva",
+    "noMatch": "Ningún cliente coincide con la búsqueda",
     "filter": {
       "all": "Todos los clientes",
       "active": "Activos",

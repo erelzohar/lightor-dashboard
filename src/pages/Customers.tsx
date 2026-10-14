@@ -279,7 +279,9 @@ const Customers: React.FC = () => {
           setPage(1);
         }}
         searchPlaceholder={t('customers.search')}
-        emptyMessage={t('customers.empty')}
+        // A search or filter that finds no one is not an empty customer
+        // list (LT-340): it said "no customers yet" to a business with dozens.
+        emptyMessage={t(search.trim() || blocked ? 'customers.noMatch' : 'customers.empty')}
         onRowClick={(row) => setSelectedId(row._id)}
         toolbar={
           <Select

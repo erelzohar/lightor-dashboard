@@ -118,6 +118,22 @@ describe('Customers page', () => {
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/account'));
     expect(exportCustomersCsv).not.toHaveBeenCalled();
   });
+
+  it('says a search found no one, not that there are no customers yet (LT-340)', async () => {
+    render(<Customers />);
+    await screen.findByText('Moshe Cohen');
+
+    vi.mocked(fetchCustomers).mockResolvedValue({
+      success: true,
+      count: 0,
+      pagination: { total: 0, page: 1, limit: 20, pages: 0 },
+      data: [],
+    } as never);
+    fireEvent.change(screen.getByPlaceholderText('customers.search'), { target: { value: 'zzz' } });
+
+    expect(await screen.findByText('customers.noMatch')).toBeInTheDocument();
+    expect(screen.queryByText('customers.empty')).not.toBeInTheDocument();
+  });
 });
 
 /**
