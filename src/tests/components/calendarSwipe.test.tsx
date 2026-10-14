@@ -105,6 +105,10 @@ describe('swiping the calendar grid', () => {
     // The sticky day header never slides (LT-327): iPhone Safari left it
     // painted at the slide's first frame, stuck to the side.
     expect(grid.querySelector('.sticky')!.querySelectorAll('.cal-slide-in')).toHaveLength(0);
+    // …and the sliding columns are clipped in place (LT-328): going forward in
+    // Hebrew they start 48px into the scroller's scrollable side, which threw
+    // iPhone Safari's sticky row out of line (measured: 48px of overflow).
+    expect(grid.querySelector('.cal-slide-in')!.closest('.overflow-x-clip')).not.toBeNull();
     swipe(grid, 120); // back: from the left
     expect(from()).toBe('-48px');
   });

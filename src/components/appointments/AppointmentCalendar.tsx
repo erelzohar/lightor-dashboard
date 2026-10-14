@@ -893,7 +893,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           </div>
 
           {/* ── Time grid ───────────────────────────────────────────── */}
-          <div className="relative" style={{ paddingTop: 16, height: totalHeight + 16,
+          {/* overflow-x: clip (LT-328): a day sliding in starts 48px past the
+              side it comes from. Going forward in Hebrew that is the left —
+              the scrollable side of an RTL scroller — and the overflow it made
+              threw iPhone Safari's sticky day row out of line, for good. Clip
+              (unlike hidden) clips without making a scroll box, so the slide
+              never reaches the scroller. */}
+          <div className="relative overflow-x-clip" style={{ paddingTop: 16, height: totalHeight + 16,
             display: 'grid',
             gridTemplateColumns: `${TIME_GUTTER}px repeat(${visibleDays}, 1fr)`,
           }}>
