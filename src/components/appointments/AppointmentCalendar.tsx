@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, X, Clock, User, Phone,
-  Check, XCircle, ChevronDown, CalendarDays, Menu,
+  Check, XCircle, ChevronDown, CalendarDays, CalendarClock, Menu,
 } from 'lucide-react';
 import {
   format, addDays, isToday, isTomorrow, isSameDay, getHours, getMinutes,
@@ -28,6 +28,7 @@ import {
 } from '../../utils/sessions';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
+import MoveAppointmentModal from './MoveAppointmentModal';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
@@ -152,6 +153,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const dispatch = useAppDispatch();
   // The business's own hours (LT-340), to grey out the days it is closed.
   const openingHours = useAppSelector(state => state.webConfig.data);
+  // The booking being moved (LT-341); the popup closes under the window.
+  const [moving, setMoving] = useState<Appointment | null>(null);
+  const canMove = (appt: Appointment) => getDisplayStatus(appt) === 'scheduled' && appt.type?.kind !== 'class';
   const { auth } = useAuth();
   const locale   = language === 'he' ? he : undefined;
 
@@ -1114,23 +1118,23 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 </span>
               </div>
 
-              {/* Time range */}
-              <div className="flex items-center gap-3">
-                <Clock size={14} className="text-gray-400 shrink-0 ms-3" />
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg cursor-default">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {format(new Date(parseInt(selectedAppt.timestamp)), 'HH:mm')}
-                    </span>
-                    <ChevronDown size={11} className="text-gray-400" />
-                  </div>
-                  <div className="flex-1 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg cursor-default">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {format(new Date(parseInt(selectedAppt.timestamp) + Number(selectedAppt.type.durationMS)), 'HH:mm')}
-                    </span>
-                    <ChevronDown size={11} className="text-gray-400" />
-                  </div>
-                </div>
+              {/* Time range, and the way to move it (LT-341). The two boxes
+                  carried a dropdown's arrow and changed nothing. */}
+              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
+                <Clock size={14} className="text-gray-400 shrink-0" />
+                <span dir="ltr" className="text-sm text-gray-600 dark:text-gray-300">
+                  {format(new Date(parseInt(selectedAppt.timestamp)), 'HH:mm')} – {format(new Date(parseInt(selectedAppt.timestamp) + Number(selectedAppt.type.durationMS)), 'HH:mm')}
+                </span>
+                {canMove(selectedAppt) && (
+                  <button
+                    type="button"
+                    onClick={() => { setMoving(selectedAppt); setSelectedAppt(null); }}
+                    className="ms-auto flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <CalendarClock size={12} />
+                    {t('appointments.move.button')}
+                  </button>
+                )}
               </div>
 
               {/* Client */}
@@ -1208,6 +1212,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       </AnimatePresence>,
       document.body,
       )}
+
+      <MoveAppointmentModal appointment={moving} onClose={() => setMoving(null)} />
     </div>
   );
 };

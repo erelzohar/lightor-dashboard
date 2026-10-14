@@ -331,6 +331,15 @@
     "price": "Precio",
     "currencySymbol": "₪",
     "markCompleted": "Marcar como completada",
+    "move": {
+      "button": "Cambiar hora",
+      "title": "Cambiar la cita",
+      "current": "Ahora",
+      "notice": "El cliente recibirá un mensaje con la nueva hora.",
+      "submit": "Mover la cita",
+      "success": "Cita movida",
+      "failed": "No se pudo mover la cita"
+    },
     "cancelAppointment": "Cancelar",
     "cancelConfirm": "¿Seguro que quieres cancelar esta cita?",
     "updateSuccess": "Cita actualizada correctamente",

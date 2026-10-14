@@ -23,6 +23,11 @@ vi.mock('../../store/slices/appointmentsSlice', () => ({
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
+// The move window (LT-341) as a stand-in that names the booking it was opened for.
+vi.mock('../../components/appointments/MoveAppointmentModal', () => ({
+  default: ({ appointment }: { appointment: { name: string } | null }) =>
+    appointment ? <div data-testid="moving">{appointment.name}</div> : null,
+}));
 
 // jsdom lays nothing out: the calendar's grid box, the clicked event block
 // and the card's size are stubbed. placePopup only measures those three.
@@ -103,5 +108,31 @@ describe('the calendar booking details card', () => {
     layout.anchor = { ...layout.anchor, top: -200, bottom: -140 };
     act(() => { grid.dispatchEvent(new Event('scroll')); });
     await waitFor(() => expect(screen.queryByText('appointments.markCompleted')).toBeNull());
+  });
+});
+
+/** LT-341 — the owner moves a booking from its card. */
+describe('moving a booking from its calendar card', () => {
+  const open = (appointments: Appointment[]) => {
+    const { container } = render(<AppointmentCalendar appointments={appointments} onAppointmentClick={vi.fn()} />);
+    const grid = container.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
+    fireEvent.click(within(grid).getAllByText('Dana Cohen')[0]);
+  };
+
+  it('opens the move window on the booking and closes the card under it', async () => {
+    layout.anchor = { top: 300, bottom: 360, left: 100, right: 300 };
+    open([booking]);
+
+    fireEvent.click(screen.getByText('appointments.move.button'));
+
+    expect(screen.getByTestId('moving').textContent).toBe('Dana Cohen');
+    await waitFor(() => expect(screen.queryByText('appointments.markCompleted')).toBeNull());
+  });
+
+  it('offers no move for a booking that is over or cancelled', () => {
+    layout.anchor = { top: 300, bottom: 360, left: 100, right: 300 };
+    open([{ ...booking, status: 'cancelled' }]);
+
+    expect(screen.queryByText('appointments.move.button')).toBeNull();
   });
 });

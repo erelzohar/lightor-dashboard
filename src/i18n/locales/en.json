@@ -331,6 +331,15 @@
     "price": "Price",
     "currencySymbol": "₪",
     "markCompleted": "Mark Completed",
+    "move": {
+      "button": "Reschedule",
+      "title": "Reschedule",
+      "current": "Currently",
+      "notice": "The customer gets a message with the new time.",
+      "submit": "Move appointment",
+      "success": "Appointment moved",
+      "failed": "Couldn't move the appointment"
+    },
     "cancelAppointment": "Cancel",
     "cancelConfirm": "Are you sure you want to cancel this appointment?",
     "updateSuccess": "Appointment updated successfully",

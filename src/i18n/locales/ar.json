@@ -331,6 +331,15 @@
     "price": "السعر",
     "currencySymbol": "₪",
     "markCompleted": "وضع علامة مكتمل",
+    "move": {
+      "button": "تغيير الموعد",
+      "title": "تغيير الموعد",
+      "current": "الموعد الحالي",
+      "notice": "سيتلقى العميل رسالة بالموعد الجديد.",
+      "submit": "نقل الموعد",
+      "success": "تم نقل الموعد",
+      "failed": "تعذّر نقل الموعد"
+    },
     "cancelAppointment": "إلغاء",
     "cancelConfirm": "هل أنت متأكد من إلغاء هذا الموعد؟",
     "updateSuccess": "تم تحديث الموعد بنجاح",

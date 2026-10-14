@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, CalendarDays, Clock, User, Phone, Check, XCircle, ChevronDown } from 'lucide-react';
+import { X, CalendarDays, CalendarClock, Clock, User, Phone, Check, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Appointment } from '../../types';
@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
+import MoveAppointmentModal from './MoveAppointmentModal';
 
 interface AppointmentDetailsProps {
   appointment: Appointment | null;
@@ -21,6 +22,8 @@ interface AppointmentDetailsProps {
 
 const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, onClose, onUpdate }) => {
   const [loading, setLoading] = React.useState(false);
+  // Moving it (LT-341): the window opens over this one, which closes once it is moved.
+  const [moving, setMoving] = React.useState(false);
   const { language } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -103,23 +106,23 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
             </span>
           </div>
 
-          {/* Time range */}
-          <div className="flex items-center gap-3">
-            <Clock size={14} className="text-gray-400 shrink-0 ms-3" />
-            <div className="flex items-center gap-2 flex-1">
-              <div className="flex-1 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {format(new Date(parseInt(appointment.timestamp)), 'HH:mm')}
-                </span>
-                <ChevronDown size={11} className="text-gray-400" />
-              </div>
-              <div className="flex-1 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {format(new Date(parseInt(appointment.timestamp) + Number(appointment.type.durationMS)), 'HH:mm')}
-                </span>
-                <ChevronDown size={11} className="text-gray-400" />
-              </div>
-            </div>
+          {/* Time range, and the way to move it (LT-341). The two boxes
+              carried a dropdown's arrow and changed nothing. */}
+          <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
+            <Clock size={14} className="text-gray-400 shrink-0" />
+            <span dir="ltr" className="text-sm text-gray-600 dark:text-gray-300">
+              {format(new Date(parseInt(appointment.timestamp)), 'HH:mm')} – {format(new Date(parseInt(appointment.timestamp) + Number(appointment.type.durationMS)), 'HH:mm')}
+            </span>
+            {status === 'scheduled' && appointment.type?.kind !== 'class' && (
+              <button
+                type="button"
+                onClick={() => setMoving(true)}
+                className="ms-auto flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                <CalendarClock size={12} />
+                {t('appointments.move.button')}
+              </button>
+            )}
           </div>
 
           {/* Client name */}
@@ -194,6 +197,12 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           </div>
         )}
       </motion.div>
+
+      <MoveAppointmentModal
+        appointment={moving ? appointment : null}
+        onClose={() => setMoving(false)}
+        onMoved={() => { onUpdate(); onClose(); }}
+      />
     </div>
   );
 };

@@ -191,6 +191,18 @@ export const updateAppointmentStatus = async (
     throw err;
   }
 };
+/**
+ * The owner moves a booking to another start (LT-341). The server checks the
+ * new time against the other bookings and the classes (409 SLOT_TAKEN /
+ * CLASS_IN_THE_WAY), not against the opening hours or the customers' cancel
+ * window — those bind customers — and sends the customer the new time. Throws
+ * the request's own error, so the caller can read the refusal's code.
+ */
+export const moveAppointment = async (id: string, timestamp: string): Promise<Appointment> => {
+  const res = await apiClient.put(`${APPOINTMENTS_URL}${id}`, { timestamp });
+  return res.data.data;
+};
+
 /* ------------------ Export (LT-217) ------------------ */
 
 /**

@@ -331,6 +331,15 @@
     "price": "מחיר",
     "currencySymbol": "₪",
     "markCompleted": "סמן כהושלם",
+    "move": {
+      "button": "שינוי מועד",
+      "title": "שינוי מועד",
+      "current": "המועד הנוכחי",
+      "notice": "הלקוח יקבל הודעה על המועד החדש.",
+      "submit": "העברת התור",
+      "success": "התור הועבר",
+      "failed": "לא הצלחנו להעביר את התור"
+    },
     "cancelAppointment": "ביטול תור",
     "cancelConfirm": "האם אתה בטוח שברצונך לבטל תור זה?",
     "updateSuccess": "התור עודכן בהצלחה",

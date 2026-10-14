@@ -331,6 +331,15 @@
     "price": "Prix",
     "currencySymbol": "₪",
     "markCompleted": "Marquer comme terminé",
+    "move": {
+      "button": "Déplacer",
+      "title": "Déplacer le rendez-vous",
+      "current": "Actuellement",
+      "notice": "Le client recevra un message avec le nouvel horaire.",
+      "submit": "Déplacer le rendez-vous",
+      "success": "Rendez-vous déplacé",
+      "failed": "Impossible de déplacer le rendez-vous"
+    },
     "cancelAppointment": "Annuler",
     "cancelConfirm": "Voulez-vous vraiment annuler ce rendez-vous ?",
     "updateSuccess": "Rendez-vous mis à jour avec succès",
