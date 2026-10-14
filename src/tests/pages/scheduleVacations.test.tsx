@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ScheduleVacations from '../../pages/ScheduleVacations';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
-import { createVacation } from '../../store/slices/vacationsSlice';
+import { createVacation, updateVacation } from '../../store/slices/vacationsSlice';
+import { zonedTimeToMs } from '../../utils/businessTime';
+import { vacationDays, vacationInputValue, vacationMs } from '../../utils/vacationTime';
 
 const { t } = vi.hoisted(() => ({
   t: (key: string, opts?: { returnObjects?: boolean }) =>
@@ -19,7 +21,7 @@ const authValue = vi.hoisted(() => ({ auth: { user: { _id: 'u1', webConfig_id: '
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../store/slices/vacationsSlice', () => ({
   createVacation: vi.fn((vacation: unknown) => ({ type: 'vacations/create', payload: vacation })),
-  updateVacation: vi.fn(),
+  updateVacation: vi.fn((vacation: unknown) => ({ type: 'vacations/update', payload: vacation })),
   deleteVacation: vi.fn(),
 }));
 vi.mock('../../store/slices/webConfigSlice', () => ({
@@ -148,5 +150,101 @@ describe('Schedule: adding a vacation', () => {
     expect(vi.mocked(createVacation).mock.calls[0][0]).toMatchObject({ title: 'Summer', webConfig_id: 'wc1' });
     expect(toastMock.success).not.toHaveBeenCalled();
     expect(screen.queryByText('Summer')).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * LT-318: a vacation is typed, stored and shown on the BUSINESS's clock. A
+ * `datetime-local` value read as the device's wall clock stored a New York
+ * business's 10:00 as some other hour on a phone set elsewhere (the suite
+ * runs under TZ=UTC and TZ=Asia/Dubai too).
+ */
+describe("Schedule: a vacation on the business's clock", () => {
+  const NY = 'America/New_York';
+  const J = 'Asia/Jerusalem';
+  // As RTK's dispatch answers a thunk: a promise that also unwraps.
+  const thunkAnswers = () =>
+    dispatchMock.mockImplementation((action: { type: string; payload?: unknown }) =>
+      Object.assign(Promise.resolve(action), { unwrap: () => Promise.resolve(action.payload) })
+    );
+  const dateTimeInputs = (container: HTMLElement) =>
+    Array.from(container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]'));
+  beforeEach(() => {
+    vi.mocked(createVacation).mockClear();
+    vi.mocked(updateVacation).mockClear();
+  });
+
+  it("stores what the owner types as the business's wall clock", async () => {
+    state.webConfig.data = { ...config(), timeZone: NY };
+    thunkAnswers();
+    const { container } = render(<ScheduleVacations />);
+
+    fireEvent.click(screen.getByText('scheduleVacations.noVacations').closest('div.glass-panel')!.querySelector('button')!);
+    fireEvent.change(screen.getByPlaceholderText('scheduleVacations.vacationPlaceholder'), { target: { value: 'Spring' } });
+    const [start, end] = dateTimeInputs(container);
+    fireEvent.change(start, { target: { value: '2030-03-04T10:00' } });
+    fireEvent.change(end, { target: { value: '2030-03-10T18:00' } });
+    fireEvent.click(screen.getByText('common.add'));
+
+    await waitFor(() => expect(createVacation).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(createVacation).mock.calls[0][0]).toMatchObject({
+      title: 'Spring',
+      startDate: String(Date.UTC(2030, 2, 4, 15, 0)),
+      // New York's clocks go forward on 10 March 2030: 18:00 is an hour nearer UTC.
+      endDate: String(Date.UTC(2030, 2, 10, 22, 0)),
+    });
+  });
+
+  it("shows a stored vacation on the business's clock and edits it there", async () => {
+    const vacation = {
+      _id: 'v1',
+      title: 'Away',
+      startDate: String(Date.UTC(2030, 2, 4, 15, 0)),
+      endDate: String(Date.UTC(2030, 2, 6, 15, 0)),
+      webConfig_id: 'wc1',
+    };
+    state.webConfig.data = { ...config(), timeZone: NY, vacations: [vacation] };
+    thunkAnswers();
+    const { container } = render(<ScheduleVacations />);
+
+    expect(screen.getByText('scheduleVacations.fromMarch 4th, 2030 - 10:00 AM')).toBeInTheDocument();
+    expect(screen.getByText('scheduleVacations.toMarch 6th, 2030 - 10:00 AM')).toBeInTheDocument();
+    expect(screen.getByText(/^2 scheduleVacations\.days/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('common.edit'));
+    const [start, end] = dateTimeInputs(container);
+    expect(start.value).toBe('2030-03-04T10:00');
+    expect(end.value).toBe('2030-03-06T10:00');
+    fireEvent.change(end, { target: { value: '2030-03-06T12:30' } });
+    const saves = screen.getAllByText('common.save');
+    fireEvent.click(saves[saves.length - 1]);
+
+    await waitFor(() => expect(updateVacation).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(updateVacation).mock.calls[0][0]).toMatchObject({
+      _id: 'v1',
+      startDate: vacation.startDate,
+      endDate: String(Date.UTC(2030, 2, 6, 17, 30)),
+    });
+    // The list reads the stored instant back on the same clock.
+    expect(await screen.findByText('scheduleVacations.toMarch 6th, 2030 - 12:30 PM')).toBeInTheDocument();
+  });
+
+  it('round-trips through the helpers in any zone, and counts calendar days across a clock change', () => {
+    for (const tz of [J, NY, 'Asia/Dubai', 'Pacific/Auckland']) {
+      for (const value of ['2026-10-25T09:00', '2027-03-26T23:30']) {
+        const ms = vacationMs(value, tz);
+        expect(vacationInputValue(String(ms), tz)).toBe(value);
+        expect(vacationMs(String(ms), tz)).toBe(ms);
+      }
+    }
+    expect(vacationMs('2026-10-25T09:00', J)).toBe(Date.UTC(2026, 9, 25, 7, 0));
+    // Saturday to Tuesday over Israel's 25.10.2026 change: three days, not 73 hours' four.
+    const from = zonedTimeToMs(2026, 9, 24, 0, 0, J);
+    const to = zonedTimeToMs(2026, 9, 27, 0, 0, J);
+    expect(to - from).toBe(73 * 3_600_000);
+    expect(vacationDays(from, to, J)).toBe(3);
+    expect(vacationMs('', J)).toBeNaN();
+    expect(vacationInputValue('', J)).toBe('');
+    expect(vacationDays(NaN, to, J)).toBe(0);
   });
 });

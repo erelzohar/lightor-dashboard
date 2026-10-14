@@ -193,6 +193,17 @@ export const mapsUrlFor = (
   return `https://www.google.com/maps/search/?api=1&query=${query}${place}`;
 };
 
+/**
+ * The Waze link for an address answer (LT-320): most drivers in Israel use
+ * Waze. A suggested address navigates to its coordinates, a typed one is
+ * searched by its text.
+ */
+export const wazeUrlFor = (answer: Pick<AppointmentAnswer, 'value' | 'lat' | 'lng'>): string => {
+  const { value, lat, lng } = answer;
+  const target = typeof lat === 'number' && typeof lng === 'number' ? `ll=${lat},${lng}` : `q=${encodeURIComponent(value)}`;
+  return `https://waze.com/ul?${target}&navigate=yes`;
+};
+
 /** Which answers are addresses, given the catalog they were asked from. */
 export const addressKeys = (catalog: BookingField[] | undefined): Set<string> =>
   new Set((catalog ?? []).filter((f) => f.type === 'address' && f.key).map((f) => f.key as string));

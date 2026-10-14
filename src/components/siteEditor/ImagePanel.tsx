@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { uploadImage } from '../../services/imagesApi';
 import { resolveImage } from '../../utils/images';
 import { fieldLabel } from './labels';
+import AddPhotoButton from './AddPhotoButton';
 
 interface ImagePanelProps {
   path: string;
@@ -15,10 +16,12 @@ interface ImagePanelProps {
   onUploaded: (imageName: string) => void;
   /** Gallery photos can leave the gallery; the hero image and the logo cannot. */
   onRemove?: () => void;
+  /** LT-320: on a gallery photo, another photo can join the gallery. */
+  onAddPhoto?: (imageName: string) => void;
 }
 
 /** LT-249: one picture — upload a new one, reuse one from the site, or take a gallery photo out. */
-const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChange, onUploaded, onRemove }) => {
+const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChange, onUploaded, onRemove, onAddPhoto }) => {
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -74,6 +77,7 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
         )}
       </div>
       <input ref={input} type="file" accept="image/*" className="hidden" data-testid="image-input" onChange={(e) => void upload(e.target.files?.[0])} />
+      {onAddPhoto && <AddPhotoButton onAdded={onAddPhoto} />}
       {error && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{t('siteEditor.image.uploadFailed')}</p>}
       {choices.length > 0 && (
         <div>

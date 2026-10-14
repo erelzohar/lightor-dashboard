@@ -6,6 +6,7 @@ import {
   fieldsForService,
   mapsSearchUrl,
   mapsUrlFor,
+  wazeUrlFor,
   normaliseBookingFields,
 } from '../../utils/bookingFields';
 import type { BookingField } from '../../types';
@@ -147,5 +148,16 @@ describe('mapsUrlFor (LT-191)', () => {
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Herzl 12, Tel Aviv')}&query_place_id=ChIJx`
     );
     expect(mapsUrlFor({ value: 'Herzl 12, Tel Aviv' })).toBe(mapsSearchUrl('Herzl 12, Tel Aviv'));
+  });
+});
+
+describe('wazeUrlFor (LT-320)', () => {
+  it('navigates to a chosen address by its coordinates, a typed one by its text', () => {
+    expect(wazeUrlFor({ value: 'Herzl 12, Tel Aviv', lat: 32.0668, lng: 34.7778 })).toBe(
+      'https://waze.com/ul?ll=32.0668,34.7778&navigate=yes'
+    );
+    expect(wazeUrlFor({ value: 'הרצל 12, תל אביב' })).toBe(
+      `https://waze.com/ul?q=${encodeURIComponent('הרצל 12, תל אביב')}&navigate=yes`
+    );
   });
 });

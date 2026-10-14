@@ -159,13 +159,15 @@
     "saveSuccess": "ההגדרות נשמרו בהצלחה",
     "loadFailed": "אירעה שגיאה בטעינת ההגדרות",
     "tabs": {
-      "general": "פרופיל",
-      "address": "כתובת",
+      "general": "העסק",
       "contact": "יצירת קשר",
-      "site": "האתר"
+      "site": "האתר",
+      "bookings": "תורים"
     },
     "websiteLanguage": "שפת האתר",
     "websiteLanguageTooltip": "שפת ברירת המחדל שהגולשים רואים באתר הציבורי שלך.",
+    "timeZone": "אזור זמן",
+    "timeZoneHelp": "שעות התורים, התזכורות וההודעות נקבעות לפי אזור הזמן הזה.",
     "bookingHorizon": "כמה זמן מראש אפשר לקבוע",
     "bookingHorizonTooltip": "עד כמה ימים קדימה לקוחות יכולים לקבוע תור באתר. אתם עצמכם יכולים לקבוע תור לכל תאריך.",
     "bookingFields": {
@@ -235,7 +237,18 @@
     },
     "subdomainInvalid": "אפשר להשתמש באותיות באנגלית, ספרות ומקפים — הקישור לא יכול להתחיל או להסתיים במקף",
     "darkMode": "מצב כהה",
-    "lightMode": "מצב בהיר"
+    "lightMode": "מצב בהיר",
+    "sections": {
+      "business": "פרטי העסק",
+      "businessDesc": "השם והלוגו שמופיעים באתר שלך",
+      "addressDesc": "איפה הלקוחות מוצאים אותך",
+      "contactDesc": "איך לקוחות יוצרים איתך קשר — מוצג באתר",
+      "socialDesc": "קישורים לעמודים שלך ברשתות, בתחתית האתר",
+      "siteBasics": "קישור ושפה",
+      "siteBasicsDesc": "הכתובת של האתר שלך והשפה שבה הוא מוצג",
+      "bookingRules": "כללי הזמנה",
+      "bookingRulesDesc": "עד מתי אפשר לבטל, וכמה זמן מראש אפשר לקבוע"
+    }
   },
   "appointmentTypes": {
     "title": "ניהול סוגי שירותים",
@@ -300,7 +313,8 @@
     "customerDetails": "פרטי לקוח",
     "answers": {
       "title": "פרטים נוספים",
-      "openInMaps": "פתיחה במפות Google"
+      "openInMaps": "פתיחה במפות Google",
+      "openInWaze": "ניווט ב-Waze"
     },
     "price": "מחיר",
     "currencySymbol": "₪",
@@ -1393,7 +1407,8 @@
       "choose": "או בחרו תמונה שכבר באתר:",
       "use": "שימוש בתמונה הזו",
       "removeFromGallery": "הסרה מהגלריה",
-      "uploadFailed": "ההעלאה נכשלה, נסו שוב"
+      "uploadFailed": "ההעלאה נכשלה, נסו שוב",
+      "addToGallery": "הוספת תמונה לגלריה"
     },
     "section": {
       "heroBackground": "אפקט רקע",
@@ -1418,7 +1433,7 @@
       "color": "צבע ראשי",
       "headingFont": "פונט כותרות",
       "bodyFont": "פונט טקסט",
-      "buttons": "כפתורים",
+      "buttons": "הכפתור הראשי",
       "corners": "פינות",
       "cards": "כרטיסים",
       "mode": "מצב תצוגה"
@@ -1448,7 +1463,8 @@
       },
       "badge": {
         "ai": "AI כותב טיוטה",
-        "owner": "אתם כותבים"
+        "owner": "אתם כותבים",
+        "photos": "מעלים תמונות"
       },
       "drafting": "ה-AI כותב טיוטה…",
       "aiFailed": "ה-AI לא הצליח לכתוב טיוטה. האזור נוסף, מלאו אותו בעצמכם.",

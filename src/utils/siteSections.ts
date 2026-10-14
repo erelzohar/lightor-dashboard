@@ -33,9 +33,9 @@ export interface SectionRow {
 }
 
 export type SectionGroup = 'content' | 'images' | 'services' | 'info';
-export type ContentSource = 'ready' | 'ai' | 'owner';
+export type ContentSource = 'ready' | 'ai' | 'owner' | 'photos';
 export type Unavailable =
-  | 'max' | 'noPhotos' | 'twoPhotos' | 'noServices' | 'noHours' | 'noAddress' | 'noSocial' | 'noLogo' | 'leadsSite' | 'noBookingText';
+  | 'max' | 'twoPhotos' | 'noServices' | 'noHours' | 'noAddress' | 'noSocial' | 'noLogo' | 'leadsSite' | 'noBookingText';
 export interface SectionAvailability { ok: boolean; source?: ContentSource; reason?: Unavailable }
 
 /** The server keeps at most this many blocks (webConfigDto blocksSchema). */
@@ -113,8 +113,10 @@ export const availabilityOf = (config: WebConfig, type: string, pageSize: number
     case 'stats':
     case 'announcement':
       return { ok: true, source: 'owner' };
+    // LT-320: an emptied gallery was a dead end ("add photos first", with no
+    // way to add one here); now it comes back empty, ready for the owner's photos.
     case 'gallery':
-      return photos > 0 ? READY : { ok: false, reason: 'noPhotos' };
+      return photos > 0 ? READY : { ok: true, source: 'photos' };
     case 'interlude':
       return photos > 1 || str(c?.hero?.heroImageSrc) ? READY : { ok: false, reason: 'twoPhotos' };
     case 'photoPair':
@@ -419,6 +421,28 @@ export const addSection = (
   const placed = [...(next.blocks ?? blocks)];
   placed.splice(Math.min(Math.max(at, 0), placed.length), 0, block);
   return { config: { ...next, blocks: placed }, id, openPath };
+};
+
+const GALLERY_TITLES: Record<string, string> = { he: 'גלריה', en: 'Gallery', ar: 'معرض الصور', fr: 'Galerie', es: 'Galería' };
+
+/**
+ * LT-320: a photo uploaded in the editor joins the gallery, and the gallery
+ * shows on the page: a composed page whose gallery block went with its last
+ * photo (the server drops a block with no content) gets it back where it
+ * belongs, as the server would on save.
+ */
+export const addGalleryPhoto = (config: WebConfig, imageName: string): WebConfig => {
+  const portfolio = config.components?.portfolio;
+  let next = setAt(config, 'components.portfolio.items', [...(portfolio?.items ?? []), { url: imageName, title: '', description: '' }]);
+  if (portfolio?.visible === false) next = setAt(next, 'components.portfolio.visible', true);
+  if (!str(portfolio?.title)) {
+    next = setAt(next, 'components.portfolio.title', GALLERY_TITLES[(config.defaultLanguage || 'he').slice(0, 2)] ?? GALLERY_TITLES.he);
+  }
+  const types = (next.blocks ?? []).map((b) => b.type);
+  if (types.length && !types.some((t) => t === 'gallery' || t === 'photoPair' || t === 'beforeAfter')) {
+    next = addSection(next, 'gallery', defaultInsertIndex(types, 'gallery')).config;
+  }
+  return next;
 };
 
 // ── Before a save ───────────────────────────────────────────────────────

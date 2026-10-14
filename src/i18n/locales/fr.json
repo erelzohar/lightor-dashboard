@@ -159,13 +159,15 @@
     "saveSuccess": "Paramètres enregistrés avec succès",
     "loadFailed": "Échec du chargement des paramètres",
     "tabs": {
-      "general": "Profil",
-      "address": "Adresse",
+      "general": "Entreprise",
       "contact": "Contact",
-      "site": "Site"
+      "site": "Site",
+      "bookings": "Réservations"
     },
     "websiteLanguage": "Langue du site",
     "websiteLanguageTooltip": "La langue par défaut que les visiteurs voient sur votre site public.",
+    "timeZone": "Fuseau horaire",
+    "timeZoneHelp": "Les horaires des réservations, les rappels et les messages suivent ce fuseau horaire.",
     "bookingHorizon": "Jusqu'où les clients peuvent réserver",
     "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même.",
     "bookingFields": {
@@ -235,7 +237,18 @@
     },
     "subdomainInvalid": "Utilisez des lettres, des chiffres et des tirets — le lien ne peut pas commencer ni finir par un tiret",
     "darkMode": "Mode sombre",
-    "lightMode": "Mode clair"
+    "lightMode": "Mode clair",
+    "sections": {
+      "business": "Informations de l'entreprise",
+      "businessDesc": "Le nom et le logo affichés sur votre site",
+      "addressDesc": "Où vos clients vous trouvent",
+      "contactDesc": "Comment vos clients vous joignent — affiché sur votre site",
+      "socialDesc": "Liens vers vos pages sociales, en bas de votre site",
+      "siteBasics": "Lien et langue",
+      "siteBasicsDesc": "L'adresse de votre site et la langue dans laquelle il s'affiche",
+      "bookingRules": "Règles de réservation",
+      "bookingRulesDesc": "Jusqu'à quand annuler, et combien de temps à l'avance réserver"
+    }
   },
   "appointmentTypes": {
     "title": "Types de services",
@@ -300,7 +313,8 @@
     "customerDetails": "Détails du client",
     "answers": {
       "title": "Détails",
-      "openInMaps": "Ouvrir dans Google Maps"
+      "openInMaps": "Ouvrir dans Google Maps",
+      "openInWaze": "Naviguer avec Waze"
     },
     "price": "Prix",
     "currencySymbol": "₪",
@@ -1393,7 +1407,8 @@
       "choose": "Ou choisissez une image déjà sur votre site :",
       "use": "Utiliser cette image",
       "removeFromGallery": "Retirer de la galerie",
-      "uploadFailed": "Échec de l'envoi — réessayez"
+      "uploadFailed": "Échec de l'envoi — réessayez",
+      "addToGallery": "Ajouter une photo à la galerie"
     },
     "section": {
       "heroBackground": "Effet d'arrière-plan",
@@ -1418,7 +1433,7 @@
       "color": "Couleur principale",
       "headingFont": "Police des titres",
       "bodyFont": "Police du texte",
-      "buttons": "Boutons",
+      "buttons": "Bouton principal",
       "corners": "Coins",
       "cards": "Cartes",
       "mode": "Mode"
@@ -1448,7 +1463,8 @@
       },
       "badge": {
         "ai": "L'IA rédige un brouillon",
-        "owner": "Vous l'écrivez"
+        "owner": "Vous l'écrivez",
+        "photos": "Ajoutez des photos"
       },
       "drafting": "L'IA rédige un brouillon…",
       "aiFailed": "L'IA n'a pas pu rédiger de brouillon. La section est ajoutée : remplissez-la vous-même.",

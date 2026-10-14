@@ -8,16 +8,20 @@ import {
   sessionsOnDay,
   type ScheduleFacts,
 } from '../../utils/ownerSchedule';
-import { businessTimeToMs } from '../../utils/businessTime';
+import { zonedTimeToMs } from '../../utils/businessTime';
 
-// Sunday 2030-03-03 and Monday 2030-03-04; "now" is the Saturday before.
+// Sunday 2030-03-03 and Monday 2030-03-04 (carriers); "now" is the Saturday
+// before. Every instant is on the business's clock — Asia/Jerusalem, the
+// default — so the suite means the same on any device (LT-318).
 const SUNDAY = new Date(2030, 2, 3);
 const MONDAY = new Date(2030, 2, 4);
-// Instants on Israel's clock (LT-315), whatever zone runs the tests.
-const NOW = businessTimeToMs(2030, 2, 2, 12);
 const MIN = 60_000;
 const HOUR = 60 * MIN;
-const at = (day: Date, h: number, m = 0) => businessTimeToMs(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
+const J = 'Asia/Jerusalem';
+const NY = 'America/New_York';
+const atIn = (tz: string, day: Date, h: number, m = 0) => zonedTimeToMs(day.getFullYear(), day.getMonth(), day.getDate(), h, m, tz);
+const at = (day: Date, h: number, m = 0) => atIn(J, day, h, m);
+const NOW = at(new Date(2030, 2, 2), 12);
 
 const facts = (over: Partial<ScheduleFacts> = {}): ScheduleFacts => ({
   workingDays: ['09:00-12:00', '10:00-11:00,14:00-15:00', null, null, null, null, null],
@@ -123,5 +127,51 @@ describe("a class's days", () => {
     // A walk-in into a session that began yesterday (LT-204): the server lists it, so it is open.
     expect(classDayStatus([session(19, 3)], 'c1', SUNDAY, at(MONDAY, 9))).toBe('full');
     expect(classDayStatus([], 'c1', SUNDAY, at(MONDAY, 9))).toBe('past');
+  });
+});
+
+/**
+ * LT-318: the business's clock, not the device's. A New York business's
+ * hours are New York's, whatever zone the owner's phone is set to (the
+ * suite runs under TZ=UTC and TZ=Asia/Dubai too).
+ */
+describe("a business in another zone than the device's", () => {
+  const ny = (over: Partial<ScheduleFacts> = {}) => facts({ timeZone: NY, ...over });
+
+  it("keeps New York's own bookings out, and no one else's hour", () => {
+    // 09:30 New York is taken; 09:30 Jerusalem is 02:30 in New York — no clash.
+    const taken = ny({
+      busy: [
+        { timestamp: String(atIn(NY, SUNDAY, 9, 30)), durationMS: String(30 * MIN) },
+        { timestamp: String(at(SUNDAY, 9, 30)), durationMS: String(30 * MIN) },
+      ],
+    });
+    expect(freeSlots(taken, SUNDAY, 30 * MIN, NOW)).toEqual(['09:00', '10:00', '10:30', '11:00', '11:30']);
+  });
+
+  it("offers nothing that has begun on New York's clock", () => {
+    expect(freeSlots(ny(), SUNDAY, 30 * MIN, atIn(NY, SUNDAY, 10, 15))).toEqual(['10:30', '11:00', '11:30']);
+    // 10:15 in Jerusalem is still the small hours in New York: the whole day is ahead.
+    expect(freeSlots(ny(), SUNDAY, 30 * MIN, at(SUNDAY, 10, 15))).toHaveLength(6);
+  });
+
+  it("reads the past and a vacation on the business's calendar", () => {
+    // Sunday 05:00 in Jerusalem is still Saturday evening in New York.
+    const now = Date.UTC(2030, 2, 3, 3, 0);
+    const saturday = new Date(2030, 2, 2);
+    expect(isPastDay(saturday, now, J)).toBe(true);
+    expect(isPastDay(saturday, now, NY)).toBe(false);
+    expect(dayStatus(facts(), saturday, 30 * MIN, now)).toBe('past');
+    const away = ny({ vacations: [{ startDate: String(atIn(NY, SUNDAY, 0)), endDate: String(atIn(NY, SUNDAY, 23)) }] });
+    expect(dayStatus(away, SUNDAY, 30 * MIN, NOW)).toBe('vacation');
+  });
+
+  it("puts a class session on the business's day, not the device's", () => {
+    // Sunday 22:00 in New York is Monday 05:00 in Jerusalem.
+    const late = { type_id: 'c1', timestamp: String(atIn(NY, SUNDAY, 22)), durationMS: String(HOUR), capacity: 12, booked: 0 };
+    expect(sessionsOnDay([late], 'c1', SUNDAY, NY)).toHaveLength(1);
+    expect(sessionsOnDay([late], 'c1', MONDAY, NY)).toHaveLength(0);
+    expect(sessionsOnDay([late], 'c1', MONDAY, J)).toHaveLength(1);
+    expect(classDayStatus([late], 'c1', SUNDAY, NOW, NY)).toBe('full');
   });
 });

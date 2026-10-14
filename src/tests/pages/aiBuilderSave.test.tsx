@@ -44,6 +44,12 @@ vi.mock('../../hooks/useAppSelector', () => ({
 }));
 const dispatchMock = vi.hoisted(() => vi.fn());
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => dispatchMock }));
+// The zone the device names (LT-318), whatever this process runs in.
+const deviceZone = vi.hoisted(() => ({ value: 'Europe/Paris' as string | undefined }));
+vi.mock('../../utils/businessTime', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/businessTime')>()),
+  deviceTimeZone: () => deviceZone.value,
+}));
 
 const STORED_VACATION = { _id: 'v1', title: 'Summer', startDate: '1780000000000', endDate: '1780600000000', webConfig_id: 'wc1' };
 
@@ -106,6 +112,7 @@ beforeEach(() => {
   vi.mocked(createVacation).mockReset().mockResolvedValue({} as never);
   vi.mocked(aiService.editSite).mockReset().mockResolvedValue({ config: aiDraft() as never, message: 'Done' });
   authValue.auth.user.webConfig_id = 'wc1';
+  deviceZone.value = 'Europe/Paris';
   state.webConfig.data = storedConfig();
   dispatchMock.mockReset().mockImplementation((action: { type: string; payload?: unknown }) =>
     Promise.resolve(action.type.startsWith('webConfig/') ? answer(action.type, 'fulfilled', action.payload) : action)
@@ -177,6 +184,25 @@ describe('AI builder save', () => {
     expect(await screen.findByText('aiBuilder.saved')).toBeInTheDocument();
     const payload = vi.mocked(createWebConfig).mock.calls[0][0] as unknown as Record<string, unknown>;
     expect(payload.businessDescription).toBe('Renovations in Haifa, kitchens and bathrooms.');
+    // A first site takes the zone of the device it was built on (LT-318).
+    expect(payload.timeZone).toBe('Europe/Paris');
+  });
+
+  it("leaves a first site's zone to the server when the device names none (LT-318)", async () => {
+    deviceZone.value = undefined;
+    authValue.auth.user.webConfig_id = undefined;
+    state.webConfig.data = null;
+    vi.mocked(aiService.generateSite).mockResolvedValue({ config: aiDraft() as never, message: 'Built' });
+    render(<AiBuilder />);
+
+    fireEvent.change(screen.getByPlaceholderText('aiBuilder.firstPromptPlaceholder'), { target: { value: 'A barber in Haifa' } });
+    fireEvent.keyDown(screen.getByPlaceholderText('aiBuilder.firstPromptPlaceholder'), { key: 'Enter' });
+    const save = await screen.findByRole('button', { name: /aiBuilder\.save/ });
+    await waitFor(() => expect(save).not.toBeDisabled());
+    fireEvent.click(save);
+
+    expect(await screen.findByText('aiBuilder.saved')).toBeInTheDocument();
+    expect(vi.mocked(createWebConfig).mock.calls[0][0]).not.toHaveProperty('timeZone');
   });
 
   it('cleans the contact-form questions, keeps the mode and a trimmed button text, and re-creates no vacation', async () => {

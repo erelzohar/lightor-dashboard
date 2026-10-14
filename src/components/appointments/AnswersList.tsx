@@ -1,9 +1,9 @@
 import React from 'react';
-import { Check, MapPin } from 'lucide-react';
+import { Check, MapPin, Navigation } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentAnswer, BookingField, BookingFieldType } from '../../types';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { CONFIRM_YES, addressKeys, compactAnswer, mapsUrlFor } from '../../utils/bookingFields';
+import { CONFIRM_YES, addressKeys, compactAnswer, mapsUrlFor, wazeUrlFor } from '../../utils/bookingFields';
 
 interface AnswersListProps {
   answers?: AppointmentAnswer[];
@@ -26,7 +26,8 @@ const WRAP = 'break-words [overflow-wrap:anywhere] whitespace-pre-wrap';
  * the session roster. Labels are the owner's own words, copied onto the
  * appointment when it was booked, so they render raw. Renders nothing when
  * there is nothing to show. An address is the whole point for a home visit,
- * so it is a Google Maps link and is never truncated.
+ * so it is a Google Maps link and is never truncated; the full list adds
+ * Waze under it (LT-320).
  */
 const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = false, className = '' }) => {
   const { t } = useTranslation();
@@ -97,7 +98,19 @@ const AnswersList: React.FC<AnswersListProps> = ({ answers, fields, compact = fa
               <>
                 <span className="block text-xs text-gray-500 dark:text-gray-400 break-words">{answer.label}</span>
                 {addresses.has(answer.key) ? (
-                  <AddressLink answer={answer} />
+                  <>
+                    <AddressLink answer={answer} />
+                    <a
+                      href={wazeUrlFor(answer)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1 flex w-fit items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                    >
+                      <Navigation size={12} className="shrink-0" aria-hidden="true" />
+                      {t('appointments.answers.openInWaze')}
+                    </a>
+                  </>
                 ) : (
                   <span className={`block ${WRAP}`}>{answer.value}</span>
                 )}

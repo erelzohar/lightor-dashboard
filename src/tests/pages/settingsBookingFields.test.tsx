@@ -19,7 +19,7 @@ vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
 // Both cards call the API on mount; neither is under test here.
 vi.mock('../../components/settings/CalendarFeedCard', () => ({ default: (): null => null }));
 vi.mock('../../components/settings/GoogleCalendarCard', () => ({ default: (): null => null }));
-vi.mock('../../components/settings/WebConfigTabs', () => ({ default: (): null => null }));
+// The real tabs: the questions sit in their own tabs (LT-316).
 
 // The store's saved config never changes under this test: what matters is
 // what the page SENDS, and what it keeps of the server's reply.
@@ -77,6 +77,10 @@ const sentPayload = (call: number) =>
  * but never lights Save; one missing from the payload is saved as nothing.
  * And the keys are the server's — the page must keep the ones it is given.
  */
+// The settings page by topic (LT-316): booking questions under Bookings, the
+// contact form's under Site. A tab is chosen on press (Radix Tabs).
+const openTab = (tab: 'bookings' | 'site') => fireEvent.mouseDown(screen.getByRole('tab', { name: new RegExp(`settings\\.tabs\\.${tab}`) }));
+
 describe('Settings: booking questions', () => {
   beforeEach(() => {
     vi.mocked(updateWebConfig).mockClear();
@@ -99,6 +103,7 @@ describe('Settings: booking questions', () => {
 
   it('marks the form dirty when a question is added and sends the catalog, keyless', async () => {
     render(<Settings />);
+    openTab('bookings');
 
     expect(screen.queryByText('common.save')).toBeNull();
     fireEvent.click(screen.getByText('settings.bookingFields.addQuestion'));
@@ -121,6 +126,7 @@ describe('Settings: booking questions', () => {
 
   it('adopts the keys the server assigned, so the next save sends them back', async () => {
     render(<Settings />);
+    openTab('bookings');
 
     fireEvent.click(screen.getByText('settings.bookingFields.addQuestion'));
     fireEvent.change(screen.getByLabelText('settings.bookingFields.label'), { target: { value: 'Address' } });
@@ -146,6 +152,7 @@ describe('Settings: booking questions', () => {
     state.webConfig.data = { ...savedConfig, bookingFields: [stored] } as WebConfig;
     try {
       render(<Settings />);
+      openTab('bookings');
       const important = () => screen.getByTestId('field-important-0') as HTMLInputElement;
       expect(important().checked).toBe(false);
       fireEvent.click(important());
@@ -161,7 +168,7 @@ describe('Settings: booking questions', () => {
   });
 
   it('leaves the catalog out of the payload when it was not touched', async () => {
-    render(<Settings />);
+    render(<Settings />); // the business tab: only the name changes
 
     fireEvent.change(screen.getByDisplayValue('Biz'), { target: { value: 'New name' } });
     fireEvent.click(await screen.findByText('common.save'));
@@ -174,6 +181,7 @@ describe('Settings: booking questions', () => {
   it('refuses to save a question with no label', async () => {
     const toast = (await import('react-hot-toast')).default;
     render(<Settings />);
+    openTab('bookings');
 
     fireEvent.click(screen.getByText('settings.bookingFields.addQuestion'));
     fireEvent.click(await screen.findByText('common.save'));
@@ -210,6 +218,7 @@ describe('Settings: contact form questions', () => {
 
   it('adds a question with no per-service scope, sends it as leadFields, and adopts the key', async () => {
     render(<Settings />);
+    openTab('site');
 
     fireEvent.click(screen.getByText('settings.leadFields.addQuestion'));
     const editor = leadEditor();

@@ -159,13 +159,15 @@
     "saveSuccess": "Settings saved successfully",
     "loadFailed": "Failed to load settings",
     "tabs": {
-      "general": "Profile",
-      "address": "Address",
+      "general": "Business",
       "contact": "Contact",
-      "site": "Site"
+      "site": "Site",
+      "bookings": "Bookings"
     },
     "websiteLanguage": "Website language",
     "websiteLanguageTooltip": "The default language visitors see on your public site.",
+    "timeZone": "Time zone",
+    "timeZoneHelp": "Booking times, reminders and messages use this time zone.",
     "bookingHorizon": "How far ahead customers can book",
     "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself.",
     "bookingFields": {
@@ -235,7 +237,18 @@
     },
     "subdomainInvalid": "Use letters, numbers and hyphens — the link can't start or end with a hyphen",
     "darkMode": "Dark mode",
-    "lightMode": "Light mode"
+    "lightMode": "Light mode",
+    "sections": {
+      "business": "Business details",
+      "businessDesc": "The name and logo your site shows",
+      "addressDesc": "Where customers find you",
+      "contactDesc": "How customers reach you — shown on your site",
+      "socialDesc": "Links to your social pages, in your site's footer",
+      "siteBasics": "Link and language",
+      "siteBasicsDesc": "Your site's address and the language it shows in",
+      "bookingRules": "Booking rules",
+      "bookingRulesDesc": "How late customers can cancel, and how far ahead they can book"
+    }
   },
   "appointmentTypes": {
     "title": "Service Types",
@@ -300,7 +313,8 @@
     "customerDetails": "Customer Details",
     "answers": {
       "title": "Details",
-      "openInMaps": "Open in Google Maps"
+      "openInMaps": "Open in Google Maps",
+      "openInWaze": "Navigate with Waze"
     },
     "price": "Price",
     "currencySymbol": "₪",
@@ -1393,7 +1407,8 @@
       "choose": "Or pick a picture already on your site:",
       "use": "Use this picture",
       "removeFromGallery": "Remove from gallery",
-      "uploadFailed": "Upload failed — try again"
+      "uploadFailed": "Upload failed — try again",
+      "addToGallery": "Add a photo to the gallery"
     },
     "section": {
       "heroBackground": "Background effect",
@@ -1418,7 +1433,7 @@
       "color": "Main colour",
       "headingFont": "Heading font",
       "bodyFont": "Body font",
-      "buttons": "Buttons",
+      "buttons": "Main button",
       "corners": "Corners",
       "cards": "Cards",
       "mode": "Mode"
@@ -1448,7 +1463,8 @@
       },
       "badge": {
         "ai": "AI writes a draft",
-        "owner": "You write it"
+        "owner": "You write it",
+        "photos": "Upload photos"
       },
       "drafting": "The AI is writing a draft…",
       "aiFailed": "The AI couldn't write a draft. The section is added; fill it in yourself.",

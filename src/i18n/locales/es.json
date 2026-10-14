@@ -159,13 +159,15 @@
     "saveSuccess": "Configuración guardada correctamente",
     "loadFailed": "No se pudo cargar la configuración",
     "tabs": {
-      "general": "Perfil",
-      "address": "Dirección",
+      "general": "Negocio",
       "contact": "Contacto",
-      "site": "Sitio"
+      "site": "Sitio",
+      "bookings": "Reservas"
     },
     "websiteLanguage": "Idioma del sitio",
     "websiteLanguageTooltip": "El idioma predeterminado que los visitantes ven en tu sitio público.",
+    "timeZone": "Zona horaria",
+    "timeZoneHelp": "Los horarios de las reservas, los recordatorios y los mensajes usan esta zona horaria.",
     "bookingHorizon": "Con cuánta antelación pueden reservar los clientes",
     "bookingHorizonTooltip": "La fecha más lejana que un cliente puede reservar en tu sitio. Tú puedes reservar cualquier fecha.",
     "bookingFields": {
@@ -235,7 +237,18 @@
     },
     "subdomainInvalid": "Usa letras, números y guiones; el enlace no puede empezar ni terminar con un guion",
     "darkMode": "Modo oscuro",
-    "lightMode": "Modo claro"
+    "lightMode": "Modo claro",
+    "sections": {
+      "business": "Datos del negocio",
+      "businessDesc": "El nombre y el logo que muestra tu sitio",
+      "addressDesc": "Dónde te encuentran los clientes",
+      "contactDesc": "Cómo te contactan los clientes — se muestra en tu sitio",
+      "socialDesc": "Enlaces a tus páginas sociales, al pie de tu sitio",
+      "siteBasics": "Enlace e idioma",
+      "siteBasicsDesc": "La dirección de tu sitio y el idioma en que se muestra",
+      "bookingRules": "Reglas de reserva",
+      "bookingRulesDesc": "Hasta cuándo se puede cancelar y con cuánta antelación reservar"
+    }
   },
   "appointmentTypes": {
     "title": "Tipos de servicio",
@@ -300,7 +313,8 @@
     "customerDetails": "Datos del cliente",
     "answers": {
       "title": "Detalles",
-      "openInMaps": "Abrir en Google Maps"
+      "openInMaps": "Abrir en Google Maps",
+      "openInWaze": "Navegar con Waze"
     },
     "price": "Precio",
     "currencySymbol": "₪",
@@ -1393,7 +1407,8 @@
       "choose": "O elige una imagen que ya está en tu sitio:",
       "use": "Usar esta imagen",
       "removeFromGallery": "Quitar de la galería",
-      "uploadFailed": "Error al subir — inténtalo de nuevo"
+      "uploadFailed": "Error al subir — inténtalo de nuevo",
+      "addToGallery": "Añadir una foto a la galería"
     },
     "section": {
       "heroBackground": "Efecto de fondo",
@@ -1418,7 +1433,7 @@
       "color": "Color principal",
       "headingFont": "Fuente de títulos",
       "bodyFont": "Fuente del texto",
-      "buttons": "Botones",
+      "buttons": "Botón principal",
       "corners": "Esquinas",
       "cards": "Tarjetas",
       "mode": "Modo"
@@ -1448,7 +1463,8 @@
       },
       "badge": {
         "ai": "La IA escribe un borrador",
-        "owner": "Lo escribes tú"
+        "owner": "Lo escribes tú",
+        "photos": "Sube fotos"
       },
       "drafting": "La IA está escribiendo un borrador…",
       "aiFailed": "La IA no pudo escribir un borrador. La sección se añadió; complétala tú.",

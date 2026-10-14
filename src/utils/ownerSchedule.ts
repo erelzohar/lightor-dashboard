@@ -1,7 +1,7 @@
 import type { DateOverride } from '../types';
 import type { BusySlot, ClassSessionAvailability } from '../services/appointmentsApi';
-import { hoursForDate, localDateKey } from './bookingSlots';
-import { businessDateKey, businessTimeToMs } from './businessTime';
+import { hoursForDate } from './bookingSlots';
+import { DEFAULT_TIME_ZONE, zonedParts, zonedSlotMs, zonedToday } from './businessTime';
 
 /**
  * The site's booking calendar, for the owner's own bookings (LT-211).
@@ -18,11 +18,12 @@ import { businessDateKey, businessTimeToMs } from './businessTime';
  * began up to a day ago is still offered, for a walk-in (LT-204) — the
  * server lists those to the owner only.
  *
- * The clock is the business's, Asia/Jerusalem, not the device's (LT-315):
- * a day is a calendar date (its components), and its hours become instants
- * through businessTime.ts.
+ * Days are carriers (businessTime.ts) and every hour is on the BUSINESS's
+ * clock (LT-318), whatever zone the owner's device is set to.
  */
 export interface ScheduleFacts {
+  /** The business's IANA zone (businessTimeZone(config)); absent reads the server's default. */
+  timeZone?: string;
   workingDays: (string | null)[];
   dateOverrides?: DateOverride[];
   vacations?: { startDate: string; endDate: string }[];
@@ -34,9 +35,9 @@ export interface ScheduleFacts {
 export type DayStatus = 'full' | 'limited' | 'none' | 'vacation' | 'past';
 
 interface WorkingInterval {
-  /** Minutes since local midnight, inclusive. */
+  /** Minutes since the business's midnight, inclusive. */
   startMin: number;
-  /** Minutes since local midnight, exclusive. */
+  /** Minutes since the business's midnight, exclusive. */
   endMin: number;
 }
 
@@ -64,18 +65,23 @@ export const parseIntervals = (hours: string | null | undefined): WorkingInterva
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-/** That day at that many minutes past midnight, Israeli time, as an instant. */
-const at = (date: Date, minutes: number): number =>
-  businessTimeToMs(date.getFullYear(), date.getMonth(), date.getDate(), Math.floor(minutes / 60), minutes % 60);
+/** A carrier day at this many minutes past the business's midnight, as an instant. */
+const at = (date: Date, minutes: number, timeZone: string): number => zonedSlotMs(date, 0, minutes, timeZone);
 
 const overlaps = (start: number, end: number, otherStart: number, otherEnd: number): boolean =>
   start < otherEnd && otherStart < end;
 
-/** Does this instant fall on this calendar day in Israel? */
-const sameDay = (ms: number, date: Date): boolean => businessDateKey(ms) === localDateKey(date);
+/** The instant falls on this carrier day of the business's calendar. */
+const sameDay = (ms: number, date: Date, timeZone: string): boolean => {
+  const p = zonedParts(ms, timeZone);
+  return p.year === date.getFullYear() && p.month === date.getMonth() && p.day === date.getDate();
+};
 
-/** Before today, by Israel's calendar ("YYYY-MM-DD" keys compare as strings). */
-export const isPastDay = (date: Date, now = Date.now()): boolean => localDateKey(date) < businessDateKey(now);
+const dayNumber = (date: Date): number => date.getFullYear() * 10_000 + date.getMonth() * 100 + date.getDate();
+
+/** A carrier day before the business's today. */
+export const isPastDay = (date: Date, now = Date.now(), timeZone = DEFAULT_TIME_ZONE): boolean =>
+  dayNumber(date) < dayNumber(zonedToday(timeZone, now));
 
 /**
  * Start times ("HH:MM") a service of this length can take on this day. A
@@ -86,6 +92,7 @@ export const isPastDay = (date: Date, now = Date.now()): boolean => localDateKey
  * it (LT-152).
  */
 export const freeSlots = (facts: ScheduleFacts, date: Date, durationMS: number, now = Date.now()): string[] => {
+  const timeZone = facts.timeZone || DEFAULT_TIME_ZONE;
   const intervals = parseIntervals(hoursForDate(facts, date));
   const durationMinutes = durationMS / 60_000;
   if (!intervals.length || !(durationMinutes > 0)) return [];
@@ -94,7 +101,7 @@ export const freeSlots = (facts: ScheduleFacts, date: Date, durationMS: number, 
   const slots: string[] = [];
   for (const { startMin, endMin } of intervals) {
     for (let time = startMin; time + durationMinutes <= endMin; time += step) {
-      const start = at(date, time);
+      const start = at(date, time, timeZone);
       const end = start + durationMS;
       if (start <= now) continue;
       if (facts.vacations?.some((v) => overlaps(start, end, Number(v.startDate), Number(v.endDate)))) continue;
@@ -113,13 +120,14 @@ export const freeSlots = (facts: ScheduleFacts, date: Date, durationMS: number, 
  * else "none".
  */
 export const dayStatus = (facts: ScheduleFacts, date: Date, durationMS: number, now = Date.now()): DayStatus => {
-  if (isPastDay(date, now)) return 'past';
+  const timeZone = facts.timeZone || DEFAULT_TIME_ZONE;
+  if (isPastDay(date, now, timeZone)) return 'past';
   const intervals = parseIntervals(hoursForDate(facts, date));
   const free = freeSlots(facts, date, durationMS, now);
 
   if (!free.length) {
     if (!intervals.length) return 'none';
-    const opening = at(date, intervals[0].startMin);
+    const opening = at(date, intervals[0].startMin, timeZone);
     const onVacation = facts.vacations?.some((v) =>
       overlaps(opening, opening + durationMS, Number(v.startDate), Number(v.endDate))
     );
@@ -134,16 +142,18 @@ export const dayStatus = (facts: ScheduleFacts, date: Date, durationMS: number, 
 /**
  * One class's sessions on one day, soonest first, full ones included: "full"
  * is worth knowing. Once each: a server that lists a session twice (LT-211:
- * the day the clock went back) must not draw two buttons with one key.
+ * the day the clock went back) must not draw two buttons with one key. A
+ * session's day is its day on the business's calendar (LT-318).
  */
 export const sessionsOnDay = (
   classes: ClassSessionAvailability[],
   typeId: string,
-  date: Date
+  date: Date,
+  timeZone = DEFAULT_TIME_ZONE
 ): ClassSessionAvailability[] => {
   const seen = new Set<string>();
   return classes
-    .filter((session) => session.type_id === typeId && sameDay(Number(session.timestamp), date))
+    .filter((session) => session.type_id === typeId && sameDay(Number(session.timestamp), date, timeZone))
     .filter((session) => {
       if (seen.has(session.timestamp)) return false;
       seen.add(session.timestamp);
@@ -161,9 +171,10 @@ export const classDayStatus = (
   classes: ClassSessionAvailability[],
   typeId: string,
   date: Date,
-  now = Date.now()
+  now = Date.now(),
+  timeZone = DEFAULT_TIME_ZONE
 ): DayStatus => {
-  const open = sessionsOnDay(classes, typeId, date).filter((session) => session.booked < session.capacity);
-  if (!open.length) return isPastDay(date, now) ? 'past' : 'none';
+  const open = sessionsOnDay(classes, typeId, date, timeZone).filter((session) => session.booked < session.capacity);
+  if (!open.length) return isPastDay(date, now, timeZone) ? 'past' : 'none';
   return open.every((session) => session.capacity - session.booked <= 3) ? 'limited' : 'full';
 };
