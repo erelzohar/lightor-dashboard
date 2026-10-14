@@ -19,6 +19,7 @@ import { removedStoredImages } from '../utils/aiReconcile';
 import { useDraft } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
 import { switchFade, useDeviceSwitch } from '../hooks/useDeviceSwitch';
+import { PhoneScreenMarks, PhoneSurround, phoneBox } from '../components/siteEditor/phoneShell';
 import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
 import { addGalleryPhoto, addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
@@ -487,13 +488,15 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       <main className="flex-1 flex overflow-hidden md:px-5 md:pb-5 md:gap-4 relative">
         <section className="flex-1 flex flex-col overflow-hidden md:rounded-3xl md:border md:border-white/60 dark:md:border-slate-700/50 bg-white/50 dark:bg-slate-800/50">
           <div className="flex-1 relative overflow-hidden bg-gray-100 dark:bg-slate-900">
+            {/* LT-324: the register's iPhone. One box around the iframe in both
+                modes (a remount would reload the site): the phone restyles it
+                and adds its marks; the glow and buttons sit behind it. */}
+            {device === 'phone' && <PhoneSurround style={switchFade(switchingDevice)} />}
             <div
               className="absolute overflow-hidden bg-white"
+              data-testid="preview-box"
               style={{
-                ...(device === 'phone' ? {
-                  width: 375, height: 'min(740px, calc(100% - 32px))', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                  borderRadius: 28, border: '8px solid #1e1e22', boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
-                } : { inset: 0 }),
+                ...(device === 'phone' ? phoneBox : { inset: 0 }),
                 ...switchFade(switchingDevice),
               }}
             >
@@ -504,6 +507,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
                 title={t('siteEditor.previewTitle')}
                 className="absolute inset-0 w-full h-full border-0 block"
               />
+              {device === 'phone' && <PhoneScreenMarks />}
             </div>
             {!bridge.ready && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-slate-900/70" role="status">
