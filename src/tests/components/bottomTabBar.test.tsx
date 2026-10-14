@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import BottomTabBar from '../../components/layout/BottomTabBar';
 
@@ -131,5 +131,33 @@ describe('BottomTabBar', () => {
     // Each page on its coloured tile, as in the sidebar; Lighty keeps his face.
     const home = screen.getByText('common.dashboard').closest('a') as HTMLElement;
     expect(home.querySelector('.bg-gradient-to-br.from-violet-400')).not.toBeNull();
+  });
+
+  // LT-342: on a phone the bar steps aside while the owner scrolls down.
+  it('hides while scrolling down, inside any scroller, and comes back on a scroll up or near the top', () => {
+    render(
+      <MemoryRouter>
+        <div data-testid="scroller" />
+        <BottomTabBar onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    const bar = screen.getByTestId('bottom-tab-bar');
+    const scroller = screen.getByTestId('scroller');
+    const scrollTo = (top: number) => {
+      Object.defineProperty(scroller, 'scrollTop', { value: top, configurable: true });
+      act(() => { fireEvent.scroll(scroller); });
+    };
+    scrollTo(100);
+    scrollTo(160); // down
+    expect(bar).toHaveAttribute('data-hidden', 'true');
+    expect(bar.className).toContain('translate-y-');
+    scrollTo(162); // a jitter changes nothing
+    expect(bar).toHaveAttribute('data-hidden', 'true');
+    scrollTo(120); // up
+    expect(bar).not.toHaveAttribute('data-hidden');
+    scrollTo(300);
+    expect(bar).toHaveAttribute('data-hidden', 'true');
+    scrollTo(10); // near the top
+    expect(bar).not.toHaveAttribute('data-hidden');
   });
 });
