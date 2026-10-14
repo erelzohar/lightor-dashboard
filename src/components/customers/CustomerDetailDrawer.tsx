@@ -18,6 +18,7 @@ import {
   CustomerDetail,
 } from '../../services/customersApi';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
+import { firstVisitOf, historyStatus, pastVisits } from '../../utils/customerVisits';
 
 /**
  * One customer, in full (LT-122): who they are, how to reach them, what they
@@ -216,7 +217,8 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                   {/* Stats strip */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: t('customers.columns.visits'), value: stats.visits },
+                      // Visits that took place; the upcoming ones have their own tile (LT-315).
+                      { label: t('customers.columns.visits'), value: pastVisits(stats) },
                       { label: t('customers.detail.cancelledCount'), value: stats.cancelled },
                       { label: t('customers.detail.upcoming'), value: stats.upcoming },
                       {
@@ -241,7 +243,8 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">{t('customers.detail.firstSeen')}</p>
-                      <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(customer.firstSeenAt)}</p>
+                      {/* The first appointment's date, not the record's (LT-315). */}
+                      <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(firstVisitOf(detail.history))}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">{t('customers.detail.source')}</p>
@@ -305,7 +308,8 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                                 {t('appointments.currencySymbol')}{row.typePrice}
                               </span>
                             )}
-                            <StatusBadge status={row.status} />
+                            {/* In the owner's language, as the calendar shows it (LT-315). */}
+                            <StatusBadge status={historyStatus(row)} i18nPrefix="admin.appointmentStatus" />
                           </li>
                         ))}
                       </ul>

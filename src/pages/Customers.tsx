@@ -26,6 +26,7 @@ import {
 } from '../services/customersApi';
 import { Paginated } from '../services/adminApi';
 import { formatPhoneForDisplay } from '../utils/phone';
+import { pastVisits } from '../utils/customerVisits';
 
 /**
  * Customers (LT-122): every person who has booked with this business, keyed
@@ -154,7 +155,9 @@ const Customers: React.FC = () => {
       sortable: true,
       render: (row) => (
         <span className="font-medium text-gray-800 dark:text-gray-100">
-          {row.visits}
+          {/* Visits that took place, then the upcoming ones (LT-315): the
+              API's count includes those, so "1+1" was one booking twice. */}
+          {pastVisits(row)}
           {row.upcoming > 0 && (
             <span className="ms-1.5 text-[11px] text-primary">+{row.upcoming}</span>
           )}
