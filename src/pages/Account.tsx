@@ -140,7 +140,7 @@ const Account: React.FC = () => {
       // which the interceptor no longer takes for an expired session.
       if (code === 'WRONG_PASSWORD' || code === 'PASSWORD_REQUIRED' || message === 'Current password is incorrect') {
         setCurrentPasswordError(t('account.passwordCurrentIncorrect'));
-      } else if (message === 'New password cannot be the same as the current password') {
+      } else if (code === 'SAME_PASSWORD' || message === 'New password cannot be the same as the current password') {
         toast.error(t('account.passwordSameAsOld'));
       } else {
         toast.error(t('account.passwordUpdateError'));

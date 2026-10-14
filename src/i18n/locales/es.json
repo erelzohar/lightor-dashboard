@@ -232,7 +232,8 @@
       "ctaTooLong": "Máximo {{max}} caracteres",
       "hideFromSearch": "Ocultar mi sitio de los buscadores",
       "hideFromSearchHelp": "Tu sitio sigue en línea, y cualquiera con el enlace puede abrirlo. Google puede tardar unos días en quitarlo de sus resultados."
-    }
+    },
+    "subdomainInvalid": "Usa letras, números y guiones; el enlace no puede empezar ni terminar con un guion"
   },
   "appointmentTypes": {
     "title": "Tipos de servicio",
@@ -752,7 +753,8 @@
     "deleted": "Tu cuenta ha sido eliminada. Adiós 👋",
     "passwordNeeded": "Esta cuenta tiene contraseña — introdúcela para confirmar.",
     "wrongPassword": "Contraseña incorrecta.",
-    "deleteFailed": "La eliminación falló — tu cuenta y tus datos no se eliminaron. Inténtalo de nuevo."
+    "deleteFailed": "La eliminación falló — tu cuenta y tus datos no se eliminaron. Inténtalo de nuevo.",
+    "emailMismatch": "Ese no es el correo de esta cuenta."
   },
   "handoff": {
     "connecting": "Iniciando sesión en tu cuenta...",

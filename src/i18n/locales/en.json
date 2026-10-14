@@ -232,7 +232,8 @@
       "ctaTooLong": "At most {{max}} characters",
       "hideFromSearch": "Hide my site from search engines",
       "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results."
-    }
+    },
+    "subdomainInvalid": "Use letters, numbers and hyphens — the link can't start or end with a hyphen"
   },
   "appointmentTypes": {
     "title": "Service Types",
@@ -752,7 +753,8 @@
     "deleted": "Your account has been deleted. Goodbye 👋",
     "passwordNeeded": "This account has a password — please enter it to confirm.",
     "wrongPassword": "Incorrect password.",
-    "deleteFailed": "Deletion failed — your account and data were not removed. Please try again."
+    "deleteFailed": "Deletion failed — your account and data were not removed. Please try again.",
+    "emailMismatch": "That isn't this account's email."
   },
   "handoff": {
     "connecting": "Signing you in to your account...",

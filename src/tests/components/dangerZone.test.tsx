@@ -92,4 +92,16 @@ describe('DangerZoneSection (LT-315)', () => {
     await waitFor(() => expect(logout).toHaveBeenCalled());
     expect(deleteAccount).toHaveBeenCalledWith({ password: 'right1' });
   });
+
+  it('says under the field when the typed email is not the account\'s (400 EMAIL_MISMATCH)', async () => {
+    authState.user = { email: 'jane@biz.com', googleId: 'g1', hasPassword: false };
+    vi.mocked(deleteAccount).mockRejectedValue(new AuthRequestError('Confirmation email does not match', 400, 'EMAIL_MISMATCH'));
+    openDialog();
+    // Case and spaces pass the button; the server has the last word.
+    fireEvent.change(screen.getByLabelText('danger.confirmEmailLabel'), { target: { value: 'JANE@biz.com' } });
+    fireEvent.click(screen.getByText('danger.modalConfirm'));
+    expect(await screen.findByText('danger.emailMismatch')).toBeInTheDocument();
+    expect(logout).not.toHaveBeenCalled();
+  });
 });
+

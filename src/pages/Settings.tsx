@@ -269,6 +269,8 @@ const Settings: React.FC = () => {
 
     if (
       errors ||
+      // An invalid or taken link would only come back refused (LT-315).
+      subdomainError ||
       ctaOf(localWebConfig).length > MAX_CTA_LENGTH ||
       !bookingFieldsValid(localWebConfig.bookingFields ?? []) ||
       !bookingFieldsValid(localWebConfig.leadFields ?? [])
@@ -580,6 +582,11 @@ const Settings: React.FC = () => {
 
                         if (value.length < 2 || value.length > 20) {
                           setSubdomainError(t('settings.linkRange'));
+                          setIsCheckingSubdomain(false);
+                        } else if (value.startsWith('-') || value.endsWith('-')) {
+                          // A DNS label, as the API now insists (LT-315):
+                          // say what is wrong, not "not available".
+                          setSubdomainError(t('settings.subdomainInvalid'));
                           setIsCheckingSubdomain(false);
                         } else if (value !== webConfig?.subDomain && value.length >= 2) {
                           setIsCheckingSubdomain(true);

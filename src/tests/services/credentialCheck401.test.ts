@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { InternalAxiosRequestConfig } from 'axios';
 import apiClient from '../../services/apiClient';
 import { setUnauthorizedHandler } from '../../services/authInterceptor';
-import { changePassword, deleteAccount, getCurrentUser, AuthRequestError } from '../../services/authApi';
+import { changePassword, deleteAccount, getCurrentUser, resetPassword, requestPasswordReset, AuthRequestError } from '../../services/authApi';
 
 vi.mock('../../services/nativeSession', () => ({ getCachedToken: vi.fn(() => null) }));
 
@@ -71,5 +71,36 @@ describe('credential checks are not session failures (LT-315)', () => {
     answer(401, { success: false, error: 'Current password is incorrect' });
     await expect(getCurrentUser()).rejects.toThrow();
     expect(expired).toHaveBeenCalledTimes(1);
+  });
+
+  it('a reset answers { token } and nothing more; the token comes back for the native Bearer', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    apiClient.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      sent = config;
+      return { data: { token: 'jwt' }, status: 200, statusText: 'OK', headers: {}, config };
+    };
+    await expect(resetPassword('tok/1', 'abc123')).resolves.toEqual({ token: 'jwt' });
+    expect(sent?.method).toBe('put');
+    expect(sent?.url).toMatch(/reset-password\/tok%2F1$/);
+    expect(JSON.parse(String(sent?.data))).toEqual({ password: 'abc123', confirmPassword: 'abc123' });
+  });
+
+  it('a dead reset link is RESET_TOKEN_INVALID', async () => {
+    answer(400, { success: false, error: 'Invalid or expired token', code: 'RESET_TOKEN_INVALID' });
+    const error = await resetPassword('old', 'abc123').catch((e) => e);
+    expect(error).toBeInstanceOf(AuthRequestError);
+    expect(error.code).toBe('RESET_TOKEN_INVALID');
+  });
+
+  it('asks for a reset link with the email alone', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    apiClient.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      sent = config;
+      return { data: { success: true }, status: 200, statusText: 'OK', headers: {}, config };
+    };
+    await requestPasswordReset('jane@biz.com');
+    expect(sent?.method).toBe('post');
+    expect(sent?.url).toMatch(/forgot-password$/);
+    expect(JSON.parse(String(sent?.data))).toEqual({ email: 'jane@biz.com' });
   });
 });

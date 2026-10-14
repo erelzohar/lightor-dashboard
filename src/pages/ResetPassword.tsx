@@ -54,8 +54,10 @@ const ResetPassword: React.FC = () => {
       setSessionHint();
       window.location.replace('/');
     } catch (err) {
-      const status = (err as AuthRequestError).status;
-      if (status === 400 || status === 404) setLinkDead(true);
+      const { status, code } = err as AuthRequestError;
+      // RESET_TOKEN_INVALID: unknown, used or expired. Any other 400 is the
+      // same thing to the owner — the password itself was checked above.
+      if (code === 'RESET_TOKEN_INVALID' || status === 400 || status === 404) setLinkDead(true);
       else setError(status === 429 ? t('forgotPassword.tooMany') : t('resetPassword.failed'));
       setSaving(false);
     }

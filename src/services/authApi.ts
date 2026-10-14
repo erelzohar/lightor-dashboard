@@ -16,9 +16,10 @@ const legacyToken = (): string | null => localStorage.getItem('lightor');
 
 /**
  * A failed auth request that keeps what the API said about it: the HTTP
- * status and the machine-readable `code` (LT-315 — WRONG_PASSWORD /
- * PASSWORD_REQUIRED on the credential checks), next to the message older
- * callers match on.
+ * status and the machine-readable `code` (LT-315 — change password:
+ * WRONG_PASSWORD, SAME_PASSWORD; delete account: PASSWORD_REQUIRED,
+ * WRONG_PASSWORD, EMAIL_MISMATCH; reset: RESET_TOKEN_INVALID), next to the
+ * message older callers match on.
  */
 export class AuthRequestError extends Error {
   status?: number;
@@ -233,9 +234,9 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
 /**
  * Set a new password with the emailed link's token (LT-315). The API's route
  * is `PUT /auth/reset-password/:resetToken` with `{ password, confirmPassword }`;
- * on success it sets the session cookie and returns the JWT in the body,
- * which the native app keeps as its Bearer (as on login and handoff).
- * A 400 means the link is invalid or expired.
+ * a 200 sets the session cookie and returns `{ token }`, the JWT the native
+ * app keeps as its Bearer (as on login and handoff). An invalid, used or
+ * expired link is a 400 with code RESET_TOKEN_INVALID.
  */
 export const resetPassword = async (resetToken: string, password: string): Promise<{ token?: string }> => {
   try {
@@ -244,10 +245,9 @@ export const resetPassword = async (resetToken: string, password: string): Promi
       { password, confirmPassword: password },
       { withCredentials: true },
     );
-    if (!response.data?.success) throw new AuthRequestError('Password reset failed');
-    return { token: response.data?.token };
+    const token = response.data?.token;
+    return { token: typeof token === 'string' ? token : undefined };
   } catch (error) {
-    if (error instanceof AuthRequestError) throw error;
     throw toAuthError(error, 'Password reset failed');
   }
 };

@@ -125,7 +125,7 @@ describe('reset password (LT-315)', () => {
   });
 
   it('offers a new link when this one is invalid or expired', async () => {
-    vi.mocked(resetPassword).mockRejectedValue(new AuthRequestError('Invalid or expired token', 400));
+    vi.mocked(resetPassword).mockRejectedValue(new AuthRequestError('Invalid or expired token', 400, 'RESET_TOKEN_INVALID'));
     at('/reset-password/old');
     fill('newpass1');
 

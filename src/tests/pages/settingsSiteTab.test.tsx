@@ -333,3 +333,20 @@ describe('Settings: booking-only controls by site mode', () => {
     expect(screen.getByText('settings.websiteLanguage')).toBeInTheDocument();
   });
 });
+
+describe('Settings: the site link (LT-315)', () => {
+  it('calls a link that starts or ends with a hyphen invalid, without asking the server', async () => {
+    const { checkSubdomainAvailability } = await import('../../services/webConfigApi');
+    vi.mocked(checkSubdomainAvailability).mockClear();
+    render(<Settings />);
+    const input = screen.getByPlaceholderText('your-site');
+    fireEvent.change(input, { target: { value: 'my-biz-' } });
+    expect((await screen.findAllByText('settings.subdomainInvalid')).length).toBeGreaterThan(0);
+    fireEvent.change(input, { target: { value: '-mybiz' } });
+    // The message animates out and in again: one or two copies for a moment.
+    expect((await screen.findAllByText('settings.subdomainInvalid')).length).toBeGreaterThan(0);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(checkSubdomainAvailability).not.toHaveBeenCalled();
+  });
+});
+

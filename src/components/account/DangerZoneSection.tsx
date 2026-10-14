@@ -32,6 +32,7 @@ const DangerZoneSection: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [needPassword, setNeedPassword] = useState(hasPassword);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -46,6 +47,7 @@ const DangerZoneSection: React.FC = () => {
     setPassword('');
     setConfirmEmail('');
     setPasswordError(null);
+    setEmailError(null);
   };
 
   const handleDelete = async () => {
@@ -65,6 +67,8 @@ const DangerZoneSection: React.FC = () => {
         setPasswordError(t('danger.passwordNeeded'));
       } else if (code === 'WRONG_PASSWORD' || message.includes('Incorrect password')) {
         setPasswordError(t('danger.wrongPassword'));
+      } else if (code === 'EMAIL_MISMATCH' || message.includes('Confirmation email does not match')) {
+        setEmailError(t('danger.emailMismatch'));
       } else {
         toast.error(t('danger.deleteFailed'));
       }
@@ -133,7 +137,12 @@ const DangerZoneSection: React.FC = () => {
                 label={t('danger.confirmEmailLabel', { email: auth.user?.email ?? '' })}
                 type="email"
                 value={confirmEmail}
-                onChange={(e) => setConfirmEmail(e.target.value)}
+                onChange={(e) => {
+                  setConfirmEmail(e.target.value);
+                  setEmailError(null);
+                }}
+                error={emailError ?? undefined}
+                aria-invalid={emailError ? true : undefined}
                 leftIcon={<Mail size={18} />}
                 dir="ltr"
                 autoFocus

@@ -82,4 +82,12 @@ describe('Account page (LT-315)', () => {
     fireEvent.click(screen.getByText('account.saveChanges'));
     await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane Cohen', phone: '0501234567' }));
   });
+
+  it('says a new password equal to the old one is refused (400 SAME_PASSWORD)', async () => {
+    updatePassword.mockRejectedValue(new AuthRequestError('New password cannot be the same as the current password', 400, 'SAME_PASSWORD'));
+    render(<Account />);
+    fillPasswordForm('abc12345');
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('account.passwordSameAsOld'));
+  });
 });
+

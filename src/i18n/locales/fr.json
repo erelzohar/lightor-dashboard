@@ -232,7 +232,8 @@
       "ctaTooLong": "{{max}} caractères au maximum",
       "hideFromSearch": "Masquer mon site des moteurs de recherche",
       "hideFromSearchHelp": "Votre site reste en ligne, et toute personne qui a le lien peut l'ouvrir. Google peut mettre quelques jours à le retirer de ses résultats."
-    }
+    },
+    "subdomainInvalid": "Utilisez des lettres, des chiffres et des tirets — le lien ne peut pas commencer ni finir par un tiret"
   },
   "appointmentTypes": {
     "title": "Types de services",
@@ -752,7 +753,8 @@
     "deleted": "Votre compte a été supprimé. Au revoir 👋",
     "passwordNeeded": "Ce compte a un mot de passe — veuillez le saisir pour confirmer.",
     "wrongPassword": "Mot de passe incorrect.",
-    "deleteFailed": "La suppression a échoué — votre compte et vos données n'ont pas été supprimés. Veuillez réessayer."
+    "deleteFailed": "La suppression a échoué — votre compte et vos données n'ont pas été supprimés. Veuillez réessayer.",
+    "emailMismatch": "Ce n'est pas l'e-mail de ce compte."
   },
   "handoff": {
     "connecting": "Connexion à votre compte...",
