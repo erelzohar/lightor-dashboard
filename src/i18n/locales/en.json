@@ -233,7 +233,9 @@
       "hideFromSearch": "Hide my site from search engines",
       "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results."
     },
-    "subdomainInvalid": "Use letters, numbers and hyphens — the link can't start or end with a hyphen"
+    "subdomainInvalid": "Use letters, numbers and hyphens — the link can't start or end with a hyphen",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode"
   },
   "appointmentTypes": {
     "title": "Service Types",

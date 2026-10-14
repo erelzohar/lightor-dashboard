@@ -233,7 +233,9 @@
       "hideFromSearch": "Masquer mon site des moteurs de recherche",
       "hideFromSearchHelp": "Votre site reste en ligne, et toute personne qui a le lien peut l'ouvrir. Google peut mettre quelques jours à le retirer de ses résultats."
     },
-    "subdomainInvalid": "Utilisez des lettres, des chiffres et des tirets — le lien ne peut pas commencer ni finir par un tiret"
+    "subdomainInvalid": "Utilisez des lettres, des chiffres et des tirets — le lien ne peut pas commencer ni finir par un tiret",
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair"
   },
   "appointmentTypes": {
     "title": "Types de services",

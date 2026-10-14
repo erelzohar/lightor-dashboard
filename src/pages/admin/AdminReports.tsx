@@ -50,7 +50,15 @@ const AdminReports: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setResult(await fetchSiteReports({ page, limit: 20, status: status || undefined }));
+      const next = await fetchSiteReports({ page, limit: 20, status: status || undefined });
+      // Handling the last report of the last page empties that page, and the
+      // pager hides with one page left: step back to the new last page (LT-315).
+      const last = Math.max(1, next.pagination?.pages ?? 1);
+      if (next.data.length === 0 && page > last) {
+        setPage(last);
+        return;
+      }
+      setResult(next);
     } catch {
       toast.error(t('admin.errors.loadFailed'));
     } finally {

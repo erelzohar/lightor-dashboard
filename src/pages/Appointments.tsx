@@ -166,6 +166,9 @@ const Appointments: React.FC = () => {
             onValueChange={(mode) => {
               const next = mode === 'list' ? 'list' : 'calendar';
               setViewMode(next);
+              // The day a link asked for was shown; switching views by hand
+              // lets it go, or the calendar went back to it each time (LT-315).
+              setOpenDay(null);
               localStorage.setItem('appointments_view_mode', next);
             }}
             className="shrink-0"

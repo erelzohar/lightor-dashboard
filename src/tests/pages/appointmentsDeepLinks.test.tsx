@@ -95,6 +95,20 @@ describe('the appointments page, opened from a link', () => {
     expect(detailsOpen()).toBe(false);
   });
 
+  it('lets the linked day go once the owner switches views by hand (LT-315)', async () => {
+    vi.mocked(getAppointments).mockResolvedValue([booking('a1', 'Dana Cohen', later)]);
+    renderAt(`/appointments?date=${localDateKey(later)}`);
+    await waitFor(() => expect(within(grid()).getAllByText('Dana Cohen').length).toBeGreaterThan(0));
+
+    // Radix tabs switch on mouse down.
+    fireEvent.mouseDown(screen.getByRole('tab', { name: /appointments\.listView/ }));
+    await waitFor(() => expect(grid()).toBeNull());
+    fireEvent.mouseDown(screen.getByRole('tab', { name: /appointments\.calendarView/ }));
+    await waitFor(() => expect(grid()).not.toBeNull());
+    // Back on this week, a month before the linked day.
+    expect(within(grid()).queryByText('Dana Cohen')).toBeNull();
+  });
+
   it('opens the calendar for a day even when the owner keeps the list view', async () => {
     localStorage.setItem('appointments_view_mode', 'list');
     vi.mocked(getAppointments).mockResolvedValue([booking('a1', 'Dana Cohen', later)]);

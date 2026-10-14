@@ -43,6 +43,11 @@ const WEBSITE_LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map((lng) => ({
   label: WEBSITE_LANGUAGE_NAMES[lng],
 }));
 
+// A cleared social link is typed as "" and saved as null: the same thing, or
+// the unsaved-changes bar never cleared after saving it (LT-315).
+const socialKey = (social: WebConfig['social'] | undefined): string =>
+  JSON.stringify(Object.entries(social ?? {}).map(([key, value]) => [key, value || null]).sort());
+
 const Settings: React.FC = () => {
   const { t } = useTranslation();
   const [localWebConfig, setLocalWebConfig] = useState<WebConfig | null>(null);
@@ -125,7 +130,7 @@ const Settings: React.FC = () => {
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
-      JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
+      socialKey(localWebConfig.social) !== socialKey(webConfig.social) ||
       JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig.components?.introPopup) ||
       imageToUpload ||
       (logoInputMode === 'url' && localWebConfig.logoImageName !== originalLogoUrl);

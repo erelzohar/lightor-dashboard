@@ -233,7 +233,9 @@
       "hideFromSearch": "Ocultar mi sitio de los buscadores",
       "hideFromSearchHelp": "Tu sitio sigue en línea, y cualquiera con el enlace puede abrirlo. Google puede tardar unos días en quitarlo de sus resultados."
     },
-    "subdomainInvalid": "Usa letras, números y guiones; el enlace no puede empezar ni terminar con un guion"
+    "subdomainInvalid": "Usa letras, números y guiones; el enlace no puede empezar ni terminar con un guion",
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro"
   },
   "appointmentTypes": {
     "title": "Tipos de servicio",

@@ -350,3 +350,15 @@ describe('Settings: the site link (LT-315)', () => {
   });
 });
 
+describe('Settings: a cleared social link (LT-315)', () => {
+  it('is no change at all: the server keeps it as null, the form as ""', async () => {
+    render(<Settings />);
+    fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.contact/ }));
+    const instagram = await screen.findByPlaceholderText('https://www.instagram.com');
+    fireEvent.change(instagram, { target: { value: 'https://instagram.com/biz' } });
+    expect(await screen.findByText('common.save')).toBeInTheDocument();
+    fireEvent.change(instagram, { target: { value: '' } });
+    await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
+  });
+});
+

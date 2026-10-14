@@ -441,7 +441,8 @@ const AppointmentTypes: React.FC = () => {
                         icon={<Banknote size={16} />}
                         prefix={
                           <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
-                            $
+                            {/* The site's currency, not "$" (LT-315). */}
+                            {t('appointments.currencySymbol')}
                           </span>
                         }
                         inputProps={{

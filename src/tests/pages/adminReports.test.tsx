@@ -81,4 +81,25 @@ describe('Admin site reports', () => {
     expect(link?.getAttribute('href')).toBe('https://dana.lightor.app');
     expect(screen.getByText('admin.reports.reopen')).toBeTruthy();
   });
+
+  it('steps back a page when handling empties the last one (LT-315)', async () => {
+    const onPage = (rows: SiteReportRow[], at: number, pages: number) => ({
+      ...page(rows, rows.length),
+      pagination: { total: 20 * (pages - 1) + rows.length, page: at, limit: 20, pages },
+    });
+    vi.mocked(fetchSiteReports)
+      .mockResolvedValueOnce(onPage([report({ _id: 'p1', message: 'first page' })], 1, 2))
+      .mockResolvedValueOnce(onPage([report({ _id: 'p2', message: 'the only one on page 2' })], 2, 2))
+      .mockResolvedValueOnce(onPage([], 2, 1))
+      .mockResolvedValue(onPage([report({ _id: 'p1', message: 'first page' })], 1, 1));
+    vi.mocked(updateSiteReport).mockResolvedValue(report({ status: 'handled' }));
+    render(<AdminReports />);
+    fireEvent.click(await screen.findByLabelText('admin.table.nextPage'));
+    expect(await screen.findByText('the only one on page 2')).toBeTruthy();
+
+    fireEvent.click(screen.getByText('admin.reports.markHandled'));
+    await waitFor(() => expect(fetchSiteReports).toHaveBeenLastCalledWith({ page: 1, limit: 20, status: 'new' }));
+    expect(await screen.findByText('first page')).toBeTruthy();
+  });
 });
+

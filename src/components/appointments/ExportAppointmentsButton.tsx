@@ -49,6 +49,13 @@ const ExportAppointmentsButton: React.FC = () => {
   if (locked && !canOfferPurchases()) return null;
 
   const promptUpgrade = () => {
+    // In the app no call to buy, ever (LT-130): reached only when the plan
+    // had not loaded and the server refused with PLAN_REQUIRED (LT-315), as
+    // the customers export already does.
+    if (!canOfferPurchases()) {
+      toast.error(t('appointments.export.failed'));
+      return;
+    }
     toast(t('appointments.export.upgradeToast'), { icon: '👑' });
     navigate('/account');
   };

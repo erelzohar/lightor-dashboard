@@ -88,6 +88,21 @@ describe('ExportAppointmentsButton', () => {
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('appointments.export.rangeInvalid'));
   });
 
+  it('in the app, a refusal before the plan loaded never points at the plans (LT-315)', async () => {
+    vi.mocked(canOfferPurchases).mockReturnValue(false);
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(null);
+    vi.mocked(exportAppointmentsCsv).mockRejectedValue(new Error('PLAN_REQUIRED'));
+    render(<ExportAppointmentsButton />);
+    await waitFor(() => expect(fetchMyEntitlements).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByTestId('export-appointments'));
+    fireEvent.click(screen.getByRole('button', { name: 'appointments.export.download' }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('appointments.export.failed'));
+    expect(navigate).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalledWith('appointments.export.upgradeToast', expect.anything());
+  });
+
   it('on the free plan points at the plans on the web, and is absent in the app', async () => {
     vi.mocked(fetchMyEntitlements).mockResolvedValue(plan(false));
     const { unmount } = render(<ExportAppointmentsButton />);
