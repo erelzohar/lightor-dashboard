@@ -28,14 +28,22 @@ const INLINE = /\[([^\]\n]{1,80})\]\(((?:[^()\s]|\([^()\s]*\)){1,200})\)|\*\*([^
 // "09:00–10:00" in a right-to-left line reads backwards ("10:00–09:00"):
 // a dash between two numbers takes the line's direction. Kept left to right.
 // (A hyphen between digits already stays with them; an en or em dash does not.)
-const RANGE = /(?<!\d)\d{1,2}(?::\d{2})?\s*[–—]\s*\d{1,2}(?::\d{2})?(?!\d)/g;
+// No lookbehind assertion (LT-315): WebKit before 16.4 cannot parse one, esbuild
+// turns the literal into a top-level `new RegExp` in the main chunk, and the
+// whole dashboard — the iOS 15 app included — died on a SyntaxError at load.
+// "Not after a digit" is the leading `(^|\D)` group instead; the range itself
+// is group 2 and starts `m[1].length` past the match. A match always ends on a
+// digit and `(?!\d)` consumes nothing, so the next range's leading non-digit
+// is never eaten by the previous match.
+const RANGE = /(^|\D)(\d{1,2}(?::\d{2})?\s*[–—]\s*\d{1,2}(?::\d{2})?)(?!\d)/g;
 const ltrRanges = (text: string, keyBase: string): React.ReactNode[] => {
   const out: React.ReactNode[] = [];
   let at = 0;
   for (const m of text.matchAll(RANGE)) {
-    if (m.index! > at) out.push(text.slice(at, m.index));
-    out.push(<bdi key={`${keyBase}-r${m.index}`} dir="ltr">{m[0]}</bdi>);
-    at = m.index! + m[0].length;
+    const start = m.index! + m[1].length;
+    if (start > at) out.push(text.slice(at, start));
+    out.push(<bdi key={`${keyBase}-r${start}`} dir="ltr">{m[2]}</bdi>);
+    at = start + m[2].length;
   }
   if (at < text.length) out.push(text.slice(at));
   return out;
