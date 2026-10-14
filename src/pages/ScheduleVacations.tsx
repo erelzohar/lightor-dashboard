@@ -21,6 +21,8 @@ import { Vacation } from '../types';
 import { createVacation, deleteVacation, updateVacation } from '../store/slices/vacationsSlice';
 import { useTranslation } from 'react-i18next';
 import { isLeadsSite } from '../utils/siteMode';
+import { businessTimeZone, zonedDateKey, zonedInputValue, zonedWallDate } from '../utils/businessTime';
+import { vacationDays, vacationInputValue, vacationMs } from '../utils/vacationTime';
 
 interface DayHours {
   startTime: string;
@@ -138,12 +140,15 @@ const ScheduleVacations: React.FC = () => {
   const [newOverrideDate, setNewOverrideDate] = useState('');
   const [editingVacation, setEditingVacation] = useState<string | null>(null);
   const [isEditingVacation, setIsEditingVacation] = useState<boolean>(false);
-  const [newVacation, setNewVacation] = useState<Vacation>({
+  // Every date and time on this page is the business's (LT-318): typed,
+  // shown and checked against "now" on its zone's clock, not the device's.
+  const timeZone = businessTimeZone(useAppSelector(state => state.webConfig.data));
+  const [newVacation, setNewVacation] = useState<Vacation>(() => ({
     title: '',
-    startDate: new Date().toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
-    endDate: new Date().toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
+    startDate: zonedInputValue(Date.now(), timeZone),
+    endDate: zonedInputValue(Date.now(), timeZone),
     webConfig_id: '',
-  });
+  }));
 
   const { language, direction, darkMode } = useTheme();
   const locale = language === 'he' ? he : enUS;
@@ -173,7 +178,9 @@ const ScheduleVacations: React.FC = () => {
   // Absent on configs saved before dateOverrides existed — treat as [].
   const dateOverrides = webConfigLocalState?.dateOverrides ?? [];
   const sortedOverrides = [...dateOverrides].sort((a, b) => a.date.localeCompare(b.date));
-  const todayString = new Date().toLocaleDateString('sv-SE');
+  // The business's today and now, as the date and datetime-local inputs read them.
+  const todayString = zonedDateKey(Date.now(), timeZone);
+  const nowInput = zonedInputValue(Date.now(), timeZone);
 
   const hasChanges = () => {
     if (!webConfigLocalState || !originalConfig) return false;
@@ -306,9 +313,15 @@ const ScheduleVacations: React.FC = () => {
       toast.error(t('scheduleVacations.fillRequired'));
       return;
     }
-    const start = new Date(newVacation.startDate).getTime().toString();
-    const end = new Date(newVacation.endDate).getTime().toString();
-    if (+start > +end) {
+    const startMs = vacationMs(newVacation.startDate, timeZone);
+    const endMs = vacationMs(newVacation.endDate, timeZone);
+    if (isNaN(startMs) || isNaN(endMs)) {
+      toast.error(t('scheduleVacations.fillRequired'));
+      return;
+    }
+    const start = String(startMs);
+    const end = String(endMs);
+    if (startMs > endMs) {
       toast.error(t('scheduleVacations.dateError'));
       return;
     }
@@ -334,18 +347,25 @@ const ScheduleVacations: React.FC = () => {
       toast.error(t('scheduleVacations.fillRequired'));
       return;
     }
-    if (new Date(updatedVacation.startDate) > new Date(updatedVacation.endDate)) {
+    const startMs = vacationMs(updatedVacation.startDate, timeZone);
+    const endMs = vacationMs(updatedVacation.endDate, timeZone);
+    if (isNaN(startMs) || isNaN(endMs)) {
+      toast.error(t('scheduleVacations.fillRequired'));
+      return;
+    }
+    if (startMs > endMs) {
       toast.error(t('scheduleVacations.dateError'));
       return;
     }
     setIsEditingVacation(true);
     try {
-      const start = new Date(updatedVacation.startDate).getTime().toString();
-      const end = new Date(updatedVacation.endDate).getTime().toString();
+      const start = String(startMs);
+      const end = String(endMs);
       updatedVacation._id = id;
       await dispatch(updateVacation({ ...updatedVacation, startDate: start, endDate: end })).unwrap();
+      // Kept as stored — epoch ms — so the list reads it as it reads the rest.
       setVacations(prev => prev.map(vacation =>
-        vacation._id === id ? { ...updatedVacation, id } : vacation
+        vacation._id === id ? { ...updatedVacation, startDate: start, endDate: end, id } : vacation
       ));
       toast.success(t('scheduleVacations.editSuccess'));
     } catch (error) {
@@ -369,21 +389,18 @@ const ScheduleVacations: React.FC = () => {
     }
   };
 
+  // On the business's clock (LT-318).
   const formatVacationDateTime = (dateTimeString: string): string => {
     try {
-      const date = isNaN(+dateTimeString) ? new Date(dateTimeString) : new Date(+dateTimeString);
-      return format(date, 'PPP - p', { locale });
+      return format(zonedWallDate(vacationMs(dateTimeString, timeZone), timeZone), 'PPP - p', { locale });
     } catch (err) {
       console.log(err);
       return '';
     }
   };
 
-  const calculateVacationDuration = (startDate: string, endDate: string): number => {
-    const start = isNaN(+startDate) ? new Date(startDate) : new Date(+startDate);
-    const end = isNaN(+endDate) ? new Date(endDate) : new Date(+endDate);
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  };
+  const calculateVacationDuration = (startDate: string, endDate: string): number =>
+    vacationDays(vacationMs(startDate, timeZone), vacationMs(endDate, timeZone), timeZone);
 
   if (isLoading || !webConfig || !webConfigLocalState) {
     return (
@@ -747,7 +764,7 @@ const ScheduleVacations: React.FC = () => {
                             fullWidth={false}
                             className="w-5/6 self-auto"
                             value={newVacation.startDate}
-                            min={new Date().toISOString().slice(0, 16)}
+                            min={nowInput}
                             onChange={(e) => setNewVacation(prev => ({ ...prev, startDate: e.target.value }))}
                           />
                           <Input
@@ -756,7 +773,7 @@ const ScheduleVacations: React.FC = () => {
                             label={t('scheduleVacations.endDateTime')}
                             type="datetime-local"
                             value={newVacation.endDate}
-                            min={new Date().toISOString().slice(0, 16)}
+                            min={nowInput}
                             onChange={(e) => setNewVacation(prev => ({ ...prev, endDate: e.target.value }))}
                           />
                         </motion.div>
@@ -809,6 +826,7 @@ const ScheduleVacations: React.FC = () => {
                       {editingVacation === vacation._id ? (
                         <VacationEditForm
                           vacation={vacation}
+                          timeZone={timeZone}
                           onSave={(updatedVacation) => handleEditVacation(vacation._id, updatedVacation)}
                           onCancel={() => setEditingVacation(null)}
                           isSaving={isEditingVacation}
@@ -1003,26 +1021,25 @@ const ComplexHoursView: React.FC<{ ranges: string[] }> = ({ ranges }) => {
 
 interface VacationEditFormProps {
   vacation: Vacation;
+  /** The business's zone: the inputs show and take its wall clock (LT-318). */
+  timeZone: string;
   onSave: (vacation: Omit<Vacation, '_id'>) => void;
   onCancel: () => void;
   isSaving: boolean;
 }
 
-const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, onCancel, isSaving }) => {
+const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, timeZone, onSave, onCancel, isSaving }) => {
   const { t } = useTranslation();
   const { direction } = useTheme();
   const isRtl = direction === 'rtl';
 
-  const [editData, setEditData] = useState<Omit<Vacation, '_id'>>(() => {
-    const start = new Date(+vacation.startDate);
-    const end = new Date(+vacation.endDate);
-    return {
-      title: vacation.title,
-      startDate: start.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
-      endDate: end.toLocaleString('sv-SE').replace(' ', 'T').slice(0, 16),
-      webConfig_id: vacation.webConfig_id,
-    };
-  });
+  const [editData, setEditData] = useState<Omit<Vacation, '_id'>>(() => ({
+    title: vacation.title,
+    startDate: vacationInputValue(vacation.startDate, timeZone),
+    endDate: vacationInputValue(vacation.endDate, timeZone),
+    webConfig_id: vacation.webConfig_id,
+  }));
+  const nowInput = zonedInputValue(Date.now(), timeZone);
 
   return (
     <div className="space-y-4">
@@ -1039,7 +1056,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
           type="datetime-local"
           value={editData.startDate}
           onChange={(e) => setEditData(prev => ({ ...prev, startDate: e.target.value }))}
-          min={new Date().toISOString().slice(0, 16)}
+          min={nowInput}
         />
         <Input
           fullWidth={false}
@@ -1048,7 +1065,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, onSave, o
           type="datetime-local"
           value={editData.endDate}
           onChange={(e) => setEditData(prev => ({ ...prev, endDate: e.target.value }))}
-          min={new Date().toISOString().slice(0, 16)}
+          min={nowInput}
         />
       </div>
       <div className={`flex gap-2 ${isRtl ? 'justify-start' : 'justify-end'}`}>

@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { ClassSessionAvailability } from '../../services/appointmentsApi';
 import type { AppointmentType } from '../../types';
 import { localDateKey } from '../../utils/bookingSlots';
-import { formatTime } from '../../utils/dateUtils';
+import { zonedDateOf, zonedTimeLabel, zonedToday } from '../../utils/businessTime';
 import { resolveImage } from '../../utils/images';
 import { isPastDay, type DayStatus } from '../../utils/ownerSchedule';
 
@@ -16,6 +16,9 @@ import { isPastDay, type DayStatus } from '../../utils/ownerSchedule';
  * availability dots (ScheduleCalendar.tsx's DateButton), then the chosen
  * day's free times — or, for a class, its sessions with their seats. Draws
  * only: what is free is ownerSchedule.ts's answer, handed in by the modal.
+ *
+ * Days are carriers (businessTime.ts) and every time shown is on the
+ * business's clock (LT-318), whatever zone the device is set to.
  */
 
 const DOT: Record<Exclude<DayStatus, 'past'>, string> = {
@@ -39,7 +42,7 @@ const chip = (chosen: boolean) =>
 
 const hint = (text: string) => <p className="text-sm text-gray-500 dark:text-gray-400 ms-0.5">{text}</p>;
 
-/** A day as the site names it: "Sunday, 25 October". */
+/** A carrier day as the site names it: "Sunday, 25 October". */
 const useLongDate = () => {
   const { language } = useTheme();
   return (day: Date) => new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
@@ -133,6 +136,8 @@ export interface MonthDaysProps {
   onPickDay: (dateKey: string) => void;
   /** A day's dot; undefined while the month's availability is on its way. */
   statusOf: (day: Date) => DayStatus | undefined;
+  /** The business's zone: today and the past are its own. */
+  timeZone: string;
 }
 
 /** A month of days with the site's dots, and the site's legend under them. */
@@ -144,6 +149,7 @@ export const MonthDays: React.FC<MonthDaysProps> = ({
   dateKey,
   onPickDay,
   statusOf,
+  timeZone,
 }) => {
   const { t } = useTranslation();
   const { language, direction } = useTheme();
@@ -162,7 +168,7 @@ export const MonthDays: React.FC<MonthDaysProps> = ({
   }, [language]);
 
   const monthLabel = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(month);
-  const todayKey = localDateKey(new Date());
+  const todayKey = localDateKey(zonedToday(timeZone));
   const turn = (by: number) => onMonthChange(new Date(month.getFullYear(), month.getMonth() + by, 1));
   const navButton =
     'w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors';
@@ -208,7 +214,7 @@ export const MonthDays: React.FC<MonthDaysProps> = ({
           const status = statusOf(day);
           // While the month loads, any day from today on may be picked;
           // after, a day with room.
-          const open = status === undefined ? !isPastDay(day) : status === 'full' || status === 'limited';
+          const open = status === undefined ? !isPastDay(day, Date.now(), timeZone) : status === 'full' || status === 'limited';
           const chosen = key === dateKey;
           const dot = status && status !== 'past' && !chosen ? DOT[status] : '';
           return (
@@ -260,6 +266,8 @@ export interface DayTimesProps {
   sessions: ClassSessionAvailability[];
   sessionTs: string;
   onPickSession: (timestamp: string) => void;
+  /** The business's zone: a session's time is read on its clock. */
+  timeZone: string;
 }
 
 /** The chosen day's free times, or a class's sessions with their seats. */
@@ -274,6 +282,7 @@ export const DayTimes: React.FC<DayTimesProps> = ({
   sessions,
   sessionTs,
   onPickSession,
+  timeZone,
 }) => {
   const { t } = useTranslation();
   const longDate = useLongDate();
@@ -292,9 +301,9 @@ export const DayTimes: React.FC<DayTimesProps> = ({
         ) : sessions.length ? (
           <div role="group" aria-label={t('customers.booking.pickSession')} className="grid grid-cols-3 gap-2">
             {sessions.map((session) => {
-              // Display only: the time is read off the server's timestamp in
-              // the owner's browser; the booking sends the timestamp.
-              const at = formatTime(Number(session.timestamp));
+              // Display only: the time is read off the server's timestamp on
+              // the business's clock; the booking sends the timestamp.
+              const at = zonedTimeLabel(Number(session.timestamp), timeZone);
               const seats = `${session.booked}/${session.capacity}`;
               return (
                 <button
@@ -338,14 +347,16 @@ export interface ChoiceSummaryProps {
   startMs?: number;
   /** The day, when no time is chosen yet. */
   day?: Date;
+  /** The business's zone: the start's day and time are read on its clock. */
+  timeZone: string;
 }
 
 /** What was chosen so far — the service, and its day and time once picked. */
-export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, day }) => {
+export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, day, timeZone }) => {
   const longDate = useLongDate();
   const metaOf = useServiceMeta();
   const durationMS = Number(service.durationMS) || 0;
-  const when = startMs !== undefined ? new Date(startMs) : day;
+  const when = startMs !== undefined ? zonedDateOf(startMs, timeZone) : day;
   return (
     <div
       data-testid="booking-summary"
@@ -362,7 +373,7 @@ export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, 
               <>
                 {' · '}
                 <span dir="ltr">
-                  {formatTime(startMs)} – {formatTime(startMs + durationMS)}
+                  {zonedTimeLabel(startMs, timeZone)} – {zonedTimeLabel(startMs + durationMS, timeZone)}
                 </span>
               </>
             )}

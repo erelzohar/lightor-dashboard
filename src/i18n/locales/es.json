@@ -166,6 +166,8 @@
     },
     "websiteLanguage": "Idioma del sitio",
     "websiteLanguageTooltip": "El idioma predeterminado que los visitantes ven en tu sitio público.",
+    "timeZone": "Zona horaria",
+    "timeZoneHelp": "Los horarios de las reservas, los recordatorios y los mensajes usan esta zona horaria.",
     "bookingHorizon": "Con cuánta antelación pueden reservar los clientes",
     "bookingHorizonTooltip": "La fecha más lejana que un cliente puede reservar en tu sitio. Tú puedes reservar cualquier fecha.",
     "bookingFields": {

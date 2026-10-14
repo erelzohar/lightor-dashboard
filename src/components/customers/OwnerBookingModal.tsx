@@ -15,6 +15,7 @@ import { fetchAppointments, fetchAppointmentTypes } from '../../store/slices/app
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
+import { businessTimeZone, zonedDateOf, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay } from '../../utils/phone';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -50,6 +51,11 @@ import type { AppointmentAnswer, AppointmentType, BookingField } from '../../typ
  * Required is marked but never enforced here: the server spares the owner.
  * A customer's details kept from their last booking (LT-217, an address)
  * fill those questions in; the owner sees them and may change them.
+ *
+ * Every day and time is the BUSINESS's (LT-318): today, the month's bounds,
+ * a slot's instant and a session's time are read on its zone's clock, never
+ * the device's, so an owner whose phone is set elsewhere books the hour the
+ * site would show.
  */
 interface OwnerBookingModalProps {
   open: boolean;
@@ -106,14 +112,15 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // refuses to book it, so it is not offered here until it has one.
   const appointmentTypes = useMemo(() => allTypes.filter(isBookableService), [allTypes]);
   const webConfig = useAppSelector((s) => s.webConfig.data);
+  const timeZone = businessTimeZone(webConfig);
 
   const [step, setStep] = useState<Step>('service');
   // The calendar turns to next month by itself once per service when this
   // one has no day left with room (the last days of a month).
   const [autoTurned, setAutoTurned] = useState(false);
   const [typeId, setTypeId] = useState('');
-  const [month, setMonth] = useState(() => monthOf(new Date()));
-  const [dateKey, setDateKey] = useState(localDateKey(new Date()));
+  const [month, setMonth] = useState(() => monthOf(zonedToday(timeZone)));
+  const [dateKey, setDateKey] = useState(() => localDateKey(zonedToday(timeZone)));
   const [time, setTime] = useState('');
   // A class's session is the server's own timestamp string (LT-204).
   const [sessionTs, setSessionTs] = useState('');
@@ -152,7 +159,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     const presetType = presetTypeId && appointmentTypes.some((ty) => ty._id === presetTypeId) ? presetTypeId : '';
     // Nothing chosen for the owner: the first step is the services (LT-211).
     setTypeId(presetType);
-    const day = presetType && presetTimestamp ? new Date(Number(presetTimestamp)) : new Date();
+    const day = presetType && presetTimestamp ? zonedDateOf(Number(presetTimestamp), timeZone) : zonedToday(timeZone);
     setMonth(monthOf(day));
     setDateKey(presetType ? localDateKey(day) : '');
     setTime('');
@@ -161,7 +168,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     setName('');
     setPhone('');
     setAnswers(keptAnswers(rememberedAnswers));
-  }, [open, appointmentTypes, presetTypeId, presetTimestamp, rememberedAnswers]);
+  }, [open, appointmentTypes, presetTypeId, presetTimestamp, rememberedAnswers, timeZone]);
 
   const selectedType = appointmentTypes.find((ty) => ty._id === typeId);
   const isClass = selectedType?.kind === 'class';
@@ -180,9 +187,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // taken, and each class's sessions with their seats — expanded, vacations
   // and all, by the server. Signed in as the owner, the sessions also include
   // those that began up to a day ago and those past the customers' window.
+  // The month's bounds are the business's midnights (LT-318).
   const subDomain = webConfig?.subDomain;
-  const monthStart = month.valueOf();
-  const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 1).valueOf() - 1;
+  const monthStart = zonedTimeToMs(month.getFullYear(), month.getMonth(), 1, 0, 0, timeZone);
+  const monthEnd = zonedTimeToMs(month.getFullYear(), month.getMonth() + 1, 1, 0, 0, timeZone) - 1;
   const availabilityKey = `${monthStart}|${availabilityVersion}`;
   useEffect(() => {
     if (!open || !subDomain || fixedSession) return;
@@ -205,13 +213,14 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const loading = !!subDomain && !current;
   const facts = useMemo<ScheduleFacts>(
     () => ({
+      timeZone,
       workingDays: webConfig?.workingDays ?? [],
       dateOverrides: webConfig?.dateOverrides,
       vacations: webConfig?.vacations,
       busy: current?.busy ?? [],
       classes: current?.classes ?? [],
     }),
-    [webConfig?.workingDays, webConfig?.dateOverrides, webConfig?.vacations, current]
+    [timeZone, webConfig?.workingDays, webConfig?.dateOverrides, webConfig?.vacations, current]
   );
 
   const slots = useMemo(
@@ -230,12 +239,15 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
     for (let d = 1; d <= count; d++) {
       const day = new Date(month.getFullYear(), month.getMonth(), d);
-      byDay.set(localDateKey(day), isClass ? classDayStatus(facts.classes, typeId, day) : dayStatus(facts, day, durationMS));
+      byDay.set(
+        localDateKey(day),
+        isClass ? classDayStatus(facts.classes, typeId, day, Date.now(), timeZone) : dayStatus(facts, day, durationMS)
+      );
     }
     return byDay;
-  }, [loading, month, isClass, facts, typeId, durationMS]);
+  }, [loading, month, isClass, facts, typeId, durationMS, timeZone]);
 
-  const daySessions = isClass && dateKey ? sessionsOnDay(facts.classes, typeId, date) : [];
+  const daySessions = isClass && dateKey ? sessionsOnDay(facts.classes, typeId, date, timeZone) : [];
   // The session picked, while the list still offers it: one that filled up
   // or left the timetable reads as no choice at all.
   const chosenSession = daySessions.find((session) => session.timestamp === sessionTs && session.booked < session.capacity);
@@ -283,7 +295,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
           ? String(presetTimestamp)
           : isClass
             ? chosenSession.timestamp
-            : String(slotTimestamp(date, time)),
+            : String(slotTimestamp(date, time, timeZone)),
         user_id: auth.user._id,
         channelType: customer?.channelType ?? 'sms',
         ...(questions.length ? { answers: answersPayload() } : {}),
@@ -315,7 +327,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
 
   // Back to this month (a class's walk-in may still go to one that began
   // yesterday, LT-204), ahead a year.
-  const thisMonth = monthOf(new Date());
+  const thisMonth = monthOf(zonedToday(timeZone));
   const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + MONTHS_AHEAD, 1);
   const turnMonth = (next: Date) => {
     setMonth(next);
@@ -373,7 +385,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
         ? Number(chosenSession.timestamp)
         : undefined
       : time
-        ? slotTimestamp(date, time)
+        ? slotTimestamp(date, time, timeZone)
         : undefined;
 
   return createPortal(
@@ -423,6 +435,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   service={summaryService}
                   startMs={step === 'details' ? startMs : undefined}
                   day={step === 'time' && dateKey ? date : undefined}
+                  timeZone={timeZone}
                 />
               )}
 
@@ -441,6 +454,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                     dateKey={dateKey}
                     onPickDay={pickDay}
                     statusOf={(day) => statuses.get(localDateKey(day))}
+                    timeZone={timeZone}
                   />
                 </>
               )}
@@ -457,6 +471,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   sessions={daySessions}
                   sessionTs={chosenSession?.timestamp ?? ''}
                   onPickSession={pickSession}
+                  timeZone={timeZone}
                 />
               )}
 

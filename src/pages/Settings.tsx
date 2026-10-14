@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, Globe2, CalendarCheck, Inbox } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import { Toggle } from '../components/ui/liquid-toggle';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
+import { businessTimeZone } from '../utils/businessTime';
+import { timeZoneOptions } from '../utils/timeZoneOptions';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -133,6 +135,13 @@ const Settings: React.FC = () => {
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
+  // The business's zone (LT-318): absent (a config from before it) reads as
+  // the server's default, so an untouched form is never dirty over it.
+  const savedTimeZone = businessTimeZone(webConfig);
+  const draftTimeZone = businessTimeZone(localWebConfig);
+  // Every zone the browser knows, worked out once: the saved one is always
+  // among them. Offsets as of this visit.
+  const zoneOptions = useMemo(() => timeZoneOptions(savedTimeZone), [savedTimeZone]);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -159,6 +168,7 @@ const Settings: React.FC = () => {
       hideFromSearchChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
+      draftTimeZone !== savedTimeZone ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
       JSON.stringify(localWebConfig.social) !== JSON.stringify(webConfig.social) ||
@@ -329,7 +339,9 @@ const Settings: React.FC = () => {
       fixedSocials.tiktok = social.tiktok === "" ? null : social.tiktok;
       fixedSocials.x = social.x === "" ? null : social.x;
 
-      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage };
+      // The zone always goes as one the browser knows (LT-318): the server
+      // refuses an unknown one, and that would fail the whole save.
+      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage, timeZone: businessTimeZone(localWebConfig) };
       // Sent only once the owner has a value, so an untouched form never
       // writes the default over nothing (LT-156).
       if (bookingHorizonDays !== undefined) payload.bookingHorizonDays = bookingHorizonDays;
@@ -574,6 +586,22 @@ const Settings: React.FC = () => {
                     </div>
                   )}
                 </div>
+              </div>
+              {/* The business's clock (LT-318): hours, bookings, reminders and
+                  messages are its times, whatever zone a device is set to.
+                  Here, not on the Bookings tab, which a leads site hides. */}
+              <div className="max-w-md">
+                <Select
+                  id="settings-time-zone"
+                  label={t('settings.timeZone')}
+                  leftIcon={<Globe2 className="w-4 h-4 text-gray-400" />}
+                  // City names and offsets read left to right in every language.
+                  dir="ltr"
+                  value={draftTimeZone}
+                  options={zoneOptions}
+                  helperText={t('settings.timeZoneHelp')}
+                  onChange={(e) => handleChange('root', 'timeZone', e.target.value)}
+                />
               </div>
             </SettingsSection>
 

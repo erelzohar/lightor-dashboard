@@ -25,6 +25,7 @@ import { lightTick } from '../lib/haptics';
 import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
+import { deviceTimeZone } from '../utils/businessTime';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -287,9 +288,13 @@ const AiBuilder: React.FC = () => {
         savedConfigId = configId;
         if (auth.user?.boardingStatus === 'new') await updateUser({ boardingStatus: 'onboarded' });
       } else {
+        // A first site takes the zone of the device it is built on (LT-318),
+        // as signup does; one the browser cannot name leaves the server's default.
+        const timeZone = deviceTimeZone();
         const result = await dispatch(createWebConfig({
           ...(configToSave as unknown as Partial<WebConfig>),
           user_id: auth.user?._id,
+          ...(timeZone ? { timeZone } : {}),
         }));
         if (createWebConfig.rejected.match(result)) throw new Error(result.error?.message ?? 'Web config create refused');
         const newConf = result.payload as WebConfig;

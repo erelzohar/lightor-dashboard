@@ -29,10 +29,19 @@ describe('owner booking dates and hours (LT-122)', () => {
     expect(hoursForDate(withOverrides, new Date(2030, 2, 5))).toBe('16:00-17:00');
   });
 
-  it('keys dates locally and combines a slot into a local timestamp', () => {
+  it("keys a carrier day by its own fields and combines a slot on the business's clock (LT-318)", () => {
     expect(localDateKey(SUNDAY)).toBe('2030-03-03');
-    const ts = slotTimestamp(SUNDAY, '09:30');
-    const d = new Date(ts);
-    expect([d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()]).toEqual([2030, 2, 3, 9, 30]);
+    expect(slotTimestamp(SUNDAY, '09:30', 'Asia/Jerusalem')).toBe(Date.UTC(2030, 2, 3, 7, 30));
+  });
+
+  // LT-318: a predecessor stored a booking an hour early when the visitor's
+  // phone was set an hour ahead of the business. The instant is the
+  // business's 09:30 whatever zone this process runs in (the suite runs
+  // under TZ=UTC and TZ=Asia/Dubai too).
+  it("turns a New York business's 09:30 into New York's instant, on any device", () => {
+    expect(slotTimestamp(SUNDAY, '09:30', 'America/New_York')).toBe(Date.UTC(2030, 2, 3, 14, 30));
+    // Its clocks go forward on 10 March 2030: 09:30 is then an hour nearer UTC.
+    expect(slotTimestamp(new Date(2030, 2, 10), '09:30', 'America/New_York')).toBe(Date.UTC(2030, 2, 10, 13, 30));
+    expect(slotTimestamp(SUNDAY, '09:30', 'Asia/Dubai')).toBe(Date.UTC(2030, 2, 3, 5, 30));
   });
 });

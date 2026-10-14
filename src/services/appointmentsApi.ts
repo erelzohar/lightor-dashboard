@@ -120,8 +120,9 @@ export const createAppointment = async (body: CreateAppointmentBody): Promise<Ap
 export interface ClassSessionAvailability {
   type_id: string;
   /**
-   * Epoch ms as a string, computed by the server on the Asia/Jerusalem wall
-   * clock. Booked back exactly as received — never rebuilt in the browser.
+   * Epoch ms as a string, computed by the server on the business's wall
+   * clock (its zone, LT-318). Booked back exactly as received — never
+   * rebuilt in the browser.
    */
   timestamp: string;
   durationMS: string;

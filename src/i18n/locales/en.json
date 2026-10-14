@@ -166,6 +166,8 @@
     },
     "websiteLanguage": "Website language",
     "websiteLanguageTooltip": "The default language visitors see on your public site.",
+    "timeZone": "Time zone",
+    "timeZoneHelp": "Booking times, reminders and messages use this time zone.",
     "bookingHorizon": "How far ahead customers can book",
     "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself.",
     "bookingFields": {

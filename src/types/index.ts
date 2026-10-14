@@ -227,6 +227,14 @@ export interface WebConfig {
    * It stays up for anyone with the link. Absent reads false.
    */
   hideFromSearch?: boolean;
+  /**
+   * The business's IANA time zone (LT-318): every wall-clock time it works
+   * by — hours, slots, vacations, reminders — is a time in this zone, never
+   * the device's. The server defaults it to 'Asia/Jerusalem', but an older
+   * document or read may lack it: read it through `businessTimeZone`
+   * (utils/businessTime), never inline.
+   */
+  timeZone?: string;
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

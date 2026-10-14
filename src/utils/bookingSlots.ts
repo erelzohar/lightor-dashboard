@@ -1,4 +1,5 @@
 import type { DateOverride } from '../types';
+import { zonedSlotMs } from './businessTime';
 
 /**
  * Dates and opening hours for an owner-made booking (LT-122). The start
@@ -13,7 +14,10 @@ interface OpeningHours {
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-/** Local calendar date as "YYYY-MM-DD" (no timezone shift). */
+/**
+ * A carrier day (businessTime.ts) as "YYYY-MM-DD", read off its own fields:
+ * no zone enters into it.
+ */
 export const localDateKey = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
@@ -34,10 +38,12 @@ export const hoursForDate = (hours: OpeningHours, date: Date): string | null => 
   return hours.workingDays[date.getDay()] ?? null;
 };
 
-/** Combine a calendar date and "HH:MM" into an epoch-ms timestamp (local time). */
-export const slotTimestamp = (date: Date, hhmm: string): number => {
+/**
+ * A carrier day and "HH:MM" on the BUSINESS's clock as an epoch-ms instant
+ * (LT-318): never the device's, or an owner whose phone is set to another
+ * zone books 11:00 as some other hour.
+ */
+export const slotTimestamp = (date: Date, hhmm: string, timeZone: string): number => {
   const minutes = toMinutes(hhmm) ?? 0;
-  const d = new Date(date);
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return d.valueOf();
+  return zonedSlotMs(date, 0, minutes, timeZone);
 };

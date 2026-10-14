@@ -6,6 +6,7 @@ import OwnerBookingModal from '../../components/customers/OwnerBookingModal';
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { fetchAddressSuggestions, loadPlaces, resolveAddressSuggestion } from '../../services/places';
 import type { BookingField } from '../../types';
+import { zonedTimeToMs } from '../../utils/businessTime';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'en', direction: 'ltr' }) }));
@@ -35,9 +36,13 @@ vi.mock('../../services/customersApi', async (importOriginal) => {
 
 // A fixed clock (only Date is faked; timers stay real for the debounces and
 // waitFor): Monday 2030-03-04, 08:00. The business opens 09:00–12:00 daily,
-// so today offers an hour-long service at 09:00, 10:00 and 11:00.
-const NOW = new Date(2030, 2, 4, 8, 0);
-const at = (day: number, hour: number, extraMs = 0) => String(new Date(2030, 2, day, hour).valueOf() + extraMs);
+// so today offers an hour-long service at 09:00, 10:00 and 11:00. Every time
+// is the business's — Asia/Jerusalem, the default for a config without a
+// zone — so the suite means the same on any device (LT-318).
+const J = 'Asia/Jerusalem';
+const wall = (month: number, day: number, hour = 0, tz = J) => zonedTimeToMs(2030, month, day, hour, 0, tz);
+const NOW = new Date(wall(2, 4, 8));
+const at = (day: number, hour: number, extraMs = 0) => String(wall(2, day, hour) + extraMs);
 const FREE: Availability = { busy: [], classes: [] };
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -76,6 +81,8 @@ const state = {
   },
   webConfig: {
     data: {
+      // Absent: the server's default, Asia/Jerusalem (LT-318).
+      timeZone: undefined as string | undefined,
       subDomain: 'studio',
       workingDays: Array<string | null>(7).fill('09:00-12:00'),
       dateOverrides: [] as { date: string; hours: string | null }[],
@@ -373,8 +380,8 @@ describe('OwnerBookingModal: a group class', () => {
     // The month on show, first to last millisecond, addressed by subdomain.
     expect(getAvailability).toHaveBeenLastCalledWith(
       'studio',
-      String(new Date(2030, 2, 1).valueOf()),
-      String(new Date(2030, 3, 1).valueOf() - 1)
+      String(wall(2, 1)),
+      String(wall(3, 1) - 1)
     );
     const offered = within(screen.getByRole('group', { name: 'customers.booking.pickSession' }))
       .getAllByRole('button')
@@ -526,8 +533,8 @@ describe("OwnerBookingModal: the site's calendar", () => {
     await waitFor(() =>
       expect(getAvailability).toHaveBeenLastCalledWith(
         'studio',
-        String(new Date(2030, 3, 1).valueOf()),
-        String(new Date(2030, 4, 1).valueOf() - 1)
+        String(wall(3, 1)),
+        String(wall(4, 1) - 1)
       )
     );
     expect(screen.getByRole('button', { name: 'customers.booking.prevMonth' })).not.toBeDisabled();
@@ -536,15 +543,15 @@ describe("OwnerBookingModal: the site's calendar", () => {
   });
 
   it('moves to next month by itself when this one has no day left, and lets the owner turn back', async () => {
-    vi.setSystemTime(new Date(2030, 2, 31, 20, 0));
+    vi.setSystemTime(new Date(wall(2, 31, 20)));
     renderModal();
     chooseService('Massage');
 
     await waitFor(() =>
       expect(getAvailability).toHaveBeenLastCalledWith(
         'studio',
-        String(new Date(2030, 3, 1).valueOf()),
-        String(new Date(2030, 4, 1).valueOf() - 1)
+        String(wall(3, 1)),
+        String(wall(4, 1) - 1)
       )
     );
     fireEvent.click(screen.getByRole('button', { name: 'customers.booking.prevMonth' }));
@@ -630,5 +637,63 @@ describe('OwnerBookingModal: a walk-in', () => {
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('customers.booking.classFull'));
     // Still on the one session: there is nothing to go back to.
     expect(screen.getByTestId('booking-summary')).toBeTruthy();
+  });
+});
+
+/**
+ * LT-318: a predecessor stored a booking an hour early because the device
+ * was set an hour ahead of the business. The owner's booking window works on
+ * the business's clock: a New York business offers New York's hours, sends
+ * New York's instant and reads the month between New York's midnights — on a
+ * device in any zone (the suite runs under TZ=UTC and TZ=Asia/Dubai too).
+ */
+describe("OwnerBookingModal: a business in another zone than the device's", () => {
+  const NY = 'America/New_York';
+
+  beforeEach(() => {
+    state.webConfig.data.timeZone = NY;
+    vi.mocked(createAppointment).mockReset().mockResolvedValue({} as never);
+  });
+  afterEach(() => {
+    state.webConfig.data.timeZone = undefined;
+  });
+
+  it("books New York's 10:00 as New York's instant, and reads New York's month", async () => {
+    // 08:00 in Jerusalem is 01:00 in New York: still Monday the 4th there.
+    renderModal();
+    await toDetails('Massage', 4, '10:00');
+
+    expect(within(screen.getByTestId('booking-summary')).getByText('10:00 – 11:00')).toBeTruthy();
+    fireEvent.click(submitButton());
+    await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
+    expect(sentBody().timestamp).toBe(String(wall(2, 4, 10, NY)));
+    expect(getAvailability).toHaveBeenCalledWith('studio', String(wall(2, 1, 0, NY)), String(wall(3, 1, 0, NY) - 1));
+  });
+
+  it("keeps New York's today open when Jerusalem's has already turned", async () => {
+    // Monday 05:00 in Jerusalem, Sunday 22:00 in New York.
+    vi.setSystemTime(new Date(Date.UTC(2030, 2, 4, 3, 0)));
+    renderModal();
+    chooseService('Massage');
+
+    // New York's Sunday is today, its hours over: no room, but not past.
+    await waitFor(() => expect(dayButton(3).getAttribute('aria-label')).toContain('customers.booking.day.none'));
+    expect(dayButton(4).getAttribute('aria-label')).toContain('customers.booking.day.full');
+  });
+
+  it("names a class session's time on New York's clock, on New York's day", async () => {
+    const evening = String(wall(2, 4, 19, NY) + 123);
+    vi.mocked(getAvailability).mockResolvedValue({
+      busy: [],
+      classes: [{ type_id: 'c1', timestamp: evening, durationMS: '3600000', capacity: 12, booked: 3 }],
+    });
+    renderModal();
+    chooseService('Yoga');
+    await chooseDay(4);
+
+    fireEvent.click(await screen.findByRole('button', { name: '19:00 · 3/12' }));
+    fireEvent.click(submitButton());
+    await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
+    expect(sentBody().timestamp).toBe(evening);
   });
 });
