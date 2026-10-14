@@ -11,18 +11,23 @@ import {
   Paginated,
   SiteReportRow,
 } from '../../services/adminApi';
+import { siteUrlOf } from '../../utils/siteUrl';
 
 type Filter = 'new' | 'handled' | '';
 
-/** The reported page — the visitor's own words, so linked only when it is a Lightor site; else the site's home. */
-export const reportLink = (row: Pick<SiteReportRow, 'subDomain' | 'pageUrl'>): string => {
+/**
+ * The reported page — the visitor's own words, so linked only when it is a
+ * Lightor site; else the site's home, when that is a real lightor.app
+ * address (LT-315, L2); else nothing.
+ */
+export const reportLink = (row: Pick<SiteReportRow, 'subDomain' | 'pageUrl'>): string | null => {
   try {
     const url = new URL(row.pageUrl ?? '');
     if (url.protocol === 'https:' && (url.hostname === 'lightor.app' || url.hostname.endsWith('.lightor.app'))) return url.href;
   } catch {
     /* not a URL */
   }
-  return `https://${row.subDomain}.lightor.app`;
+  return siteUrlOf(row.subDomain);
 };
 
 /**
@@ -88,18 +93,23 @@ const AdminReports: React.FC = () => {
     {
       key: 'site',
       label: t('admin.reports.columns.site'),
-      render: (row) => (
-        <a
-          href={reportLink(row)}
-          target="_blank"
-          rel="noreferrer"
-          dir="ltr"
-          className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold"
-        >
-          {row.subDomain}
-          <ExternalLink size={11} />
-        </a>
-      ),
+      render: (row) => {
+        const href = reportLink(row);
+        return href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            dir="ltr"
+            className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold"
+          >
+            {row.subDomain}
+            <ExternalLink size={11} />
+          </a>
+        ) : (
+          <span dir="ltr" className="text-xs text-gray-500">{row.subDomain}</span>
+        );
+      },
     },
     {
       key: 'message',

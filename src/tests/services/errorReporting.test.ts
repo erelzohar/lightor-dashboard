@@ -9,7 +9,9 @@ import {
   describeError,
   setErrorReportingEnabled,
   resetErrorReportingForTests,
+  reportableUrl,
 } from '../../services/errorReporting';
+import { stubLocation } from '../helpers/location';
 
 /**
  * The client crash channel (LT-170): production-only, de-duplicated, capped,
@@ -48,7 +50,7 @@ describe('errorReporting', () => {
       app: 'dashboard',
       kind: 'error',
       userInfo: { id: 'u1', email: 'owner@example.com' },
-      url: window.location.href,
+      url: window.location.origin + window.location.pathname,
       userAgent: navigator.userAgent,
     });
     expect(typeof body.timestamp).toBe('string');
@@ -119,4 +121,30 @@ describe('errorReporting', () => {
     expect(describeError({ message: 'object-ish' })).toEqual({ message: 'object-ish' });
     expect(describeError({ code: 42 })).toEqual({ message: 'Non-error value: {"code":42}' });
   });
+
+  describe('the page it names (LT-315)', () => {
+    const at = (url: string) => {
+      const u = new URL(url);
+      return reportableUrl({ origin: u.origin, pathname: u.pathname });
+    };
+
+    it('drops the query and the fragment, where tokens travel', () => {
+      expect(at('https://dashboard.lightor.app/handoff#t=ho_secret')).toBe('https://dashboard.lightor.app/handoff');
+      expect(at('https://dashboard.lightor.app/verify?token=abc123')).toBe('https://dashboard.lightor.app/verify');
+      expect(at('https://dashboard.lightor.app/instagram-callback?code=oauth_code&state=x')).toBe('https://dashboard.lightor.app/instagram-callback');
+    });
+
+    it('names a token in the path instead of sending it', () => {
+      expect(at('https://dashboard.lightor.app/verify/abc123')).toBe('https://dashboard.lightor.app/verify/:token');
+      expect(at('https://dashboard.lightor.app/reset-password/f00d')).toBe('https://dashboard.lightor.app/reset-password/:token');
+      expect(at('https://dashboard.lightor.app/appointments')).toBe('https://dashboard.lightor.app/appointments');
+    });
+
+    it('sends that, not the full address, with a report', async () => {
+      stubLocation('https://dashboard.lightor.app/reset-password/f00d?x=1#t=ho_secret');
+      await reportClientError({ error: 'on the reset page' });
+      expect(post.mock.calls[0][1].url).toBe('https://dashboard.lightor.app/reset-password/:token');
+    });
+  });
 });
+

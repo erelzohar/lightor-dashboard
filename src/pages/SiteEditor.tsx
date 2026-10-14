@@ -34,6 +34,7 @@ import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/la
 import AiBuilder from './AiBuilder';
 import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
+import { siteUrlOf } from '../utils/siteUrl';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -112,7 +113,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     }
   }, [initialMessage]);
 
-  const previewUrl = import.meta.env.PROD && saved.subDomain ? `https://${saved.subDomain}.lightor.app` : CLIENT_APP_URL;
+  // Built safely (LT-315, L2): the preview's origin is also the only origin
+  // the editor's bridge trusts.
+  const liveSite = siteUrlOf(saved.subDomain);
+  const previewUrl = import.meta.env.PROD && liveSite ? liveSite : CLIENT_APP_URL;
   const siteOrigin = useMemo(() => new URL(previewUrl).origin, [previewUrl]);
 
   const select = useCallback((next: SiteSelection | null) => {

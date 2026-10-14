@@ -70,6 +70,8 @@ describe('Admin site reports', () => {
     expect(reportLink({ subDomain: 'dana', pageUrl: 'not a url' })).toBe('https://dana.lightor.app');
     expect(reportLink({ subDomain: 'dana' })).toBe('https://dana.lightor.app');
     expect(reportLink({ subDomain: 'dana', pageUrl: 'https://dana.lightor.app/#faq' })).toBe('https://dana.lightor.app/#faq');
+    // LT-315 (L2): a subdomain that is not a DNS label links nowhere.
+    expect(reportLink({ subDomain: 'login-lightor.example/x?', pageUrl: 'https://evil.example/' })).toBeNull();
   });
 
   it('never links a reported page that is not https', async () => {

@@ -10,6 +10,7 @@ import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/admin/StatusBadge';
 import UserFormModal from '../../components/admin/UserFormModal';
 import { fetchUsers, AdminUserRow, Paginated } from '../../services/adminApi';
+import { siteUrlOf } from '../../utils/siteUrl';
 
 /**
  * Admin → Users (LT-058): every business account, server-paginated and
@@ -82,10 +83,11 @@ const AdminUsers: React.FC = () => {
       key: 'subDomain',
       label: t('admin.users.columns.site'),
       className: 'hidden md:table-cell',
+      // Linked only when it is a real lightor.app address (LT-315, L2).
       render: (row) =>
-        row.subDomain ? (
+        siteUrlOf(row.subDomain) ? (
           <a
-            href={`https://${row.subDomain}.lightor.app`}
+            href={siteUrlOf(row.subDomain) ?? undefined}
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}

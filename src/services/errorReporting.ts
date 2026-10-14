@@ -62,6 +62,28 @@ export const setErrorReportingEnabled = (on: boolean): void => {
   enabled = on;
 };
 
+/**
+ * Paths whose second segment is a secret (LT-315): the verify-email and
+ * password-reset tokens. Kept as the route's own shape.
+ */
+const SECRET_PATHS: [RegExp, string][] = [
+  [/^\/verify\/[^/]+/, '/verify/:token'],
+  [/^\/reset-password\/[^/]+/, '/reset-password/:token'],
+];
+
+/**
+ * The page a report comes from, without anything secret in it (LT-315):
+ * origin and path only — no query (`?token=`, an OAuth `?code=`), no
+ * fragment (the handoff's `#t=`) — and token path segments named, not sent.
+ * Reports land in server logs and Admin → Logs, where a token would be a
+ * session or a password reset in anyone's hands.
+ */
+export const reportableUrl = (location: Pick<Location, 'origin' | 'pathname'> = window.location): string => {
+  let path = location.pathname;
+  for (const [pattern, shape] of SECRET_PATHS) path = path.replace(pattern, shape);
+  return `${location.origin}${path}`;
+};
+
 /** A message and, when there is one, a stack — for anything a browser can throw. */
 export const describeError = (value: unknown): { message: string; stack?: string } => {
   if (value instanceof Error) {
@@ -98,7 +120,7 @@ export const reportClientError = async (input: ClientErrorInput): Promise<boolea
       stack: input.stack?.slice(0, 20000),
       componentStack: input.componentStack?.slice(0, 20000),
       userInfo: input.userInfo,
-      url: window.location.href,
+      url: reportableUrl(),
       userAgent: navigator.userAgent,
       timestamp: new Date().toISOString(),
       app: 'dashboard',

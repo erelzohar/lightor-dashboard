@@ -37,6 +37,7 @@ import {
   AdminUserDetail as AdminUserDetailData,
 } from '../../services/adminApi';
 import { isLeadsSite } from '../../utils/siteMode';
+import { siteUrlOf } from '../../utils/siteUrl';
 
 /**
  * Admin → user detail (LT-058): identity, site, usage-vs-limits, recent
@@ -303,11 +304,14 @@ const AdminUserDetail: React.FC = () => {
                     </span>
                   </p>
                 </div>
-                <a href={`https://${webConfig.subDomain}.lightor.app`} target="_blank" rel="noreferrer">
-                  <Button variant="outline" size="sm" rightIcon={<ExternalLink size={14} />}>
-                    {t('admin.userDetail.site.open')}
-                  </Button>
-                </a>
+                {/* Linked only when it is a real lightor.app address (LT-315, L2). */}
+                {siteUrlOf(webConfig.subDomain) && (
+                  <a href={siteUrlOf(webConfig.subDomain) ?? undefined} target="_blank" rel="noreferrer">
+                    <Button variant="outline" size="sm" rightIcon={<ExternalLink size={14} />}>
+                      {t('admin.userDetail.site.open')}
+                    </Button>
+                  </a>
+                )}
               </div>
             ) : (
               <p className="text-sm text-gray-400">{t('admin.userDetail.site.none')}</p>

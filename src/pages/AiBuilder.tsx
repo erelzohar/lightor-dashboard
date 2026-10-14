@@ -25,6 +25,7 @@ import { lightTick } from '../lib/haptics';
 import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
+import { siteUrlOf } from '../utils/siteUrl';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -363,9 +364,9 @@ const AiBuilder: React.FC = () => {
     }
   };
 
-  const previewUrl = webConfig?.subDomain && import.meta.env.PROD
-    ? `https://${webConfig.subDomain}.lightor.app`
-    : CLIENT_APP_URL;
+  // Built safely (LT-315, L2): never an address off lightor.app.
+  const liveSite = siteUrlOf(webConfig?.subDomain);
+  const previewUrl = liveSite && import.meta.env.PROD ? liveSite : CLIENT_APP_URL;
 
   const showPhoneShell = isMobilePreview && isLargeScreen;
   const hasUserMessage = messages.some((m) => m.role === 'user');
