@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, Globe2, CalendarCheck, Inbox } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -27,8 +27,6 @@ import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import { Toggle } from '../components/ui/liquid-toggle';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
-import { businessTimeZone } from '../utils/businessTime';
-import { timeZoneOptions } from '../utils/timeZoneOptions';
 import { ComingSoonRow } from '../components/ui/ComingSoon';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
@@ -141,13 +139,6 @@ const Settings: React.FC = () => {
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
-  // The business's zone (LT-318): absent (a config from before it) reads as
-  // the server's default, so an untouched form is never dirty over it.
-  const savedTimeZone = businessTimeZone(webConfig);
-  const draftTimeZone = businessTimeZone(localWebConfig);
-  // Every zone the browser knows, worked out once: the saved one is always
-  // among them. Offsets as of this visit.
-  const zoneOptions = useMemo(() => timeZoneOptions(savedTimeZone), [savedTimeZone]);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -174,7 +165,6 @@ const Settings: React.FC = () => {
       hideFromSearchChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
-      draftTimeZone !== savedTimeZone ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
       JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
       socialKey(localWebConfig.social) !== socialKey(webConfig.social) ||
@@ -347,9 +337,10 @@ const Settings: React.FC = () => {
       fixedSocials.tiktok = social.tiktok === "" ? null : social.tiktok;
       fixedSocials.x = social.x === "" ? null : social.x;
 
-      // The zone always goes as one the browser knows (LT-318): the server
-      // refuses an unknown one, and that would fail the whole save.
-      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage, timeZone: businessTimeZone(localWebConfig) };
+      // No time zone here (LT-334): it is set once, when the site is made
+      // (the signing-up device's zone, else the server's default), and the
+      // owner never has to think about it — the page leaves it as stored.
+      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage };
       // Sent only once the owner has a value, so an untouched form never
       // writes the default over nothing (LT-156).
       if (bookingHorizonDays !== undefined) payload.bookingHorizonDays = bookingHorizonDays;
@@ -595,22 +586,6 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </div>
-              {/* The business's clock (LT-318): hours, bookings, reminders and
-                  messages are its times, whatever zone a device is set to.
-                  Here, not on the Bookings tab, which a leads site hides. */}
-              <div className="max-w-md">
-                <Select
-                  id="settings-time-zone"
-                  label={t('settings.timeZone')}
-                  leftIcon={<Globe2 className="w-4 h-4 text-gray-400" />}
-                  // City names and offsets read left to right in every language.
-                  dir="ltr"
-                  value={draftTimeZone}
-                  options={zoneOptions}
-                  helperText={t('settings.timeZoneHelp')}
-                  onChange={(e) => handleChange('root', 'timeZone', e.target.value)}
-                />
-              </div>
             </SettingsSection>
 
             <SettingsSection icon={MapPin} title={t('settings.addressTitle')} description={t('settings.sections.addressDesc')}>
@@ -738,43 +713,38 @@ const Settings: React.FC = () => {
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Link2} title={t('settings.sections.siteBasics')} description={t('settings.sections.siteBasicsDesc')}>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
-                <div className="flex-1">
-                  <label className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
-                    <span>{t('settings.yourLink')}</span>
+              {/* One column (LT-334): each item its label and line above a
+                  full-width control, a hairline between them. */}
+              <div className="divide-y divide-gray-200/70 dark:divide-gray-700/50 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <label htmlFor="settings-subdomain" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.yourLink')}</label>
                     {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
-                      <span className="text-secondary text-xs flex items-center gap-1 md:hidden">
+                      <span className="text-xs flex items-center gap-1" role="status">
                         {isCheckingSubdomain ? (
-                          <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
+                          <>
+                            <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
+                            <span className="text-gray-500 dark:text-gray-400">{t('settings.checking')}</span>
+                          </>
                         ) : (
-                          <Check className="w-4 h-4 text-green-500" />
+                          <>
+                            <Check className="w-4 h-4 text-green-500" />
+                            <span className="text-green-600 dark:text-green-400 font-medium">{t('settings.available')}</span>
+                          </>
                         )}
                       </span>
                     )}
-                  </label>
-                  <p className="text-[0.8125rem] text-gray-500 dark:text-gray-400 mb-0 md:mb-2 ms-0.5 max-w-md">
+                  </div>
+                  <p className="mt-0.5 text-[0.8125rem] text-gray-500 dark:text-gray-400">
                     {t('settings.linkDescription')}
                   </p>
                 </div>
 
-                <div className="w-full md:w-1/2 flex-none relative">
-                  {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
-                    <div className="hidden md:flex absolute -top-6 end-0 text-secondary text-xs items-center gap-1">
-                      {isCheckingSubdomain ? (
-                        <>
-                          <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
-                          {t('settings.checking')}
-                        </>
-                      ) : (
-                        <>
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span className="text-green-500 font-medium">{t('settings.available')}</span>
-                        </>
-                      )}
-                    </div>
-                  )}
+                <div className="w-full">
                   <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[0.1875rem] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
                     <input
+                      id="settings-subdomain"
                       type="text"
                       className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-base sm:text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
                       value={localWebConfig.subDomain || ''}
@@ -860,7 +830,7 @@ const Settings: React.FC = () => {
                   </AnimatePresence>
                 </div>
               </div>
-              <div className="max-w-md">
+              <div>
                 <Select
                   label={
                     <>
@@ -877,17 +847,15 @@ const Settings: React.FC = () => {
                   onChange={(e) => handleChange('root', 'defaultLanguage', e.target.value)}
                 />
               </div>
-              {/* Coming soon (LT-331): the site at the owner's own address. */}
+              {/* Coming soon (LT-331): the site at the owner's own address — a
+                  quiet row in the list, not a box of its own (LT-334). */}
               <ComingSoonRow
                 icon={Globe}
                 title={t('settings.customDomain.title')}
                 description={t('settings.customDomain.desc')}
-                preview={
-                  <div dir="ltr" className="max-w-md flex items-center px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-dark-surface text-gray-400 text-[0.9375rem]">
-                    {t('settings.customDomain.placeholder')}
-                  </div>
-                }
+                className="p-0 rounded-none border-0 border-solid bg-transparent dark:bg-transparent"
               />
+              </div>
             </SettingsSection>
 
             <SettingsSection icon={Globe} title={t('settings.site.modeTitle')} titleId="site-mode-title">

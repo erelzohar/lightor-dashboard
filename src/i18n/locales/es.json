@@ -167,8 +167,6 @@
     },
     "websiteLanguage": "Idioma del sitio",
     "websiteLanguageTooltip": "El idioma predeterminado que los visitantes ven en tu sitio público.",
-    "timeZone": "Zona horaria",
-    "timeZoneHelp": "Los horarios de las reservas, los recordatorios y los mensajes usan esta zona horaria.",
     "bookingHorizon": "Con cuánta antelación pueden reservar los clientes",
     "bookingHorizonTooltip": "La fecha más lejana que un cliente puede reservar en tu sitio. Tú puedes reservar cualquier fecha.",
     "bookingFields": {
@@ -251,9 +249,8 @@
       "bookingRulesDesc": "Hasta cuándo se puede cancelar y con cuánta antelación reservar"
     },
     "customDomain": {
-      "title": "Tu propio dominio",
-      "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com.",
-      "placeholder": "www.minegocio.com"
+      "title": "Conectar un dominio",
+      "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com."
     }
   },
   "appointmentTypes": {

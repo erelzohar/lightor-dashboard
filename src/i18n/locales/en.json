@@ -167,8 +167,6 @@
     },
     "websiteLanguage": "Website language",
     "websiteLanguageTooltip": "The default language visitors see on your public site.",
-    "timeZone": "Time zone",
-    "timeZoneHelp": "Booking times, reminders and messages use this time zone.",
     "bookingHorizon": "How far ahead customers can book",
     "bookingHorizonTooltip": "The furthest date a customer can book on your site. You can still book any date yourself.",
     "bookingFields": {
@@ -251,9 +249,8 @@
       "bookingRulesDesc": "How late customers can cancel, and how far ahead they can book"
     },
     "customDomain": {
-      "title": "Your own domain",
-      "desc": "Connect your own address to the site, like www.mybusiness.com.",
-      "placeholder": "www.mybusiness.com"
+      "title": "Connect a domain",
+      "desc": "Connect your own address to the site, like www.mybusiness.com."
     }
   },
   "appointmentTypes": {

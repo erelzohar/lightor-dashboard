@@ -167,8 +167,6 @@
     },
     "websiteLanguage": "Langue du site",
     "websiteLanguageTooltip": "La langue par défaut que les visiteurs voient sur votre site public.",
-    "timeZone": "Fuseau horaire",
-    "timeZoneHelp": "Les horaires des réservations, les rappels et les messages suivent ce fuseau horaire.",
     "bookingHorizon": "Jusqu'où les clients peuvent réserver",
     "bookingHorizonTooltip": "La date la plus lointaine qu'un client peut réserver sur votre site. Vous pouvez toujours réserver n'importe quelle date vous-même.",
     "bookingFields": {
@@ -251,9 +249,8 @@
       "bookingRulesDesc": "Jusqu'à quand annuler, et combien de temps à l'avance réserver"
     },
     "customDomain": {
-      "title": "Votre propre domaine",
-      "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr.",
-      "placeholder": "www.monentreprise.fr"
+      "title": "Connecter un domaine",
+      "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr."
     }
   },
   "appointmentTypes": {

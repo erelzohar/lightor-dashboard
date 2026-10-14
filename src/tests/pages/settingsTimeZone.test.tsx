@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Settings from '../../pages/Settings';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
-import { timeZoneCity, timeZoneOptions } from '../../utils/timeZoneOptions';
 import type { WebConfig } from '../../types';
 
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
@@ -62,7 +61,6 @@ const dispatchMock = vi.hoisted(() => vi.fn());
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => dispatchMock }));
 
 const sentPayload = () => vi.mocked(updateWebConfig).mock.calls[0][0] as unknown as Partial<WebConfig>;
-const picker = () => screen.getByLabelText('settings.timeZone') as HTMLSelectElement;
 
 beforeEach(() => {
   // Midsummer: Jerusalem is GMT+3, New York GMT-4. Only Date is faked.
@@ -84,71 +82,30 @@ afterEach(() => {
 });
 
 /**
- * Settings → Business (LT-318): the business's time zone. Every booking
- * time, reminder and message is read on it, so it sits with who the business
- * is — not on the Bookings tab, which a leads site hides.
+ * LT-334 (Erel: "the owner should not deal with it"): the business's time
+ * zone (LT-318) is set once, when the site is made — the signing-up device's
+ * zone, else the server's default — and the settings page neither shows it
+ * nor sends it, so a save leaves whatever is stored.
  */
-describe('Settings: the time zone', () => {
-  it("is on the Business tab, reads the server's default for a config without one, and is not a change", () => {
+describe('Settings: the time zone stays out of sight', () => {
+  it('is on no tab', () => {
     render(<Settings />);
-
-    expect(picker().value).toBe('Asia/Jerusalem');
-    expect(within(picker()).getByRole('option', { name: 'Jerusalem (GMT+3)' })).toBeTruthy();
-    expect(within(picker()).getByRole('option', { name: 'New York (GMT-4)' })).toBeTruthy();
-    expect(screen.getByText('settings.timeZoneHelp')).toBeInTheDocument();
-    // An untouched form has nothing to save.
-    expect(screen.queryByText('common.save')).toBeNull();
+    for (const tab of screen.getAllByRole('tab')) {
+      fireEvent.mouseDown(tab);
+      expect(screen.queryByLabelText('settings.timeZone')).toBeNull();
+    }
   });
 
-  it('shows the saved zone, and the default in place of one this browser does not know', () => {
+  it('is never sent, so a save keeps the stored zone', async () => {
     state.webConfig.data = baseConfig({ timeZone: 'Asia/Dubai' });
-    const { unmount } = render(<Settings />);
-    expect(picker().value).toBe('Asia/Dubai');
-    unmount();
-
-    state.webConfig.data = baseConfig({ timeZone: 'Mars/Olympus_Mons' });
-    render(<Settings />);
-    expect(picker().value).toBe('Asia/Jerusalem');
-    expect(screen.queryByText('common.save')).toBeNull();
-  });
-
-  it('saves the zone chosen, and reads as saved once the server has it', async () => {
-    render(<Settings />);
-
-    fireEvent.change(picker(), { target: { value: 'America/New_York' } });
-    fireEvent.click(await screen.findByText('common.save'));
-
-    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
-    expect(sentPayload().timeZone).toBe('America/New_York');
-    await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
-    expect(picker().value).toBe('America/New_York');
-  });
-
-  it('sends a zone the server knows with any other change, never an unknown one', async () => {
-    state.webConfig.data = baseConfig({ timeZone: 'Mars/Olympus_Mons' });
     render(<Settings />);
 
     fireEvent.change(screen.getByDisplayValue('Biz'), { target: { value: 'Biz and Co' } });
     fireEvent.click(await screen.findByText('common.save'));
 
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
-    expect(sentPayload()).toMatchObject({ businessName: 'Biz and Co', timeZone: 'Asia/Jerusalem' });
-  });
-});
-
-describe('the time zone options', () => {
-  it('names each zone by its city and its offset, west to east, with the current one always there', () => {
-    const now = Date.UTC(2030, 6, 1);
-    const options = timeZoneOptions('Asia/Dubai', now);
-    const values = options.map((o) => o.value);
-    expect(values).toContain('Asia/Jerusalem');
-    expect(values).toContain('Asia/Dubai');
-    expect(new Set(values).size).toBe(values.length);
-    // July is winter in Adelaide: half an hour off the hour.
-    expect(options.find((o) => o.value === 'Australia/Adelaide')?.label).toBe('Adelaide (GMT+9:30)');
-    expect(values.indexOf('America/Los_Angeles')).toBeLessThan(values.indexOf('America/New_York'));
-    expect(values.indexOf('America/New_York')).toBeLessThan(values.indexOf('Europe/London'));
-    expect(values.indexOf('Europe/London')).toBeLessThan(values.indexOf('Asia/Jerusalem'));
-    expect(timeZoneCity('America/Argentina/Buenos_Aires')).toBe('Buenos Aires');
+    expect(sentPayload()).toMatchObject({ businessName: 'Biz and Co' });
+    expect(sentPayload()).not.toHaveProperty('timeZone');
+    expect((state.webConfig.data as WebConfig).timeZone).toBe('Asia/Dubai');
   });
 });

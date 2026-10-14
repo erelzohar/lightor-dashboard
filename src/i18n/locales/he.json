@@ -167,8 +167,6 @@
     },
     "websiteLanguage": "שפת האתר",
     "websiteLanguageTooltip": "שפת ברירת המחדל שהגולשים רואים באתר הציבורי שלך.",
-    "timeZone": "אזור זמן",
-    "timeZoneHelp": "שעות התורים, התזכורות וההודעות נקבעות לפי אזור הזמן הזה.",
     "bookingHorizon": "כמה זמן מראש אפשר לקבוע",
     "bookingHorizonTooltip": "עד כמה ימים קדימה לקוחות יכולים לקבוע תור באתר. אתם עצמכם יכולים לקבוע תור לכל תאריך.",
     "bookingFields": {
@@ -251,9 +249,8 @@
       "bookingRulesDesc": "עד מתי אפשר לבטל, וכמה זמן מראש אפשר לקבוע"
     },
     "customDomain": {
-      "title": "דומיין משלך",
-      "desc": "חברו כתובת משלכם לאתר, כמו www.mybusiness.co.il.",
-      "placeholder": "www.mybusiness.co.il"
+      "title": "חיבור דומיין",
+      "desc": "חברו כתובת משלכם לאתר, כמו www.mybusiness.co.il."
     }
   },
   "appointmentTypes": {
