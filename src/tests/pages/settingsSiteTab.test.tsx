@@ -89,6 +89,7 @@ const sentPayload = (call = 0) => vi.mocked(updateWebConfig).mock.calls[call][0]
 
 // A tab is chosen on press (Radix Tabs, LT-313), as a finger or mouse goes down.
 const openSiteTab = () => fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.site/ }));
+const openBookingsTab = () => fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.bookings/ }));
 const modeCard = (key: 'settings.site.modeBook' | 'settings.site.modeLead') =>
   screen.getByRole('radio', { name: new RegExp(key.replace(/\./g, '\\.')) });
 
@@ -219,8 +220,8 @@ describe('Settings: the Site tab', () => {
   it('sends the intro popup and the button text together in one components payload', async () => {
     render(<Settings />);
 
+    openSiteTab(); // the popup is the site's (LT-316)
     fireEvent.change(screen.getByPlaceholderText('settings.popupPlaceholder'), { target: { value: 'Closed for the holidays' } });
-    openSiteTab();
     fireEvent.change(screen.getByLabelText('settings.site.ctaLabel'), { target: { value: 'Get a quote' } });
 
     fireEvent.click(await screen.findByText('common.save'));
@@ -233,6 +234,7 @@ describe('Settings: the Site tab', () => {
   it('still sends a changed intro popup alone, as before', async () => {
     render(<Settings />);
 
+    openSiteTab();
     fireEvent.change(screen.getByPlaceholderText('settings.popupPlaceholder'), { target: { value: 'Back on Sunday' } });
     fireEvent.click(await screen.findByText('common.save'));
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
@@ -309,15 +311,20 @@ describe('Settings: hiding the site from search engines', () => {
  * form's questions stay: they are the site's conversion.
  */
 describe('Settings: booking-only controls by site mode', () => {
-  it('shows them on a booking site', () => {
+  it('shows them on a booking site, under Bookings (LT-316)', () => {
     render(<Settings />);
+    // The business tab is the business's alone now.
+    expect(screen.queryByText('settings.minCancelTime')).not.toBeInTheDocument();
 
+    openBookingsTab();
     expect(screen.getByText('settings.minCancelTime')).toBeInTheDocument();
     expect(screen.getByText('settings.bookingHorizon')).toBeInTheDocument();
     expect(screen.getByText('settings.bookingFields.title')).toBeInTheDocument();
-    expect(screen.getByText('settings.leadFields.title')).toBeInTheDocument();
     expect(screen.getByTestId('google-calendar-card')).toBeInTheDocument();
     expect(screen.getByTestId('calendar-feed-card')).toBeInTheDocument();
+
+    openSiteTab();
+    expect(screen.getByText('settings.leadFields.title')).toBeInTheDocument();
   });
 
   it('hides them on a leads site and keeps the contact-form questions', () => {
@@ -329,6 +336,9 @@ describe('Settings: booking-only controls by site mode', () => {
     expect(screen.queryByText('settings.bookingFields.title')).not.toBeInTheDocument();
     expect(screen.queryByTestId('google-calendar-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('calendar-feed-card')).not.toBeInTheDocument();
+    // No Bookings tab at all; the site keeps its contact form and language.
+    expect(screen.queryByRole('tab', { name: /settings\.tabs\.bookings/ })).not.toBeInTheDocument();
+    openSiteTab();
     expect(screen.getByText('settings.leadFields.title')).toBeInTheDocument();
     expect(screen.getByText('settings.websiteLanguage')).toBeInTheDocument();
   });

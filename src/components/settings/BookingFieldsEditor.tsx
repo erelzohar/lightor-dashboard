@@ -144,12 +144,14 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
   const previewFields = previewService === '*' ? fields : fieldsForService(fields, previewService);
 
   return (
-    <div className="mt-6 p-6 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gray-50/30 dark:bg-gray-800/20 space-y-4 hover:border-gray-300 dark:hover:border-gray-600 transition-all">
-      {/* Header */}
+    <div className="p-5 sm:p-6 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gray-50/30 dark:bg-gray-800/20 space-y-4">
+      {/* Header — the settings page's section look (LT-316) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <ClipboardList className="w-5 h-5 text-primary shrink-0" />
-          <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <ClipboardList className="w-[18px] h-[18px]" />
+          </span>
+          <h3 className="font-semibold text-gray-900 dark:text-white">
             {copy('title')}
           </h3>
           <FieldTooltip

@@ -159,10 +159,10 @@
     "saveSuccess": "Settings saved successfully",
     "loadFailed": "Failed to load settings",
     "tabs": {
-      "general": "Profile",
-      "address": "Address",
+      "general": "Business",
       "contact": "Contact",
-      "site": "Site"
+      "site": "Site",
+      "bookings": "Bookings"
     },
     "websiteLanguage": "Website language",
     "websiteLanguageTooltip": "The default language visitors see on your public site.",
@@ -232,6 +232,17 @@
       "ctaTooLong": "At most {{max}} characters",
       "hideFromSearch": "Hide my site from search engines",
       "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results."
+    },
+    "sections": {
+      "business": "Business details",
+      "businessDesc": "The name and logo your site shows",
+      "addressDesc": "Where customers find you",
+      "contactDesc": "How customers reach you — shown on your site",
+      "socialDesc": "Links to your social pages, in your site's footer",
+      "siteBasics": "Link and language",
+      "siteBasicsDesc": "Your site's address and the language it shows in",
+      "bookingRules": "Booking rules",
+      "bookingRulesDesc": "How late customers can cancel, and how far ahead they can book"
     }
   },
   "appointmentTypes": {

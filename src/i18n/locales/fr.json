@@ -159,10 +159,10 @@
     "saveSuccess": "Paramètres enregistrés avec succès",
     "loadFailed": "Échec du chargement des paramètres",
     "tabs": {
-      "general": "Profil",
-      "address": "Adresse",
+      "general": "Entreprise",
       "contact": "Contact",
-      "site": "Site"
+      "site": "Site",
+      "bookings": "Réservations"
     },
     "websiteLanguage": "Langue du site",
     "websiteLanguageTooltip": "La langue par défaut que les visiteurs voient sur votre site public.",
@@ -232,6 +232,17 @@
       "ctaTooLong": "{{max}} caractères au maximum",
       "hideFromSearch": "Masquer mon site des moteurs de recherche",
       "hideFromSearchHelp": "Votre site reste en ligne, et toute personne qui a le lien peut l'ouvrir. Google peut mettre quelques jours à le retirer de ses résultats."
+    },
+    "sections": {
+      "business": "Informations de l'entreprise",
+      "businessDesc": "Le nom et le logo affichés sur votre site",
+      "addressDesc": "Où vos clients vous trouvent",
+      "contactDesc": "Comment vos clients vous joignent — affiché sur votre site",
+      "socialDesc": "Liens vers vos pages sociales, en bas de votre site",
+      "siteBasics": "Lien et langue",
+      "siteBasicsDesc": "L'adresse de votre site et la langue dans laquelle il s'affiche",
+      "bookingRules": "Règles de réservation",
+      "bookingRulesDesc": "Jusqu'à quand annuler, et combien de temps à l'avance réserver"
     }
   },
   "appointmentTypes": {
