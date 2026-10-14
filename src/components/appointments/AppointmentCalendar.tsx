@@ -856,9 +856,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               const tod = isToday(day);
               const dots = Math.min(getDaySessions(day).length, 4);
               return (
+                // No slide on the sticky header (LT-327): iPhone Safari painted
+                // its first frame and never the rest, leaving the day stuck to
+                // the side over the grid. The columns below still slide.
                 <div key={day.toISOString()}
-                  className={`flex flex-col items-center py-3 relative${slideClass}`}
-                  style={{ borderLeft: '1px solid', borderColor: 'rgba(243,244,246,0.8)' }}>
+                  className="flex flex-col items-center py-3 relative border-l border-gray-100 dark:border-gray-800/60">
                   {/* Today gets a dark rounded header card */}
                   {tod ? (
                     <div className="flex flex-col items-center px-4 py-2 rounded-xl mx-1 shadow-md"
@@ -915,10 +917,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
                 return (
-                  <div key={day.toISOString()} className={`relative${slideClass}`}
+                  <div key={day.toISOString()} className={`relative border-l border-gray-100 dark:border-gray-800/60${slideClass}`}
                     style={{
-                      borderLeft: '1px solid',
-                      borderColor: 'rgba(243,244,246,0.9)',
                       background: tod
                         ? 'rgba(99,102,241,0.02)'
                         : isWeekend

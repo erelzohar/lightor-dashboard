@@ -102,6 +102,9 @@ describe('swiping the calendar grid', () => {
     swipe(grid, -120); // forward: tomorrow enters from the right
     expect(sliding()).toBeGreaterThan(0);
     expect(from()).toBe('48px');
+    // The sticky day header never slides (LT-327): iPhone Safari left it
+    // painted at the slide's first frame, stuck to the side.
+    expect(grid.querySelector('.sticky')!.querySelectorAll('.cal-slide-in')).toHaveLength(0);
     swipe(grid, 120); // back: from the left
     expect(from()).toBe('-48px');
   });
