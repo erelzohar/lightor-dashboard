@@ -463,3 +463,33 @@ describe('BillingSection for the admin account', () => {
     expect(screen.queryByRole('button', { name: 'billing.cancelCta' })).toBeNull();
   });
 });
+
+/** LT-315 (M6 and a Low): Paddle.js or the plan failing to load never leaves a spinner, or an offer. */
+describe('BillingSection when something fails to load', () => {
+  it('says the plans are unavailable when Paddle.js does not load', async () => {
+    vi.mocked(fetchUpgradePlans).mockRejectedValueOnce(new Error('Failed to load Paddle.js'));
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.plansUnavailable')).toBeInTheDocument();
+    expect(screen.queryByText('billing.loadingPlans')).not.toBeInTheDocument();
+  });
+
+  it('offers nothing when the account plan could not be read', async () => {
+    entitlementsState.data = null as unknown as Record<string, unknown>;
+    render(<BillingSection />);
+    await waitFor(() => expect(screen.queryByText('billing.loadingPlans')).not.toBeInTheDocument());
+    expect(fetchUpgradePlans).not.toHaveBeenCalled();
+    expect(screen.queryByText('₪49')).not.toBeInTheDocument();
+  });
+
+  it('does not call a 409 TOO_EARLY "already subscribed"', async () => {
+    vi.mocked(createCheckout).mockRejectedValue(
+      Object.assign(new Error('Conflict'), { response: { status: 409, data: { code: 'TOO_EARLY' } } })
+    );
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByText('billing.upgrade'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.checkoutUnavailable'));
+    expect(toast).not.toHaveBeenCalledWith('billing.alreadySubscribed');
+    expect(authState.refreshUser).not.toHaveBeenCalled();
+  });
+});
+

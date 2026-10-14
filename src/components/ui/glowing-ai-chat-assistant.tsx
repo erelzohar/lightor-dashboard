@@ -1,13 +1,16 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { X, ArrowUpLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LightyAvatar, LightyBubble } from '../lighty/LightyChat';
 import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 import { impact, lightTick } from '../../lib/haptics';
+import { lazyOr } from '../../lib/lazyOr';
 import { DRAG_START_PX, cardPlacement, clampOffset, readOffset, saveOffset, type Home, type Offset } from '../../utils/floatingLighty';
 
-// three.js and the 1.8 MB model load after the page, never in its way.
-const Lighty3D = lazy(() => import('../lighty/Lighty3D'));
+// three.js and the 1.8 MB model load after the page, never in its way. If
+// their chunk cannot load, nothing renders and his still face (shown until
+// the model is ready) simply stays (LT-315) — it used to take the app down.
+const Lighty3D = lazyOr(() => import('../lighty/Lighty3D'), () => null);
 
 interface FloatingAiAssistantProps {
   /** A question for Lighty: his page opens and sends it. */

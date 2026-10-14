@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
@@ -10,11 +10,17 @@ import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
 import { LightyBubble, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
+import { lazyOr } from '../lib/lazyOr';
 import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 
-// three.js and the model reach only this page.
-const Lighty3D = lazy(() => import('../components/lighty/Lighty3D'));
+// three.js and the model reach only this page. When their chunk cannot load
+// (a deploy since the tab opened, a dropped connection), the still Lighty
+// stands in rather than the page failing (LT-315).
+const StillLighty: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <img src="/lighty-avatar.webp" alt="" draggable={false} data-testid="lighty-still" className={`object-contain select-none ${className}`} />
+);
+const Lighty3D = lazyOr(() => import('../components/lighty/Lighty3D'), StillLighty);
 
 const BOOKING_SUGGESTIONS = ['today', 'tomorrowFree', 'week', 'leads', 'regulars', 'howBlock'] as const;
 const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;

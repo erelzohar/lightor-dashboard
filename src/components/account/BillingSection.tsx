@@ -99,17 +99,24 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       setEntitlements(data);
       // Paddle is not even loaded while the free 60 days are the system's own
       // (LT-290): the plans open in their last week. Nor for an account whose
-      // Plus is not bought (LT-310).
-      if (!data?.complimentary && canOfferPurchases() && upgradeIsOpen(data?.pilot)) {
-        fetchUpgradePlans().then((fetched) => {
-          if (!cancelled) {
-            setPlans(fetched);
-            setLoadingPlans(false);
-          }
-        });
+      // Plus is not bought (LT-310). Nor when the account's plan could not be
+      // read (LT-315): unknown is not "open", so nothing is offered.
+      if (data && !data.complimentary && canOfferPurchases() && upgradeIsOpen(data.pilot)) {
+        fetchUpgradePlans()
+          // A failure to load Paddle reads as no plans: "unavailable", never
+          // a spinner that turns forever (LT-315).
+          .catch((): UpgradePlan[] => [])
+          .then((fetched) => {
+            if (!cancelled) {
+              setPlans(fetched);
+              setLoadingPlans(false);
+            }
+          });
       } else {
         setLoadingPlans(false);
       }
+    }).catch(() => {
+      if (!cancelled) setLoadingPlans(false);
     });
     return () => {
       cancelled = true;
@@ -234,7 +241,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       setCheckoutData(null);
       setCheckout({ plan, transaction });
     } catch (error) {
-      if ((error as AxiosError)?.response?.status === 409) {
+      const response = (error as AxiosError<{ code?: string }>)?.response;
+      if (response?.status === 409 && (response.data?.code === 'TOO_EARLY' || response.data?.code === 'COMPLIMENTARY')) {
+        // Not "already subscribed" (LT-315): nothing to buy yet, or Plus is
+        // given. Re-read the plan and the card stops offering.
+        toast.error(t('billing.checkoutUnavailable'));
+        void fetchMyEntitlements().then((data) => { if (data) setEntitlements(data); });
+      } else if (response?.status === 409) {
         // Subscribed already — in another tab, or by a webhook this page has
         // not seen yet: re-read the account and the card follows.
         toast(t('billing.alreadySubscribed'));

@@ -37,17 +37,25 @@ export async function getPaddle(): Promise<Paddle | undefined> {
 
   const env = (import.meta.env.VITE_PADDLE_ENV as string | undefined) ?? 'sandbox';
 
-  paddleInstance = await initializePaddle({
-    environment: env === 'production' ? 'production' : 'sandbox',
-    token,
-    eventCallback(event) {
-      if (event.name === 'checkout.completed' && pendingCompletedCallback) {
-        pendingCompletedCallback();
-        pendingCompletedCallback = null;
-      }
-      checkoutListeners.forEach((listener) => listener(event));
-    },
-  });
+  try {
+    paddleInstance = await initializePaddle({
+      environment: env === 'production' ? 'production' : 'sandbox',
+      token,
+      eventCallback(event) {
+        if (event.name === 'checkout.completed' && pendingCompletedCallback) {
+          pendingCompletedCallback();
+          pendingCompletedCallback = null;
+        }
+        checkoutListeners.forEach((listener) => listener(event));
+      },
+    });
+  } catch {
+    // Paddle.js did not load — an ad blocker, a dropped connection, the CDN.
+    // initializePaddle rejects then, and the caller's "Loading plans…" spun
+    // forever (LT-315). Same as no Paddle: the caller shows "unavailable",
+    // and the next call tries again.
+    return undefined;
+  }
 
   return paddleInstance;
 }
