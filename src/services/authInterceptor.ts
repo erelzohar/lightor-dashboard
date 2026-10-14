@@ -23,8 +23,34 @@ export function setUnauthorizedHandler(fn: () => void): () => void {
   };
 }
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /**
+     * The request carries the owner's password for the server to check
+     * (change password, delete account). LT-315: the API answered a wrong
+     * password there with 401, and treating that as an expired session
+     * logged the owner out over a typo. The API now answers 400 with a
+     * code, but older deploys and cached app bundles still meet 401s.
+     */
+    credentialCheck?: boolean;
+  }
+}
+
+/**
+ * Does this failure mean the session is gone? Any 401 does — except on a
+ * credential check, where only the auth middleware's own refusal ("Not
+ * authorized, token failed" / "Not authorized to access this route") does;
+ * "Current password is incorrect" and friends are the form's business.
+ */
+export function isSessionFailure(error: AxiosError): boolean {
+  if (error.response?.status !== 401) return false;
+  if (!error.config?.credentialCheck) return true;
+  const message = (error.response.data as { error?: unknown } | undefined)?.error;
+  return typeof message === 'string' && /^Not authorized/.test(message);
+}
+
 function report401(error: AxiosError): Promise<never> {
-  if (error.response?.status === 401) unauthorizedHandler?.();
+  if (isSessionFailure(error)) unauthorizedHandler?.();
   return Promise.reject(error);
 }
 

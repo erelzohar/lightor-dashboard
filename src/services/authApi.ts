@@ -13,6 +13,32 @@ import globals from './globals';
  * 2027-02.
  */
 const legacyToken = (): string | null => localStorage.getItem('lightor');
+
+/**
+ * A failed auth request that keeps what the API said about it: the HTTP
+ * status and the machine-readable `code` (LT-315 — WRONG_PASSWORD /
+ * PASSWORD_REQUIRED on the credential checks), next to the message older
+ * callers match on.
+ */
+export class AuthRequestError extends Error {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.name = 'AuthRequestError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+type ApiFailure = { response?: { status?: number; data?: { error?: unknown; code?: unknown } } };
+const toAuthError = (error: unknown, fallback: string): AuthRequestError => {
+  const response = (error as ApiFailure)?.response;
+  const message = typeof response?.data?.error === 'string' && response.data.error ? response.data.error : fallback;
+  const code = typeof response?.data?.code === 'string' ? response.data.code : undefined;
+  return new AuthRequestError(message, response?.status, code);
+};
 const legacyAuthHeader = () => {
   const token = legacyToken();
   return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
@@ -158,16 +184,19 @@ export const resendVerification = async (email: string): Promise<void> => {
  * deleted, try again", which the thrown message reflects.
  */
 export const deleteAccount = async (proof: { password?: string; confirmEmail?: string }): Promise<void> => {
+  let response;
   try {
-    const response = await apiClient.delete(`${globals.authUrl}me`, {
+    response = await apiClient.delete(`${globals.authUrl}me`, {
       withCredentials: true,
       ...legacyAuthHeader(),
       data: proof,
+      // A wrong password here is the dialog's error, not a lost session (LT-315).
+      credentialCheck: true,
     });
-    if (!response.data?.success) throw new Error('Account deletion failed');
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Account deletion failed');
+  } catch (error) {
+    throw toAuthError(error, 'Account deletion failed');
   }
+  if (!response.data?.success) throw new AuthRequestError('Account deletion failed');
 };
 
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
@@ -178,10 +207,47 @@ export const changePassword = async (currentPassword: string, newPassword: strin
       {
         withCredentials: true,
         ...legacyAuthHeader(),
+        // A wrong current password is a field error, not a lost session (LT-315).
+        credentialCheck: true,
       },
     );
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to update password');
+  } catch (error) {
+    throw toAuthError(error, 'Failed to update password');
+  }
+};
+
+/**
+ * Ask for a password-reset email (LT-315). The API answers the same for an
+ * address it does not know, so the caller always says "if an account
+ * exists, we sent a link" — success here never confirms an account.
+ */
+export const requestPasswordReset = async (email: string): Promise<void> => {
+  try {
+    await apiClient.post(`${globals.authUrl}forgot-password`, { email });
+  } catch (error) {
+    throw toAuthError(error, 'Could not send the reset email');
+  }
+};
+
+/**
+ * Set a new password with the emailed link's token (LT-315). The API's route
+ * is `PUT /auth/reset-password/:resetToken` with `{ password, confirmPassword }`;
+ * on success it sets the session cookie and returns the JWT in the body,
+ * which the native app keeps as its Bearer (as on login and handoff).
+ * A 400 means the link is invalid or expired.
+ */
+export const resetPassword = async (resetToken: string, password: string): Promise<{ token?: string }> => {
+  try {
+    const response = await apiClient.put(
+      `${globals.authUrl}reset-password/${encodeURIComponent(resetToken)}`,
+      { password, confirmPassword: password },
+      { withCredentials: true },
+    );
+    if (!response.data?.success) throw new AuthRequestError('Password reset failed');
+    return { token: response.data?.token };
+  } catch (error) {
+    if (error instanceof AuthRequestError) throw error;
+    throw toAuthError(error, 'Password reset failed');
   }
 };

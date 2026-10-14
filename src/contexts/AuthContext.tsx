@@ -285,8 +285,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           token: null
         }));
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update password');
+    } catch (error) {
+      // Rethrown as is: the AuthRequestError carries the API's status and
+      // code, which the form turns into a field error (LT-315).
+      throw error instanceof Error ? error : new Error('Failed to update password');
     }
   };
 

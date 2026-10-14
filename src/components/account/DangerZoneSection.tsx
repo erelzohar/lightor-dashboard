@@ -5,7 +5,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
-import { deleteAccount } from '../../services/authApi';
+import { deleteAccount, type AuthRequestError } from '../../services/authApi';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -13,10 +13,10 @@ import toast from 'react-hot-toast';
  * Account deletion (LT-031).
  *
  * The backend is the authority on what proves intent: a password account must
- * send its password, a social account types its email. The UI guesses which
- * flow to show from googleId/facebookId, and falls back to asking for a
- * password if the server demands one anyway (an account that has both a
- * social id and a password).
+ * send its password, a social account types its email. The UI reads which
+ * from `user.hasPassword` (LT-315); on an API without it, it guesses from
+ * googleId/facebookId and falls back to asking for a password if the server
+ * demands one anyway (an account that has both a social id and a password).
  *
  * Deletion is billing-safe server-side — a live subscription is cancelled
  * immediately first, and if that fails nothing is deleted, which is why the
@@ -28,8 +28,10 @@ const DangerZoneSection: React.FC = () => {
   const navigate = useNavigate();
 
   const isSocial = Boolean(auth.user?.googleId || auth.user?.facebookId);
+  const hasPassword = auth.user?.hasPassword ?? !isSocial;
   const [modalOpen, setModalOpen] = useState(false);
-  const [needPassword, setNeedPassword] = useState(!isSocial);
+  const [needPassword, setNeedPassword] = useState(hasPassword);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -43,6 +45,7 @@ const DangerZoneSection: React.FC = () => {
     setModalOpen(false);
     setPassword('');
     setConfirmEmail('');
+    setPasswordError(null);
   };
 
   const handleDelete = async () => {
@@ -52,14 +55,16 @@ const DangerZoneSection: React.FC = () => {
       toast.success(t('danger.deleted'), { duration: 6000 });
       logout();
       navigate('/login', { replace: true });
-    } catch (error: any) {
-      const message: string = error?.message ?? '';
-      if (message.includes('Password is required')) {
+    } catch (error) {
+      // The API answers 400 with a code since LT-315; older deploys said 401
+      // with these messages (no longer taken for an expired session).
+      const { message = '', code } = error as AuthRequestError;
+      if (code === 'PASSWORD_REQUIRED' || message.includes('Password is required')) {
         // Social heuristic was wrong — this account does have a password.
         setNeedPassword(true);
-        toast.error(t('danger.passwordNeeded'));
-      } else if (message.includes('Incorrect password')) {
-        toast.error(t('danger.wrongPassword'));
+        setPasswordError(t('danger.passwordNeeded'));
+      } else if (code === 'WRONG_PASSWORD' || message.includes('Incorrect password')) {
+        setPasswordError(t('danger.wrongPassword'));
       } else {
         toast.error(t('danger.deleteFailed'));
       }
@@ -109,15 +114,22 @@ const DangerZoneSection: React.FC = () => {
 
             {needPassword ? (
               <Input
+                id="danger-password"
                 label={t('danger.passwordLabel')}
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError(null);
+                }}
+                error={passwordError ?? undefined}
+                aria-invalid={passwordError ? true : undefined}
                 leftIcon={<KeyRound size={18} />}
                 autoFocus
               />
             ) : (
               <Input
+                id="danger-confirm-email"
                 label={t('danger.confirmEmailLabel', { email: auth.user?.email ?? '' })}
                 type="email"
                 value={confirmEmail}

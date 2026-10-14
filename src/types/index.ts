@@ -258,6 +258,13 @@ export interface User {
   /** Present on accounts created via social login — no password exists. */
   googleId?: string;
   facebookId?: string;
+  /**
+   * Whether the account has a password (LT-315, from /auth/me). A password
+   * account that later linked Google has both this and googleId, so it is
+   * the only reliable way to pick the proof the server will ask for.
+   * Absent on an API that predates it.
+   */
+  hasPassword?: boolean;
   subscription: {
     status: 'free' | 'active' | 'past_due' | 'canceled' | 'deleted';
     planId?: string;

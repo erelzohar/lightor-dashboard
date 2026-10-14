@@ -6,6 +6,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
+import type { AuthRequestError } from '../services/authApi';
 import { useTheme } from '../contexts/ThemeContext';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
 import BillingSection from '../components/account/BillingSection';
@@ -46,22 +47,31 @@ const Account: React.FC = () => {
   const [language, setLanguage] = useState<SupportedLanguage>((auth.user?.defaultLanguage as SupportedLanguage) ?? 'he');
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
 
+  const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
+  // Re-sync the profile form from the account only while it is closed
+  // (LT-315): a notification toggle, a language change or a billing poll
+  // replaces auth.user, and re-syncing then wiped an open edit, which Save
+  // then "saved" with the old values. Closing the form (Cancel or Save)
+  // picks the latest values up again.
   React.useEffect(() => {
-    if (auth.user) {
+    if (auth.user && !isEditing) {
       setFormData({
         name: auth.user.name || '',
         email: auth.user.email || '',
         phone: auth.user.phone || '',
         defaultLanguage: auth.user.defaultLanguage || 'he'
       });
-      setLanguage((auth.user.defaultLanguage as SupportedLanguage) ?? 'he');
     }
+  }, [auth.user, isEditing]);
+  React.useEffect(() => {
+    if (auth.user) setLanguage((auth.user.defaultLanguage as SupportedLanguage) ?? 'he');
   }, [auth.user]);
 
   document.title = t('account.title');
@@ -74,6 +84,7 @@ const Account: React.FC = () => {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+    if (name === 'currentPassword') setCurrentPasswordError(null);
   };
 
   const handleLanguageChange = async (value: SupportedLanguage) => {
@@ -97,7 +108,9 @@ const Account: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateUser(formData);
+      // Only what this form edits: the language has its own card, and a
+      // stale copy here would undo a change made there meanwhile (LT-315).
+      await updateUser({ name: formData.name, phone: formData.phone });
       toast.success(t('account.updateSuccess'));
       setIsEditing(false);
     } catch (error) {
@@ -113,21 +126,27 @@ const Account: React.FC = () => {
       return;
     }
 
+    setCurrentPasswordError(null);
+    setSavingPassword(true);
     try {
       await updatePassword(passwordData.currentPassword, passwordData.newPassword, passwordData.confirmPassword);
       toast.success(t('account.passwordUpdateSuccess'));
       setIsChangingPassword(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error: any) {
-      let errorMessage = error.message;
-      if (errorMessage === 'Current password is incorrect') {
-        errorMessage = t('account.passwordCurrentIncorrect');
-      } else if (errorMessage === 'New password cannot be the same as the current password') {
-        errorMessage = t('account.passwordSameAsOld');
+    } catch (error) {
+      const { message, code } = error as AuthRequestError;
+      // A wrong current password goes under its field (LT-315). The API now
+      // answers 400 WRONG_PASSWORD; older deploys said 401 with this message,
+      // which the interceptor no longer takes for an expired session.
+      if (code === 'WRONG_PASSWORD' || code === 'PASSWORD_REQUIRED' || message === 'Current password is incorrect') {
+        setCurrentPasswordError(t('account.passwordCurrentIncorrect'));
+      } else if (message === 'New password cannot be the same as the current password') {
+        toast.error(t('account.passwordSameAsOld'));
       } else {
-        errorMessage = t('account.passwordUpdateError');
+        toast.error(t('account.passwordUpdateError'));
       }
-      toast.error(errorMessage || t('account.passwordUpdateError'));
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -231,6 +250,8 @@ const Account: React.FC = () => {
                 type={showCurrentPassword ? 'text' : 'password'}
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
+                error={currentPasswordError ?? undefined}
+                aria-invalid={currentPasswordError ? true : undefined}
                 leftIcon={<KeyRound size={18} />}
                 rightIcon={
                   <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="focus:outline-none">
@@ -266,7 +287,7 @@ const Account: React.FC = () => {
               />
 
               <div className="flex justify-end">
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" disabled={savingPassword}>
                   {t('account.updatePassword')}
                 </Button>
               </div>
