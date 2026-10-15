@@ -82,6 +82,10 @@ describe('the phone menu (LT-352)', () => {
     const inMenu = within(menu()!).getByText('owner@example.com');
     expect(inMenu.tagName).toBe('BDI');
     expect(inMenu.closest('button')).toHaveTextContent('Erelowner@example.com');
+    // The initials avatar is round in both (LT-369).
+    const avatars = screen.getAllByText('E', { exact: true });
+    expect(avatars.length).toBe(2);
+    avatars.forEach((a) => expect(a).toHaveClass('rounded-full'));
   });
 
   it('closes on "More" again, Escape and a tap outside', async () => {

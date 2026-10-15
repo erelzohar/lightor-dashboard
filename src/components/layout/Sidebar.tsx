@@ -145,7 +145,7 @@ const SidebarFooter: React.FC = () => {
         aria-label={[auth.user?.name, auth.user?.email].filter(Boolean).join(' ') || undefined}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
           {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
         </div>
         {/* The name, and under it the email the owner signs in with (LT-364).

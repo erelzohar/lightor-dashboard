@@ -196,7 +196,7 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
           }}
           className="flex-1 min-w-0 flex items-center gap-2 rounded-xl px-2 py-1.5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
         >
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
+          <span className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
             {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
           </span>
           {/* The name, and under it the sign-in email (LT-364). */}
