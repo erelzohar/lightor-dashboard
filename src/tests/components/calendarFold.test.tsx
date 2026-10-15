@@ -86,19 +86,19 @@ const blockOf = (name: string) =>
 const DAY = () => new Date(dayAt(3, 0));
 
 describe('folding the empty hours (LT-359)', () => {
-  it('folds the runs of empty hours around a booking into bands, the booking under the first', () => {
+  it('draws each empty hour shorter, its label kept, and the booking whole', () => {
     render(<AppointmentCalendar appointments={[booking('Dana', dayAt(3, 10))]} onAppointmentClick={vi.fn()} openDay={DAY()} />);
 
-    expect(screen.getAllByTestId('folded-hours')).toHaveLength(2);
-    // The axis reads 06:00, the band, 10:00, Dana's hour, 11:00, the band.
-    expect(axis()).toEqual(['06:00', '10:00', '11:00']);
-    expect(screen.queryByTestId('nothing-booked')).toBeNull();
-    // 06:00-10:00 is one 32px band; Dana's hour comes straight after it, whole.
-    expect(blockOf('Dana').style.top).toBe('32px');
+    // Every hour but Dana's, in the one column on show.
+    expect(screen.getAllByTestId('folded-hour')).toHaveLength(15);
+    expect(axis()).toHaveLength(16);
+    expect(axis().slice(0, 6)).toEqual(['06:00', '07:00', '08:00', '09:00', '10:00', '11:00']);
+    // Four folded hours of 34px above her; her hour at full height.
+    expect(blockOf('Dana').style.top).toBe('136px');
     expect(blockOf('Dana').style.height).toBe(`${HOUR_PX}px`);
   });
 
-  it('opens a band a booking is dragged over, and lands it at the time shown there', async () => {
+  it('opens the hours a booking is dragged over, gliding, and lands it at the time shown there', async () => {
     render(<AppointmentCalendar appointments={[booking('Dana', dayAt(3, 10))]} onAppointmentClick={vi.fn()} openDay={DAY()} />);
     const block = blockOf('Dana');
     const r = block.getBoundingClientRect();
@@ -107,26 +107,25 @@ describe('folding the empty hours (LT-359)', () => {
 
     await act(async () => { fireEvent.mouseDown(block, { button: 0, clientX: x, clientY: y }); });
     await act(async () => { fireEvent.mouseMove(document, { clientX: x, clientY: y + 10 }); });
-    // Down past her hour, into the folded 11:00-22:00 band: it opens.
+    // Down past her hour, into the folded 11:00 and 12:00: they open.
     await act(async () => { fireEvent.mouseMove(document, { clientX: x, clientY: y + HOUR_PX + 10 }); });
-    await waitFor(() => expect(screen.getAllByTestId('folded-hours')).toHaveLength(1));
-    expect(axis()).toContain('15:00');
-    // Opened from its top, the band's first hour is under the pointer: 11:05.
+    await waitFor(() => expect(screen.getAllByTestId('folded-hour')).toHaveLength(13));
+    // Opened from its top, 11:00 is under the pointer: 11:05.
     expect(screen.getByTestId('drag-landing').textContent).toContain('11:05');
+    expect(blockOf('Dana').style.transition).toContain('top 240ms');
 
     await act(async () => { fireEvent.mouseUp(document, { clientX: x, clientY: y + HOUR_PX + 10 }); });
     await act(async () => { fireEvent.click(block); });
     await act(async () => { await new Promise((done) => setTimeout(done, 60)); });
-    // Dropped: the band folds again behind the window that asks.
-    expect(screen.getAllByTestId('folded-hours')).toHaveLength(2);
+    // Dropped: the hours fold again behind the window that asks.
+    expect(screen.getAllByTestId('folded-hour')).toHaveLength(15);
     fireEvent.click(await screen.findByText('appointments.drag.move'));
     await waitFor(() => expect(moveAppointment).toHaveBeenCalledWith('Dana', String(dayAt(3, 11, 5))));
   });
 
-  it('says so when nothing at all is booked in the days on show', () => {
-    render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} openDay={DAY()} />);
-    expect(screen.getAllByTestId('folded-hours')).toHaveLength(1);
-    expect(screen.getByTestId('nothing-booked').textContent).toBe('appointments.nothingThisDay');
+  it('jumps rather than glides when nothing is held', () => {
+    render(<AppointmentCalendar appointments={[booking('Dana', dayAt(3, 10))]} onAppointmentClick={vi.fn()} openDay={DAY()} />);
+    expect(blockOf('Dana').style.transition).toBe('');
   });
 
   it('draws every hour while the bookings load, as placeholders', () => {
@@ -134,7 +133,7 @@ describe('folding the empty hours (LT-359)', () => {
       <AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} openDay={DAY()} loading />
     );
     expect(screen.getAllByTestId('calendar-skeleton').length).toBeGreaterThan(0);
-    expect(screen.queryAllByTestId('folded-hours')).toHaveLength(0);
+    expect(screen.queryAllByTestId('folded-hour')).toHaveLength(0);
     expect(screen.getByText('appointments.loading').getAttribute('role')).toBe('status');
 
     rerender(<AppointmentCalendar appointments={[booking('Dana', dayAt(3, 10))]} onAppointmentClick={vi.fn()} openDay={DAY()} />);

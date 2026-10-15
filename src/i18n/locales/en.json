@@ -324,8 +324,6 @@
     }
   },
   "appointments": {
-    "nothingThisDay": "Nothing booked this day",
-    "nothingTheseDays": "Nothing booked these days",
     "title": "Appointments",
     "description": "View and manage",
     "newAppointment": "New appointment",

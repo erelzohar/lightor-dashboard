@@ -25,7 +25,7 @@ import { getEventCoordinates } from '@dnd-kit/utilities';
 import { moveAppointment, swapAppointments } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { dropVerdict, edgeAt, isDraggable, minutesOfDay, startAtMinutes, type DropVerdict } from '../../utils/calendarDrag';
-import { bandHoursUnder, buildScale, markHours } from '../../utils/calendarScale';
+import { buildScale, markHours } from '../../utils/calendarScale';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay } from '../../utils/phone';
@@ -84,8 +84,11 @@ const getPalette = (appt: Appointment) => paletteOf(appt.type);
 const HOUR_START = 6;
 const HOUR_END   = 22;
 const HOUR_PX    = 88;
-/** A run of empty hours, folded (LT-359). */
-const BAND_PX    = 32;
+/** An empty hour, folded (LT-359): about a third, its label still read. */
+const FOLDED_PX  = 34;
+// Folding and unfolding glide while a booking is dragged (LT-359).
+const FOLD_EASE  = 'cubic-bezier(.2,.8,.2,1)';
+const FOLD_MOTION = `top 240ms ${FOLD_EASE}, height 240ms ${FOLD_EASE}`;
 /** The minute of the day the clock is at: the now line's place. */
 const nowMinutesOfDay = (): number => {
   const now = new Date();
@@ -313,10 +316,16 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   );
 
   // ── The hours, folded where nothing is (LT-359) ───────────────────────
-  // An hour no day on show has anything in folds into a thin band with its
-  // neighbours; today's current hour stays open for the now line, and a band
-  // a dragged booking is held over opens to full height until it is dropped.
+  // An hour no day on show has anything in is drawn about a third as tall,
+  // hatched, its label kept; today's current hour stays open for the now
+  // line, and an hour a dragged booking is held over opens to full height
+  // until it is dropped. While a booking is held (and a moment after, as the
+  // hours fold back) the rows glide to their new places instead of jumping.
   const [dragOpen, setDragOpen] = useState<ReadonlySet<number>>(() => new Set());
+  const [foldMotion, setFoldMotion] = useState(false);
+  const foldMotionTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(foldMotionTimer.current), []);
+  const glide = foldMotion ? FOLD_MOTION : undefined;
   const busyHours = new Set<number>();
   weekDays.forEach(day => getDaySessions(day).forEach(session => {
     const start = minutesOfDay(session.startMs);
@@ -327,12 +336,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     firstHour: HOUR_START,
     lastHour: HOUR_END,
     hourPx: HOUR_PX,
-    bandPx: BAND_PX,
+    foldedPx: FOLDED_PX,
     busy: busyHours,
     open: !foldFreeHours || showSkeleton ? 'all' : dragOpen,
   });
   // What the layout is, for effects to follow it.
-  const scaleKey = scale.bands.map(band => `${band.from}-${band.to}`).join(',');
+  const scaleKey = scale.rows.filter(row => row.folded).map(row => row.hour).join(',');
   const totalHeight = scale.total;
   const nowPx       = scale.yOf(nowMinutes);
   const nowVisible  = nowMinutes >= HOUR_START * 60 && nowMinutes <= HOUR_END * 60;
@@ -493,10 +502,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       firstHour: HOUR_START,
       lastHour: HOUR_END,
     });
-    // Over folded hours, the band opens to full height (LT-359), whole, for
-    // the rest of the drag: the effect below reads the landing again off it.
+    // A folded hour it reaches opens to full height (LT-359) for the rest of
+    // the drag: the effect below reads the landing again off it.
     const startMin = minutesOfDay(startMs);
-    const opening = bandHoursUnder(scale, startMin, startMin + Math.max(durationMS / 60_000, 1)).filter(hour => !dragOpen.has(hour));
+    const reached = new Set<number>();
+    markHours(startMin, startMin + Math.max(durationMS / 60_000, 1), reached);
+    const opening = scale.rows.filter(row => row.folded && reached.has(row.hour)).map(row => row.hour);
     if (opening.length) setDragOpen(open => new Set([...open, ...opening]));
     const under = Array.from(column.querySelectorAll<HTMLElement>('[data-booking-id]')).find(el => {
       if (el.dataset.bookingId === appointment._id) return false;
@@ -552,6 +563,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setHeld(null);
     setDropPreview(null);
     setDragOpen(open => (open.size ? new Set() : open));
+    // The hours fold back gliding, then page turns jump again.
+    clearTimeout(foldMotionTimer.current);
+    foldMotionTimer.current = setTimeout(() => setFoldMotion(false), 400);
   };
   const handleDragStart = ({ active, activatorEvent }: DragStartEvent) => {
     const appointment = active.data.current?.appointment as Appointment | undefined;
@@ -561,6 +575,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     grabRef.current = { appointment, grabDy: start && block ? start.y - block.getBoundingClientRect().top : 0 };
     pointerRef.current = start;
     draggingRef.current = true;
+    clearTimeout(foldMotionTimer.current);
+    setFoldMotion(true);
     setHeld(appointment);
     setSelectedAppt(null);
     lightTick();
@@ -1189,18 +1205,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               },
             }}
           >
-          <div className="relative overflow-x-clip" style={{ paddingTop: 16, height: totalHeight + 16,
+          <div className="relative overflow-x-clip" style={{ paddingTop: 16, height: totalHeight + 16, transition: glide,
             display: 'grid',
             gridTemplateColumns: `${TIME_GUTTER}px repeat(${visibleDays}, 1fr)`,
           }}>
 
               {/* Time gutter */}
               <div className="relative border-e border-gray-100 dark:border-gray-800/60" style={{ gridRow: 1 }}>
-                {/* Each full hour at its line; a folded run (LT-359) by the
-                    hour it starts at, so the axis reads 06:00, then 10:00
-                    under the band. */}
-                {scale.rows.filter(row => !row.folded || scale.bands.some(band => band.from === row.hour)).map(row => (
-                  <div key={row.hour} className="absolute w-full" style={{ top: row.top }}>
+                {/* Every hour at its line, folded or not (LT-359). Keyed by
+                    the days on show too, so a page turn draws afresh rather
+                    than gliding. */}
+                {scale.rows.map(row => (
+                  <div key={`${rangeStart}-${row.hour}`} className="absolute w-full" style={{ top: row.top, transition: glide }}>
                     <span className="absolute end-3 text-[11px] text-gray-400 dark:text-gray-500 -translate-y-[9px] select-none whitespace-nowrap bg-white dark:bg-gray-900 px-1">
                       {fmtHour(row.hour)}
                     </span>
@@ -1228,26 +1244,30 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                           : undefined,
                     }}>
 
-                    {/* Hour grid lines */}
-                    {scale.rows.filter(row => !row.folded).map(row => (
+                    {/* Hour grid lines; a folded hour (LT-359) is hatched and
+                        has no half-hour line. The hatch is always there and
+                        only its paint changes, so it glides with its hour. */}
+                    {scale.rows.map(row => (
                       <React.Fragment key={row.hour}>
+                        <div aria-hidden="true" data-testid={row.folded ? 'folded-hour' : undefined}
+                          className={`absolute inset-x-0${row.folded ? ' bg-gray-50/70 dark:bg-gray-800/20' : ''}`}
+                          style={{
+                            top: row.top, height: row.height, transition: glide,
+                            backgroundImage: row.folded ? 'repeating-linear-gradient(135deg, transparent 0 7px, rgba(148,163,184,0.14) 7px 8px)' : undefined,
+                          }} />
                         <div className="absolute w-full border-t border-gray-100 dark:border-gray-800/40"
-                          style={{ top: row.top }} />
-                        <div className="absolute w-full border-t border-dashed border-gray-50 dark:border-gray-800/20"
-                          style={{ top: row.top + row.height / 2 }} />
+                          style={{ top: row.top, transition: glide }} />
+                        {!row.folded && (
+                          <div className="absolute w-full border-t border-dashed border-gray-50 dark:border-gray-800/20"
+                            style={{ top: row.top + row.height / 2, transition: glide }} />
+                        )}
                       </React.Fragment>
-                    ))}
-                    {/* Folded empty hours (LT-359): a thin hatched band. */}
-                    {scale.bands.map(band => (
-                      <div key={`band-${band.from}`} aria-hidden="true" data-testid="folded-hours"
-                        className="absolute inset-x-0 border-y border-gray-100 dark:border-gray-800/60 bg-gray-50/70 dark:bg-gray-800/20"
-                        style={{ top: band.top, height: band.height, backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 7px, rgba(148,163,184,0.14) 7px 8px)' }} />
                     ))}
 
                     {/* Now line */}
                     {tod && nowVisible && (
                       <div className="absolute w-full z-20 flex items-center pointer-events-none"
-                        style={{ top: nowPx }}>
+                        style={{ top: nowPx, transition: glide }}>
                         <div className="w-3 h-3 rounded-full -ms-1.5 shrink-0"
                           style={{ background: '#6366f1', boxShadow: '0 0 0 2px rgba(99,102,241,0.3)' }} />
                         <div className="flex-1 border-t-2" style={{ borderColor: 'rgba(99,102,241,0.5)' }} />
@@ -1306,6 +1326,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                             style={{
                               position: 'absolute', top, height, insetInlineStart: 4, insetInlineEnd: 4,
                               zIndex: 10,
+                              transition: glide,
                               ...(movable ? { touchAction: 'manipulation', WebkitTouchCallout: 'none' } : {}),
                             }}
                             data-booking-id={movable ? appt._id : undefined}
@@ -1393,7 +1414,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                         <div aria-hidden="true" data-testid="drag-landing"
                           className={`absolute rounded-xl overflow-hidden select-none pointer-events-none border-s-[3px] ${pal.border} ${pal.bg} px-2.5 py-2 shadow-xl ring-2 ${
                             kind === 'refused' ? 'ring-rose-400' : kind === 'swap' ? 'ring-amber-400 opacity-80' : 'ring-primary'}`}
-                          style={{ top: landingTop, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 40 }}>
+                          style={{ top: landingTop, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 40, transition: glide }}>
                           <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text}`}>{held.type.name}</p>
                           <p className={`text-[10px] mt-0.5 font-semibold ${pal.sub}`}>
                             <span dir="ltr">{`${format(new Date(dropPreview.startMs), 'HH:mm')} – ${format(new Date(dropPreview.startMs + durationMS), 'HH:mm')}`}</span>
@@ -1414,12 +1435,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               })}
           </div>
           </DndContext>
-          {/* Every hour on show folded: nothing is booked in these days. */}
-          {!showSkeleton && scale.rows.every(row => row.folded) && (
-            <p className="py-10 text-center text-sm text-gray-400 dark:text-gray-500" data-testid="nothing-booked">
-              {t(visibleDays === 1 ? 'appointments.nothingThisDay' : 'appointments.nothingTheseDays')}
-            </p>
-          )}
         </div>
         </div>
       </section>

@@ -324,8 +324,6 @@
     }
   },
   "appointments": {
-    "nothingThisDay": "لا توجد مواعيد في هذا اليوم",
-    "nothingTheseDays": "لا توجد مواعيد في هذه الأيام",
     "title": "المواعيد",
     "description": "عرض وإدارة",
     "newAppointment": "موعد جديد",

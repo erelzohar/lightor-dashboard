@@ -324,8 +324,6 @@
     }
   },
   "appointments": {
-    "nothingThisDay": "אין תורים ביום הזה",
-    "nothingTheseDays": "אין תורים בימים האלה",
     "title": "יומן",
     "description": "צפייה וניהול",
     "newAppointment": "תור חדש",

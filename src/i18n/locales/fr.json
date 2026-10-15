@@ -324,8 +324,6 @@
     }
   },
   "appointments": {
-    "nothingThisDay": "Aucun rendez-vous ce jour-là",
-    "nothingTheseDays": "Aucun rendez-vous ces jours-là",
     "title": "Rendez-vous",
     "description": "Consulter et gérer",
     "newAppointment": "Nouveau rendez-vous",
