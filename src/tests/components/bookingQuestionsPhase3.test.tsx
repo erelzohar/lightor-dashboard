@@ -145,7 +145,7 @@ describe('CustomerDetailDrawer: booking answers', () => {
     vi.mocked(fetchCustomer).mockResolvedValue(detail);
   });
 
-  it('lists what was answered, and what is kept for next time — and hands it to the booking window', async () => {
+  it('lists what was answered, and what is kept for next time - and hands it to the booking window', async () => {
     render(<CustomerDetailDrawer customerId="c1" onClose={vi.fn()} onChanged={vi.fn()} />);
 
     expect(await screen.findByTestId('customer-saved-details')).toBeTruthy();

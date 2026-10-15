@@ -77,11 +77,11 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
 
   const locale = i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const formatDate = (value?: string | null) =>
-    value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
   const formatDateTime = (value?: string | null) =>
     value
       ? new Date(value).toLocaleString(locale, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-      : '—';
+      : '-';
 
   const saveNotes = async () => {
     if (!detail) return;
@@ -297,7 +297,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                           <li key={row._id} className="flex items-center gap-3 py-2.5">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">
-                                {row.typeName ?? '—'}
+                                {row.typeName ?? '-'}
                               </p>
                               <p className="text-xs text-gray-400">{formatDateTime(row.scheduledAt)}</p>
                               {/* What they answered that time (LT-217). */}

@@ -5,7 +5,7 @@ import { LightyTyped, revealMarkdown, typewriterConfig } from '../../components/
 
 /** LT-271 — Lighty writes his answers out, never showing broken markdown. */
 describe('revealMarkdown', () => {
-  const text = 'Hi **two bookings** — see [the calendar](/appointments) now';
+  const text = 'Hi **two bookings** - see [the calendar](/appointments) now';
 
   it('is a plain prefix outside any token, and the whole text at the end', () => {
     expect(revealMarkdown(text, 3)).toBe('Hi ');

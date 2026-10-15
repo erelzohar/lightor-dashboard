@@ -52,7 +52,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, i18nPrefix = 'admin.s
   // Old test-era accounts miss some status fields entirely — show a quiet
   // dash rather than a raw "admin.x.undefined" i18n key.
   if (!status) {
-    return <span className="text-gray-300 dark:text-gray-600">—</span>;
+    return <span className="text-gray-300 dark:text-gray-600">-</span>;
   }
   const style = STYLES[status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300';
   return (

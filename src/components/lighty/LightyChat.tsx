@@ -27,7 +27,8 @@ const INLINE = /\[([^\]\n]{1,80})\]\(((?:[^()\s]|\([^()\s]*\)){1,200})\)|\*\*([^
 
 // "09:00–10:00" in a right-to-left line reads backwards ("10:00–09:00"):
 // a dash between two numbers takes the line's direction. Kept left to right.
-// (A hyphen between digits already stays with them; an en or em dash does not.)
+// (A hyphen between digits already stays with them; an en or em dash does not,
+// nor a spaced hyphen, which is what the server makes of an em-dash (LT-350).)
 // No lookbehind assertion (LT-315): WebKit before 16.4 cannot parse one, esbuild
 // turns the literal into a top-level `new RegExp` in the main chunk, and the
 // whole dashboard — the iOS 15 app included — died on a SyntaxError at load.
@@ -35,7 +36,7 @@ const INLINE = /\[([^\]\n]{1,80})\]\(((?:[^()\s]|\([^()\s]*\)){1,200})\)|\*\*([^
 // is group 2 and starts `m[1].length` past the match. A match always ends on a
 // digit and `(?!\d)` consumes nothing, so the next range's leading non-digit
 // is never eaten by the previous match.
-const RANGE = /(^|\D)(\d{1,2}(?::\d{2})?\s*[–—]\s*\d{1,2}(?::\d{2})?)(?!\d)/g;
+const RANGE = /(^|\D)(\d{1,2}(?::\d{2})?\s*[–—-]\s*\d{1,2}(?::\d{2})?)(?!\d)/g;
 const ltrRanges = (text: string, keyBase: string): React.ReactNode[] => {
   const out: React.ReactNode[] = [];
   let at = 0;

@@ -106,7 +106,7 @@ beforeEach(() => {
  * widgets, the last 30 days by day and by topic, the latest inquiries, and a
  * card for sharing the site.
  */
-describe('Leads home — the four numbers', () => {
+describe('Leads home - the four numbers', () => {
   it('compares the month with last month up to the same day (LT-281)', async () => {
     vi.mocked(fetchLeadStats).mockResolvedValue(stats({ lastMonthToDate: 6 }));
     render(<Dashboard />);
@@ -155,11 +155,11 @@ describe('Leads home — the four numbers', () => {
     expect(within(waiting).getByText('dashboard.leadsStats.waitingNone')).toBeInTheDocument();
 
     const response = screen.getByTestId('leads-stat-response');
-    expect(within(response).getByText('—')).toBeInTheDocument();
+    expect(within(response).getByText('-')).toBeInTheDocument();
     expect(within(response).getByText('dashboard.leadsStats.responseNotYet')).toBeInTheDocument();
 
     const handled = screen.getByTestId('leads-stat-handled');
-    expect(within(handled).getByText('—')).toBeInTheDocument();
+    expect(within(handled).getByText('-')).toBeInTheDocument();
   });
 
   it('opens the new leads from the waiting card (LT-288)', async () => {
@@ -181,7 +181,7 @@ describe('Leads home — the four numbers', () => {
   });
 });
 
-describe('Leads home — the last 30 days', () => {
+describe('Leads home - the last 30 days', () => {
   it('draws one bar per day with today’s emphasised, and reads a day out on tap', async () => {
     render(<Dashboard />);
 
@@ -249,7 +249,7 @@ describe('Leads home — the last 30 days', () => {
   });
 });
 
-describe('Leads home — no inquiries yet', () => {
+describe('Leads home - no inquiries yet', () => {
   it('keeps Lighty’s welcome, skips the numbers and the chart, and asks for the first inquiry', async () => {
     vi.mocked(fetchLeads).mockResolvedValue(leadsPage(0) as never);
     render(<Dashboard />);

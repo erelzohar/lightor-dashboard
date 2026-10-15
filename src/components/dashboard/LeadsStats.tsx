@@ -26,7 +26,7 @@ export const monthChange = (thisMonth: number, lastMonth: number): number | null
  * figure, so 59.6 minutes reads "1 hour", never "60 min".
  */
 export const formatResponseTime = (ms: number | null, t: TFunction, language: string): string => {
-  if (ms === null) return '—';
+  if (ms === null) return '-';
   const minutes = Math.max(1, Math.round(ms / MINUTE));
   if (minutes < 60) return t('dashboard.leadsStats.minutes', { value: minutes });
   const hours = Math.round(ms / (HOUR / 10)) / 10;
@@ -83,7 +83,7 @@ const LeadsStats: React.FC<LeadsStatsProps> = ({ stats, onOpenLeads }) => {
     {
       key: 'handled',
       label: t('dashboard.leadsStats.handled'),
-      value: total > 0 ? `${Math.round((handled / total) * 100)}%` : '—',
+      value: total > 0 ? `${Math.round((handled / total) * 100)}%` : '-',
       change: null,
       sub: total > 0 ? t('dashboard.leadsStats.handledOf', { handled, total }) : t('dashboard.leadsStats.last30'),
     },

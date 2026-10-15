@@ -24,7 +24,7 @@ beforeAll(async () => {
 describe('formatResponseTime', () => {
   it('reads minutes under an hour, hours with one decimal under two days, and days beyond', () => {
     const he = (ms: number | null) => formatResponseTime(ms, tFor.he, 'he');
-    expect(he(null)).toBe('—');
+    expect(he(null)).toBe('-');
     expect(he(20_000)).toBe('1 דק׳'); // never "0 minutes"
     expect(he(45 * MIN)).toBe('45 דק׳');
     expect(he(59.6 * MIN)).toBe('1 שעה'); // rounds into hours, not "60 min"

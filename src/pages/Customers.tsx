@@ -94,7 +94,7 @@ const Customers: React.FC = () => {
   const locale =
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const formatDate = (value?: string | null) =>
-    value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
   // Plus-only (LT-125). The flag from /stats short-circuits the round trip;
   // the server's 403 PLAN_REQUIRED is handled too in case stats never loaded.
@@ -221,10 +221,10 @@ const Customers: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard label={t('customers.stats.total')} value={totals?.customers ?? '—'} icon={<UsersRound size={20} />} />
+        <StatCard label={t('customers.stats.total')} value={totals?.customers ?? '-'} icon={<UsersRound size={20} />} />
         <StatCard
           label={t('customers.stats.newThisMonth')}
-          value={totals?.newThisMonth ?? '—'}
+          value={totals?.newThisMonth ?? '-'}
           icon={<Sparkles size={20} />}
           iconBg="bg-emerald-100 dark:bg-emerald-900/30"
           accent="text-emerald-600 dark:text-emerald-400"
@@ -232,7 +232,7 @@ const Customers: React.FC = () => {
         />
         <StatCard
           label={t('customers.stats.returning')}
-          value={totals?.returning ?? '—'}
+          value={totals?.returning ?? '-'}
           subline={t('customers.stats.returningHint')}
           icon={<Repeat size={20} />}
           iconBg="bg-blue-100 dark:bg-blue-900/30"
@@ -241,7 +241,7 @@ const Customers: React.FC = () => {
         />
         <StatCard
           label={t('customers.stats.blocked')}
-          value={totals?.blocked ?? '—'}
+          value={totals?.blocked ?? '-'}
           icon={<Ban size={20} />}
           iconBg="bg-red-100 dark:bg-red-900/30"
           accent="text-red-600 dark:text-red-400"

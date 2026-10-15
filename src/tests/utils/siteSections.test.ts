@@ -123,7 +123,7 @@ describe('a legacy page becomes blocks (LT-252)', () => {
     { key: 'footer', type: 'footer', source: 'footer' },
   ];
 
-  it('lists the blocks it would be, then becomes them — the same ids, hidden ones hidden with their flag back on', () => {
+  it('lists the blocks it would be, then becomes them - the same ids, hidden ones hidden with their flag back on', () => {
     const legacy = site({
       blocks: undefined,
       components: { ...site().components, faq: { visible: false, title: 'Q', items: [{ question: 'q', answer: 'a' }] } },

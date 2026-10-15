@@ -59,7 +59,7 @@ const AdminSubscriptions: React.FC = () => {
           month: 'short',
           year: 'numeric',
         })
-      : '—';
+      : '-';
 
   const columns: DataTableColumn<AdminUserRow>[] = [
     {

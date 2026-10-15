@@ -76,7 +76,7 @@ describe('AI builder preview bridge', () => {
     expect(previewMessages(post)).toHaveLength(1);
   });
 
-  it('sends it again after a real reload — the site says it is ready again', async () => {
+  it('sends it again after a real reload - the site says it is ready again', async () => {
     const { post, win } = await setup();
     await ready(win);
     await ready(win);

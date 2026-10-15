@@ -58,7 +58,7 @@ const ShareSiteCard: React.FC<ShareSiteCardProps> = ({ kind, first = false, busi
 
   const url = `https://${siteHost(subDomain)}`;
   const name = businessName?.trim();
-  const whatsAppShare = `https://wa.me/?text=${encodeURIComponent(name ? `${name} — ${url}` : url)}`;
+  const whatsAppShare = `https://wa.me/?text=${encodeURIComponent(name ? `${name} - ${url}` : url)}`;
   const title = first
     ? t(kind === 'leads' ? 'dashboard.share.firstLeads' : 'dashboard.share.firstBookings')
     : t(kind === 'leads' ? 'dashboard.share.titleLeads' : 'dashboard.share.titleBookings');

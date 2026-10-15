@@ -179,7 +179,7 @@ describe('OwnerBookingModal: booking questions', () => {
   });
 
   // LT-217: the details kept from the customer's last booking.
-  it("fills in the customer's kept address — with its place — and the owner may change it", async () => {
+  it("fills in the customer's kept address - with its place - and the owner may change it", async () => {
     renderModal({
       customer: {
         name: 'Dana',
@@ -529,7 +529,7 @@ describe("OwnerBookingModal: the site's calendar", () => {
     expect(screen.queryByRole('button', { name: '11:00' })).toBeNull();
   });
 
-  it('marks each day as the site does — closed, on vacation, past, open — with its legend', async () => {
+  it('marks each day as the site does - closed, on vacation, past, open - with its legend', async () => {
     state.webConfig.data.workingDays = ['09:00-12:00', ...Array<string | null>(5).fill('09:00-12:00'), null];
     state.webConfig.data.vacations = [{ startDate: at(6, 0), endDate: at(6, 23) }];
     renderModal();
@@ -589,7 +589,7 @@ describe("OwnerBookingModal: the site's calendar", () => {
     expect(within(screen.getByTestId('booking-days')).getByText('31')).toBeTruthy();
   });
 
-  it('falls back to the opening hours when the day cannot be read — degrade, never block', async () => {
+  it('falls back to the opening hours when the day cannot be read - degrade, never block', async () => {
     vi.mocked(getAvailability).mockRejectedValue(new Error('offline'));
     renderModal();
     chooseService('Massage');

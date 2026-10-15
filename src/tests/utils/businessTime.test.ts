@@ -58,7 +58,7 @@ describe('the zone itself', () => {
       expect(deviceTimeZone()).toBe('Europe/Paris');
     });
 
-    it('is nothing when the browser names no place — UTC, an Etc zone, or nothing it knows', () => {
+    it('is nothing when the browser names no place - UTC, an Etc zone, or nothing it knows', () => {
       for (const tz of ['UTC', 'Etc/GMT-3', 'Etc/Unknown', 'Nowhere/Special', undefined]) {
         deviceSays(tz);
         expect(deviceTimeZone()).toBeUndefined();

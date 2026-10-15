@@ -59,7 +59,7 @@ vi.mock('../../components/dashboard/AppointmentsGraph', () => ({ default: () => 
 vi.mock('../../components/dashboard/DashboardDonutChart', () => ({ default: () => <div data-testid="donut" /> }));
 vi.mock('../../components/appointments/AppointmentDetails', () => ({ default: (): null => null }));
 
-describe('Dashboard — new account with no bookings', () => {
+describe('Dashboard - new account with no bookings', () => {
   it('shows Lighty first, both notices in one row, and no appointments list', async () => {
     render(<Dashboard />);
 
@@ -138,7 +138,7 @@ describe('Dashboard upgrade banner under the pilot grant', () => {
  * the web with the way to the plans, in the app as a fact only — and not a
  * day before the week starts.
  */
-describe('Dashboard — the free period ends in a week', () => {
+describe('Dashboard - the free period ends in a week', () => {
   const DAY = 24 * 60 * 60 * 1000;
   const grant = (untilInDays: number) => {
     const until = new Date(Date.now() + untilInDays * DAY).toISOString();

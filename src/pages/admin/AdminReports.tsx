@@ -139,7 +139,7 @@ const AdminReports: React.FC = () => {
       className: 'hidden md:table-cell',
       render: (row) => (
         <span className="text-xs text-gray-500 whitespace-nowrap">
-          {[row.browser, row.language].filter(Boolean).join(' · ') || '—'}
+          {[row.browser, row.language].filter(Boolean).join(' · ') || '-'}
         </span>
       ),
     },

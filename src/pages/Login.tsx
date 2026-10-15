@@ -60,7 +60,7 @@ const Login: React.FC = () => {
       // GOOGLE_MOBILE_CLIENT_IDS, which looks identical to a bad token from
       // the outside. Naming the id turns it into a one-line fix.
       const aud = audienceOf(idToken);
-      if (aud && /invalid google token/i.test(message)) message += ` — client id ${aud}`;
+      if (aud && /invalid google token/i.test(message)) message += ` - client id ${aud}`;
       setNativeError(message);
     }
   };

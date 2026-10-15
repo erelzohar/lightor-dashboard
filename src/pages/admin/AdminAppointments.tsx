@@ -100,7 +100,7 @@ const AdminAppointments: React.FC = () => {
           hour: '2-digit',
           minute: '2-digit',
         })
-      : '—';
+      : '-';
 
   const chartData = series.map((point) => ({
     ...point,
@@ -143,7 +143,7 @@ const AdminAppointments: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
             className="text-sm text-gray-800 dark:text-gray-200 hover:text-primary truncate block"
           >
-            {row.businessName || row.ownerName || '—'}
+            {row.businessName || row.ownerName || '-'}
           </Link>
           {row.subDomain && (
             <p className="text-xs text-gray-400" dir="ltr">
@@ -159,7 +159,7 @@ const AdminAppointments: React.FC = () => {
       className: 'hidden lg:table-cell',
       render: (row) => (
         <span className="text-gray-600 dark:text-gray-300">
-          {row.typeName ?? '—'}
+          {row.typeName ?? '-'}
           {row.typePrice ? (
             <span className="text-gray-400 text-xs ms-1" dir="ltr">
               ₪{row.typePrice}

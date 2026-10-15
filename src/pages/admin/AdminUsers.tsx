@@ -63,7 +63,7 @@ const AdminUsers: React.FC = () => {
           month: 'short',
           year: 'numeric',
         })
-      : '—';
+      : '-';
 
   const columns: DataTableColumn<AdminUserRow>[] = [
     {
@@ -97,7 +97,7 @@ const AdminUsers: React.FC = () => {
             {row.subDomain}
           </a>
         ) : (
-          <span className="text-gray-300 dark:text-gray-600">—</span>
+          <span className="text-gray-300 dark:text-gray-600">-</span>
         ),
     },
     {

@@ -103,7 +103,7 @@ describe('the site editor (LT-249)', () => {
   const posted = (type: string) => toSite.mock.calls.filter(([m]) => (m as { type: string }).type === type);
   const lastPosted = (type: string) => { const all = posted(type); return all[all.length - 1]; };
 
-  it("waits for the site's LT_READY, then sends the draft and turns the editor on — to the site's origin only", async () => {
+  it("waits for the site's LT_READY, then sends the draft and turns the editor on - to the site's origin only", async () => {
     renderEditor();
     expect(toSite).not.toHaveBeenCalled();
     await fromSite({ type: 'LT_READY' });

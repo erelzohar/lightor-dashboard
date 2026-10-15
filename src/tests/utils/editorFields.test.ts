@@ -13,7 +13,7 @@ describe('editor fields (LT-249)', () => {
     expect(fieldInfo('components.hero.bgType').label).toBe('text');   // not a field the owner edits
   });
 
-  it('hands the AI texts only — never a picture, a price or an unknown path', () => {
+  it('hands the AI texts only - never a picture, a price or an unknown path', () => {
     expect(aiEditable('components.hero.title')).toBe(true);
     expect(aiEditable('blocks.k7.props.text')).toBe(true);
     expect(aiEditable('components.hero.heroImageSrc')).toBe(false);

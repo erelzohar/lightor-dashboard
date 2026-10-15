@@ -40,7 +40,7 @@ const booking = (id: string, name: string, timestamp: string): Appointment => ({
  * the grid on a phone) until the owner hides it, and says which day it is.
  */
 describe('the next appointment', () => {
-  it('names the day, opens from the phone bar, and stays hidden once hidden — across visits', () => {
+  it('names the day, opens from the phone bar, and stays hidden once hidden - across visits', () => {
     const onAppointmentClick = vi.fn();
     const appts = [booking('a2', 'Later Person', at(3, 10)), booking('a1', 'Dana Cohen', at(1, 9))];
     const { unmount } = render(<AppointmentCalendar appointments={appts} onAppointmentClick={onAppointmentClick} />);

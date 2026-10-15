@@ -17,7 +17,7 @@ describe('owner booking dates and hours (LT-122)', () => {
     expect(hoursForDate(hours, new Date(2030, 2, 5))).toBeNull();
   });
 
-  it('lets a date override win — including closing an open day', () => {
+  it('lets a date override win - including closing an open day', () => {
     const withOverrides = {
       ...hours,
       dateOverrides: [

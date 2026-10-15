@@ -609,7 +609,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                           value={value}
                           onChange={(e) => setAnswer(q.key, e.target.value)}
                           options={[
-                            { value: '', label: '—' },
+                            { value: '', label: '-' },
                             ...(q.options ?? []).map((o) => ({ value: o, label: o })),
                           ]}
                         />

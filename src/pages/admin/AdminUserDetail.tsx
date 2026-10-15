@@ -108,7 +108,7 @@ const AdminUserDetail: React.FC = () => {
           month: 'short',
           year: 'numeric',
         })
-      : '—';
+      : '-';
 
   // Appointment.timestamp is a string of epoch-ms in production, but old
   // records may carry an ISO string — accept either.
@@ -127,7 +127,7 @@ const AdminUserDetail: React.FC = () => {
           hour: '2-digit',
           minute: '2-digit',
         })
-      : '—';
+      : '-';
 
   const BackIcon = direction === 'rtl' ? ArrowRight : ArrowLeft;
 
@@ -275,7 +275,7 @@ const AdminUserDetail: React.FC = () => {
               <div>
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.leadsTotal')}</dt>
                 <dd className="mt-0.5 text-gray-800 dark:text-gray-200 tabular-nums" data-testid="leads-total">
-                  {counts.leadsTotal ?? '—'}
+                  {counts.leadsTotal ?? '-'}
                 </dd>
               </div>
             </dl>

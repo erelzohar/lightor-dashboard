@@ -63,7 +63,7 @@ describe('ShareSiteCard', () => {
     render(<ShareSiteCard kind="bookings" businessName="Dana Renovations" subDomain="dana" />);
     const link = screen.getByText('leads.whatsapp').closest('a');
 
-    expect(link).toHaveAttribute('href', `https://wa.me/?text=${encodeURIComponent(`Dana Renovations — ${SITE}`)}`);
+    expect(link).toHaveAttribute('href', `https://wa.me/?text=${encodeURIComponent(`Dana Renovations - ${SITE}`)}`);
     expect(link?.getAttribute('href')).toContain(encodeURIComponent(SITE));
     expect(link).toHaveAttribute('target', '_blank');
   });

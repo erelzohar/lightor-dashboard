@@ -81,7 +81,7 @@ beforeEach(() => {
  * G4 (LT-199): the fetch effect depended on the list, and each empty answer
  * stored a new [] — a business with no services refetched forever.
  */
-describe('Services page — fetching', () => {
+describe('Services page - fetching', () => {
   it('fetches once when the business has no services', async () => {
     renderPage();
 
@@ -110,7 +110,7 @@ describe('Services page — fetching', () => {
  * A leads site's services are content (LT-199): a name, a picture and an
  * optional price. No duration and no class — and none of it on the wire.
  */
-describe('Services page — by site mode', () => {
+describe('Services page - by site mode', () => {
   it('creates a leads site’s service with no duration and no class fields', async () => {
     renderPage('lead');
     await screen.findByText('appointmentTypes.noServices');
@@ -202,7 +202,7 @@ describe('Services page — by site mode', () => {
 
 // LT-233: the form header's second line was hard-coded English, so the Hebrew
 // app read "Click to add a new service" (caught on the App Store screenshots).
-describe('Services page — form header', () => {
+describe('Services page - form header', () => {
   it('says every state through i18n', async () => {
     answerTypes(() => [service({ price: '100' })]);
     renderPage('book');
@@ -215,7 +215,7 @@ describe('Services page — form header', () => {
 // LT-267: the empty list's hint was hard-coded English as well, and a
 // service's edit and delete buttons appeared only on hover — which a touch
 // screen does not have.
-describe('Services page — empty list and row actions', () => {
+describe('Services page - empty list and row actions', () => {
   it("says the empty list's hint through i18n", async () => {
     renderPage('book');
 
@@ -246,7 +246,7 @@ describe('Services page — empty list and row actions', () => {
 // LT-308: closing the form empties it 300 ms later, and that timer outlived
 // the page — in CI it fired after the test environment was torn down
 // (`window is not defined`), failing a green run.
-describe('Services page — the form\'s delayed reset', () => {
+describe('Services page - the form\'s delayed reset', () => {
   it('is cancelled when the page goes away', async () => {
     answerTypes(() => [service({ price: '100', durationMS: '3600000' })]);
     const set = vi.spyOn(window, 'setTimeout');
@@ -279,7 +279,7 @@ describe('Services page — the form\'s delayed reset', () => {
 
 // LT-343: the "payment when booking" coming-soon sat inside the add/edit form,
 // where an owner looking at the page never saw it.
-describe('Services page — payment when booking, coming soon', () => {
+describe('Services page - payment when booking, coming soon', () => {
   it('shows on a booking site without opening the form', async () => {
     renderPage('book');
     expect(await screen.findByText('appointmentTypes.payment.title')).toBeInTheDocument();

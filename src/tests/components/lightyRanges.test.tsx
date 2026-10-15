@@ -22,7 +22,10 @@ const ranges = (text: string): string[] => {
 describe('LightyText time ranges (LT-315)', () => {
   it('wraps a range at the start of the line, mid-line and after a non-digit', () => {
     expect(ranges('09:00–17:00 פתוח')).toEqual(['09:00–17:00']);
-    expect(ranges('שעות: 9–13 ו-16:30 — 20:00')).toEqual(['9–13', '16:30 — 20:00']);
+    expect(ranges('שעות: 9–13 ו-16:30 \u2014 20:00')).toEqual(['9–13', '16:30 \u2014 20:00']);
+    // LT-350: the server turns an em-dash into a spaced hyphen; that range needs the wrap too.
+    expect(ranges('שעות: 9–13 ו-16:30 - 20:00')).toEqual(['9–13', '16:30 - 20:00']);
+    expect(ranges('טלפון 050-1234567')).toEqual([]);
   });
 
   it('keeps the text around a range intact', () => {

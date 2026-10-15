@@ -48,7 +48,7 @@ const BillingCard: React.FC<BillingCardProps> = ({ userId, subscriptionId, custo
   const formatDate = (value?: string | null) =>
     value
       ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
-      : '—';
+      : '-';
 
   const money = (amount: number, currency?: string) => (
     <span dir="ltr">
@@ -116,7 +116,7 @@ const BillingCard: React.FC<BillingCardProps> = ({ userId, subscriptionId, custo
           {subscription.items.map((item, index) => (
             <div key={index} className="mb-3">
               <p className="font-medium text-gray-900 dark:text-dark-text">
-                {item.productName ?? item.priceName ?? '—'}
+                {item.productName ?? item.priceName ?? '-'}
               </p>
               <p className="text-sm text-gray-500">
                 {item.priceName && item.productName ? `${item.priceName} · ` : ''}

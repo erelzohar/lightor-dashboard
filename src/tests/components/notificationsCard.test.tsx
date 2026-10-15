@@ -170,7 +170,7 @@ describe('NotificationsCard', () => {
     );
   });
 
-  it('is on the web too — only the app mentions push', async () => {
+  it('is on the web too - only the app mentions push', async () => {
     onTheWeb();
     vi.mocked(getCurrentUser).mockResolvedValue(user());
     await renderCard();
@@ -235,7 +235,7 @@ describe('NotificationsCard', () => {
       expect(channelButton('channels.sms')).toHaveAttribute('aria-checked', 'true');
     });
 
-    it('locks the phone on the free plan and says why — on the web', async () => {
+    it('locks the phone on the free plan and says why - on the web', async () => {
       onTheWeb();
       vi.mocked(fetchMyEntitlements).mockResolvedValue(plan(false));
       // Picked on Plus, then the plan lapsed: the alerts go by email now.

@@ -95,7 +95,7 @@ const AdminLogs: React.FC = () => {
 
   const locale = i18n.language === 'he' ? 'he-IL' : 'en-GB';
   const formatStamp = (value: string | null) => {
-    if (!value) return '—';
+    if (!value) return '-';
     const iso = /^\d{4}-\d{2}-\d{2} /.test(value) ? value.replace(' ', 'T') : value;
     const d = new Date(iso);
     return Number.isNaN(d.getTime())
