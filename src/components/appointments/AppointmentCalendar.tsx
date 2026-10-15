@@ -1329,9 +1329,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               })}
           </div>
           </DndContext>
-          {/* On a phone the grid ends above the floating tab bar's room
-              (LT-353): the calendar itself reaches the bottom of the screen. */}
-          <div className="md:hidden" aria-hidden="true" style={{ height: 'calc(4.5rem + env(safe-area-inset-bottom))' }} />
         </div>
         </div>
       </section>
