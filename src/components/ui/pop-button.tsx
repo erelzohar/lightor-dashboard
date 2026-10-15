@@ -10,22 +10,25 @@ import { cn } from '../../lib/utils';
  * press. A border change resizes the button, and a size change under a
  * transition leaves ghost paint on iPhone Safari (LT-351). So the lip is a
  * shadow here, and the press is a 2px translate: nothing about the size moves.
- * `Button` uses the same classes for its filled variants.
+ * The edge is an inset shadow too, not a border (LT-366): a 2px border made
+ * every button 4px taller and wider than it was ("ערוך פרטים", the chart's
+ * arrows, the logo upload), so the edge is drawn inside the button and it
+ * keeps its size. `Button` uses the same classes for its filled variants.
  */
 export type PopColor = 'primary' | 'danger' | 'success' | 'default';
 
 const POP_COLORS: Record<PopColor, string> = {
-  primary: 'bg-primary hover:bg-primary-dark text-white border-violet-800 [--pop-edge:theme(colors.violet.800)]',
-  danger: 'bg-red-500 hover:bg-red-600 text-white border-red-800 [--pop-edge:theme(colors.red.800)]',
-  success: 'bg-green-500 hover:bg-green-600 text-white border-green-800 [--pop-edge:theme(colors.green.800)]',
+  primary: 'bg-primary hover:bg-primary-dark text-white [--pop-edge:theme(colors.violet.800)]',
+  danger: 'bg-red-500 hover:bg-red-600 text-white [--pop-edge:theme(colors.red.800)]',
+  success: 'bg-green-500 hover:bg-green-600 text-white [--pop-edge:theme(colors.green.800)]',
   default:
-    'bg-white hover:bg-gray-50 text-neutral-900 border-neutral-300 [--pop-edge:theme(colors.neutral.300)] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600 dark:[--pop-edge:theme(colors.neutral.600)]',
+    'bg-white hover:bg-gray-50 text-neutral-900 [--pop-edge:theme(colors.neutral.300)] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-100 dark:[--pop-edge:theme(colors.neutral.600)]',
 };
 
 // :not(:disabled) rather than enabled:, so links and labels styled as
 // buttons press too (they are never :enabled).
 const POP_FX =
-  'border-2 shadow-[0_2px_0_0_var(--pop-edge)] [&:not(:disabled):active]:translate-y-[2px] [&:not(:disabled):active]:shadow-none transition-[background-color,border-color,box-shadow,transform] duration-100';
+  'shadow-[inset_0_0_0_2px_var(--pop-edge),0_2px_0_0_var(--pop-edge)] [&:not(:disabled):active]:shadow-[inset_0_0_0_2px_var(--pop-edge)] [&:not(:disabled):active]:translate-y-[2px] transition-[background-color,box-shadow,transform] duration-100';
 
 /** The pop look's classes, for a button, a link or a label that should wear it. */
 export const pop = (color: PopColor = 'primary'): string => `${POP_FX} ${POP_COLORS[color]}`;
