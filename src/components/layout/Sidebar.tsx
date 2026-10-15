@@ -146,11 +146,19 @@ const SidebarFooter: React.FC = () => {
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
           {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
         </div>
+        {/* The name, and under it the email the owner signs in with (LT-364).
+            <bdi> keeps the address in its own order inside Hebrew without
+            turning the line's alignment. */}
         <motion.span
-          animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
-          className="text-sm text-gray-700 dark:text-dark-text whitespace-pre truncate text-start"
+          animate={{ display: open ? 'flex' : 'none', opacity: open ? 1 : 0 }}
+          className="min-w-0 flex-col text-start"
         >
-          {auth.user?.name}
+          <span className="text-sm text-gray-700 dark:text-dark-text whitespace-pre truncate">{auth.user?.name}</span>
+          {auth.user?.email && (
+            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <bdi>{auth.user.email}</bdi>
+            </span>
+          )}
         </motion.span>
       </button>
 

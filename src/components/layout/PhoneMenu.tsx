@@ -199,7 +199,15 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
           <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
             {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
           </span>
-          <span className="text-sm text-gray-700 dark:text-dark-text truncate">{auth.user?.name}</span>
+          {/* The name, and under it the sign-in email (LT-364). */}
+          <span className="min-w-0 flex flex-col">
+            <span className="text-sm text-gray-700 dark:text-dark-text truncate">{auth.user?.name}</span>
+            {auth.user?.email && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <bdi>{auth.user.email}</bdi>
+              </span>
+            )}
+          </span>
         </button>
         <button
           type="button"

@@ -6,7 +6,7 @@ import Sidebar from '../../components/layout/Sidebar';
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
-const auth = { user: { _id: 'u1', name: 'Erel', role: 'user' }, isAuthenticated: true, isLoading: false };
+const auth = { user: { _id: 'u1', name: 'Erel', email: 'owner@example.com', role: 'user' }, isAuthenticated: true, isLoading: false };
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ logout: vi.fn(), auth }),
 }));
@@ -71,6 +71,17 @@ describe('the phone menu (LT-352)', () => {
     // "More" is now the way to close it.
     expect(more()).toHaveAccessibleName('sidebar.closeMenu');
     expect(more()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('shows the sign-in email under the name, in the sidebar and in the menu (LT-364)', () => {
+    renderAt('/');
+    // The desktop sidebar's account button.
+    const side = screen.getByText('owner@example.com');
+    expect(side.closest('button')).toHaveTextContent('Erelowner@example.com');
+    fireEvent.click(more());
+    const inMenu = within(menu()!).getByText('owner@example.com');
+    expect(inMenu.tagName).toBe('BDI');
+    expect(inMenu.closest('button')).toHaveTextContent('Erelowner@example.com');
   });
 
   it('closes on "More" again, Escape and a tap outside', async () => {
