@@ -1303,7 +1303,10 @@
       "sessionsFailed": "Could not load the sessions",
       "classFull": "This session is full — pick another",
       "alreadyBooked": "This phone number is already booked into this session",
-      "notASession": "The class doesn't run at that time — pick a session from the list"
+      "notASession": "The class doesn't run at that time — pick a session from the list",
+      "otherTime": "Another time",
+      "otherTimeUse": "Use",
+      "otherTimeHint": "Any time you like, even outside the times the site offers. A time that overlaps another booking is refused."
     },
     "errors": {
       "loadFailed": "Could not load customers",

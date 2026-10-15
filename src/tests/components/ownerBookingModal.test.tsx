@@ -697,3 +697,35 @@ describe("OwnerBookingModal: a business in another zone than the device's", () =
     expect(sentBody().timestamp).toBe(evening);
   });
 });
+
+/**
+ * LT-348 (Erel: yes to "another time"): the owner may book any time, off the
+ * grid — a walk-in at 13:30 when the day's hours end at 12:00. The server
+ * allows the owner any time (LT-332) and still refuses an overlap.
+ */
+describe('OwnerBookingModal: another time', () => {
+  beforeEach(() => {
+    vi.mocked(createAppointment).mockReset().mockResolvedValue({} as never);
+    vi.mocked(getAvailability).mockResolvedValue(FREE);
+  });
+
+  it('books a time that is not on the grid, at exactly that time on the business clock', async () => {
+    renderModal();
+    chooseService('Massage');
+    await chooseDay(4);
+    expect(await screen.findByRole('button', { name: '09:00' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '13:30' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'customers.booking.otherTime' }));
+    const field = screen.getByLabelText('customers.booking.otherTime');
+    const use = screen.getByRole('button', { name: 'customers.booking.otherTimeUse' });
+    expect(use).toBeDisabled();
+    fireEvent.change(field, { target: { value: '13:30' } });
+    fireEvent.click(use);
+
+    fireEvent.click(submitButton());
+    await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
+    expect(sentBody().timestamp).toBe(at(4, 13, 30 * 60_000));
+  });
+});
+

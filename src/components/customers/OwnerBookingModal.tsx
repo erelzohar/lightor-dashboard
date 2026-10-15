@@ -228,9 +228,12 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     [isClass, loading, dateKey, facts, date, durationMS]
   );
 
+  // A grid time that stops being free is dropped; the owner's own "other
+  // time" (LT-348) is kept — it was never on the grid.
+  const [otherTime, setOtherTime] = useState(false);
   useEffect(() => {
-    if (time && !slots.includes(time)) setTime('');
-  }, [slots, time]);
+    if (time && !otherTime && !slots.includes(time)) setTime('');
+  }, [slots, time, otherTime]);
 
   // Each day's dot for the month on show, worked out once per answer.
   const statuses = useMemo(() => {
@@ -353,6 +356,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     setStep('time');
   };
   const pickTime = (slot: string) => {
+    setOtherTime(!slots.includes(slot));
     setTime(slot);
     setStep('details');
   };
@@ -472,6 +476,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   sessionTs={chosenSession?.timestamp ?? ''}
                   onPickSession={pickSession}
                   timeZone={timeZone}
+                  allowOtherTime
                 />
               )}
 

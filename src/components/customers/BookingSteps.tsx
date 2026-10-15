@@ -268,6 +268,12 @@ export interface DayTimesProps {
   onPickSession: (timestamp: string) => void;
   /** The business's zone: a session's time is read on its clock. */
   timeZone: string;
+  /**
+   * LT-348: the owner may book any time, off the grid ("another time" — a
+   * walk-in at 10:00 when the site offers 08:00, 08:55…). The server allows
+   * the owner any time (LT-332) and still refuses an overlap.
+   */
+  allowOtherTime?: boolean;
 }
 
 /** The chosen day's free times, or a class's sessions with their seats. */
@@ -283,9 +289,48 @@ export const DayTimes: React.FC<DayTimesProps> = ({
   sessionTs,
   onPickSession,
   timeZone,
+  allowOtherTime = false,
 }) => {
   const { t } = useTranslation();
   const longDate = useLongDate();
+  // A chosen time that is not on the grid is the "other time" one.
+  const offGrid = !!time && !slots.includes(time);
+  const [otherOpen, setOtherOpen] = useState(offGrid);
+  const [otherValue, setOtherValue] = useState(offGrid ? time : '');
+  const other = allowOtherTime && mode === 'times' && !loading && (
+    <div className="mt-3" data-testid="other-time">
+      {otherOpen ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="time"
+            step={300}
+            dir="ltr"
+            value={otherValue}
+            onChange={(e) => setOtherValue(e.target.value)}
+            aria-label={t('customers.booking.otherTime')}
+            className="h-11 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-surface text-gray-900 dark:text-white tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            type="button"
+            disabled={!/^\d{2}:\d{2}$/.test(otherValue)}
+            onClick={() => onPickTime(otherValue)}
+            className="h-11 px-4 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-40"
+          >
+            {t('customers.booking.otherTimeUse')}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOtherOpen(true)}
+          className="text-sm font-medium text-primary hover:underline underline-offset-2"
+        >
+          {t('customers.booking.otherTime')}
+        </button>
+      )}
+      <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{t('customers.booking.otherTimeHint')}</p>
+    </div>
+  );
 
   return (
     <div data-testid="booking-times" data-day={longDate(day)}>
@@ -337,6 +382,7 @@ export const DayTimes: React.FC<DayTimesProps> = ({
       ) : (
         hint(t('customers.booking.noSlots'))
       )}
+      {other}
     </div>
   );
 };

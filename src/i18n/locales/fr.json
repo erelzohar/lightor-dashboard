@@ -1303,7 +1303,10 @@
       "sessionsFailed": "Impossible de charger les séances",
       "classFull": "Cette séance est complète — choisissez-en une autre",
       "alreadyBooked": "Ce numéro de téléphone est déjà inscrit à cette séance",
-      "notASession": "Le cours n'a pas lieu à cette heure — choisissez une séance dans la liste"
+      "notASession": "Le cours n'a pas lieu à cette heure — choisissez une séance dans la liste",
+      "otherTime": "Une autre heure",
+      "otherTimeUse": "Choisir",
+      "otherTimeHint": "N'importe quelle heure, même en dehors des horaires proposés par le site. Une heure qui chevauche une autre réservation est refusée."
     },
     "errors": {
       "loadFailed": "Impossible de charger les clients",
