@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar from './BottomTabBar';
+import { PhoneMenu, type PhoneMenuSection } from './PhoneMenu';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -130,20 +131,16 @@ const SectionLabel: React.FC<{ label: string; first?: boolean }> = ({ label, fir
 
 /** Footer: account avatar and logout (the theme toggle lives in the header). */
 const SidebarFooter: React.FC = () => {
-  const { open, setOpen } = useSidebar();
+  const { open } = useSidebar();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout, auth } = useAuth();
   // Unsaved work asks before either button leaves it (LT-267).
   const { confirmLeave } = useLeaveGuard();
-  const closeOnMobile = () => window.innerWidth < 768 && setOpen(false);
   return (
     <div className="flex flex-col gap-1">
       <button
-        onClick={() => {
-          closeOnMobile();
-          confirmLeave(() => navigate('/account'), '/account');
-        }}
+        onClick={() => confirmLeave(() => navigate('/account'), '/account')}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
@@ -158,10 +155,7 @@ const SidebarFooter: React.FC = () => {
       </button>
 
       <button
-        onClick={() => {
-          closeOnMobile();
-          confirmLeave(logout);
-        }}
+        onClick={() => confirmLeave(logout)}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-colors"
       >
         <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
@@ -184,6 +178,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { auth } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  // The phone's menu (LT-352), apart from the desktop rail's hover state.
+  const [menuOpen, setMenuOpen] = useState(false);
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
@@ -198,9 +194,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // LT-253: Lighty, the business chat — his face for an icon.
   const lightyLink = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, name: 'Lighty' };
 
-  // Close the mobile drawer when the route changes.
+  // The phone menu closes when the route changes.
   useEffect(() => {
-    if (window.innerWidth < 768) setOpen(false);
+    setMenuOpen(false);
     if (!isRestricted) void refreshNewLeadsCount();
   }, [location.pathname, isRestricted]);
 
@@ -259,6 +255,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       : []),
   ];
 
+  // The phone menu's tiles (LT-352): the same pages, the same restriction.
+  const phoneSections: PhoneMenuSection[] = navSections
+    .map((section) => ({
+      id: section.id,
+      label: section.label,
+      items: section.items.filter(({ path }) => !isRestricted || ALLOWED_WHEN_RESTRICTED.includes(path)),
+    }))
+    .filter((section) => section.items.length > 0);
+
   return (
     <SidebarRoot open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10 bg-[#f9f9ff] dark:bg-dark-surface border-e border-gray-200 dark:border-gray-800/60">
@@ -289,10 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                         badge,
                       }}
                       className={linkClasses}
-                      onClick={(event) => {
-                        guardLinkClick(event, path);
-                        if (window.innerWidth < 768) setOpen(false);
-                      }}
+                      onClick={(event) => guardLinkClick(event, path)}
                     />
                   );
                 })}
@@ -302,12 +304,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         </div>
         <SidebarFooter />
       </SidebarBody>
-      {/* Phone-only thumb bar (LT-127); "More" opens this same drawer. */}
+      {/* Phone-only thumb bar (LT-127); "More" opens the menu of tiles (LT-352). */}
       <BottomTabBar
         isRestricted={isRestricted}
         leadsSite={leadsSite}
         newLeads={newLeads}
-        onMore={() => setOpen(true)}
+        menuOpen={menuOpen}
+        onMore={() => setMenuOpen((wasOpen) => !wasOpen)}
+        menu={<PhoneMenu key="phone-menu" sections={phoneSections} onClose={() => setMenuOpen(false)} />}
       />
     </SidebarRoot>
   );

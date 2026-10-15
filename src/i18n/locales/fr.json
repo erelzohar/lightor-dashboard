@@ -61,8 +61,9 @@
     "night": "Bonne nuit"
   },
   "sidebar": {
-    "openSidebar": "Ouvrir le menu",
-    "closeSidebar": "Fermer le menu",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "menu": "Menu",
     "more": "Plus",
     "navigation": "Navigation",
     "manage": "Gérer",

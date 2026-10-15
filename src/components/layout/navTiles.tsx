@@ -41,3 +41,17 @@ export const navTile = (path: string, Icon: typeof Inbox, ring: string, tile = T
       <Icon className="h-4 w-4 !text-white" strokeWidth={2.25} />
     </span>
   );
+
+/** The same tile, larger, for the phone menu's tiles (LT-352). */
+export const bigNavTile = (path: string, Icon: typeof Inbox) =>
+  path === '/lighty' ? (
+    <span className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+      <Icon className="w-10 h-10" />
+    </span>
+  ) : (
+    <span
+      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm bg-gradient-to-br ${TILE[path] ?? 'from-violet-400 to-violet-600'}`}
+    >
+      <Icon className="h-5 w-5 !text-white" strokeWidth={2.25} />
+    </span>
+  );

@@ -1,15 +1,13 @@
 import React, { useState, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
 /**
  * Collapsible hover-expand sidebar (vendored from 21st.dev, adapted for this
- * app: react-router NavLink instead of next/link, no "use client", RTL-aware
- * mobile drawer). Desktop: a 60px icon rail that expands to 300px on hover.
- * Mobile: a top strip with a menu button opening a full-screen drawer.
+ * app: react-router NavLink instead of next/link, no "use client"). Desktop:
+ * a 60px icon rail that expands to 300px on hover. The phone has no drawer
+ * since LT-352: its tab bar opens a menu of tiles (layout/PhoneMenu).
  */
 
 interface Links {
@@ -77,14 +75,7 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
-  return (
-    <>
-      <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as unknown as React.ComponentProps<'div'>)} />
-    </>
-  );
-};
+export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => <DesktopSidebar {...props} />;
 
 export const DesktopSidebar = ({
   className,
@@ -108,58 +99,6 @@ export const DesktopSidebar = ({
     >
       {children}
     </motion.div>
-  );
-};
-
-export const MobileSidebar = ({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<'div'>) => {
-  const { open, setOpen } = useSidebar();
-  const { t } = useTranslation();
-  // Drawer slides in from the sidebar's own edge — mirrored under RTL.
-  const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
-  const offscreen = rtl ? '100%' : '-100%';
-  return (
-    <>
-      {/* No phone top bar (LT-210): it held only a menu button, and the
-          bottom tab bar's "More" opens this same drawer. What is left is the
-          drawer itself, which is fixed and takes no room in the page. */}
-      <div className="md:hidden" {...props}>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ x: offscreen, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: offscreen, opacity: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: 'easeInOut',
-              }}
-              className={cn(
-                'fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(2.5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col justify-between',
-                className
-              )}
-            >
-              {/* In flow, not absolute — the header row's round theme toggle
-                  lives in the same corner, and an overlaid X sat on top of it. */}
-              <div className="flex justify-end shrink-0 -me-6">
-                <button
-                  type="button"
-                  aria-label={t('sidebar.closeSidebar')}
-                  className="w-11 h-11 flex items-center justify-center rounded-xl text-neutral-800 dark:text-neutral-200"
-                  onClick={() => setOpen(!open)}
-                >
-                  <X aria-hidden="true" />
-                </button>
-              </div>
-              <div className="flex flex-1 min-h-0 flex-col justify-between gap-10">{children}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
   );
 };
 

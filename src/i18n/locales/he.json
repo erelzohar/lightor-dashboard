@@ -61,8 +61,9 @@
     "night": "לילה טוב"
   },
   "sidebar": {
-    "openSidebar": "פתח תפריט צד",
-    "closeSidebar": "סגור תפריט צד",
+    "openMenu": "פתיחת התפריט",
+    "closeMenu": "סגירת התפריט",
+    "menu": "תפריט",
     "more": "עוד",
     "navigation": "ניווט",
     "manage": "ניהול",

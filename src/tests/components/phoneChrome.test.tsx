@@ -26,22 +26,23 @@ vi.mock('../../services/leadsApi', () => ({
 /**
  * LT-210: the phone's top bar held nothing but a menu button, duplicating the
  * tab bar's "More" and taking a row of screen under the status bar. It is
- * gone; "More" is the one way into the drawer, and the drawer still opens.
+ * gone; "More" is the one way into the full menu, which since LT-352 is a
+ * sheet of tiles rising out of the bar, not a side drawer.
  */
 describe('phone chrome', () => {
-  it('has one menu button, the tab bar\'s "More", and it opens the drawer', () => {
+  it('has one menu button, the tab bar\'s "More", and it opens the menu', () => {
     render(
       <MemoryRouter>
         <Sidebar />
       </MemoryRouter>
     );
 
-    const openers = screen.getAllByRole('button', { name: 'sidebar.openSidebar' });
+    const openers = screen.getAllByRole('button', { name: 'sidebar.openMenu' });
     expect(openers).toHaveLength(1);
     expect(screen.getByTestId('bottom-tab-bar')).toContainElement(openers[0]);
 
-    expect(screen.queryByRole('button', { name: 'sidebar.closeSidebar' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'sidebar.menu' })).toBeNull();
     fireEvent.click(openers[0]);
-    expect(screen.getByRole('button', { name: 'sidebar.closeSidebar' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'sidebar.menu' })).toBeInTheDocument();
   });
 });

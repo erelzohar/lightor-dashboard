@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarRange, Calendar, Menu, Palette, Inbox } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
@@ -19,8 +20,12 @@ interface BottomTabBarProps {
   leadsSite?: boolean;
   /** New leads (LT-197): a dot on the Leads tab while any wait. */
   newLeads?: number | null;
-  /** Opens the full drawer (the long tail of pages lives there). */
+  /** Opens or closes the full menu (the long tail of pages lives there). */
   onMore: () => void;
+  /** The full menu is open (LT-352): it rises out of this bar, which stays under it. */
+  menuOpen?: boolean;
+  /** The menu itself, drawn just above the bar while open. */
+  menu?: React.ReactNode;
 }
 
 /**
@@ -29,7 +34,8 @@ interface BottomTabBarProps {
  * Under the `md` breakpoint the hover-rail sidebar collapses to a hamburger,
  * which makes every page change a two-tap trip through a full-screen drawer.
  * Native apps put the four daily destinations in a thumb-reach bar instead;
- * this is that bar. The drawer stays for everything else, behind "More".
+ * this is that bar. Everything else is behind "More": since LT-352 a sheet
+ * of tiles that rises out of the bar, no longer a side drawer.
  *
  * Bottom padding follows `env(safe-area-inset-bottom)` so the bar clears the
  * iPhone home indicator inside the Capacitor shell (`viewport-fit=cover` in
@@ -37,12 +43,13 @@ interface BottomTabBarProps {
  * keyboard is up, otherwise it floats over the field being typed into.
  * Flex row + logical properties, so RTL just works.
  */
-const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore }) => {
+const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
   // Scrolling down, it slides away; up, or on another page, it is back (LT-342).
   const { pathname } = useLocation();
-  const scrolledAway = useHideOnScroll(pathname);
+  // Never away while its menu is open: the menu stands on it.
+  const scrolledAway = useHideOnScroll(pathname) && !menuOpen;
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
@@ -80,6 +87,25 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   const ring = 'group-aria-[current=page]/tab:ring-2 group-aria-[current=page]/tab:ring-violet-400/80';
 
   return (
+    <>
+    {/* LT-352: the page dims under the open menu, the floating Lighty (z 50)
+        included, and a tap on it closes the menu. The bar and the menu stay
+        above it. */}
+    <AnimatePresence>
+      {menuOpen && (
+        <motion.div
+          key="phone-menu-backdrop"
+          className="md:hidden fixed inset-0 z-[55] bg-slate-900/30 dark:bg-black/50 touch-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          onClick={onMore}
+          aria-hidden="true"
+          data-testid="phone-menu-backdrop"
+        />
+      )}
+    </AnimatePresence>
     <nav
       aria-label={t('sidebar.navigation')}
       data-testid="bottom-tab-bar"
@@ -91,7 +117,8 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // opacity modifier on them emits nothing.
       data-hidden={scrolledAway || undefined}
       className={cn(
-        'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] z-40 flex items-stretch gap-0.5 p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
+        'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex items-stretch gap-0.5 p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
+        menuOpen ? 'z-[56]' : 'z-40',
         'transition-transform duration-300 ease-out',
         scrolledAway && 'translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom))] pointer-events-none'
       )}
@@ -118,11 +145,20 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
           <span className="truncate max-w-full px-1">{label}</span>
         </NavLink>
       ))}
-      <button type="button" onClick={onMore} className={cn(itemClasses, idleClasses)} aria-label={t('sidebar.openSidebar')}>
-        {navTile('more', Menu, '', 'from-slate-400 to-slate-500')}
+      <AnimatePresence>{menuOpen && menu}</AnimatePresence>
+      <button
+        type="button"
+        onClick={onMore}
+        className={cn(itemClasses, menuOpen ? activeClasses : idleClasses)}
+        aria-label={menuOpen ? t('sidebar.closeMenu') : t('sidebar.openMenu')}
+        aria-expanded={menuOpen}
+        aria-controls="phone-menu"
+      >
+        {navTile('more', menuOpen ? X : LayoutGrid, '', 'from-slate-400 to-slate-500')}
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
     </nav>
+    </>
   );
 };
 
