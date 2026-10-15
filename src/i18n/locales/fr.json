@@ -1503,7 +1503,17 @@
       "use": "Utiliser cette image",
       "removeFromGallery": "Retirer de la galerie",
       "uploadFailed": "Échec de l'envoi - réessayez",
-      "addToGallery": "Ajouter une photo à la galerie"
+      "addToGallery": "Ajouter une photo à la galerie",
+      "aiOpen": "Créer une image avec l'IA",
+      "aiLabel": "Que montre l'image ?",
+      "aiPlaceholder": "Par exemple : un parking de voitures bien rangé sous le soleil",
+      "aiCreate": "Créer l'image",
+      "aiAgain": "Une autre image",
+      "aiCreating": "Lighty crée l'image…",
+      "aiUse": "Utiliser cette image",
+      "aiFailed": "L'image n'a pas pu être créée, réessayez",
+      "aiLimit": "Les images IA du mois sont épuisées",
+      "aiHint": "L'image est conservée sur votre site quand vous enregistrez."
     },
     "section": {
       "heroBackground": "Effet d'arrière-plan",

@@ -359,3 +359,12 @@ html[dir="rtl"] body {
 @media (prefers-reduced-motion: reduce) {
   .lighty-send:not(:disabled) .lighty-bolt { animation: none; }
 }
+
+/* LT-366: the light passing over an AI picture while it is being made. */
+@keyframes ai-sweep {
+  from { transform: translateX(0); }
+  to { transform: translateX(300%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[ai-sweep_1\.6s_ease-in-out_infinite\] { animation: none; }
+}

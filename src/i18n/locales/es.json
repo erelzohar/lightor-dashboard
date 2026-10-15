@@ -1503,7 +1503,17 @@
       "use": "Usar esta imagen",
       "removeFromGallery": "Quitar de la galería",
       "uploadFailed": "Error al subir - inténtalo de nuevo",
-      "addToGallery": "Añadir una foto a la galería"
+      "addToGallery": "Añadir una foto a la galería",
+      "aiOpen": "Crear una imagen con IA",
+      "aiLabel": "¿Qué se ve en la imagen?",
+      "aiPlaceholder": "Por ejemplo: un lote de coches ordenado en un día soleado",
+      "aiCreate": "Crear imagen",
+      "aiAgain": "Otra imagen",
+      "aiCreating": "Lighty está creando la imagen…",
+      "aiUse": "Usar esta imagen",
+      "aiFailed": "No se pudo crear la imagen, inténtalo de nuevo",
+      "aiLimit": "Se agotaron las imágenes con IA de este mes",
+      "aiHint": "La imagen se guarda en tu sitio al guardar."
     },
     "section": {
       "heroBackground": "Efecto de fondo",

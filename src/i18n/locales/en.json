@@ -1503,7 +1503,17 @@
       "use": "Use this picture",
       "removeFromGallery": "Remove from gallery",
       "uploadFailed": "Upload failed - try again",
-      "addToGallery": "Add a photo to the gallery"
+      "addToGallery": "Add a photo to the gallery",
+      "aiOpen": "Create a picture with AI",
+      "aiLabel": "What is in the picture?",
+      "aiPlaceholder": "For example: a tidy car lot on a sunny day",
+      "aiCreate": "Create picture",
+      "aiAgain": "Another picture",
+      "aiCreating": "Lighty is creating the picture…",
+      "aiUse": "Use this picture",
+      "aiFailed": "The picture could not be created, try again",
+      "aiLimit": "This month's AI pictures are used up",
+      "aiHint": "The picture is kept on your site when you save."
     },
     "section": {
       "heroBackground": "Background effect",

@@ -225,6 +225,16 @@ export const aiService = {
   },
 
   /**
+   * LT-366: one picture made by AI from the owner's words. Answers a
+   * temporary URL - the picture is kept when the site is saved. 429 = this
+   * month's AI pictures are used up.
+   */
+  createImage: async (prompt: string, aspect: '16:9' | '4:3' | '1:1'): Promise<string> => {
+    const response = await apiClient.post<{ success: boolean; url: string }>(`${globals.aiUrl}image`, { prompt, aspect });
+    return response.data.url;
+  },
+
+  /**
    * LT-249: the site editor's AI for what the owner selected — one text, or
    * every text of a section. Only these texts can change; the answer carries
    * the ones the model changed, by path. 429 = the AI budget is spent.
