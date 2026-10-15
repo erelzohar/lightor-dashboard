@@ -2,89 +2,63 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
-import {
-  pointerWithin,
-  rectIntersection,
-  useDraggable,
-  useDroppable,
-  type CollisionDetection,
-  type DraggableAttributes,
-  type DraggableSyntheticListeners,
-} from '@dnd-kit/core';
+import { useDraggable, type CollisionDetection, type DraggableAttributes, type DraggableSyntheticListeners } from '@dnd-kit/core';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Appointment } from '../../types';
 
 /**
  * The pieces the calendar drags with (LT-345): a booking block that can be
- * picked up and dropped onto, a day column to drop into, the rule that tells
- * which of the two a pointer is over, and the window that asks before
- * anything is sent.
+ * picked up, where the pointer is, and the window that asks before anything
+ * is sent.
+ *
+ * Where a booking lands is read off the pointer and the columns as drawn
+ * (LT-353), not off dnd-kit's drop targets: the page may turn to another day
+ * or week under a held booking, and the block it was picked up from leaves
+ * the screen with it.
  */
 
 export const dragId = (appointment: Appointment) => `drag:${appointment._id}`;
-export const dropId = (appointment: Appointment) => `drop:${appointment._id}`;
-export const dayId = (index: number) => `day:${index}`;
+
+export type Point = { x: number; y: number };
 
 /**
- * Under the pointer, a booking to swap with beats the day column it sits in;
- * the dragged booking's own place never counts. A keyboard or a lost pointer
- * falls back to the dragged block's overlap.
+ * dnd-kit's collision step, used only to hear where the pointer is: it is
+ * the one place handed the pointer's own coordinates, every move, however
+ * the page has scrolled or turned since the drag began.
  */
-export const calendarCollision: CollisionDetection = (args) => {
-  const own = `drop:${String(args.active.id).slice('drag:'.length)}`;
-  const hits = (args.pointerCoordinates ? pointerWithin(args) : rectIntersection(args)).filter((hit) => hit.id !== own);
-  const booking = hits.find((hit) => String(hit.id).startsWith('drop:'));
-  if (booking) return [booking];
-  const column = hits.find((hit) => String(hit.id).startsWith('day:'));
-  return column ? [column] : [];
-};
+export const pointerTracker =
+  (into: { current: Point | null }): CollisionDetection =>
+  ({ pointerCoordinates }) => {
+    if (pointerCoordinates) into.current = { x: pointerCoordinates.x, y: pointerCoordinates.y };
+    return [];
+  };
 
 export interface DragHandle {
   setNodeRef: (node: HTMLElement | null) => void;
   listeners?: DraggableSyntheticListeners;
   attributes?: DraggableAttributes;
-  /** The drag so far, scroll included; null while still. */
-  transform: { x: number; y: number } | null;
   isDragging: boolean;
-  /** Another booking is being dragged over this one: a swap would land here. */
-  isSwapTarget: boolean;
 }
 
-/** A booking block that may be picked up, and dropped onto to swap. */
+/** A booking block that may be picked up. */
 export const DragBlock: React.FC<{
   appointment: Appointment;
-  /** Whether it may be picked up, and be swapped with. */
+  /** Whether it may be picked up. */
   enabled: boolean;
   children: (handle: DragHandle) => React.ReactNode;
 }> = ({ appointment, enabled, children }) => {
   const drag = useDraggable({ id: dragId(appointment), data: { appointment }, disabled: !enabled });
-  const drop = useDroppable({ id: dropId(appointment), data: { appointment }, disabled: !enabled });
-  const setNodeRef = (node: HTMLElement | null) => {
-    drag.setNodeRef(node);
-    drop.setNodeRef(node);
-  };
   return (
     <>
       {children({
-        setNodeRef,
+        setNodeRef: drag.setNodeRef,
         listeners: enabled ? drag.listeners : undefined,
         attributes: enabled ? drag.attributes : undefined,
-        transform: drag.transform ? { x: drag.transform.x, y: drag.transform.y } : null,
         isDragging: drag.isDragging,
-        isSwapTarget: enabled && drop.isOver && !drag.isDragging,
       })}
     </>
   );
-};
-
-/** A day column a booking can be dropped into. */
-export const DropColumn: React.FC<{
-  index: number;
-  children: (setNodeRef: (node: HTMLElement | null) => void) => React.ReactNode;
-}> = ({ index, children }) => {
-  const { setNodeRef } = useDroppable({ id: dayId(index), data: { index } });
-  return <>{children(setNodeRef)}</>;
 };
 
 export type PendingDrop =

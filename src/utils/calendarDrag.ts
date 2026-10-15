@@ -24,38 +24,64 @@ const minutesOfDay = (ms: number): number => {
 };
 
 /**
- * Where a booking dragged `dyPx` lands, on `day`: its start moved by the
- * drag, rounded to SNAP_MINUTES and kept inside the drawn hours with its whole
- * length. Built from the day's date and a minute count, so a day the clocks
- * change on still lands on the minute it shows.
+ * Where a booking lands when its top is drawn `topPx` below the top of the
+ * day's column (LT-353: read off where the pointer is, so the page may turn
+ * under it): rounded to SNAP_MINUTES and kept inside the drawn hours with its
+ * whole length. Built from the day's date and a minute count, so a day the
+ * clocks change on still lands on the minute it shows.
  */
-export const droppedStart = ({
-  startMs,
-  durationMS,
+export const startAtTop = ({
+  topPx,
   day,
-  dyPx,
+  durationMS,
   hourPx,
   firstHour,
   lastHour,
 }: {
-  startMs: number;
-  durationMS: number;
+  topPx: number;
   day: Date;
-  dyPx: number;
+  durationMS: number;
   hourPx: number;
   firstHour: number;
   lastHour: number;
 }): number => {
-  const moved = minutesOfDay(startMs) + (dyPx / hourPx) * 60;
-  const snapped = Math.round(moved / SNAP_MINUTES) * SNAP_MINUTES;
+  const snapped = Math.round((firstHour * 60 + (topPx / hourPx) * 60) / SNAP_MINUTES) * SNAP_MINUTES;
   const latest = lastHour * 60 - Math.ceil(durationMS / 60_000);
   const minutes = Math.min(Math.max(snapped, firstHour * 60), Math.max(latest, firstHour * 60));
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minutes).valueOf();
 };
 
-/** How far down the drawn day a start sits, for a block dragged to it. */
-export const offsetPx = (fromMs: number, toMs: number, hourPx: number): number =>
-  ((minutesOfDay(toMs) - minutesOfDay(fromMs)) / 60) * hourPx;
+/** How far down its day's column a start is drawn. */
+export const topOf = (startMs: number, hourPx: number, firstHour: number): number =>
+  ((minutesOfDay(startMs) - firstHour * 60) / 60) * hourPx;
+
+/**
+ * Which edge of the calendar a dragged booking is held at (LT-353): -1 over
+ * the hours column at the start side (back), 1 within `endPx` of the far side
+ * (ahead), 0 elsewhere. Past either side counts as that side. In Hebrew the
+ * start is the right and tomorrow lies to the left.
+ */
+export const edgeAt = ({
+  x,
+  left,
+  right,
+  rtl,
+  startPx,
+  endPx,
+}: {
+  x: number;
+  left: number;
+  right: number;
+  rtl: boolean;
+  startPx: number;
+  endPx: number;
+}): -1 | 0 | 1 => {
+  const fromStart = rtl ? right - x : x - left;
+  const fromEnd = rtl ? x - left : right - x;
+  if (fromStart < startPx) return -1;
+  if (fromEnd < endPx) return 1;
+  return 0;
+};
 
 export type DropVerdict =
   | { kind: 'move'; startMs: number; warning?: 'outsideHours' | 'vacation' }

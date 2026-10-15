@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { droppedStart, dropVerdict, isDraggable, offsetPx } from '../../utils/calendarDrag';
+import { dropVerdict, edgeAt, isDraggable, startAtTop, topOf } from '../../utils/calendarDrag';
 import { groupSessions } from '../../utils/sessions';
 import type { Appointment, AppointmentType } from '../../types';
 
@@ -14,31 +14,52 @@ const booking = (id: string, start: number, over: Partial<Appointment> = {}): Ap
   _id: id, name: id, phone: '0501234567', status: 'scheduled', user_id: 'u1', timestamp: String(start), type: service, ...over,
 });
 
-describe('where a dragged booking lands (LT-345)', () => {
-  const drop = (dyPx: number, start = at(10), d = day) =>
-    droppedStart({ startMs: start, durationMS: HOUR, day: d, dyPx, hourPx: HOUR_PX, firstHour: 6, lastHour: 22 });
+describe('where a dragged booking lands (LT-345, LT-353)', () => {
+  // Read off where its top is drawn: 06:00 is the top of the column.
+  const land = (topPx: number, d = day) =>
+    startAtTop({ topPx, day: d, durationMS: HOUR, hourPx: HOUR_PX, firstHour: 6, lastHour: 22 });
 
-  it('moves by the drag and lands on whole five minutes', () => {
-    expect(drop(HOUR_PX)).toBe(at(11));
+  it('lands at the time its top is drawn at, on whole five minutes', () => {
+    expect(land(5 * HOUR_PX)).toBe(at(11));
     // 44px is half an hour; 47px is 32 minutes, which rounds to 30.
-    expect(drop(44)).toBe(at(10, 30));
-    expect(drop(47)).toBe(at(10, 30));
-    expect(drop(-HOUR_PX / 12)).toBe(at(9, 55));
+    expect(land(4 * HOUR_PX + 44)).toBe(at(10, 30));
+    expect(land(4 * HOUR_PX + 47)).toBe(at(10, 30));
+    expect(land(4 * HOUR_PX - HOUR_PX / 12)).toBe(at(9, 55));
   });
 
   it('keeps the whole booking inside the drawn hours', () => {
-    expect(drop(-10 * HOUR_PX)).toBe(at(6));
-    expect(drop(20 * HOUR_PX)).toBe(at(21));
+    expect(land(-3 * HOUR_PX)).toBe(at(6));
+    expect(land(20 * HOUR_PX)).toBe(at(21));
   });
 
   it('lands on the day it is dropped on, at the minute shown', () => {
     const thursday = new Date(2030, 2, 7);
-    expect(drop(HOUR_PX, at(10), thursday)).toBe(at(11, 0, thursday));
+    expect(land(5 * HOUR_PX, thursday)).toBe(at(11, 0, thursday));
   });
 
-  it('draws the landing place as far down as its minutes', () => {
-    expect(offsetPx(at(10), at(11, 30), HOUR_PX)).toBe(1.5 * HOUR_PX);
-    expect(offsetPx(at(10), at(9, 0, new Date(2030, 2, 7)), HOUR_PX)).toBe(-HOUR_PX);
+  it('draws a start as far down its column as its minutes', () => {
+    expect(topOf(at(11, 30), HOUR_PX, 6)).toBe(5.5 * HOUR_PX);
+    expect(topOf(at(9, 0, new Date(2030, 2, 7)), HOUR_PX, 6)).toBe(3 * HOUR_PX);
+  });
+});
+
+describe('the sides that turn the page (LT-353)', () => {
+  const at400 = (x: number, rtl: boolean) => edgeAt({ x, left: 0, right: 400, rtl, startPx: 80, endPx: 44 });
+
+  it('back over the hours column, ahead at the far side, in either direction', () => {
+    expect(at400(40, false)).toBe(-1);
+    expect(at400(380, false)).toBe(1);
+    expect(at400(200, false)).toBe(0);
+    // Hebrew: the hours are on the right, tomorrow to the left.
+    expect(at400(360, true)).toBe(-1);
+    expect(at400(20, true)).toBe(1);
+    expect(at400(200, true)).toBe(0);
+  });
+
+  it('past either side counts as that side', () => {
+    expect(at400(-30, false)).toBe(-1);
+    expect(at400(450, false)).toBe(1);
+    expect(at400(-30, true)).toBe(1);
   });
 });
 

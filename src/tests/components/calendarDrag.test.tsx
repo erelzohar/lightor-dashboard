@@ -154,3 +154,66 @@ describe('dragging a booking in the calendar (LT-345)', () => {
     expect(screen.queryByText('appointments.drag.moveTitle')).toBeNull();
   });
 });
+
+/**
+ * LT-353: held at a side, the page turns under the booking — a week ahead in
+ * the week view, a day on a phone — and it lands on the day now on show.
+ */
+describe('dragging a booking to another week or day (LT-353)', () => {
+  const dayAt = (days: number, hour: number) => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, hour).valueOf();
+  };
+  const settle = (ms: number) => act(async () => { await new Promise((r) => setTimeout(r, ms)); });
+  /** Picks the booking up, holds it at the far side for `holdMs`, then drops it at `dropX`, its own height. */
+  const holdAhead = async (name: string, holdMs: number, dropX: number) => {
+    const block = blockOf(name);
+    const r = block.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    await act(async () => { fireEvent.mouseDown(block, { button: 0, clientX: x, clientY: y }); });
+    await act(async () => { fireEvent.mouseMove(document, { clientX: x, clientY: y + 10 }); });
+    await act(async () => { fireEvent.mouseMove(document, { clientX: x, clientY: y }); });
+    await act(async () => { fireEvent.mouseMove(document, { clientX: 1010, clientY: y }); });
+    expect(screen.getByTestId('drag-edge-ahead')).toBeTruthy();
+    await settle(holdMs);
+    await act(async () => { fireEvent.mouseMove(document, { clientX: dropX, clientY: y }); });
+    await act(async () => { fireEvent.mouseUp(document, { clientX: dropX, clientY: y }); });
+    await act(async () => { fireEvent.click(block); });
+    await settle(60);
+  };
+
+  it('a week ahead in the week view, with the hours left where they were', async () => {
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} />);
+    vi.mocked(Element.prototype.scrollTo).mockClear();
+
+    // Tomorrow is the second column (x 160-260).
+    await holdAhead('Dana', 700, 210);
+
+    expect(await screen.findByText('appointments.drag.moveTitle')).toBeTruthy();
+    expect(Element.prototype.scrollTo).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('appointments.drag.move'));
+    await waitFor(() => expect(moveAppointment).toHaveBeenCalledWith('Dana', String(dayAt(8, 10))));
+  });
+
+  it('a day ahead on a phone, where one day is on show', async () => {
+    render(
+      <AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} openDay={new Date(dayAt(1, 0))} />
+    );
+
+    await holdAhead('Dana', 700, 110);
+
+    expect(await screen.findByText('appointments.drag.moveTitle')).toBeTruthy();
+    fireEvent.click(screen.getByText('appointments.drag.move'));
+    await waitFor(() => expect(moveAppointment).toHaveBeenCalledWith('Dana', String(dayAt(2, 10))));
+  });
+
+  it('a moment at the side is not enough: no page turns, nothing moves', async () => {
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} />);
+
+    await holdAhead('Dana', 100, 210);
+
+    expect(screen.queryByText('appointments.drag.moveTitle')).toBeNull();
+    expect(moveAppointment).not.toHaveBeenCalled();
+  });
+});

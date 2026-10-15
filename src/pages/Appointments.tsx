@@ -130,10 +130,15 @@ const Appointments: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      // A full-bleed page (LT-307): the calendar fills the pane down to the
-      // tab bar's room and scrolls inside; the list grows past it, and the
-      // page — not the scroller — carries that room, so it renders below it.
-      className={`flex flex-col gap-4 flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8 ${viewMode === 'calendar' ? 'min-h-0' : ''}`}
+      // A full-bleed page (LT-307): the calendar fills the pane and scrolls
+      // inside; the list grows past it, and the page — not the scroller —
+      // carries the tab bar's room, so it renders below it. On a phone the
+      // calendar runs to the bottom of the screen, under the floating bar
+      // (LT-353: the bar slides away as the hours scroll, LT-342, and left a
+      // blank strip); the grid keeps that room at its own end instead.
+      className={`flex flex-col gap-4 flex-1 md:pb-8 ${
+        viewMode === 'calendar' ? 'min-h-0 -mb-4 md:mb-0' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
+      }`}
     >
       {/* Page header */}
       <div className="flex items-center justify-between">
@@ -195,7 +200,7 @@ const Appointments: React.FC = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="rounded-2xl overflow-hidden shadow-sm flex-1 min-h-0"
+          className="rounded-2xl max-md:rounded-b-none overflow-hidden shadow-sm flex-1 min-h-0"
         >
           <AppointmentCalendar
             appointments={appointments}
