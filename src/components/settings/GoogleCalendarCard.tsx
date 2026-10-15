@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CalendarCheck, Link2, Unlink, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '../../hooks/useConfirm';
 import toast from 'react-hot-toast';
 
 import Card from '../ui/Card';
@@ -19,6 +20,7 @@ import {
  */
 const GoogleCalendarCard: React.FC = () => {
   const { t } = useTranslation();
+  const { confirm, dialog } = useConfirm();
   const [status, setStatus] = useState<GoogleCalendarStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
@@ -52,7 +54,13 @@ const GoogleCalendarCard: React.FC = () => {
   };
 
   const handleDisconnect = async () => {
-    if (!window.confirm(t('settings.googleCalendar.disconnectConfirm'))) return;
+    const sure = await confirm({
+      title: t('settings.googleCalendar.disconnectDialog.title'),
+      message: t('settings.googleCalendar.disconnectDialog.body'),
+      confirmLabel: t('settings.googleCalendar.disconnectDialog.confirm'),
+      danger: true,
+    });
+    if (!sure) return;
     setIsWorking(true);
     const ok = await disconnectGoogleCalendar();
     setIsWorking(false);
@@ -122,6 +130,7 @@ const GoogleCalendarCard: React.FC = () => {
           </div>
         </div>
       )}
+      {dialog}
     </Card>
   );
 };

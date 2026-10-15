@@ -5,6 +5,7 @@ import { Trash2, Edit2, Check, X as XIcon, GripVertical } from 'lucide-react';
 import { PortfolioItem } from '../../types';
 import globals from '../../services/globals';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '../../hooks/useConfirm';
 
 interface Props {
     item: PortfolioItem;
@@ -159,6 +160,16 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
 
 const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) => {
     const { t } = useTranslation();
+    const { confirm, dialog } = useConfirm();
+    const askRemove = async () => {
+        const ok = await confirm({
+            title: t('portfolio.deleteImageDialog.title'),
+            message: t('portfolio.deleteImageDialog.body'),
+            confirmLabel: t('portfolio.deleteImageDialog.confirm'),
+            danger: true,
+        });
+        if (ok) onRemove(item.url);
+    };
     const {
         attributes,
         listeners,
@@ -188,6 +199,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) =
         : `${globals.imagesUrl}${item.url}`;
 
     return (
+        <>
         <PortfolioImageCard
             ref={setNodeRef}
             item={item}
@@ -200,11 +212,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) =
                 setIsEditing(true);
                 setEditTitle(item.title || '');
             }}
-            onRemoveClick={() => {
-                if (window.confirm(t('portfolio.deleteImageConfirm'))) {
-                    onRemove(item.url);
-                }
-            }}
+            onRemoveClick={() => void askRemove()}
             onSaveTitle={(title) => {
                 onUpdateTitle(item.url, title.trim());
                 setIsEditing(false);
@@ -215,6 +223,9 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) =
             attributes={attributes}
             listeners={listeners}
         />
+        {/* Beside the card, not in it: the card carries the drag's listeners. */}
+        {dialog}
+        </>
     );
 };
 

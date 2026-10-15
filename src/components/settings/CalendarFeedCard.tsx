@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CalendarDays, Copy, Check, RefreshCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '../../hooks/useConfirm';
 import toast from 'react-hot-toast';
 
 import Card from '../ui/Card';
@@ -18,6 +19,7 @@ import {
  */
 const CalendarFeedCard: React.FC = () => {
   const { t } = useTranslation();
+  const { confirm, dialog } = useConfirm();
   const [feedUrl, setFeedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -41,7 +43,12 @@ const CalendarFeedCard: React.FC = () => {
   };
 
   const handleRegenerate = async () => {
-    if (!window.confirm(t('settings.calendar.regenerateConfirm'))) return;
+    const ok = await confirm({
+      title: t('settings.calendar.regenerateDialog.title'),
+      message: t('settings.calendar.regenerateDialog.body'),
+      confirmLabel: t('settings.calendar.regenerateDialog.confirm'),
+    });
+    if (!ok) return;
     setIsRegenerating(true);
     const url = await regenerateCalendarFeedUrl();
     setIsRegenerating(false);
@@ -108,6 +115,7 @@ const CalendarFeedCard: React.FC = () => {
       ) : (
         <p className="text-sm text-red-500">{t('settings.calendar.loadFailed')}</p>
       )}
+      {dialog}
     </Card>
   );
 };

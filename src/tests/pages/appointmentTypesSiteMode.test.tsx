@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import AppointmentTypes from '../../pages/AppointmentTypes';
@@ -225,7 +225,6 @@ describe('Services page — empty list and row actions', () => {
 
   it("shows a service's delete button without hover, and still confirms first", async () => {
     answerTypes(() => [service({ price: '100', durationMS: '3600000' })]);
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     renderPage('book');
 
     const remove = await screen.findByRole('button', { name: 'common.delete' });
@@ -235,9 +234,12 @@ describe('Services page — empty list and row actions', () => {
     expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
 
     fireEvent.click(remove);
-    expect(confirm).toHaveBeenCalledWith('appointmentTypes.deleteConfirm');
+    // LT-347: the dashboard's own box, not the browser's; declining deletes nothing.
+    const ask = await screen.findByRole('dialog', { name: 'appointmentTypes.deleteDialog.title' });
+    expect(within(ask).getByText('appointmentTypes.deleteDialog.body')).toBeInTheDocument();
+    fireEvent.click(within(ask).getByRole('button', { name: 'admin.actions.cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'appointmentTypes.deleteDialog.title' })).toBeNull());
     expect(deleteAppointmentType).not.toHaveBeenCalled();
-    confirm.mockRestore();
   });
 });
 

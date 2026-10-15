@@ -98,7 +98,11 @@
       "connectedAs": "Syncing to",
       "connectedToast": "Google Calendar connected — your appointments are on their way",
       "disconnectedToast": "Google Calendar disconnected",
-      "disconnectConfirm": "Disconnect Google Calendar? New appointments will stop appearing there. Events already in your calendar stay.",
+      "disconnectDialog": {
+        "title": "Disconnect Google Calendar?",
+        "body": "New appointments will stop appearing there. Events already in your calendar stay.",
+        "confirm": "Disconnect"
+      },
       "revokedNote": "Access was revoked on the Google side — reconnect to resume syncing.",
       "errorToast": "Something went wrong with Google Calendar — please try again"
     },
@@ -109,7 +113,11 @@
       "copied": "Copied!",
       "copyFailed": "Could not copy the link",
       "regenerate": "New link",
-      "regenerateConfirm": "Create a new link? The current link will stop working immediately — you will need to re-subscribe in your calendar app.",
+      "regenerateDialog": {
+        "title": "Create a new link?",
+        "body": "The current link will stop working immediately — you will need to re-subscribe in your calendar app.",
+        "confirm": "Create new link"
+      },
       "regenerated": "New link created — re-subscribe in your calendar app",
       "regenerateFailed": "Could not create a new link",
       "loadFailed": "Could not load your calendar link",
@@ -271,7 +279,11 @@
     "noServices": "No service types to display",
     "emptyHint": "Click the button above to add your first service.",
     "addNewService": "Add New Service",
-    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
+    "deleteDialog": {
+      "title": "Delete this service?",
+      "body": "\"{{name}}\" will be removed from your site, and customers will no longer be able to book it.",
+      "confirm": "Delete"
+    },
     "deleteSuccess": "Service deleted successfully",
     "deleteError": "Failed to delete the service",
     "updateSuccess": "Service updated successfully",
@@ -362,7 +374,13 @@
       "failed": "Couldn't move the appointment"
     },
     "cancelAppointment": "Cancel",
-    "cancelConfirm": "Are you sure you want to cancel this appointment?",
+    "cancelDialog": {
+      "title": "Cancel this appointment?",
+      "body": "The appointment will be marked as cancelled.",
+      "bodyAhead": "The customer will get a message that it was cancelled, with a link to book again.",
+      "confirm": "Cancel appointment",
+      "keep": "Keep appointment"
+    },
     "updateSuccess": "Appointment updated successfully",
     "updateError": "Failed to update appointment",
     "calendarView": "Calendar",
@@ -375,6 +393,8 @@
       "addParticipant": "Add participant",
       "remove": "Remove from class",
       "removeConfirm": "Remove {{name}} from the class?",
+      "removeDialogConfirm": "Remove from class",
+      "removeDialogKeep": "Keep in class",
       "full": "Class full",
       "empty": "No participants yet"
     },
@@ -496,7 +516,11 @@
     "addTitle": "Add title...",
     "editTitle": "Edit title",
     "deleteImage": "Delete image",
-    "deleteImageConfirm": "Are you sure you want to delete this image?",
+    "deleteImageDialog": {
+      "title": "Delete this image?",
+      "body": "It will be removed from your site's gallery.",
+      "confirm": "Delete"
+    },
     "imagesUsed": "images used",
     "optimizationTitle": "Portfolio Optimization",
     "optimizationTip": "High-resolution shots receive significantly more engagement. Make sure your images are sharp and well-lit for the best client experience.",
@@ -530,7 +554,11 @@
     "noVacations": "No vacations scheduled",
     "saveSuccess": "Settings saved successfully",
     "saveError": "Failed to save settings",
-    "deleteConfirm": "Delete vacation?",
+    "deleteDialog": {
+      "title": "Delete this vacation?",
+      "body": "That time opens for bookings again, by your opening hours.",
+      "confirm": "Delete"
+    },
     "deleteSuccess": "Vacation deleted successfully",
     "deleteError": "Error deleting vacation",
     "addSuccess": "Vacation added successfully",

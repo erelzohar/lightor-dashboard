@@ -137,8 +137,7 @@ describe('the appointments list with a class in it', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it("offers one action per person in a class: taking them out of it, the cancel underneath (LT-211)", () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it("offers one action per person in a class: taking them out of it, the cancel underneath (LT-211)", async () => {
     vi.mocked(updateAppointmentStatus).mockClear();
     render(
       <AppointmentsList
@@ -158,9 +157,12 @@ describe('the appointments list with a class in it', () => {
     const avi = within(dialog).getByText('Avi Levi').closest('li') as HTMLElement;
     fireEvent.click(within(avi).getByRole('button', { name: 'appointments.session.remove' }));
 
-    expect(confirm).toHaveBeenCalledWith('appointments.session.removeConfirm');
-    expect(updateAppointmentStatus).toHaveBeenCalledWith({ id: 'b', status: 'cancelled' });
-    confirm.mockRestore();
+    // LT-347: asked in the dashboard's own box, which names the person.
+    const ask = await screen.findByRole('dialog', { name: 'appointments.session.removeConfirm' });
+    expect(updateAppointmentStatus).not.toHaveBeenCalled();
+    expect(within(ask).getByRole('button', { name: 'appointments.session.removeDialogKeep' })).toBeInTheDocument();
+    fireEvent.click(within(ask).getByRole('button', { name: 'appointments.session.removeDialogConfirm' }));
+    await waitFor(() => expect(updateAppointmentStatus).toHaveBeenCalledWith({ id: 'b', status: 'cancelled' }));
   });
 
   it('counts a cancelled attendee out of the headcount', () => {

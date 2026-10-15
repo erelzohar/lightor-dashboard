@@ -54,10 +54,12 @@ function App() {
           <AuthProvider>
             {/* Offset by the safe-area inset: pinned to the very top, the
                 notch and Dynamic Island cover the toast on a real phone.
-                The inset is 0 in a browser, so the web is unaffected. */}
+                The inset is 0 in a browser, so the web is unaffected. Above
+                every layer, the confirm dialog's included (z 10050, LT-347):
+                an error said while a dialog stays open must not sit behind it. */}
             <Toaster
               position="top-center"
-              containerStyle={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+              containerStyle={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)', zIndex: 10100 }}
             />
             {/* Native deep links for every route, signed in or not (LT-315). */}
             <AppUrlOpenListener />

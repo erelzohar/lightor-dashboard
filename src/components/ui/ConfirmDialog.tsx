@@ -13,6 +13,9 @@ import Button from './Button';
  * `confirmText` arms type-to-confirm: the confirm button stays disabled
  * until the user types the exact string (used with the target's email for
  * account deletion — the same proof-of-intent bar as self-service).
+ *
+ * Since LT-347 it also stands in for every window.confirm in the dashboard,
+ * through `useConfirm`.
  */
 interface ConfirmDialogProps {
   open: boolean;
@@ -53,6 +56,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  // A portal's events still bubble through React to whatever renders the
+  // dialog — a draggable photo, a clickable card, another window (LT-347).
+  // They stop at the dialog. And it stands above every other layer: a
+  // question comes from whatever is on top, like the calendar's booking card
+  // (z 9999) or the move-booking window (z 10000).
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
   // Escape closes (unless a confirm is in flight), matching the backdrop click.
   useEffect(() => {
@@ -101,7 +110,14 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overlay-safe">
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4 overlay-safe"
+          onClick={stop}
+          onPointerDown={stop}
+          onMouseDown={stop}
+          onTouchStart={stop}
+          onKeyDown={stop}
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

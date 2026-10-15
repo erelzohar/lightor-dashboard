@@ -120,7 +120,6 @@ describe('status changes wait for the server (LT-315, M2)', () => {
   });
 
   it('roster: "Remove from class" that fails leaves the person in, and says so', async () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     unwrap.mockRejectedValue(new Error('500'));
     const onUpdate = vi.fn();
     const classType = { ...service, kind: 'class', capacity: 10 } as AppointmentType;
@@ -130,22 +129,21 @@ describe('status changes wait for the server (LT-315, M2)', () => {
     } as Session;
     render(<SessionParticipants session={session} onClose={vi.fn()} onUpdate={onUpdate} />);
     fireEvent.click(screen.getByRole('button', { name: 'appointments.session.remove' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'appointments.session.removeDialogConfirm' }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('appointments.updateError'));
     expect(toast.success).not.toHaveBeenCalled();
     expect(onUpdate).not.toHaveBeenCalled();
-    confirm.mockRestore();
   });
 
   it('details card: a refused cancel says so and stays open', async () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     unwrap.mockRejectedValue(new Error('409'));
     const onClose = vi.fn();
     const onUpdate = vi.fn();
     render(<AppointmentDetails appointment={booking('a2', 'Noa')} onClose={onClose} onUpdate={onUpdate} />);
     fireEvent.click(screen.getByTitle('appointments.cancelAppointment'));
+    fireEvent.click(await screen.findByRole('button', { name: 'appointments.cancelDialog.confirm' }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('appointments.updateError'));
     expect(onClose).not.toHaveBeenCalled();
     expect(onUpdate).not.toHaveBeenCalled();
-    confirm.mockRestore();
   });
 });

@@ -20,6 +20,7 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import { Vacation } from '../types';
 import { createVacation, deleteVacation, updateVacation } from '../store/slices/vacationsSlice';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '../hooks/useConfirm';
 import { isLeadsSite } from '../utils/siteMode';
 import { businessTimeZone, zonedDateKey, zonedInputValue, zonedWallDate } from '../utils/businessTime';
 import { vacationDays, vacationInputValue, vacationMs } from '../utils/vacationTime';
@@ -130,6 +131,7 @@ const getActiveDayStyle = (darkMode: boolean) => ({
 
 const ScheduleVacations: React.FC = () => {
   const { t } = useTranslation();
+  const { confirm, dialog } = useConfirm();
   const [webConfigLocalState, setWebConfigLocalState] = useState<WebConfig | null>(null);
   const { auth } = useAuth();
   const [originalConfig, setOriginalConfig] = useState<WebConfig | null>(null);
@@ -379,7 +381,13 @@ const ScheduleVacations: React.FC = () => {
 
   const handleDeleteVacation = async (id: string) => {
     try {
-      if (!window.confirm(t('scheduleVacations.deleteConfirm'))) return;
+      const ok = await confirm({
+        title: t('scheduleVacations.deleteDialog.title'),
+        message: t('scheduleVacations.deleteDialog.body'),
+        confirmLabel: t('scheduleVacations.deleteDialog.confirm'),
+        danger: true,
+      });
+      if (!ok) return;
       await dispatch(deleteVacation(id)).unwrap();
       setVacations(prev => prev.filter(vacation => vacation._id !== id));
       toast.success(t('scheduleVacations.deleteSuccess'));
@@ -888,6 +896,7 @@ const ScheduleVacations: React.FC = () => {
         )}
 
       </div>
+      {dialog}
     </motion.div>
   );
 };

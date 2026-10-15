@@ -98,7 +98,11 @@
       "connectedAs": "Sincronizando con",
       "connectedToast": "Google Calendar conectado — tus citas están en camino",
       "disconnectedToast": "Google Calendar desconectado",
-      "disconnectConfirm": "¿Desconectar Google Calendar? Las nuevas citas dejarán de aparecer allí. Los eventos que ya están en tu calendario se mantienen.",
+      "disconnectDialog": {
+        "title": "¿Desconectar Google Calendar?",
+        "body": "Las nuevas citas dejarán de aparecer allí. Los eventos que ya están en tu calendario se mantienen.",
+        "confirm": "Desconectar"
+      },
       "revokedNote": "El acceso fue revocado desde Google — vuelve a conectar para reanudar la sincronización.",
       "errorToast": "Algo salió mal con Google Calendar — inténtalo de nuevo"
     },
@@ -109,7 +113,11 @@
       "copied": "¡Copiado!",
       "copyFailed": "No se pudo copiar el enlace",
       "regenerate": "Nuevo enlace",
-      "regenerateConfirm": "¿Crear un nuevo enlace? El enlace actual dejará de funcionar de inmediato — deberás volver a suscribirte en tu app de calendario.",
+      "regenerateDialog": {
+        "title": "¿Crear un nuevo enlace?",
+        "body": "El enlace actual dejará de funcionar de inmediato — deberás volver a suscribirte en tu app de calendario.",
+        "confirm": "Crear un nuevo enlace"
+      },
       "regenerated": "Nuevo enlace creado — vuelve a suscribirte en tu app de calendario",
       "regenerateFailed": "No se pudo crear un nuevo enlace",
       "loadFailed": "No se pudo cargar tu enlace de calendario",
@@ -271,7 +279,11 @@
     "noServices": "No hay tipos de servicio para mostrar",
     "emptyHint": "Usa el botón de arriba para añadir tu primer servicio.",
     "addNewService": "Añadir nuevo servicio",
-    "deleteConfirm": "¿Seguro que quieres eliminar «{{name}}»?",
+    "deleteDialog": {
+      "title": "¿Eliminar este servicio?",
+      "body": "«{{name}}» se quitará de tu sitio y tus clientes ya no podrán reservarlo.",
+      "confirm": "Eliminar"
+    },
     "deleteSuccess": "Servicio eliminado correctamente",
     "deleteError": "No se pudo eliminar el servicio",
     "updateSuccess": "Servicio actualizado correctamente",
@@ -362,7 +374,13 @@
       "failed": "No se pudo mover la cita"
     },
     "cancelAppointment": "Cancelar",
-    "cancelConfirm": "¿Seguro que quieres cancelar esta cita?",
+    "cancelDialog": {
+      "title": "¿Cancelar esta cita?",
+      "body": "La cita quedará marcada como cancelada.",
+      "bodyAhead": "El cliente recibirá un mensaje de que la cita se canceló, con un enlace para reservar otra.",
+      "confirm": "Cancelar la cita",
+      "keep": "Mantener la cita"
+    },
     "updateSuccess": "Cita actualizada correctamente",
     "updateError": "No se pudo actualizar la cita",
     "calendarView": "Calendario",
@@ -375,6 +393,8 @@
       "addParticipant": "Añadir participante",
       "remove": "Quitar de la clase",
       "removeConfirm": "¿Quitar a {{name}} de la clase?",
+      "removeDialogConfirm": "Quitar de la clase",
+      "removeDialogKeep": "Mantener en la clase",
       "full": "Clase completa",
       "empty": "Aún no hay participantes"
     },
@@ -496,7 +516,11 @@
     "addTitle": "Añadir título...",
     "editTitle": "Editar título",
     "deleteImage": "Eliminar imagen",
-    "deleteImageConfirm": "¿Seguro que quieres eliminar esta imagen?",
+    "deleteImageDialog": {
+      "title": "¿Eliminar esta imagen?",
+      "body": "Se quitará de la galería de tu sitio.",
+      "confirm": "Eliminar"
+    },
     "imagesUsed": "imágenes usadas",
     "optimizationTitle": "Optimización del portafolio",
     "optimizationTip": "Las fotos en alta resolución reciben mucha más interacción. Asegúrate de que tus imágenes sean nítidas y estén bien iluminadas para la mejor experiencia del cliente.",
@@ -530,7 +554,11 @@
     "noVacations": "No hay vacaciones programadas",
     "saveSuccess": "Configuración guardada correctamente",
     "saveError": "No se pudo guardar la configuración",
-    "deleteConfirm": "¿Eliminar vacaciones?",
+    "deleteDialog": {
+      "title": "¿Eliminar estas vacaciones?",
+      "body": "Ese tiempo vuelve a estar disponible para reservas, según tu horario.",
+      "confirm": "Eliminar"
+    },
     "deleteSuccess": "Vacaciones eliminadas correctamente",
     "deleteError": "Error al eliminar las vacaciones",
     "addSuccess": "Vacaciones añadidas correctamente",

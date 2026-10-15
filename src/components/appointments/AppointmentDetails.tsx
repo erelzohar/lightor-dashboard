@@ -13,6 +13,8 @@ import toast from 'react-hot-toast';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
 import MoveAppointmentModal from './MoveAppointmentModal';
+import { useConfirm } from '../../hooks/useConfirm';
+import { cancelBookingQuestion } from './cancelQuestion';
 
 interface AppointmentDetailsProps {
   appointment: Appointment | null;
@@ -27,6 +29,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   const { language } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { confirm, dialog } = useConfirm();
   const locale = language === 'he' ? he : undefined;
 
   if (!appointment) return null;
@@ -35,7 +38,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
 
   const handleStatusChange = async (s: 'completed' | 'cancelled') => {
     if (loading) return;
-    if (s === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
+    if (s === 'cancelled' && !(await confirm(cancelBookingQuestion(t, appointment.timestamp)))) return;
     setLoading(true);
     try {
       // Awaited and unwrapped (LT-315): a refused or offline request used to
@@ -203,6 +206,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
         onClose={() => setMoving(false)}
         onMoved={() => { onUpdate(); onClose(); }}
       />
+      {dialog}
     </div>
   );
 };

@@ -35,6 +35,8 @@ import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
 import MoveAppointmentModal from './MoveAppointmentModal';
 import { DragBlock, DropColumn, DropConfirm, calendarCollision, type DragHandle, type PendingDrop } from './CalendarDrag';
+import { useConfirm } from '../../hooks/useConfirm';
+import { cancelBookingQuestion } from './cancelQuestion';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
@@ -157,6 +159,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const { direction, language } = useTheme();
   const { t }    = useTranslation();
   const dispatch = useAppDispatch();
+  const { confirm, dialog } = useConfirm();
   // The business's own hours (LT-340), to grey out the days it is closed.
   const openingHours = useAppSelector(state => state.webConfig.data);
   // The booking being moved (LT-341); the popup closes under the window.
@@ -541,7 +544,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [statusBusy, setStatusBusy] = useState(false);
   const handleStatus = async (status: 'completed' | 'cancelled') => {
     if (!selectedAppt || statusBusy) return;
-    if (status === 'cancelled' && !window.confirm(t('appointments.cancelConfirm'))) return;
+    if (status === 'cancelled' && !(await confirm(cancelBookingQuestion(t, selectedAppt.timestamp)))) return;
     setStatusBusy(true);
     try {
       await dispatch(updateAppointmentStatus({ id: selectedAppt._id, status })).unwrap();
@@ -1241,6 +1244,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           />
         )}
       </AnimatePresence>
+      {dialog}
 
       {/* On document.body (LT-244, the LT-204 pattern): a glass card's
           backdrop-filter is the containing block of anything fixed inside it,

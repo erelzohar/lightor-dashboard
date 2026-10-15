@@ -98,7 +98,11 @@
       "connectedAs": "Synchronisation vers",
       "connectedToast": "Google Agenda connecté — vos rendez-vous arrivent",
       "disconnectedToast": "Google Agenda déconnecté",
-      "disconnectConfirm": "Déconnecter Google Agenda ? Les nouveaux rendez-vous cesseront d'y apparaître. Les événements déjà présents dans votre agenda sont conservés.",
+      "disconnectDialog": {
+        "title": "Déconnecter Google Agenda ?",
+        "body": "Les nouveaux rendez-vous cesseront d'y apparaître. Les événements déjà présents dans votre agenda sont conservés.",
+        "confirm": "Déconnecter"
+      },
       "revokedNote": "L'accès a été révoqué du côté de Google — reconnectez-vous pour reprendre la synchronisation.",
       "errorToast": "Un problème est survenu avec Google Agenda — veuillez réessayer"
     },
@@ -109,7 +113,11 @@
       "copied": "Copié !",
       "copyFailed": "Impossible de copier le lien",
       "regenerate": "Nouveau lien",
-      "regenerateConfirm": "Créer un nouveau lien ? Le lien actuel cessera immédiatement de fonctionner — vous devrez vous réabonner dans votre application d'agenda.",
+      "regenerateDialog": {
+        "title": "Créer un nouveau lien ?",
+        "body": "Le lien actuel cessera immédiatement de fonctionner — vous devrez vous réabonner dans votre application d'agenda.",
+        "confirm": "Créer un nouveau lien"
+      },
       "regenerated": "Nouveau lien créé — réabonnez-vous dans votre application d'agenda",
       "regenerateFailed": "Impossible de créer un nouveau lien",
       "loadFailed": "Impossible de charger votre lien d'agenda",
@@ -271,7 +279,11 @@
     "noServices": "Aucun type de service à afficher",
     "emptyHint": "Utilisez le bouton ci-dessus pour ajouter votre premier service.",
     "addNewService": "Ajouter un nouveau service",
-    "deleteConfirm": "Voulez-vous vraiment supprimer « {{name}} » ?",
+    "deleteDialog": {
+      "title": "Supprimer ce service ?",
+      "body": "« {{name}} » sera retiré de votre site, et vos clients ne pourront plus le réserver.",
+      "confirm": "Supprimer"
+    },
     "deleteSuccess": "Service supprimé avec succès",
     "deleteError": "Échec de la suppression du service",
     "updateSuccess": "Service mis à jour avec succès",
@@ -362,7 +374,13 @@
       "failed": "Impossible de déplacer le rendez-vous"
     },
     "cancelAppointment": "Annuler",
-    "cancelConfirm": "Voulez-vous vraiment annuler ce rendez-vous ?",
+    "cancelDialog": {
+      "title": "Annuler ce rendez-vous ?",
+      "body": "Le rendez-vous sera marqué comme annulé.",
+      "bodyAhead": "Le client recevra un message indiquant que le rendez-vous est annulé, avec un lien pour en réserver un autre.",
+      "confirm": "Annuler le rendez-vous",
+      "keep": "Garder le rendez-vous"
+    },
     "updateSuccess": "Rendez-vous mis à jour avec succès",
     "updateError": "Échec de la mise à jour du rendez-vous",
     "calendarView": "Calendrier",
@@ -375,6 +393,8 @@
       "addParticipant": "Ajouter un participant",
       "remove": "Retirer du cours",
       "removeConfirm": "Retirer {{name}} du cours ?",
+      "removeDialogConfirm": "Retirer du cours",
+      "removeDialogKeep": "Garder dans le cours",
       "full": "Cours complet",
       "empty": "Aucun participant pour l'instant"
     },
@@ -496,7 +516,11 @@
     "addTitle": "Ajouter un titre...",
     "editTitle": "Modifier le titre",
     "deleteImage": "Supprimer l'image",
-    "deleteImageConfirm": "Voulez-vous vraiment supprimer cette image ?",
+    "deleteImageDialog": {
+      "title": "Supprimer cette image ?",
+      "body": "Elle sera retirée de la galerie de votre site.",
+      "confirm": "Supprimer"
+    },
     "imagesUsed": "images utilisées",
     "optimizationTitle": "Optimisation du portfolio",
     "optimizationTip": "Les photos en haute résolution génèrent beaucoup plus d'engagement. Assurez-vous que vos images sont nettes et bien éclairées pour une expérience client optimale.",
@@ -530,7 +554,11 @@
     "noVacations": "Aucun congé programmé",
     "saveSuccess": "Paramètres enregistrés avec succès",
     "saveError": "Échec de l'enregistrement des paramètres",
-    "deleteConfirm": "Supprimer le congé ?",
+    "deleteDialog": {
+      "title": "Supprimer ce congé ?",
+      "body": "Ce créneau rouvre à la réservation, selon vos horaires d'ouverture.",
+      "confirm": "Supprimer"
+    },
     "deleteSuccess": "Congé supprimé avec succès",
     "deleteError": "Erreur lors de la suppression du congé",
     "addSuccess": "Congé ajouté avec succès",

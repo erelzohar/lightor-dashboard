@@ -5,6 +5,8 @@ import { X, CalendarDays, Clock, Users, Phone, Check, XCircle, UserPlus, UserMin
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { useConfirm, type ConfirmOptions } from '../../hooks/useConfirm';
+import { cancelBookingQuestion } from './cancelQuestion';
 import toast from 'react-hot-toast';
 import { Appointment } from '../../types';
 import { Session, activeParticipants, sessionDisplayStatus } from '../../utils/sessions';
@@ -74,6 +76,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   const { language } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { confirm, dialog } = useConfirm();
   const locale = language === 'he' ? he : undefined;
   const [adding, setAdding] = React.useState(false);
   // The row whose cancel/complete is on its way (LT-315): its buttons wait.
@@ -103,9 +106,9 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   // Success only once the server agrees (LT-315): the thunk was not awaited,
   // so "Remove from class" said done even offline, and the customer stayed
   // booked and kept getting reminders.
-  const setStatus = async (appointment: Appointment, next: 'completed' | 'cancelled', confirmText?: string) => {
+  const setStatus = async (appointment: Appointment, next: 'completed' | 'cancelled', question?: ConfirmOptions) => {
     if (pending) return;
-    if (next === 'cancelled' && !window.confirm(confirmText ?? t('appointments.cancelConfirm'))) return;
+    if (next === 'cancelled' && !(await confirm(question ?? cancelBookingQuestion(t, appointment.timestamp)))) return;
     setPending(appointment._id);
     try {
       await dispatch(updateAppointmentStatus({ id: appointment._id, status: next })).unwrap();
@@ -276,7 +279,12 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                         <button
                           type="button"
                           onClick={() =>
-                            void setStatus(participant, 'cancelled', t('appointments.session.removeConfirm', { name: participant.name }))
+                            void setStatus(participant, 'cancelled', {
+                              ...cancelBookingQuestion(t, participant.timestamp),
+                              title: t('appointments.session.removeConfirm', { name: participant.name }),
+                              confirmLabel: t('appointments.session.removeDialogConfirm'),
+                              cancelLabel: t('appointments.session.removeDialogKeep'),
+                            })
                           }
                           disabled={pending !== null}
                           className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors disabled:opacity-50"
@@ -336,6 +344,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
           />
         )}
       </motion.div>
+      {dialog}
     </div>,
     document.body
   );

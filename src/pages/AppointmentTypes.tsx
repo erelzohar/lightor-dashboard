@@ -20,6 +20,7 @@ import {
 } from '../store/slices/appointmentsSlice';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '../hooks/useConfirm';
 import { isBookableService, isLeadsSite } from '../utils/siteMode';
 import { resolveImage } from '../utils/images';
 import { Toggle } from '../components/ui/liquid-toggle';
@@ -83,6 +84,7 @@ const AppointmentTypes: React.FC = () => {
   const webConfig = useAppSelector(state => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const dispatch = useAppDispatch();
+  const { confirm, dialog } = useConfirm();
 
   document.title = t('appointmentTypes.title');
 
@@ -157,7 +159,13 @@ const AppointmentTypes: React.FC = () => {
   };
 
   const handleDelete = async (type: AppointmentType) => {
-    if (!confirm(t('appointmentTypes.deleteConfirm', { name: type.name }))) return;
+    const ok = await confirm({
+      title: t('appointmentTypes.deleteDialog.title'),
+      message: t('appointmentTypes.deleteDialog.body', { name: type.name }),
+      confirmLabel: t('appointmentTypes.deleteDialog.confirm'),
+      danger: true,
+    });
+    if (!ok) return;
     try {
       // unwrap(): a refused delete must not read "deleted" (LT-315).
       await dispatch(deleteAppointmentType(type._id)).unwrap();
@@ -791,6 +799,7 @@ const AppointmentTypes: React.FC = () => {
           }
         />
       )}
+      {dialog}
     </motion.div>
   );
 };
