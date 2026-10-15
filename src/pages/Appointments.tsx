@@ -126,14 +126,15 @@ const Appointments: React.FC = () => {
   }
 
   return (
-    <PullToRefresh onRefresh={refresh} fill={viewMode === 'calendar'}>
+    <PullToRefresh onRefresh={refresh} fill>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       // A full-bleed page (LT-307): the calendar fills the pane down to the
-      // tab bar's room and scrolls inside; the list grows past it, and the
-      // page — not the scroller — carries that room, so it renders below it.
-      className={`flex flex-col gap-4 flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8 ${viewMode === 'calendar' ? 'min-h-0' : ''}`}
+      // tab bar's room and scrolls inside, and so does the list (LT-355: it
+      // grew past the pane, so the page scrolled and the card inside it too).
+      // The page, not the scroller, carries that room, so it renders below.
+      className="flex flex-col gap-4 flex-1 min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8"
     >
       {/* Page header */}
       <div className="flex items-center justify-between">
@@ -209,7 +210,7 @@ const Appointments: React.FC = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="mb-4"
+          className="flex-1 min-h-0 flex flex-col"
         >
           <AppointmentsList
             appointments={upcomingAppointments}

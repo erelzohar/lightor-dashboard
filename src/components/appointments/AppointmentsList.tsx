@@ -102,14 +102,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   };
 
   return (
-    <Card className="h-full overflow-hidden w-full mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    // As tall as the page, scrolling only inside (LT-355): a fixed max-height
+    // left it taller than the pane, so the page scrolled too.
+    <Card className="flex-1 min-h-0 flex flex-col overflow-hidden w-full mx-auto">
+      <div className="flex justify-between items-center mb-6 shrink-0">
         <h3 className="font-semibold text-xl">
           {t('appointments.upcoming')}
         </h3>
       </div>
 
-      <div className="overflow-y-auto max-h-[calc(100vh-18.75rem)] scrollbar-thin">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
         {sessions.length > 0 ? (
           <div className="space-y-4">
             {sessions.map((session, i) => {

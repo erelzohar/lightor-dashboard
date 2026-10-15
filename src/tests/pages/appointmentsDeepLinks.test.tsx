@@ -72,7 +72,8 @@ const renderAt = (url: string, goTo?: string) => {
 };
 
 /** The calendar's day columns (the page's details modal sits outside them). */
-const grid = () => document.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
+// The calendar's own scroller: the list scrolls inside its card too (LT-355).
+const grid = () => document.querySelector('section .min-h-0.overflow-y-auto') as HTMLElement;
 const detailsOpen = () => screen.queryByText('appointments.markCompleted') !== null;
 
 beforeEach(() => {

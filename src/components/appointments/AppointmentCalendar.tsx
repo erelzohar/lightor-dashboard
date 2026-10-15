@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, X, Clock, User, Phone,
-  Check, XCircle, ChevronDown, CalendarDays, CalendarClock, Menu,
+  Check, XCircle, ChevronDown, CalendarDays, CalendarClock,
 } from 'lucide-react';
 import {
   format, addDays, isToday, isTomorrow, isSameDay, getHours, getMinutes,
@@ -676,7 +676,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           <div className="relative">
             <button className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
               style={{ background: 'rgba(255,255,255,0.08)' }}
-              onClick={e => { e.stopPropagation(); goToday(); }}
+              // A day picked here closes the phone's drawer on it (LT-355).
+              onClick={e => { e.stopPropagation(); goToday(); setSidebarOpen(false); }}
             >
               <CalendarDays size={14} style={{ color: '#9ca3af' }} />
             </button>
@@ -724,7 +725,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               const hasA = miniHasAppts(day);
               return (
                 <button key={day.toISOString()}
-                  onClick={e => { e.stopPropagation(); goTo(day); setMiniCalMonth(startOfMonth(day)); }}
+                  onClick={e => { e.stopPropagation(); goTo(day); setMiniCalMonth(startOfMonth(day)); setSidebarOpen(false); }}
                   className="relative w-7 h-7 mx-auto text-[11px] rounded-full flex items-center justify-center transition-all"
                   style={{
                     color: !inMonth ? '#374151' : tod ? '#fff' : sel ? '#818cf8' : '#d1d5db',
@@ -961,16 +962,26 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         {/* ── Header ────────────────────────────────────────────────── */}
         <header className="h-[72px] flex items-center justify-between px-4 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700/60 shrink-0 gap-3">
 
-          {/* Mobile menu + month label */}
-          <div className="flex items-center gap-3 min-w-0">
-            <button className="lg:hidden w-10 h-10 -ms-2 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+          {/* Under lg the side panel (the month, the next booking, the
+              filters) is a drawer. Its button stands out in the primary
+              colour (LT-355: a grey hamburger went unnoticed), and the month
+              itself opens it too. */}
+          <div className="flex items-center gap-2 min-w-0">
+            <button className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/30 hover:bg-primary/15 dark:bg-primary/25 dark:text-violet-200 transition-colors shrink-0"
               aria-label={language === 'he' ? 'פתח תפריט לוח שנה' : 'Open calendar menu'}
               onClick={e => { e.stopPropagation(); setSidebarOpen(true); }}>
-              <Menu size={18} />
+              <CalendarDays size={20} />
             </button>
-            <h1 className="text-2xl font-semibold text-gray-800 dark:text-white truncate">
-              <span className="sm:hidden">{format(currentDate, 'MMM yyyy', { locale })}</span>
-              <span className="hidden sm:inline">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
+            <h1 className="text-2xl font-semibold text-gray-800 dark:text-white min-w-0">
+              <button type="button" className="lg:hidden flex items-center gap-1 max-w-full" data-testid="month-opens-drawer"
+                onClick={e => { e.stopPropagation(); setSidebarOpen(true); }}>
+                <span className="truncate">
+                  <span className="sm:hidden">{format(currentDate, 'MMM yyyy', { locale })}</span>
+                  <span className="hidden sm:inline">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
+                </span>
+                <ChevronDown size={18} className="shrink-0 text-gray-400" />
+              </button>
+              <span className="hidden lg:block truncate">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
             </h1>
           </div>
 
