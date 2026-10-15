@@ -759,3 +759,19 @@ describe('OwnerBookingModal: another time', () => {
   });
 });
 
+
+/** LT-362 - the booking window is a named dialog, and axe finds nothing in it. */
+describe('owner booking window, read by a screen reader', () => {
+  it('is a modal dialog named by its title, with no WCAG A/AA violation axe can see', async () => {
+    const { default: axe } = await import('axe-core');
+    renderModal();
+    const dialog = screen.getByRole('dialog', { name: 'customers.booking.title' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    const result = await axe.run(document.body, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
+    });
+    expect(result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`)).toEqual([]);
+  });
+});

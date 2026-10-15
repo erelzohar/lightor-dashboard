@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string | JSX.Element;
@@ -20,6 +20,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     className = '',
     ...props
   }, ref) => {
+    // LT-362: the label, the error and the hint belong to the field. The
+    // label's htmlFor pointed at props.id, which almost no caller passes, so
+    // screen readers announced most of the dashboard's fields without a name.
+    const autoId = useId();
+    const id = props.id ?? autoId;
+    const errorId = `${id}-error`;
+    const helperId = `${id}-helper`;
+    const describedBy = [props['aria-describedby'], error ? errorId : helperText ? helperId : undefined].filter(Boolean).join(' ') || undefined;
     const inputClasses = 
       // text-base (16px) on mobile prevents iOS Safari from auto-zooming on focus;
       // sm: restores the original design size on larger screens
@@ -38,7 +46,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={`${fullWidth ? 'w-full' : ''} ${props.disabled ? 'opacity-60' : ''}`}>
         {label && (
-          <label htmlFor={props.id} className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
+          <label htmlFor={id} className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
             {label}
           </label>
         )}
@@ -53,7 +61,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={inputClasses}
+            aria-invalid={error ? true : undefined}
             {...props}
+            id={id}
+            aria-describedby={describedBy}
           />
 
           {rightIcon && (
@@ -64,11 +75,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p className="mt-1 text-sm text-red-500">{error}</p>
+          <p id={errorId} className="mt-1 text-sm text-red-500">{error}</p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1 text-sm text-light-gray">{helperText}</p>
+          <p id={helperId} className="mt-1 text-sm text-light-gray">{helperText}</p>
         )}
       </div>
     );

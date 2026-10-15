@@ -191,6 +191,7 @@ const AdminCosts: React.FC = () => {
             {t('admin.costs.resetQuota')}
           </button>
           <Select
+            aria-label={t('a11y.filters.month')}
             fullWidth={false}
             className="!py-2 text-sm min-w-[170px]"
             value={month}

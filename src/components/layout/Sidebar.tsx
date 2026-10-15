@@ -139,8 +139,10 @@ const SidebarFooter: React.FC = () => {
   const { confirmLeave } = useLeaveGuard();
   return (
     <div className="flex flex-col gap-1">
+      {/* LT-362: named, since the folded rail hides the text. */}
       <button
         onClick={() => confirmLeave(() => navigate('/account'), '/account')}
+        aria-label={[auth.user?.name, auth.user?.email].filter(Boolean).join(' ') || undefined}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
@@ -164,6 +166,7 @@ const SidebarFooter: React.FC = () => {
 
       <button
         onClick={() => confirmLeave(logout)}
+        aria-label={t('common.logout')}
         className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-colors"
       >
         <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
@@ -274,7 +277,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
 
   return (
     <SidebarRoot open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10 bg-[#f9f9ff] dark:bg-dark-surface border-e border-gray-200 dark:border-gray-800/60">
+      <SidebarBody aria-label={t('sidebar.navigation')} className="justify-between gap-10 bg-[#f9f9ff] dark:bg-dark-surface border-e border-gray-200 dark:border-gray-800/60">
         {/* -mx-1 px-1: the clip box (overflow-x-hidden, for the collapse) reaches
             4 px past the content, so the active tile's ring is not cut at the
             rail's edge (LT-285). */}

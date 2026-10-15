@@ -188,6 +188,7 @@ const AdminSubscriptions: React.FC = () => {
         emptyMessage={t('admin.subscriptions.empty')}
         toolbar={
           <Select
+            aria-label={t('a11y.filters.status')}
             fullWidth={false}
             className="!py-2 text-sm min-w-[160px]"
             value={status}

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -62,6 +63,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
     }
   };
 
+  // LT-362: a real dialog for keyboards and screen readers: focus in, Tab
+  // kept inside, Escape closes (not mid-save, as the backdrop), focus back.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const notesId = useId();
+  useDialogFocus(open, panelRef, () => { if (!saving) onClose(); });
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -77,11 +85,16 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-md glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
-            <h3 className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-5">
-              <UserPlus size={18} className="text-primary" />
+            <h3 id={titleId} className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-5">
+              <UserPlus size={18} className="text-primary" aria-hidden="true" />
               {t('customers.add.title')}
             </h3>
 
@@ -105,10 +118,11 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
                 helperText={t('customers.add.phoneHint')}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label htmlFor={notesId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   {t('customers.add.notes')}
                 </label>
                 <textarea
+                  id={notesId}
                   value={form.notes}
                   onChange={(e) => set('notes', e.target.value)}
                   maxLength={2000}
@@ -120,9 +134,9 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
               <div className="flex items-center justify-between py-1">
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('customers.add.blockNow')}</p>
-                  <p className="text-xs text-gray-400">{t('customers.add.blockNowHint')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('customers.add.blockNowHint')}</p>
                 </div>
-                <ToggleSwitch checked={form.blockNow} onChange={(checked: boolean) => set('blockNow', checked)} />
+                <ToggleSwitch checked={form.blockNow} onChange={(checked: boolean) => set('blockNow', checked)} ariaLabel={t('customers.add.blockNow')} />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

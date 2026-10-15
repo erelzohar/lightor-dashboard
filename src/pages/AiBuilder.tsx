@@ -461,8 +461,8 @@ const AiBuilder: React.FC = () => {
         </div>
       </header>
 
-      {/* ── Workspace ── */}
-      <main className="flex-1 flex overflow-hidden px-5 pb-5 gap-4">
+      {/* ── Workspace ── (a div: the layout's <main> holds the page, LT-362) */}
+      <div className="flex-1 flex overflow-hidden px-5 pb-5 gap-4">
 
         {/* ── Live Preview (desktop toggle / mobile tab) ── */}
         <section
@@ -731,7 +731,7 @@ const AiBuilder: React.FC = () => {
             </div>
           </div>
         </aside>
-      </main>
+      </div>
     </div>
   );
 };

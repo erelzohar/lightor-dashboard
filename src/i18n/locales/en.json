@@ -904,7 +904,8 @@
   },
   "legal": {
     "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "accessibility": "Accessibility statement"
   },
   "admin": {
     "nav": {
@@ -1638,5 +1639,18 @@
     "failed": "Something went wrong. Please try again.",
     "invalidLink": "This reset link is invalid or has expired.",
     "requestNew": "Send me a new link"
+  },
+  "a11y": {
+    "skip": "Skip to content",
+    "filters": {
+      "customers": "Filter customers",
+      "range": "Time range",
+      "status": "Status",
+      "month": "Month",
+      "file": "File",
+      "level": "Level",
+      "plan": "Plan",
+      "verification": "Verification"
+    }
   }
 }

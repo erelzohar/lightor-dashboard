@@ -209,7 +209,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
                 </button>
               ))}
             </div>
-            <form className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5" onSubmit={(e) => { e.preventDefault(); ask(message); }}>
+            <form className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5 focus-within:ring-2 focus-within:ring-violet-300/50" onSubmit={(e) => { e.preventDefault(); ask(message); }}>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

@@ -195,6 +195,7 @@ const AdminReports: React.FC = () => {
         emptyMessage={status === 'new' ? t('admin.reports.emptyOpen') : t('admin.reports.empty')}
         toolbar={
           <Select
+            aria-label={t('a11y.filters.status')}
             fullWidth={false}
             className="!py-2 text-sm min-w-[160px]"
             value={status}

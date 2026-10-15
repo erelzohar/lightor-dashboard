@@ -913,7 +913,7 @@ const TimeField: React.FC<TimeFieldProps> = ({ label, value, onChange }) => (
     <span className="text-[9px] text-primary/70 uppercase font-bold tracking-widest">
       {label}
     </span>
-    <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 transition-colors">
+    <div dir="ltr" className="bg-white/80 dark:bg-dark-bg border border-primary/30 rounded-xl px-3 py-2 hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 transition-colors">
       <input
         type="time"
         dir="ltr"

@@ -193,6 +193,7 @@ const AdminUsers: React.FC = () => {
         toolbar={
           <>
             <Select
+              aria-label={t('a11y.filters.plan')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[150px]"
               value={subscriptionStatus}
@@ -209,6 +210,7 @@ const AdminUsers: React.FC = () => {
               ]}
             />
             <Select
+              aria-label={t('a11y.filters.verification')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[150px]"
               value={verified}

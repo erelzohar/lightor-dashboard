@@ -34,7 +34,7 @@ const UpgradeCard: React.FC<UpgradeCardProps> = ({ title, description, className
           </div>
           <div>
             <h3 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">{title}</h3>
-            <p className="text-amber-700/80 dark:text-amber-400 text-xs mt-0.5 leading-relaxed">{description}</p>
+            <p className="text-amber-800 dark:text-amber-400 text-xs mt-0.5 leading-relaxed">{description}</p>
           </div>
         </div>
         <button

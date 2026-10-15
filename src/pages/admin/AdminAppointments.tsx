@@ -272,6 +272,7 @@ const AdminAppointments: React.FC = () => {
         toolbar={
           <>
             <Select
+              aria-label={t('a11y.filters.range')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[150px]"
               value={range}
@@ -286,6 +287,7 @@ const AdminAppointments: React.FC = () => {
               ]}
             />
             <Select
+              aria-label={t('a11y.filters.status')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[150px]"
               value={status}

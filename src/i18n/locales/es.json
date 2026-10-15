@@ -904,7 +904,8 @@
   },
   "legal": {
     "terms": "Términos del servicio",
-    "privacy": "Política de privacidad"
+    "privacy": "Política de privacidad",
+    "accessibility": "Declaración de accesibilidad"
   },
   "admin": {
     "nav": {
@@ -1638,5 +1639,18 @@
     "failed": "Algo salió mal. Inténtalo de nuevo.",
     "invalidLink": "Este enlace de restablecimiento no es válido o ha caducado.",
     "requestNew": "Envíame un enlace nuevo"
+  },
+  "a11y": {
+    "skip": "Saltar al contenido",
+    "filters": {
+      "customers": "Filtrar clientes",
+      "range": "Rango de tiempo",
+      "status": "Estado",
+      "month": "Mes",
+      "file": "Archivo",
+      "level": "Nivel",
+      "plan": "Plan",
+      "verification": "Verificación"
+    }
   }
 }

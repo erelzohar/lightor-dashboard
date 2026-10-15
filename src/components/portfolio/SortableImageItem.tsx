@@ -81,7 +81,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
         >
             {/* Draggable image area */}
             <div
-                className="w-full h-full outline-none touch-manipulation"
+                className="w-full h-full outline-none touch-manipulation rounded-[24px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                 {...attributes}
                 {...listeners}
             >

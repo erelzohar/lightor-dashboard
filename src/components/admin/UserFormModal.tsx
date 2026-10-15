@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -109,6 +110,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
     }
   };
 
+  // LT-362: a real dialog for keyboards and screen readers: focus in, Tab
+  // kept inside, Escape closes (not mid-save, as the backdrop), focus back.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialogFocus(open, panelRef, () => { if (!saving) onClose(); });
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -124,14 +131,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
-            <h3 className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-5">
+            <h3 id={titleId} className="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2 mb-5">
               {mode === 'create' ? (
-                <UserPlus size={18} className="text-primary" />
+                <UserPlus size={18} className="text-primary" aria-hidden="true" />
               ) : (
-                <UserCog size={18} className="text-primary" />
+                <UserCog size={18} className="text-primary" aria-hidden="true" />
               )}
               {t(mode === 'create' ? 'admin.userForm.titleCreate' : 'admin.userForm.titleEdit')}
             </h3>
@@ -214,11 +226,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {t('admin.userForm.verified')}
                     </p>
-                    <p className="text-xs text-gray-400">{t('admin.userForm.verifiedHint')}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.userForm.verifiedHint')}</p>
                   </div>
                   <ToggleSwitch
                     checked={form.isVerified}
                     onChange={(checked: boolean) => set('isVerified', checked)}
+                    ariaLabel={t('admin.userForm.verified')}
                   />
                 </div>
               )}

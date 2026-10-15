@@ -75,16 +75,18 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => <DesktopSidebar {...props} />;
+export const SidebarBody = (props: React.ComponentProps<typeof motion.nav>) => <DesktopSidebar {...props} />;
 
 export const DesktopSidebar = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof motion.div>) => {
+}: React.ComponentProps<typeof motion.nav>) => {
   const { open, setOpen, animate } = useSidebar();
   return (
-    <motion.div
+    // LT-362: a <nav> (name from the caller), and it opens for the keyboard
+    // as it does for the pointer: Tab in expands it, Tab out folds it.
+    <motion.nav
       className={cn(
         'h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] flex-shrink-0',
         className
@@ -95,10 +97,14 @@ export const DesktopSidebar = ({
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e: React.FocusEvent<HTMLElement>) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
       {...props}
     >
       {children}
-    </motion.div>
+    </motion.nav>
   );
 };
 
@@ -115,11 +121,15 @@ export const SidebarLink = ({
   onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }) => {
   const { open, animate } = useSidebar();
+  // Folded, the label is display:none and the link would have no name; the
+  // name says the badge too, as the open rail shows it (LT-362).
+  const badge = link.badge ? ` ${link.badge > 99 ? '99+' : link.badge}` : '';
   return (
     <NavLink
       to={link.href}
       end={end}
       onClick={onClick}
+      aria-label={`${link.label}${badge}`}
       className={({ isActive }) =>
         cn(
           'flex items-center justify-start gap-2 group/sidebar py-2',

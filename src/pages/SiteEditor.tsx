@@ -515,7 +515,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       </header>
 
       {/* ── Workspace ── */}
-      <main className="flex-1 flex overflow-hidden md:px-5 md:pb-5 md:gap-4 relative">
+      <div className="flex-1 flex overflow-hidden md:px-5 md:pb-5 md:gap-4 relative">
         <section className="flex-1 flex flex-col overflow-hidden md:rounded-3xl md:border md:border-white/60 dark:md:border-slate-700/50 bg-white/50 dark:bg-slate-800/50">
           <div className="flex-1 relative overflow-hidden bg-gray-100 dark:bg-slate-900">
             {/* LT-324: the register's iPhone. One box around the iframe in both
@@ -590,7 +590,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
             {panel()}
           </div>
         </aside>
-      </main>
+      </div>
 
       <ConfirmDialog
         open={confirmDiscard}

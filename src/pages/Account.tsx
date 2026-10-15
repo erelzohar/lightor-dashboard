@@ -303,8 +303,13 @@ const Account: React.FC = () => {
                 aria-invalid={currentPasswordError ? true : undefined}
                 leftIcon={<KeyRound size={18} />}
                 rightIcon={
-                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="focus:outline-none">
-                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    aria-label={showCurrentPassword ? t('login.hidePassword') : t('login.showPassword')}
+                    className="p-1 -m-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    {showCurrentPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                   </button>
                 }
                 required
@@ -318,8 +323,13 @@ const Account: React.FC = () => {
                 onChange={handlePasswordChange}
                 leftIcon={<KeyRound size={18} />}
                 rightIcon={
-                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="focus:outline-none">
-                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    aria-label={showNewPassword ? t('login.hidePassword') : t('login.showPassword')}
+                    className="p-1 -m-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    {showNewPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                   </button>
                 }
                 required
@@ -367,6 +377,7 @@ const Account: React.FC = () => {
 
           <div className="w-full sm:w-48 shrink-0">
             <Select
+              aria-label={t('account.language')}
               value={language}
               disabled={isSavingLanguage}
               onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
@@ -380,23 +391,25 @@ const Account: React.FC = () => {
 
       <DangerZoneSection />
 
-      <div className="flex justify-center gap-6 pt-2 pb-6">
-        <a
-          href="https://lightor.app/terms.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
-        >
-          {t('legal.terms')}
-        </a>
-        <a
-          href="https://lightor.app/privacy.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
-        >
-          {t('legal.privacy')}
-        </a>
+      {/* LT-362: the accessibility statement beside the terms (the app shows
+          the dashboard, so this is its link too); gray-600/400, the old
+          gray-400/500 read about 2.5:1. */}
+      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 pb-6">
+        {[
+          { href: 'https://lightor.app/terms.html', label: t('legal.terms') },
+          { href: 'https://lightor.app/privacy.html', label: t('legal.privacy') },
+          { href: 'https://lightor.app/accessibility.html', label: t('legal.accessibility') },
+        ].map(({ href, label }) => (
+          <a
+            key={href}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            {label}
+          </a>
+        ))}
       </div>
     </motion.div>
   );

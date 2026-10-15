@@ -122,6 +122,14 @@ const Layout: React.FC = () => {
         direction === 'rtl' ? 'rtl-dir' : 'ltr-dir'
       }`}
     >
+      {/* LT-362: the first Tab lands here; it skips the sidebar's links. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[10100] focus:rounded-xl focus:px-4 focus:py-3 focus:bg-white focus:text-gray-900 focus:font-semibold focus:shadow-lg"
+      >
+        {t('a11y.skip')}
+      </a>
+
       {/* Ambient tint the glass cards blur against — over a flat colour a
           backdrop-filter is invisible. Fixed and paint-only. */}
       <div
@@ -169,7 +177,9 @@ const Layout: React.FC = () => {
           // phone bottom padding clears the fixed BottomTabBar (h≈3.5rem) plus
           // the home indicator; md+ has no bar (LT-127).
           data-scroll-root
-          className="flex-1 overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 focus:outline-none overflow-x-hidden overflow-y-auto overscroll-y-none p-4 md:p-6 bg-light-bg dark:bg-dark-bg transition-colors duration-200"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

@@ -285,6 +285,7 @@ const Customers: React.FC = () => {
         onRowClick={(row) => setSelectedId(row._id)}
         toolbar={
           <Select
+            aria-label={t('a11y.filters.customers')}
             fullWidth={false}
             className="!py-2 text-sm min-w-[150px]"
             value={blocked}

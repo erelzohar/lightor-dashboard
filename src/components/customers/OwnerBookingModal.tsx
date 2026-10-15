@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -426,6 +427,12 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
         ? slotTimestamp(date, time, timeZone)
         : undefined;
 
+  // LT-362: a real dialog for keyboards and screen readers: focus in, Tab
+  // kept inside, Escape closes (not mid-save, as the backdrop), focus back.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialogFocus(open, panelRef, () => { if (!saving) onClose(); });
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -441,6 +448,11 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg glass-modal rounded-2xl p-6 max-h-[90dvh] overflow-y-auto"
           >
@@ -452,12 +464,12 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                   aria-label={t('customers.booking.back')}
                   className="w-8 h-8 -ms-1 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors"
                 >
-                  {direction === 'rtl' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                  {direction === 'rtl' ? <ChevronRight size={18} aria-hidden="true" /> : <ChevronLeft size={18} aria-hidden="true" />}
                 </button>
               ) : (
-                <CalendarPlus size={18} className="text-primary" />
+                <CalendarPlus size={18} className="text-primary" aria-hidden="true" />
               )}
-              {preset ? t('appointments.session.addParticipant') : t('customers.booking.title')}
+              <span id={titleId}>{preset ? t('appointments.session.addParticipant') : t('customers.booking.title')}</span>
             </h3>
             {customer && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">

@@ -188,6 +188,7 @@ const AdminLogs: React.FC = () => {
         toolbar={
           <>
             <Select
+              aria-label={t('a11y.filters.file')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[150px]"
               value={file}
@@ -198,6 +199,7 @@ const AdminLogs: React.FC = () => {
               }))}
             />
             <Select
+              aria-label={t('a11y.filters.level')}
               fullWidth={false}
               className="!py-2 text-sm min-w-[130px]"
               value={level}

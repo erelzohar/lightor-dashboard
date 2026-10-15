@@ -904,7 +904,8 @@
   },
   "legal": {
     "terms": "Conditions d'utilisation",
-    "privacy": "Politique de confidentialité"
+    "privacy": "Politique de confidentialité",
+    "accessibility": "Déclaration d'accessibilité"
   },
   "admin": {
     "nav": {
@@ -1638,5 +1639,18 @@
     "failed": "Une erreur s'est produite. Veuillez réessayer.",
     "invalidLink": "Ce lien de réinitialisation est invalide ou a expiré.",
     "requestNew": "M'envoyer un nouveau lien"
+  },
+  "a11y": {
+    "skip": "Aller au contenu",
+    "filters": {
+      "customers": "Filtrer les clients",
+      "range": "Période",
+      "status": "Statut",
+      "month": "Mois",
+      "file": "Fichier",
+      "level": "Niveau",
+      "plan": "Formule",
+      "verification": "Vérification"
+    }
   }
 }
