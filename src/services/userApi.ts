@@ -4,7 +4,7 @@ import globals from './globals';
 
 const URL = globals.usersUrl;
 
-export const updateUserInfo = async (id: string, userData: Partial<User>): Promise<User> => {
+export const updateUserInfo = async (id: string, userData: Partial<User> & { phoneToken?: string }): Promise<User> => {
   try {
     const response = await apiClient.put<any>(`${URL}${id}`, userData);
     return response.data.data;

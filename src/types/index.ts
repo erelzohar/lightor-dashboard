@@ -259,6 +259,14 @@ export interface WebConfig {
 
 export interface User {
   _id: string;
+  /**
+   * The free Plus period (LT-360): granted from `from`, withheld (this phone,
+   * email or Google account had one already), or pending until a phone is
+   * proven. Absent on accounts from before LT-360.
+   */
+  freePeriod?: { state: 'granted' | 'withheld' | 'pending'; from?: string };
+  /** When the phone was last proven by a code sent to it (LT-360). */
+  phoneVerifiedAt?: string;
   password?: string;
   webConfig_id?: string;
   email: string;

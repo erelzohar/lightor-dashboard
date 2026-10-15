@@ -59,6 +59,8 @@ const Dashboard: React.FC = () => {
   // The grant's last week (LT-290): the owner is told when the free period
   // ends; on the web with the way to the plans, in the app as a fact only.
   const trialEnding = entitlements?.pilot && upgradeIsOpen(entitlements.pilot) ? entitlements.pilot : null;
+  // The free period waits for a proven phone (LT-360).
+  const freePeriodPending = auth.user?.freePeriod?.state === 'pending';
   const trialEndDate = trialEnding
     ? new Date(trialEnding.until).toLocaleDateString(
         i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB'
@@ -374,7 +376,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* ── Account notices: verify + upgrade share one row when both apply ── */}
-      {(!auth.user?.isVerified || (onFreePlan && canOfferPurchases()) || trialEnding) && (
+      {(!auth.user?.isVerified || (onFreePlan && canOfferPurchases()) || trialEnding || freePeriodPending) && (
         <div className="flex flex-col lg:flex-row gap-4 items-stretch">
           {/* Unverified Alert */}
           {!auth.user?.isVerified && (
@@ -411,6 +413,30 @@ const Dashboard: React.FC = () => {
                 }
                 {t('common.resendVerification')}
               </button>
+            </motion.div>
+          )}
+
+          {/* No phone proven yet, so no free period yet (LT-360): an account
+              made by signing in with Google here. */}
+          {freePeriodPending && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0" data-testid="free-period-pending-card">
+              <div className="glass-card glass-tint-primary h-full rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/15 rounded-full text-primary shrink-0">
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{t('dashboard.freePeriodPending.title')}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-xs mt-0.5">{t('dashboard.freePeriodPending.body')}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/account')}
+                  className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors bg-primary hover:bg-primary-dark text-white"
+                >
+                  {t('dashboard.freePeriodPending.cta')}
+                </button>
+              </div>
             </motion.div>
           )}
 

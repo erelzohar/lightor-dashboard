@@ -526,6 +526,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   ? t('billing.freeDesc')
                   : t('billing.freeDescNative')}
             </p>
+            {/* The free period this account did not get, and why (LT-360). */}
+            {!pilotDate && auth.user?.freePeriod?.state === 'withheld' && (
+              <p className="text-sm text-gray-500 dark:text-gray-400" data-testid="free-period-used">{t('billing.freePeriodUsed')}</p>
+            )}
+            {!pilotDate && auth.user?.freePeriod?.state === 'pending' && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.freePeriodPending')}</p>
+            )}
             {/* Before the grant's last week there is nothing to choose yet (LT-290). */}
             {pilotDate && canSell && !plansOpen && (
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.pilotUpgradeLater')}</p>

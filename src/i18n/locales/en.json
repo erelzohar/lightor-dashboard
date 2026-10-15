@@ -668,6 +668,20 @@
         "newLead": "Someone left their details on your site"
       },
       "pushNote": "App notifications follow these choices too."
+    },
+    "phoneCode": {
+      "sent": "We sent a 6-digit code to {{phone}}",
+      "label": "Verification code",
+      "confirm": "Confirm and save",
+      "israelOnly": "An Israeli mobile number (05X) only",
+      "dailyCap": "Too many codes were sent to this number today. Try again tomorrow.",
+      "wait": "You can ask for a new code every 30 seconds.",
+      "tooManyTries": "Too many tries. Save again for a new code.",
+      "expired": "The code has expired. Save again for a new code.",
+      "wrong": "That code is not right. Try again.",
+      "failed": "We could not send or check the code. Try again.",
+      "pending": "60 days of Lightor+ are waiting for you: add your mobile number and verify it with a code.",
+      "verifyNow": "Verify phone number"
     }
   },
   "incomeStats": {
@@ -773,6 +787,11 @@
       "qrNativeHint": "To keep it, take a screenshot or long-press the code.",
       "qrFailed": "Could not create the code",
       "close": "Close"
+    },
+    "freePeriodPending": {
+      "title": "60 days of Lightor+ are waiting for you",
+      "body": "Verify your mobile number to start them.",
+      "cta": "Verify phone"
     }
   },
   "billing": {
@@ -840,7 +859,9 @@
       "renews_year": "Renews every year. Cancel any time.",
       "loading": "Loading the payment details…"
     },
-    "complimentary": "Admin account: every Plus feature, always, at no charge."
+    "complimentary": "Admin account: every Plus feature, always, at no charge.",
+    "freePeriodUsed": "The free period was already used with this account’s number, email or Google account.",
+    "freePeriodPending": "Verify your phone number in your account details to get 60 days of Lightor+."
   },
   "danger": {
     "title": "Danger zone",

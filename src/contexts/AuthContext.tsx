@@ -21,7 +21,7 @@ interface AuthContextType {
   loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
-  updateUser: (userData: Partial<User>) => Promise<void>;
+  updateUser: (userData: Partial<User> & { phoneToken?: string }) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string, confirmNewPassword: string) => Promise<void>;
   /**
    * Re-read the user from /auth/me. For state that changes server-side without
@@ -252,7 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUser = async (userData: Partial<User>) => {
+  const updateUser = async (userData: Partial<User> & { phoneToken?: string }) => {
     if (!auth.user) return;
 
     try {

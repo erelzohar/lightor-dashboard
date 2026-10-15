@@ -668,6 +668,20 @@
         "newLead": "Alguien dejó sus datos en tu sitio"
       },
       "pushNote": "Las notificaciones de la app siguen también estas opciones."
+    },
+    "phoneCode": {
+      "sent": "Enviamos un código de 6 dígitos al {{phone}}",
+      "label": "Código de verificación",
+      "confirm": "Confirmar y guardar",
+      "israelOnly": "Solo un número de móvil israelí (05X)",
+      "dailyCap": "Se enviaron demasiados códigos a este número hoy. Inténtalo mañana.",
+      "wait": "Puedes pedir un código nuevo cada 30 segundos.",
+      "tooManyTries": "Demasiados intentos. Guarda de nuevo para recibir otro código.",
+      "expired": "El código caducó. Guarda de nuevo para recibir otro código.",
+      "wrong": "Ese código no es correcto. Inténtalo de nuevo.",
+      "failed": "No pudimos enviar o comprobar el código. Inténtalo de nuevo.",
+      "pending": "60 días de Lightor+ te esperan: añade tu número de móvil y verifícalo con un código.",
+      "verifyNow": "Verificar teléfono"
     }
   },
   "incomeStats": {
@@ -773,6 +787,11 @@
       "qrNativeHint": "Para guardarlo, haz una captura de pantalla o mantén pulsado el código.",
       "qrFailed": "No se pudo crear el código",
       "close": "Cerrar"
+    },
+    "freePeriodPending": {
+      "title": "60 días de Lightor+ te esperan",
+      "body": "Verifica tu número de móvil para empezarlos.",
+      "cta": "Verificar teléfono"
     }
   },
   "billing": {
@@ -840,7 +859,9 @@
       "renews_year": "Se renueva cada año. Cancela cuando quieras.",
       "loading": "Cargando los detalles del pago…"
     },
-    "complimentary": "Cuenta de administrador: todas las funciones de Plus, siempre, sin pagar."
+    "complimentary": "Cuenta de administrador: todas las funciones de Plus, siempre, sin pagar.",
+    "freePeriodUsed": "El período gratuito ya se usó con el número, el correo o la cuenta de Google de esta cuenta.",
+    "freePeriodPending": "Verifica tu teléfono en los datos de la cuenta para obtener 60 días de Lightor+."
   },
   "danger": {
     "title": "Zona de peligro",

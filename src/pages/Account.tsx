@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, KeyRound, Eye, EyeOff, Languages } from 'lucide-react';
+import { User, Phone, KeyRound, Eye, EyeOff, Languages, Gift } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
+import { phoneCodeErrorKey, samePhone, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 
 // Native names — a language selector should read in the language it selects.
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
@@ -35,6 +36,12 @@ const Account: React.FC = () => {
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const [isEditing, setIsEditing] = useState(false);
+  // A changed phone is proven by a code sent to it (LT-360): the details wait
+  // here, the code field shows, and the save goes out with the proof.
+  const [codeFor, setCodeFor] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [codeBusy, setCodeBusy] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -125,16 +132,52 @@ const Account: React.FC = () => {
     }
   };
 
+  const saveDetails = async (phoneToken?: string) => {
+    // Only what this form edits: the language has its own card, and a
+    // stale copy here would undo a change made there meanwhile (LT-315).
+    await updateUser({ name: formData.name, phone: formData.phone, ...(phoneToken ? { phoneToken } : {}) });
+    toast.success(t('account.updateSuccess'));
+    setIsEditing(false);
+    setCodeFor(null);
+    setCode('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (codeFor) return;
+    setCodeError(null);
+    // A new number first gets a code (LT-360); the same one saves at once.
+    if (!samePhone(formData.phone, auth.user?.phone)) {
+      setCodeBusy(true);
+      try {
+        await sendPhoneCode(formData.phone, 'sms', language);
+        setCodeFor(formData.phone);
+      } catch (error) {
+        setCodeError(t(phoneCodeErrorKey(error)));
+      } finally {
+        setCodeBusy(false);
+      }
+      return;
+    }
     try {
-      // Only what this form edits: the language has its own card, and a
-      // stale copy here would undo a change made there meanwhile (LT-315).
-      await updateUser({ name: formData.name, phone: formData.phone });
-      toast.success(t('account.updateSuccess'));
-      setIsEditing(false);
+      await saveDetails();
     } catch (error) {
       toast.error(t('account.updateError'));
+    }
+  };
+
+  const confirmCode = async (value: string) => {
+    if (!codeFor || value.length !== 6 || codeBusy) return;
+    setCodeBusy(true);
+    setCodeError(null);
+    try {
+      const phoneToken = await verifyPhoneCode(codeFor, value);
+      await saveDetails(phoneToken);
+    } catch (error) {
+      setCode('');
+      setCodeError(t(phoneCodeErrorKey(error)));
+    } finally {
+      setCodeBusy(false);
     }
   };
 
@@ -209,6 +252,20 @@ const Account: React.FC = () => {
           </Button>
         </div>
 
+        {/* An account made by signing in with Google here has no proven phone
+            yet: its free period waits for one (LT-360). */}
+        {auth.user?.freePeriod?.state === 'pending' && !isEditing && (
+          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/10 p-4" data-testid="free-period-pending">
+            <Gift size={18} className="mt-0.5 shrink-0 text-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-700 dark:text-gray-200">{t('account.phoneCode.pending')}</p>
+              <button type="button" onClick={() => setIsEditing(true)} className="mt-2 text-sm font-semibold text-primary hover:underline">
+                {t('account.phoneCode.verifyNow')}
+              </button>
+            </div>
+          </div>
+        )}
+
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -224,15 +281,54 @@ const Account: React.FC = () => {
               label={t('account.phone')}
               name="phone"
               value={formData.phone}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                setCodeFor(null);
+                setCode('');
+                setCodeError(null);
+              }}
               leftIcon={<Phone size={18} />}
+              dir="ltr"
               required
             />
 
-            <div className="flex justify-end">
-              <Button type="submit">
-                {t('account.saveChanges')}
-              </Button>
+            {/* The code sent to the new number (LT-360). */}
+            {codeFor && (
+              <div className="space-y-2" data-testid="account-phone-code">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {t('account.phoneCode.sent', { phone: codeFor })}
+                </p>
+                <Input
+                  id="account-phone-code"
+                  label={t('account.phoneCode.label')}
+                  name="phoneCode"
+                  dir="ltr"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  disabled={codeBusy}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setCode(digits);
+                    setCodeError(null);
+                    if (digits.length === 6) void confirmCode(digits);
+                  }}
+                />
+              </div>
+            )}
+            {codeError && <p className="text-sm text-red-600 dark:text-red-400" role="alert">{codeError}</p>}
+
+            <div className="flex justify-end gap-2">
+              {codeFor ? (
+                <Button type="button" isLoading={codeBusy} disabled={code.length !== 6} onClick={() => void confirmCode(code)}>
+                  {t('account.phoneCode.confirm')}
+                </Button>
+              ) : (
+                <Button type="submit" isLoading={codeBusy}>
+                  {t('account.saveChanges')}
+                </Button>
+              )}
             </div>
           </form>
         ) : (

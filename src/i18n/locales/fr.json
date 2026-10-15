@@ -668,6 +668,20 @@
         "newLead": "Quelqu’un a laissé ses coordonnées sur votre site"
       },
       "pushNote": "Les notifications de l’application suivent aussi ces choix."
+    },
+    "phoneCode": {
+      "sent": "Nous avons envoyé un code à 6 chiffres au {{phone}}",
+      "label": "Code de vérification",
+      "confirm": "Confirmer et enregistrer",
+      "israelOnly": "Un numéro de mobile israélien (05X) uniquement",
+      "dailyCap": "Trop de codes ont été envoyés à ce numéro aujourd’hui. Réessayez demain.",
+      "wait": "Vous pouvez demander un nouveau code toutes les 30 secondes.",
+      "tooManyTries": "Trop d’essais. Enregistrez à nouveau pour un nouveau code.",
+      "expired": "Le code a expiré. Enregistrez à nouveau pour un nouveau code.",
+      "wrong": "Ce code n’est pas le bon. Réessayez.",
+      "failed": "Impossible d’envoyer ou de vérifier le code. Réessayez.",
+      "pending": "60 jours de Lightor+ vous attendent : ajoutez votre numéro de mobile et vérifiez-le avec un code.",
+      "verifyNow": "Vérifier le numéro"
     }
   },
   "incomeStats": {
@@ -773,6 +787,11 @@
       "qrNativeHint": "Pour le garder, faites une capture d'écran ou un appui long sur le code.",
       "qrFailed": "Impossible de créer le code",
       "close": "Fermer"
+    },
+    "freePeriodPending": {
+      "title": "60 jours de Lightor+ vous attendent",
+      "body": "Vérifiez votre numéro de mobile pour les commencer.",
+      "cta": "Vérifier le numéro"
     }
   },
   "billing": {
@@ -840,7 +859,9 @@
       "renews_year": "Renouvelé chaque année. Résiliable à tout moment.",
       "loading": "Chargement des détails du paiement…"
     },
-    "complimentary": "Compte administrateur : toutes les fonctionnalités Plus, toujours, sans frais."
+    "complimentary": "Compte administrateur : toutes les fonctionnalités Plus, toujours, sans frais.",
+    "freePeriodUsed": "La période gratuite a déjà été utilisée avec le numéro, l’e-mail ou le compte Google de ce compte.",
+    "freePeriodPending": "Vérifiez votre numéro dans les détails du compte pour obtenir 60 jours de Lightor+."
   },
   "danger": {
     "title": "Zone de danger",
