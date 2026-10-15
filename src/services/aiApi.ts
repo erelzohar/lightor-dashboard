@@ -249,6 +249,19 @@ export const aiService = {
     );
     return response.data.data.content;
   },
+
+  /**
+   * LT-346: a first draft of a gallery picture's description for screen
+   * readers, in the site's language, from the picture itself. Nothing is
+   * saved: the owner edits it first. 429 = the AI budget is spent.
+   */
+  describeImage: async (image: string, language: string): Promise<string> => {
+    const response = await apiClient.post<{ success: boolean; data: { alt: string } }>(
+      `${globals.aiUrl}image-alt`,
+      { image, language }
+    );
+    return response.data.data.alt;
+  },
 };
 
 export interface ElementField {

@@ -77,6 +77,8 @@ export interface PortfolioItem {
   url: string;
   title: string;
   description: string;
+  /** LT-346: what the picture shows, read to visitors who cannot see it (the site's own language). */
+  alt?: string;
 }
 
 export interface PortfolioConfig {
@@ -227,6 +229,11 @@ export interface WebConfig {
    * It stays up for anyone with the link. Absent reads false.
    */
   hideFromSearch?: boolean;
+  /**
+   * LT-346: the public site's accessibility menu, shown unless the owner
+   * hides it. The accessibility statement shows on the site either way.
+   */
+  accessibility?: { widgetHidden?: boolean };
   /**
    * The business's IANA time zone (LT-318): every wall-clock time it works
    * by — hours, slots, vacations, reminders — is a time in this zone, never

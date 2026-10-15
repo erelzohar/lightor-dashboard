@@ -240,7 +240,10 @@
       "ctaDefaultLead": "Contáctanos",
       "ctaTooLong": "Máximo {{max}} caracteres",
       "hideFromSearch": "Ocultar mi sitio de los buscadores",
-      "hideFromSearchHelp": "Tu sitio sigue en línea, y cualquiera con el enlace puede abrirlo. Google puede tardar unos días en quitarlo de sus resultados."
+      "hideFromSearchHelp": "Tu sitio sigue en línea, y cualquiera con el enlace puede abrirlo. Google puede tardar unos días en quitarlo de sus resultados.",
+      "a11yMenu": "Menú de accesibilidad en el sitio",
+      "a11yMenuHelp": "Un pequeño botón en la esquina del sitio que permite a los visitantes agrandar el texto, aumentar el contraste y detener las animaciones. La declaración de accesibilidad aparece en el sitio en todo caso.",
+      "a11yStatementLink": "Ver la declaración de accesibilidad"
     },
     "subdomainInvalid": "Usa letras, números y guiones; el enlace no puede empezar ni terminar con un guion",
     "darkMode": "Modo oscuro",
@@ -530,7 +533,13 @@
     "visibilityHidden": "OCULTO",
     "visibilityHiddenDesc": "No visible para los clientes",
     "showOnWebsite": "Mostrar en el sitio",
-    "visibilityUpdateSuccess": "Visibilidad actualizada correctamente"
+    "visibilityUpdateSuccess": "Visibilidad actualizada correctamente",
+    "altLabel": "Descripción de la imagen",
+    "altPlaceholder": "¿Qué muestra la imagen? (se lee a visitantes ciegos)",
+    "altSuggest": "Sugerir",
+    "altSuggestFailed": "No pudimos sugerir una descripción. Inténtalo de nuevo o escríbela tú.",
+    "altSuggestBudget": "Se agotó la cuota de IA de este mes. Puedes escribir la descripción tú mismo.",
+    "altMissing": "Sin descripción"
   },
   "scheduleVacations": {
     "title": "Horarios y vacaciones",

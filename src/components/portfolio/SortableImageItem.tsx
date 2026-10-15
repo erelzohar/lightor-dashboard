@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
+import { AxiosError } from 'axios';
+import toast from 'react-hot-toast';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Trash2, Edit2, Check, X as XIcon, GripVertical } from 'lucide-react';
+import { Trash2, Edit2, Check, X as XIcon, GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import { PortfolioItem } from '../../types';
 import globals from '../../services/globals';
 import { useTranslation } from 'react-i18next';
 import { useConfirm } from '../../hooks/useConfirm';
+import { aiService } from '../../services/aiApi';
+
+/** LT-346: what the owner edits on a picture — its title and its description for screen readers. */
+export interface PortfolioItemEdit { title: string; alt: string }
 
 interface Props {
     item: PortfolioItem;
     onRemove: (url: string) => void;
-    onUpdateTitle: (url: string, newTitle: string) => void;
+    onUpdate: (url: string, edit: PortfolioItemEdit) => void;
+    /** The site's language: the description is written in it. */
+    siteLanguage: string;
 }
 
 export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
@@ -20,11 +28,15 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting?: boolean;
     isEditing?: boolean;
     editTitle?: string;
+    editAlt?: string;
+    suggesting?: boolean;
     onEditClick?: () => void;
     onRemoveClick?: () => void;
-    onSaveTitle?: (title: string) => void;
+    onSave?: () => void;
     onCancelEdit?: () => void;
     onTitleChange?: (title: string) => void;
+    onAltChange?: (alt: string) => void;
+    onSuggestAlt?: () => void;
     style?: React.CSSProperties;
     attributes?: any;
     listeners?: any;
@@ -35,11 +47,15 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting,
     isEditing,
     editTitle,
+    editAlt,
+    suggesting,
     onEditClick,
     onRemoveClick,
-    onSaveTitle,
+    onSave,
     onCancelEdit,
     onTitleChange,
+    onAltChange,
+    onSuggestAlt,
     style,
     attributes,
     listeners
@@ -71,7 +87,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
             >
                 <img
                     src={imageUrl}
-                    alt={item.title || 'Portfolio Image'}
+                    alt={item.alt || item.title || ''}
                     draggable={false}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none pointer-events-none"
                 />
@@ -117,13 +133,36 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                 onChange={e => onTitleChange?.(e.target.value)}
                                 className="w-full bg-white/20 text-white placeholder-white/50 border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary transition-colors pointer-events-auto"
                                 placeholder={t('portfolio.enterTitle')}
+                                aria-label={t('portfolio.enterTitle')}
                                 autoFocus
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') onSaveTitle?.(editTitle || '');
+                                    if (e.key === 'Enter') onSave?.();
+                                    if (e.key === 'Escape') onCancelEdit?.();
+                                }}
+                            />
+                            {/* LT-346: the picture's description for visitors who cannot see it. */}
+                            <textarea
+                                value={editAlt}
+                                onChange={e => onAltChange?.(e.target.value)}
+                                rows={2}
+                                maxLength={300}
+                                className="w-full bg-white/20 text-white placeholder-white/50 border border-white/20 rounded-lg px-3 py-1.5 text-xs leading-snug resize-none focus:outline-none focus:border-primary transition-colors pointer-events-auto"
+                                placeholder={t('portfolio.altPlaceholder')}
+                                aria-label={t('portfolio.altLabel')}
+                                onKeyDown={(e) => {
                                     if (e.key === 'Escape') onCancelEdit?.();
                                 }}
                             />
                             <div className="flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); onSuggestAlt?.(); }}
+                                    disabled={suggesting}
+                                    className="me-auto inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs transition-colors cursor-pointer touch-manipulation disabled:opacity-60"
+                                >
+                                    {suggesting ? <Loader2 size={12} className="animate-spin" aria-hidden="true" /> : <Sparkles size={12} aria-hidden="true" />}
+                                    {t('portfolio.altSuggest')}
+                                </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onCancelEdit?.(); }}
                                     className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer touch-manipulation"
@@ -132,7 +171,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                     <XIcon size={14} />
                                 </button>
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); onSaveTitle?.(editTitle || ''); }}
+                                    onClick={(e) => { e.stopPropagation(); onSave?.(); }}
                                     className="p-1.5 rounded-lg bg-primary hover:brightness-110 text-white transition-colors shadow-md cursor-pointer touch-manipulation"
                                     aria-label={t('common.save')}
                                 >
@@ -150,6 +189,12 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                     </span>
                                 )}
                             </span>
+                            {/* LT-346: a nudge — a picture without a description is silent to a screen reader. */}
+                            {!item.alt && (
+                                <span className="ms-auto shrink-0 rounded-full bg-amber-500/80 px-2 py-0.5 text-[0.625rem] font-semibold text-white">
+                                    {t('portfolio.altMissing')}
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>
@@ -158,7 +203,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     );
 });
 
-const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) => {
+const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, siteLanguage }) => {
     const { t } = useTranslation();
     const { confirm, dialog } = useConfirm();
     const askRemove = async () => {
@@ -182,10 +227,27 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) =
 
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState(item.title || '');
+    const [editAlt, setEditAlt] = useState(item.alt || '');
+    const [suggesting, setSuggesting] = useState(false);
 
     const handleCancelEdit = () => {
         setEditTitle(item.title || '');
+        setEditAlt(item.alt || '');
         setIsEditing(false);
+    };
+
+    // LT-346: the AI looks at the picture and drafts its description; the
+    // owner reads it and saves (or changes it) — nothing is stored here.
+    const handleSuggestAlt = async () => {
+        setSuggesting(true);
+        try {
+            setEditAlt(await aiService.describeImage(item.url, siteLanguage));
+        } catch (err) {
+            const status = (err as AxiosError)?.response?.status;
+            toast.error(t(status === 429 ? 'portfolio.altSuggestBudget' : 'portfolio.altSuggestFailed'));
+        } finally {
+            setSuggesting(false);
+        }
     };
 
     const style = {
@@ -208,17 +270,22 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdateTitle }) =
             isSorting={isSorting}
             isEditing={isEditing}
             editTitle={editTitle}
+            editAlt={editAlt}
+            suggesting={suggesting}
             onEditClick={() => {
                 setIsEditing(true);
                 setEditTitle(item.title || '');
+                setEditAlt(item.alt || '');
             }}
             onRemoveClick={() => void askRemove()}
-            onSaveTitle={(title) => {
-                onUpdateTitle(item.url, title.trim());
+            onSave={() => {
+                onUpdate(item.url, { title: editTitle.trim(), alt: editAlt.trim() });
                 setIsEditing(false);
             }}
             onCancelEdit={handleCancelEdit}
             onTitleChange={setEditTitle}
+            onAltChange={setEditAlt}
+            onSuggestAlt={handleSuggestAlt}
             style={style}
             attributes={attributes}
             listeners={listeners}

@@ -37,7 +37,7 @@ import { storedImageName } from '../utils/aiReconcile';
 import { exchangeInstagramCode } from '../services/instagramApi';
 import FacebookPhotoPicker from '../components/portfolio/FacebookPhotoPicker';
 import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
-import SortableImageItem from '../components/portfolio/SortableImageItem';
+import SortableImageItem, { type PortfolioItemEdit } from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
 import { META_FEATURES_ENABLED } from '../config/metaFeatures';
@@ -224,9 +224,10 @@ const Portfolio: React.FC = () => {
         }
     };
 
-    const handleUpdateTitle = async (url: string, newTitle: string) => {
+    // A picture's title and (LT-346) its description for screen readers.
+    const handleUpdateItem = async (url: string, edit: PortfolioItemEdit) => {
         const newItems = items.map(item =>
-            item.url === url ? { ...item, title: newTitle } : item
+            item.url === url ? { ...item, title: edit.title, alt: edit.alt } : item
         );
         setItems(newItems);
         try {
@@ -367,7 +368,8 @@ const Portfolio: React.FC = () => {
                                     key={item.url}
                                     item={item}
                                     onRemove={handleRemoveImage}
-                                    onUpdateTitle={handleUpdateTitle}
+                                    onUpdate={handleUpdateItem}
+                                    siteLanguage={webConfig?.defaultLanguage || 'he'}
                                 />
                             ))}
                         </SortableContext>

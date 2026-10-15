@@ -374,3 +374,40 @@ describe('Settings: a cleared social link (LT-315)', () => {
   });
 });
 
+
+/**
+ * Settings → Site (LT-346): the site's accessibility menu, on unless the
+ * owner hides it; a draft like the search switch above, with a link to the
+ * site's accessibility statement.
+ */
+describe('Settings: the accessibility menu on the site', () => {
+  const menuSwitch = () => screen.getByRole('switch', { name: 'settings.site.a11yMenu' });
+
+  it('reads as on for a site that never chose, and sends widgetHidden when hidden', async () => {
+    render(<Settings />);
+    openSiteTab();
+
+    expect(menuSwitch()).toBeChecked();
+    expect(menuSwitch()).toHaveAccessibleDescription('settings.site.a11yMenuHelp');
+    expect(screen.getByRole('link', { name: 'settings.site.a11yStatementLink' }).getAttribute('href')).toMatch(/^https:\/\/[a-z0-9-]+\.lightor\.app\/#accessibility$/);
+
+    fireEvent.click(menuSwitch());
+    expect(menuSwitch()).not.toBeChecked();
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().accessibility).toEqual({ widgetHidden: true });
+    expect(sentPayload()).not.toHaveProperty('hideFromSearch');
+  });
+
+  it('shows a hidden menu as off, and sends it back on', async () => {
+    state.webConfig.data = { ...baseConfig(), accessibility: { widgetHidden: true } };
+    render(<Settings />);
+    openSiteTab();
+
+    expect(menuSwitch()).not.toBeChecked();
+    fireEvent.click(menuSwitch());
+    fireEvent.click(await screen.findByText('common.save'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().accessibility).toEqual({ widgetHidden: false });
+  });
+});

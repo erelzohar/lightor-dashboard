@@ -240,7 +240,10 @@
       "ctaDefaultLead": "Contact Us",
       "ctaTooLong": "At most {{max}} characters",
       "hideFromSearch": "Hide my site from search engines",
-      "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results."
+      "hideFromSearchHelp": "Your site stays up, and anyone with the link can open it. Google may take a few days to drop it from its results.",
+      "a11yMenu": "Accessibility menu on the site",
+      "a11yMenuHelp": "A small button in the site's corner that lets visitors enlarge text, raise contrast and stop animations. The accessibility statement is on the site either way.",
+      "a11yStatementLink": "View the accessibility statement"
     },
     "subdomainInvalid": "Use letters, numbers and hyphens - the link can't start or end with a hyphen",
     "darkMode": "Dark mode",
@@ -530,7 +533,13 @@
     "visibilityHidden": "HIDDEN",
     "visibilityHiddenDesc": "Not visible to clients",
     "showOnWebsite": "Show on website",
-    "visibilityUpdateSuccess": "Visibility updated successfully"
+    "visibilityUpdateSuccess": "Visibility updated successfully",
+    "altLabel": "Picture description",
+    "altPlaceholder": "What does the picture show? (read to blind visitors)",
+    "altSuggest": "Suggest",
+    "altSuggestFailed": "We couldn't suggest a description. Try again, or write one yourself.",
+    "altSuggestBudget": "This month's AI allowance is used up. You can write the description yourself.",
+    "altMissing": "No description"
   },
   "scheduleVacations": {
     "title": "Schedule & Vacations",

@@ -240,7 +240,10 @@
       "ctaDefaultLead": "Contactez-nous",
       "ctaTooLong": "{{max}} caractères au maximum",
       "hideFromSearch": "Masquer mon site des moteurs de recherche",
-      "hideFromSearchHelp": "Votre site reste en ligne, et toute personne qui a le lien peut l'ouvrir. Google peut mettre quelques jours à le retirer de ses résultats."
+      "hideFromSearchHelp": "Votre site reste en ligne, et toute personne qui a le lien peut l'ouvrir. Google peut mettre quelques jours à le retirer de ses résultats.",
+      "a11yMenu": "Menu d'accessibilité sur le site",
+      "a11yMenuHelp": "Un petit bouton dans le coin du site qui permet aux visiteurs d'agrandir le texte, d'augmenter le contraste et d'arrêter les animations. La déclaration d'accessibilité figure sur le site dans tous les cas.",
+      "a11yStatementLink": "Voir la déclaration d'accessibilité"
     },
     "subdomainInvalid": "Utilisez des lettres, des chiffres et des tirets - le lien ne peut pas commencer ni finir par un tiret",
     "darkMode": "Mode sombre",
@@ -530,7 +533,13 @@
     "visibilityHidden": "MASQUÉ",
     "visibilityHiddenDesc": "Non visible par les clients",
     "showOnWebsite": "Afficher sur le site",
-    "visibilityUpdateSuccess": "Visibilité mise à jour avec succès"
+    "visibilityUpdateSuccess": "Visibilité mise à jour avec succès",
+    "altLabel": "Description de l'image",
+    "altPlaceholder": "Que montre l'image ? (lue aux visiteurs aveugles)",
+    "altSuggest": "Suggérer",
+    "altSuggestFailed": "Impossible de suggérer une description. Réessayez ou écrivez-la vous-même.",
+    "altSuggestBudget": "Le quota d'IA du mois est épuisé. Vous pouvez écrire la description vous-même.",
+    "altMissing": "Sans description"
   },
   "scheduleVacations": {
     "title": "Horaires et congés",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox } from 'lucide-react';
+import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -139,6 +139,9 @@ const Settings: React.FC = () => {
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
+  // The accessibility menu (LT-346): absent reads as shown.
+  const a11yMenuHidden = (config: WebConfig | null) => !!config?.accessibility?.widgetHidden;
+  const a11yMenuChanged = !!localWebConfig && !!webConfig && a11yMenuHidden(localWebConfig) !== a11yMenuHidden(webConfig);
 
   const hasChanges = () => {
     if (!localWebConfig || !webConfig) return false;
@@ -163,6 +166,7 @@ const Settings: React.FC = () => {
       conversionChanged ||
       ctaChanged ||
       hideFromSearchChanged ||
+      a11yMenuChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -356,6 +360,7 @@ const Settings: React.FC = () => {
       if (conversionChanged) payload.conversion = draftLeads ? 'lead' : 'book';
       // Only when the owner flipped it (LT-208), as the mode above.
       if (hideFromSearchChanged) payload.hideFromSearch = !!localWebConfig.hideFromSearch;
+      if (a11yMenuChanged) payload.accessibility = { widgetHidden: a11yMenuHidden(localWebConfig) };
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -403,6 +408,7 @@ const Settings: React.FC = () => {
                 ...prev,
                 conversion: isLeadsSite(saved) ? 'lead' : 'book',
                 hideFromSearch: !!saved.hideFromSearch,
+                accessibility: { widgetHidden: a11yMenuHidden(saved) },
                 ...(saved.components ? { components: saved.components } : {}),
               }
             : prev
@@ -964,6 +970,37 @@ const Settings: React.FC = () => {
                 />
               }
             />
+
+            {/* The accessibility menu on the site (LT-346): on unless hidden.
+                The statement is on every site whatever this says. */}
+            <SettingsSection
+              icon={Accessibility}
+              title={t('settings.site.a11yMenu')}
+              titleId="site-a11y-menu-label"
+              description={t('settings.site.a11yMenuHelp')}
+              descriptionId="site-a11y-menu-help"
+              action={
+                <Toggle
+                  id="site-a11y-menu"
+                  checked={!a11yMenuHidden(localWebConfig)}
+                  aria-labelledby="site-a11y-menu-label"
+                  aria-describedby="site-a11y-menu-help"
+                  onCheckedChange={(on) => handleChange('root', 'accessibility', { widgetHidden: !on })}
+                />
+              }
+            >
+              {localWebConfig.subDomain && (
+                <a
+                  href={`https://${localWebConfig.subDomain}.lightor.app/#accessibility`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  {t('settings.site.a11yStatementLink')}
+                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                </a>
+              )}
+            </SettingsSection>
           </motion.div>
         );
       }
