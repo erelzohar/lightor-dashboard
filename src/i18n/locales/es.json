@@ -79,7 +79,7 @@
     "days": "días"
   },
   "validation": {
-    "businessNameMin": "El nombre del negocio debe tener al menos 2 caracteres",
+    "businessNameMin": "El nombre debe tener al menos 2 caracteres",
     "minCancelTimeMin": "El tiempo mínimo de cancelación debe ser de al menos 5 minutos",
     "stateMin": "Introduce una región válida (al menos 2 caracteres)",
     "cityMin": "Introduce una ciudad válida (al menos 2 caracteres)",
@@ -145,7 +145,8 @@
     "subdomainChangedWarning": "Nota: cambiar el enlace hará que tu enlace anterior deje de estar disponible.",
     "copyLink": "Copiar enlace",
     "linkCopied": "¡Enlace copiado!",
-    "businessName": "Nombre del negocio",
+    "businessName": "Nombre que aparece en el sitio",
+    "businessNameHint": "Un negocio, una marca, un evento o un proyecto",
     "businessNameTooltip": "El nombre que aparece en la parte superior de tu sitio, en el sistema y en los mensajes.",
     "minCancelTime": "Tiempo mínimo de cancelación de citas",
     "minCancelTimeTooltip": "Elige el tiempo antes de la cita durante el cual los clientes pueden modificarla",
@@ -169,7 +170,7 @@
     "saveSuccess": "Configuración guardada correctamente",
     "loadFailed": "No se pudo cargar la configuración",
     "tabs": {
-      "general": "Negocio",
+      "general": "General",
       "contact": "Contacto",
       "site": "Sitio",
       "bookings": "Reservas"
@@ -250,7 +251,7 @@
     "darkMode": "Modo oscuro",
     "lightMode": "Modo claro",
     "sections": {
-      "business": "Datos del negocio",
+      "business": "Datos generales",
       "businessDesc": "El nombre y el logo que muestra tu sitio",
       "addressDesc": "Dónde te encuentran los clientes",
       "contactDesc": "Cómo te contactan los clientes - se muestra en tu sitio",
@@ -444,7 +445,7 @@
     "setupSteps": "Lo que configuraremos",
     "step_phone": "Número de teléfono del negocio",
     "step_address": "Dirección del negocio",
-    "step_businessName": "Nombre del negocio",
+    "step_businessName": "Nombre que aparece en el sitio",
     "step_workingHours": "Horario de trabajo",
     "step_serviceTypes": "Tipos de servicio",
     "step_serviceTypesPricing": "Establecer precios de tus servicios",
@@ -1488,7 +1489,7 @@
       "serviceName": "Nombre del servicio",
       "servicePrice": "Precio",
       "serviceImage": "Imagen del servicio",
-      "businessName": "Nombre del negocio o del sitio",
+      "businessName": "Nombre que aparece en el sitio",
       "logo": "Logo",
       "text": "Texto"
     },

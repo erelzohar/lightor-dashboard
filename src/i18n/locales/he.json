@@ -79,7 +79,7 @@
     "days": "ימים"
   },
   "validation": {
-    "businessNameMin": "שם העסק חייב להכיל לפחות 2 תווים",
+    "businessNameMin": "השם חייב להכיל לפחות 2 תווים",
     "minCancelTimeMin": "זמן הביטול המינימלי חייב להיות לפחות 5 דקות",
     "stateMin": "יש להזין שם מדינה תקין (לפחות 2 תווים)",
     "cityMin": "יש להזין שם עיר תקין (לפחות 2 תווים)",
@@ -145,7 +145,8 @@
     "subdomainChangedWarning": "שימו לב: שינוי הקישור יגרום לכך שהקישור הקודם שלכם כבר לא יהיה זמין.",
     "copyLink": "העתק קישור",
     "linkCopied": "הקישור הועתק!",
-    "businessName": "שם העסק",
+    "businessName": "השם שמופיע באתר",
+    "businessNameHint": "עסק, מותג, אירוע או פרויקט",
     "businessNameTooltip": "השם שיופיע בראש האתר שלך, במערכת ובהודעות.",
     "minCancelTime": "זמן מינימלי לעדכון תור",
     "minCancelTimeTooltip": "בחר כמה זמן לפני מועד התור הלקוחות שלך יוכלו לבטל או לעדכן את התור",
@@ -169,7 +170,7 @@
     "saveSuccess": "ההגדרות נשמרו בהצלחה",
     "loadFailed": "אירעה שגיאה בטעינת ההגדרות",
     "tabs": {
-      "general": "העסק",
+      "general": "כללי",
       "contact": "יצירת קשר",
       "site": "האתר",
       "bookings": "תורים"
@@ -250,7 +251,7 @@
     "darkMode": "מצב כהה",
     "lightMode": "מצב בהיר",
     "sections": {
-      "business": "פרטי העסק",
+      "business": "פרטים כלליים",
       "businessDesc": "השם והלוגו שמופיעים באתר שלך",
       "addressDesc": "איפה הלקוחות מוצאים אותך",
       "contactDesc": "איך לקוחות יוצרים איתך קשר - מוצג באתר",
@@ -444,7 +445,7 @@
     "setupSteps": "מה נגדיר",
     "step_phone": "טלפון עסקי",
     "step_address": "כתובת העסק",
-    "step_businessName": "שם העסק",
+    "step_businessName": "השם שמופיע באתר",
     "step_workingHours": "שעות פעילות",
     "step_serviceTypes": "סוגי שירות",
     "step_serviceTypesPricing": "קבע מחירים לשירותים שלך",
@@ -1488,7 +1489,7 @@
       "serviceName": "שם השירות",
       "servicePrice": "מחיר",
       "serviceImage": "תמונת השירות",
-      "businessName": "שם העסק או האתר",
+      "businessName": "השם שמופיע באתר",
       "logo": "לוגו",
       "text": "טקסט"
     },

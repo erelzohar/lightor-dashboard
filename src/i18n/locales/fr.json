@@ -79,7 +79,7 @@
     "days": "jours"
   },
   "validation": {
-    "businessNameMin": "Le nom de l'entreprise doit comporter au moins 2 caractères",
+    "businessNameMin": "Le nom doit contenir au moins 2 caractères",
     "minCancelTimeMin": "Le délai minimum d'annulation doit être d'au moins 5 minutes",
     "stateMin": "Veuillez saisir une région valide (au moins 2 caractères)",
     "cityMin": "Veuillez saisir une ville valide (au moins 2 caractères)",
@@ -145,7 +145,8 @@
     "subdomainChangedWarning": "Remarque : changer le lien rendra votre lien précédent indisponible.",
     "copyLink": "Copier le lien",
     "linkCopied": "Lien copié !",
-    "businessName": "Nom de l'entreprise",
+    "businessName": "Nom affiché sur le site",
+    "businessNameHint": "Une activité, une marque, un événement ou un projet",
     "businessNameTooltip": "Le nom qui apparaît en haut de votre site, dans le système et dans les messages.",
     "minCancelTime": "Délai minimum d'annulation des rendez-vous",
     "minCancelTimeTooltip": "Choisissez le délai avant le rendez-vous pendant lequel les clients peuvent le modifier",
@@ -169,7 +170,7 @@
     "saveSuccess": "Paramètres enregistrés avec succès",
     "loadFailed": "Échec du chargement des paramètres",
     "tabs": {
-      "general": "Entreprise",
+      "general": "Général",
       "contact": "Contact",
       "site": "Site",
       "bookings": "Réservations"
@@ -250,7 +251,7 @@
     "darkMode": "Mode sombre",
     "lightMode": "Mode clair",
     "sections": {
-      "business": "Informations de l'entreprise",
+      "business": "Informations générales",
       "businessDesc": "Le nom et le logo affichés sur votre site",
       "addressDesc": "Où vos clients vous trouvent",
       "contactDesc": "Comment vos clients vous joignent - affiché sur votre site",
@@ -444,7 +445,7 @@
     "setupSteps": "Ce que nous allons configurer",
     "step_phone": "Numéro de téléphone de l'entreprise",
     "step_address": "Adresse de l'entreprise",
-    "step_businessName": "Nom de l'entreprise",
+    "step_businessName": "Nom affiché sur le site",
     "step_workingHours": "Horaires de travail",
     "step_serviceTypes": "Types de services",
     "step_serviceTypesPricing": "Définir les prix de vos services",
@@ -1488,7 +1489,7 @@
       "serviceName": "Nom du service",
       "servicePrice": "Prix",
       "serviceImage": "Image du service",
-      "businessName": "Nom de l'entreprise ou du site",
+      "businessName": "Nom affiché sur le site",
       "logo": "Logo",
       "text": "Texte"
     },

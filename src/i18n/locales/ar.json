@@ -79,7 +79,7 @@
     "days": "أيام"
   },
   "validation": {
-    "businessNameMin": "يجب ألا يقل اسم النشاط عن حرفين",
+    "businessNameMin": "يجب أن يحتوي الاسم على حرفين على الأقل",
     "minCancelTimeMin": "يجب ألا يقل الحد الأدنى لوقت الإلغاء عن 5 دقائق",
     "stateMin": "يرجى إدخال منطقة صحيحة (حرفان على الأقل)",
     "cityMin": "يرجى إدخال مدينة صحيحة (حرفان على الأقل)",
@@ -145,7 +145,8 @@
     "subdomainChangedWarning": "ملاحظة: تغيير الرابط يعني أن رابطك السابق لن يعود متاحًا.",
     "copyLink": "نسخ الرابط",
     "linkCopied": "تم نسخ الرابط!",
-    "businessName": "اسم النشاط التجاري",
+    "businessName": "الاسم الظاهر في الموقع",
+    "businessNameHint": "نشاط تجاري أو علامة تجارية أو حدث أو مشروع",
     "businessNameTooltip": "الاسم الذي يظهر في أعلى موقعك وفي النظام والرسائل.",
     "minCancelTime": "الحد الأدنى لوقت إلغاء المواعيد",
     "minCancelTimeTooltip": "اختر المدة قبل الموعد التي يمكن للعملاء خلالها إجراء التعديل",
@@ -169,7 +170,7 @@
     "saveSuccess": "تم حفظ الإعدادات بنجاح",
     "loadFailed": "فشل تحميل الإعدادات",
     "tabs": {
-      "general": "النشاط التجاري",
+      "general": "عام",
       "contact": "الاتصال",
       "site": "الموقع",
       "bookings": "الحجوزات"
@@ -250,7 +251,7 @@
     "darkMode": "الوضع الداكن",
     "lightMode": "الوضع الفاتح",
     "sections": {
-      "business": "تفاصيل النشاط التجاري",
+      "business": "تفاصيل عامة",
       "businessDesc": "الاسم والشعار اللذان يظهران في موقعك",
       "addressDesc": "أين يجدك العملاء",
       "contactDesc": "كيف يتواصل معك العملاء - يظهر في موقعك",
@@ -444,7 +445,7 @@
     "setupSteps": "ما الذي سنعدّه",
     "step_phone": "رقم هاتف النشاط التجاري",
     "step_address": "عنوان النشاط التجاري",
-    "step_businessName": "اسم النشاط التجاري",
+    "step_businessName": "الاسم الظاهر في الموقع",
     "step_workingHours": "ساعات العمل",
     "step_serviceTypes": "أنواع الخدمات",
     "step_serviceTypesPricing": "تحديد أسعار خدماتك",
@@ -1488,7 +1489,7 @@
       "serviceName": "اسم الخدمة",
       "servicePrice": "السعر",
       "serviceImage": "صورة الخدمة",
-      "businessName": "اسم النشاط أو الموقع",
+      "businessName": "الاسم الظاهر في الموقع",
       "logo": "الشعار",
       "text": "نص"
     },

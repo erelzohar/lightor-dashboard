@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, StoreIcon, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink } from 'lucide-react';
+import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -487,7 +487,8 @@ const Settings: React.FC = () => {
       case 'general':
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <SettingsSection icon={StoreIcon} title={t('settings.sections.business')} description={t('settings.sections.businessDesc')}>
+            {/* The name of a business, a brand, an event or a project (LT-370): "general", not "the business". */}
+            <SettingsSection icon={Info} title={t('settings.sections.business')} description={t('settings.sections.businessDesc')}>
               <div className="max-w-md">
                 <Input
                   label={
@@ -499,7 +500,8 @@ const Settings: React.FC = () => {
                       />
                     </>
                   }
-                  leftIcon={<StoreIcon className="w-4 h-4 text-gray-400" />}
+                  leftIcon={<Type className="w-4 h-4 text-gray-400" />}
+                  helperText={t('settings.businessNameHint')}
                   value={localWebConfig.businessName}
                   error={errors?.businessName}
                   onChange={(e) => handleChange('root', 'businessName', e.target.value)}

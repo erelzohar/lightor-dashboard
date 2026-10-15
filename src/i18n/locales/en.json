@@ -79,7 +79,7 @@
     "days": "days"
   },
   "validation": {
-    "businessNameMin": "Business name must be at least 2 characters",
+    "businessNameMin": "The name must be at least 2 characters",
     "minCancelTimeMin": "Minimum cancellation time must be at least 5 minutes",
     "stateMin": "Please enter a valid state (at least 2 characters)",
     "cityMin": "Please enter a valid city (at least 2 characters)",
@@ -145,7 +145,8 @@
     "subdomainChangedWarning": "Note: Changing the link means your previous link will no longer be available.",
     "copyLink": "Copy link",
     "linkCopied": "Link copied!",
-    "businessName": "Business Name",
+    "businessName": "Name shown on the site",
+    "businessNameHint": "A business, a brand, an event or a project",
     "businessNameTooltip": "The name that appears at the top of your site, in the system and in messages.",
     "minCancelTime": "Appointments Minimum Cancellation Time",
     "minCancelTimeTooltip": "Choose the amount of time before the appointment that clients may update",
@@ -169,7 +170,7 @@
     "saveSuccess": "Settings saved successfully",
     "loadFailed": "Failed to load settings",
     "tabs": {
-      "general": "Business",
+      "general": "General",
       "contact": "Contact",
       "site": "Site",
       "bookings": "Bookings"
@@ -250,7 +251,7 @@
     "darkMode": "Dark mode",
     "lightMode": "Light mode",
     "sections": {
-      "business": "Business details",
+      "business": "General details",
       "businessDesc": "The name and logo your site shows",
       "addressDesc": "Where customers find you",
       "contactDesc": "How customers reach you - shown on your site",
@@ -444,7 +445,7 @@
     "setupSteps": "What we'll set up",
     "step_phone": "Business phone number",
     "step_address": "Business address",
-    "step_businessName": "Business name",
+    "step_businessName": "Name shown on the site",
     "step_workingHours": "Working hours",
     "step_serviceTypes": "Service types",
     "step_serviceTypesPricing": "Set prices for your services",
@@ -1488,7 +1489,7 @@
       "serviceName": "Service name",
       "servicePrice": "Price",
       "serviceImage": "Service picture",
-      "businessName": "Business or site name",
+      "businessName": "Name shown on the site",
       "logo": "Logo",
       "text": "Text"
     },

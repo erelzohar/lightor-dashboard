@@ -1,5 +1,5 @@
 import React from 'react';
-import { Store, MessageSquare, Globe, CalendarCheck } from 'lucide-react';
+import { Info, MessageSquare, Globe, CalendarCheck } from 'lucide-react';
 import Tabs from '../ui/Tabs';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +19,7 @@ const WebConfigTabs: React.FC<WebConfigTabsProps> = ({ activeTab, onTabChange, b
   const { t } = useTranslation();
 
   const tabs = [
-    { id: 'general', label: t('settings.tabs.general'), icon: <Store size={18} /> },
+    { id: 'general', label: t('settings.tabs.general'), icon: <Info size={18} /> },
     { id: 'contact', label: t('settings.tabs.contact'), icon: <MessageSquare size={18} /> },
     { id: 'site', label: t('settings.tabs.site'), icon: <Globe size={18} /> },
     ...(bookings ? [{ id: 'bookings', label: t('settings.tabs.bookings'), icon: <CalendarCheck size={18} /> }] : []),
