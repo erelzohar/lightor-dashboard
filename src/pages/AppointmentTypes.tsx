@@ -26,6 +26,7 @@ import { resolveImage } from '../utils/images';
 import { Toggle } from '../components/ui/liquid-toggle';
 import { ComingSoonRow } from '../components/ui/ComingSoon';
 import { tabsListVariants, tabsTriggerVariants } from '../components/ui/segmented-tabs';
+import Dropdown from '../components/ui/dropdown';
 
 
 const GLASS: React.CSSProperties = {
@@ -518,16 +519,15 @@ const AppointmentTypes: React.FC = () => {
 
                         {sessions.map((session, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <select
-                              value={session.weekday}
-                              onChange={e => updateSession(index, { weekday: Number(e.target.value) })}
-                              className="flex-1 min-w-0 rounded-xl text-sm py-2.5 px-3 bg-transparent text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/50"
+                            <Dropdown
+                              value={String(session.weekday)}
+                              onChange={v => updateSession(index, { weekday: Number(v) })}
+                              ariaLabel={t('appointmentTypes.class.sessions')}
+                              items={dayNames.map((day, weekday) => ({ value: String(weekday), label: day }))}
+                              rootClassName="flex-1 min-w-0"
+                              className="rounded-xl text-sm sm:text-sm py-2.5 px-3 bg-transparent dark:bg-transparent text-gray-900 dark:text-white shadow-none"
                               style={GLASS_INPUT}
-                            >
-                              {dayNames.map((day, weekday) => (
-                                <option key={weekday} value={weekday}>{day}</option>
-                              ))}
-                            </select>
+                            />
                             <input
                               type="time"
                               value={session.time}

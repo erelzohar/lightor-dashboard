@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { choose } from '../helpers/dropdown';
 import Settings from '../../pages/Settings';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import type { BookingField, WebConfig } from '../../types';
@@ -108,7 +109,7 @@ describe('Settings: booking questions', () => {
     expect(screen.queryByText('common.save')).toBeNull();
     fireEvent.click(screen.getByText('settings.bookingFields.addQuestion'));
     fireEvent.change(screen.getByLabelText('settings.bookingFields.label'), { target: { value: ' Full address ' } });
-    fireEvent.change(screen.getByLabelText('settings.bookingFields.type'), { target: { value: 'address' } });
+    choose(screen.getByLabelText('settings.bookingFields.type'), 'address');
 
     fireEvent.click(await screen.findByText('common.save'));
 

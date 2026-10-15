@@ -1,4 +1,5 @@
 import React, { forwardRef, useId } from "react";
+import Dropdown from "./dropdown";
 
 export interface SelectOption {
   label: string | JSX.Element;
@@ -7,89 +8,97 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+/** What `onChange` gets: the shape of a select's change event that callers read. */
+export interface SelectChange {
+  target: { value: string; name?: string };
+}
+
+interface SelectProps {
+  id?: string;
+  name?: string;
+  value?: string | number;
+  onChange?: (e: SelectChange) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
   label?: string | JSX.Element;
   error?: string;
   helperText?: string;
   leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
   options: SelectOption[];
   fullWidth?: boolean;
+  /** Classes for the box itself (as the native select had them). */
+  className?: string;
 }
 
-const Select = forwardRef<HTMLSelectElement, SelectProps>(
+/**
+ * LT-365: every select box in the dashboard is the animated dropdown
+ * (`ui/dropdown`), behind the API the native select had: `value`, `options`,
+ * and `onChange(e)` with `e.target.value` a string, so no caller changed.
+ */
+const Select = forwardRef<HTMLButtonElement, SelectProps>(
   (
     {
+      id,
+      name,
+      value,
+      onChange,
+      disabled,
+      placeholder,
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedBy,
       label,
       error,
       helperText,
       leftIcon,
-      rightIcon,
       options,
       fullWidth = true,
       className = "",
-      ...props
     },
     ref
   ) => {
+    const auto = useId();
+    const triggerId = id ?? `${auto}-select`;
+    const labelId = `${triggerId}-label`;
     // LT-362: as in Input, the label and messages belong to the field.
-    const autoId = useId();
-    const id = props.id ?? autoId;
-    const errorId = `${id}-error`;
-    const helperId = `${id}-helper`;
-    const describedBy = [props['aria-describedby'], error ? errorId : helperText ? helperId : undefined].filter(Boolean).join(' ') || undefined;
-    const selectClasses =
-      "px-4 py-3 rounded-xl border text-base sm:text-[0.9375rem] appearance-none " +
-      "focus:outline-none focus:ring-[0.1875rem] " +
-      "transition-all duration-300 shadow-sm " +
-      "bg-white dark:bg-dark-surface dark:border-gray-700/80 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 " +
-      (error
-        ? 'border-red-300 dark:border-red-500/50 focus:border-red-500 focus:ring-red-500/20 ' 
-        : 'border-gray-200 focus:border-primary focus:ring-primary/20 ') +
-      (leftIcon ? "pl-11 " : "") +
-      (rightIcon ? "pr-11 " : "pr-10 ") +
-      (fullWidth ? "w-full " : "") +
-      className;
+    const errorId = `${triggerId}-error`;
+    const helperId = `${triggerId}-helper`;
+    const describedBy = [ariaDescribedBy, error ? errorId : helperText ? helperId : undefined].filter(Boolean).join(" ") || undefined;
+    const items = options.map((opt) => ({
+      value: String(opt.value),
+      label: opt.label,
+      disabled: opt.disabled,
+    }));
 
     return (
-      <div
-        className={`${fullWidth ? "w-full" : ""} ${props.disabled ? "opacity-60" : ""
-          }`}
-      >
+      <div className={`${fullWidth ? "w-full" : ""} ${disabled ? "opacity-60" : ""}`}>
         {label && (
           <label
-            htmlFor={id}
+            id={labelId}
+            htmlFor={triggerId}
             className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5"
           >
             {label}
           </label>
         )}
 
-        <div className="relative flex items-center">
-          {leftIcon && (
-            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 dark:text-gray-500">
-              {leftIcon}
-            </div>
-          )}
-
-          <select ref={ref} className={selectClasses} aria-invalid={error ? true : undefined} {...props} id={id} aria-describedby={describedBy}>
-            {options.map((opt) => (
-              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Custom Chevron icon */}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400 dark:text-gray-500">
-            {rightIcon || (
-              <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            )}
-          </div>
-        </div>
+        <Dropdown
+          ref={ref}
+          id={triggerId}
+          labelledBy={label ? labelId : undefined}
+          ariaLabel={ariaLabel}
+          describedBy={describedBy}
+          items={items}
+          value={value === undefined ? undefined : String(value)}
+          onChange={(v) => onChange?.({ target: { value: v, name } })}
+          disabled={disabled}
+          invalid={!!error}
+          placeholder={placeholder}
+          icon={leftIcon}
+          className={className}
+          rootClassName={fullWidth ? "w-full" : "inline-block"}
+        />
 
         {error && (
           <p id={errorId} className="mt-1 text-sm text-red-500">{error}</p>

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
+import Dropdown from '../ui/dropdown';
 import FieldTooltip from './FieldTooltip';
 import type { AppointmentType, BookingField, BookingFieldType } from '../../types';
 import {
@@ -394,17 +395,17 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
               {t('settings.bookingFields.preview')}
             </p>
             {services.length > 0 && (
-              <select
+              <Dropdown
                 value={previewService}
-                onChange={(e) => setPreviewService(e.target.value)}
-                aria-label={t('settings.bookingFields.appliesTo')}
-                className="text-xs rounded-lg border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-dark-surface text-gray-600 dark:text-gray-300 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="*">{t('settings.bookingFields.allServices')}</option>
-                {services.map((service) => (
-                  <option key={service._id} value={service._id}>{service.name}</option>
-                ))}
-              </select>
+                onChange={setPreviewService}
+                ariaLabel={t('settings.bookingFields.appliesTo')}
+                items={[
+                  { value: '*', label: t('settings.bookingFields.allServices') },
+                  ...services.map((service) => ({ value: service._id, label: service.name })),
+                ]}
+                rootClassName="inline-block"
+                className="rounded-lg px-2.5 py-1 text-xs sm:text-xs text-gray-600 dark:text-gray-300 shadow-none"
+              />
             )}
           </div>
 

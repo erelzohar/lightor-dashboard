@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { choose } from '../helpers/dropdown';
 import toast from 'react-hot-toast';
 import OwnerBookingModal from '../../components/customers/OwnerBookingModal';
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
@@ -166,7 +167,7 @@ describe('OwnerBookingModal: booking questions', () => {
     expect((screen.getByLabelText(/Address/) as HTMLInputElement).value).toBe('  Herzl 12, Tel Aviv ');
     expect(screen.queryByLabelText(/Car model/)).toBeNull();
     fireEvent.click(screen.getByLabelText(/I have parking/));
-    fireEvent.change(screen.getByLabelText(/Floor/), { target: { value: 'Upstairs' } });
+    choose(screen.getByLabelText(/Floor/), 'Upstairs');
     fireEvent.click(submitButton());
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));

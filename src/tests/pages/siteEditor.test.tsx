@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
+import { choose } from '../helpers/dropdown';
 import toast from 'react-hot-toast';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import SiteEditor from '../../pages/SiteEditor';
@@ -445,7 +446,7 @@ describe('the site editor (LT-249)', () => {
       await fromSite({ type: 'LT_READY' });
       await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
 
-      fireEvent.change(screen.getByLabelText('siteEditor.theme.headingFont'), { target: { value: 'playfair' } });
+      choose(screen.getByLabelText('siteEditor.theme.headingFont'), 'playfair');
       await act(async () => answer({ config: warmer, message: 'Done' }));
 
       await waitFor(() => {

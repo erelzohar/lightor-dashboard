@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+import { choose, optionOf } from '../helpers/dropdown';
 import BookingFieldsEditor from '../../components/settings/BookingFieldsEditor';
 import { rememberedDetails } from '../../utils/bookingFields';
 import type { AppointmentType, BookingField } from '../../types';
@@ -77,19 +78,18 @@ describe('BookingFieldsEditor', () => {
       field({ key: 'car', label: 'Car', type: 'text' }),
     ]);
 
-    const [first, second] = screen.getAllByLabelText('settings.bookingFields.type') as HTMLSelectElement[];
-    const option = (select: HTMLSelectElement) =>
-      within(select).getByText('settings.bookingFields.types.address') as HTMLOptionElement;
+    const [first, second] = screen.getAllByLabelText('settings.bookingFields.type');
 
     // The field that IS the address can keep it; any other field cannot pick it.
-    expect(option(first).disabled).toBe(false);
-    expect(option(second).disabled).toBe(true);
+    expect(optionOf(first, 'address')).not.toHaveAttribute('aria-disabled');
+    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
+    expect(optionOf(second, 'address')).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('seeds two empty options when a question becomes a choice, and drops them when it stops being one', () => {
     const onChange = renderEditor([field({ key: 'parking', label: 'Parking' })]);
 
-    fireEvent.change(screen.getByLabelText('settings.bookingFields.type'), { target: { value: 'choice' } });
+    choose(screen.getByLabelText('settings.bookingFields.type'), 'choice');
     let [next] = onChange.mock.calls[0] as [BookingField[]];
     expect(next[0]).toMatchObject({ key: 'parking', type: 'choice', options: ['', ''] });
 
@@ -102,7 +102,7 @@ describe('BookingFieldsEditor', () => {
       />
     );
     const selects = screen.getAllByLabelText('settings.bookingFields.type');
-    fireEvent.change(selects[selects.length - 1], { target: { value: 'confirm' } });
+    choose(selects[selects.length - 1], 'confirm');
     [next] = onChange.mock.calls[0] as [BookingField[]];
     expect(next[0].type).toBe('confirm');
     expect(next[0]).not.toHaveProperty('options');
@@ -138,12 +138,12 @@ describe('BookingFieldsEditor', () => {
     const onChange = renderEditor([field({ label: 'Where' }), field({ key: 'old', label: 'Old', type: 'text' })]);
 
     const types = screen.getAllByLabelText('settings.bookingFields.type');
-    fireEvent.change(types[0], { target: { value: 'address' } });
+    choose(types[0], 'address');
     let [next] = onChange.mock.calls[0] as [BookingField[]];
     expect(next[0]).toMatchObject({ type: 'address', remember: true });
 
     onChange.mockClear();
-    fireEvent.change(types[1], { target: { value: 'address' } });
+    choose(types[1], 'address');
     [next] = onChange.mock.calls[0] as [BookingField[]];
     expect(next[1].type).toBe('address');
     expect(next[1].remember).toBeUndefined();
