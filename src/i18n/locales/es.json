@@ -1344,6 +1344,7 @@
       "failed": "No se pudo reservar la cita",
       "addressSuggestions": "Sugerencias de direcciones",
       "noAddresses": "No hay direcciones que coincidan",
+      "chooseAddress": "Elige una dirección de las sugerencias",
       "session": "Sesión",
       "pickSession": "Elige una sesión",
       "noSessions": "No hay sesiones en esta fecha",

@@ -1344,6 +1344,7 @@
       "failed": "Impossible de réserver le rendez-vous",
       "addressSuggestions": "Suggestions d'adresses",
       "noAddresses": "Aucune adresse correspondante",
+      "chooseAddress": "Choisissez une adresse parmi les suggestions",
       "session": "Séance",
       "pickSession": "Choisir une séance",
       "noSessions": "Aucune séance à cette date",

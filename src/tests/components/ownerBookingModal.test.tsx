@@ -304,7 +304,27 @@ describe('OwnerBookingModal: address suggestions', () => {
     expect(await book()).toEqual({ key: 'address', value: 'הרצל 12, תל אביב-יפו', placeId: 'ChIJ-herzl-12', lat: 32.06, lng: 34.77 });
   });
 
-  it('typing after a choice sends plain text again', async () => {
+  // LT-351: while the suggestions are live, a typed address must be one of them.
+  it('refuses a typed address never chosen from the suggestions, under its field, until one is', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
+    renderModal();
+    await toDetails();
+    const input = screen.getByLabelText(/Address/);
+    await waitFor(() => expect(input).toHaveAttribute('role', 'combobox'));
+
+    fireEvent.change(input, { target: { value: 'הרצל 12' } });
+    fireEvent.click(submitButton());
+    expect(await screen.findByText('customers.booking.chooseAddress')).toBeTruthy();
+    expect(createAppointment).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(input);
+
+    fireEvent.click(await screen.findByRole('option', { name: /הרצל 12/ }));
+    await waitFor(() => expect(resolveAddressSuggestion).toHaveBeenCalled());
+    expect(screen.queryByText('customers.booking.chooseAddress')).toBeNull();
+    expect(await book()).toEqual({ key: 'address', value: 'הרצל 12, תל אביב-יפו', placeId: 'ChIJ-herzl-12', lat: 32.06, lng: 34.77 });
+  });
+
+  it('typing after a choice must be chosen again', async () => {
     vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
     renderModal();
     await toDetails();
@@ -315,7 +335,17 @@ describe('OwnerBookingModal: address suggestions', () => {
     await waitFor(() => expect(resolveAddressSuggestion).toHaveBeenCalled());
 
     fireEvent.change(input, { target: { value: 'הרצל 12, דירה 4' } });
-    expect(await book()).toEqual({ key: 'address', value: 'הרצל 12, דירה 4' });
+    fireEvent.click(submitButton());
+    expect(await screen.findByText('customers.booking.chooseAddress')).toBeTruthy();
+    expect(createAppointment).not.toHaveBeenCalled();
+  });
+
+  it('a blank address is still the owner\'s call', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key');
+    renderModal();
+    await toDetails();
+    await waitFor(() => expect(screen.getByLabelText(/Address/)).toHaveAttribute('role', 'combobox'));
+    expect(await book()).toBeUndefined();
   });
 
   it('without a key it never loads Google, and the field is plain text', async () => {

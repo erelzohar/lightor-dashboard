@@ -22,9 +22,10 @@ import GoogleMapsLogo from '../ui/GoogleMapsLogo';
  * place id and coordinates), any further keystroke drops back to text.
  *
  * Degrades, never blocks: without a key, with the script blocked, or with
- * Google refusing, this is the plain input the field always was. The owner
- * is never made to choose from the list — the server spares the owner the
- * form's rules, and an address Google does not know is still an address.
+ * Google refusing, this is the plain input the field always was, and the
+ * parent hears (onActiveChange) so it stops insisting on a chosen address.
+ * While the suggestions are live, a typed address must be one of them
+ * (LT-351), as on the public form.
  *
  * The list sits in the flow under the input, not over it: the modal scrolls
  * and is a containing block (backdrop-filter, a transform), so a floating
@@ -41,10 +42,13 @@ export interface AddressAutocompleteProps {
   label: string | JSX.Element;
   value: string | AddressAnswer | undefined;
   onChange: (value: string | AddressAnswer) => void;
+  /** True while suggestions are live, i.e. while a typed address must be chosen from them. */
+  onActiveChange?: (active: boolean) => void;
+  error?: string;
   maxLength?: number;
 }
 
-const AddressAutocomplete = ({ id, label, value, onChange, maxLength }: AddressAutocompleteProps) => {
+const AddressAutocomplete = ({ id, label, value, onChange, onActiveChange, error, maxLength }: AddressAutocompleteProps) => {
   const { t, i18n } = useTranslation();
   // The owner's UI language: suggestions come in it, and the line they read
   // is what is stored. 'en-US' and the like are cut to the language.
@@ -60,6 +64,8 @@ const AddressAutocomplete = ({ id, label, value, onChange, maxLength }: AddressA
   const ticket = useRef(0);
   const blurred = useRef(false);
   const mounted = useRef(true);
+  const onActiveRef = useRef(onActiveChange);
+  onActiveRef.current = onActiveChange;
 
   const listId = `${id}-listbox`;
   const optionId = (index: number) => `${id}-option-${index}`;
@@ -87,6 +93,16 @@ const AddressAutocomplete = ({ id, label, value, onChange, maxLength }: AddressA
       cancelled = true;
     };
   }, [status]);
+
+  useEffect(() => {
+    onActiveRef.current?.(active);
+  }, [active]);
+  useEffect(
+    () => () => {
+      onActiveRef.current?.(false);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!active || query === null) return;
@@ -208,6 +224,7 @@ const AddressAutocomplete = ({ id, label, value, onChange, maxLength }: AddressA
         label={label}
         value={text}
         maxLength={maxLength}
+        error={error}
         leftIcon={<MapPin className="w-4 h-4 text-gray-400" />}
         autoComplete={active ? 'off' : 'street-address'}
         onChange={handleChange}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -49,6 +49,9 @@ import type { AppointmentAnswer, AppointmentType, BookingField } from '../../typ
  * same ones a customer sees, so a walk-in arrives with its address too —
  * with Google's suggestions under it, as on the public form (LT-206).
  * Required is marked but never enforced here: the server spares the owner.
+ * An address, though, is one of Google's while its suggestions are live
+ * (LT-351), as on the public form: a typed line that was never chosen is
+ * refused under its field; left blank, it is still the owner's call.
  * A customer's details kept from their last booking (LT-217, an address)
  * fill those questions in; the owner sees them and may change them.
  *
@@ -134,6 +137,10 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   // applies is still there.
   // An address chosen from Google's suggestions carries its place (LT-206).
   const [answers, setAnswers] = useState<Record<string, string | AddressAnswer>>({});
+  // The address questions whose suggestions are live (LT-351), and those
+  // refused for a line that was never chosen from them.
+  const [liveAddress, setLiveAddress] = useState<Record<string, boolean>>({});
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   // The month's taken times and class sessions (LT-211), tagged with what
   // they were fetched for: another month's never passes for this one's, it
   // reads as loading until the answer arrives.
@@ -168,6 +175,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     setName('');
     setPhone('');
     setAnswers(keptAnswers(rememberedAnswers));
+    setAddressErrors({});
   }, [open, appointmentTypes, presetTypeId, presetTimestamp, rememberedAnswers, timeZone]);
 
   const selectedType = appointmentTypes.find((ty) => ty._id === typeId);
@@ -267,7 +275,27 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
     [webConfig?.bookingFields, typeId]
   );
 
-  const setAnswer = (key: string, value: string | AddressAnswer) => setAnswers((prev) => ({ ...prev, [key]: value }));
+  const setAnswer = (key: string, value: string | AddressAnswer) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+    setAddressErrors((prev) => {
+      if (!(key in prev)) return prev;
+      const rest = { ...prev };
+      delete rest[key];
+      return rest;
+    });
+  };
+  const onAddressActive = useCallback((key: string, active: boolean) => {
+    setLiveAddress((prev) => (prev[key] === active ? prev : { ...prev, [key]: active }));
+  }, []);
+
+  // A typed address that was never chosen while choosing one was possible.
+  const unchosenAddresses = () =>
+    Object.fromEntries(
+      questions
+        .filter((q) => q.type === 'address' && liveAddress[q.key])
+        .filter((q) => !isAddressAnswer(answers[q.key]) && answerText(answers[q.key]).trim() !== '')
+        .map((q) => [q.key, t('customers.booking.chooseAddress')])
+    );
 
   // Key + value only, for the questions in scope; the server rebuilds label
   // and type from the catalog. An unticked confirm is simply absent. A chosen
@@ -287,6 +315,12 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.user || !selectedType || !ready) return;
+    const refused = unchosenAddresses();
+    if (Object.keys(refused).length) {
+      setAddressErrors(refused);
+      document.getElementById(`booking-q-${Object.keys(refused)[0]}`)?.focus();
+      return;
+    }
     setSaving(true);
     try {
       await createAppointment({
@@ -527,6 +561,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                           value={answers[q.key]}
                           maxLength={ANSWER_MAX_LENGTH.address}
                           onChange={(next) => setAnswer(q.key, next)}
+                          onActiveChange={(active) => onAddressActive(q.key, active)}
+                          error={addressErrors[q.key]}
                         />
                       );
                     }

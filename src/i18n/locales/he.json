@@ -1344,6 +1344,7 @@
       "failed": "לא ניתן לקבוע את התור",
       "addressSuggestions": "הצעות לכתובת",
       "noAddresses": "לא נמצאו כתובות מתאימות",
+      "chooseAddress": "בחר כתובת מתוך ההצעות",
       "session": "מפגש",
       "pickSession": "בחר מפגש",
       "noSessions": "אין מפגשים בתאריך זה",

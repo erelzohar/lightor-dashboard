@@ -59,6 +59,10 @@ const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  // Colours only, never `transition-all` (LT-351): a loading button grows by
+  // its spinner while it and its neighbours fade to disabled, and iPhone
+  // Safari left the old paint behind — a second "קבע" and the tail of
+  // "ביטול" beside the button. Disabled now dims at once.
   return (
     <motion.button
       whileTap={{ scale: 0.98 }}
@@ -67,7 +71,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={isLoading || disabled}
       className={`
         inline-flex items-center justify-center
-        rounded-xl font-medium transition-all
+        rounded-xl font-medium transition-colors
         focus:outline-none focus:ring-2 focus:ring-primary/20
         disabled:opacity-50 disabled:cursor-not-allowed
         ${getVariantClasses()} 

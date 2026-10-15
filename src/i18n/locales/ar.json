@@ -1344,6 +1344,7 @@
       "failed": "تعذّر حجز الموعد",
       "addressSuggestions": "اقتراحات العناوين",
       "noAddresses": "لا توجد عناوين مطابقة",
+      "chooseAddress": "اختر عنوانًا من الاقتراحات",
       "session": "الحصة",
       "pickSession": "اختر حصة",
       "noSessions": "لا توجد حصص في هذا التاريخ",
