@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor, act } from '@testing-library/react';
 import AppointmentsList from '../../components/appointments/AppointmentsList';
 import { Appointment, AppointmentType } from '../../types';
 import { getClassSessions } from '../../services/appointmentsApi';
+import { forgetClassSessions } from '../../hooks/useClassSessions';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 
 vi.mock('react-i18next', () => ({
@@ -306,12 +307,34 @@ describe('a class nobody has booked yet', () => {
     store.state.appointments.appointmentTypes = [];
   });
 
+  // LT-358: the classes are a request of their own; the list waits for them
+  // instead of drawing the bookings first and the classes a moment later.
+  it('shows the bookings and the classes together', async () => {
+    forgetClassSessions();
+    let answer: (sessions: unknown) => void = () => undefined;
+    vi.mocked(getClassSessions).mockReturnValue(new Promise((resolve) => { answer = resolve; }) as never);
+    const massage: AppointmentType = { _id: 't9', name: 'Massage', webConfig_id: 'w1', price: '100', durationMS: String(HOUR) };
+    const noa: Appointment = {
+      _id: 'b9', name: 'Noa Levi', type: massage, phone: '+972500000009', status: 'scheduled', user_id: 'u1', timestamp: String(Date.now() + 26 * HOUR),
+    };
+    render(<AppointmentsList appointments={[noa]} onAppointmentClick={vi.fn()} />);
+
+    expect(screen.getByTestId('appointments-loading')).toBeTruthy();
+    expect(screen.queryByText('Noa Levi')).toBeNull();
+
+    await act(async () => { answer([listing(AT)]); });
+    expect(await screen.findByText('appointments.session.empty')).toBeTruthy();
+    expect(screen.getByText('Noa Levi')).toBeTruthy();
+    expect(screen.queryByTestId('appointments-loading')).toBeNull();
+  });
+
   it("shows the coming week's empty session and seats its first participant from the roster", async () => {
     render(<AppointmentsList appointments={[]} onAppointmentClick={vi.fn()} />);
 
     expect(await screen.findByText('appointments.session.empty')).toBeTruthy();
     const [, from, to] = vi.mocked(getClassSessions).mock.calls[0];
-    expect(Number(to) - Number(from)).toBe(7 * 24 * HOUR);
+    // From the start of today, so a later visit the same day finds them read (LT-358).
+    expect(Number(to) - Number(from)).toBe(8 * 24 * HOUR);
 
     fireEvent.click(screen.getByText('Group training'));
     const dialog = screen.getByRole('dialog');

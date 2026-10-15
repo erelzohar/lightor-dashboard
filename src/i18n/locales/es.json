@@ -324,6 +324,8 @@
     }
   },
   "appointments": {
+    "nothingThisDay": "No hay citas este día",
+    "nothingTheseDays": "No hay citas estos días",
     "title": "Citas",
     "description": "Ver y gestionar",
     "newAppointment": "Nueva cita",

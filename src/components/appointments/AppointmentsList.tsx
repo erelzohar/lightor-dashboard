@@ -5,14 +5,14 @@ import Card from '../ui/Card';
 import { Appointment } from '../../types';
 import { formatTime } from '../../utils/dateUtils';
 import { useTheme } from '../../contexts/ThemeContext';
-import { isToday, isTomorrow, format } from 'date-fns';
+import { isToday, isTomorrow, format, startOfDay } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import { groupSessions, isGroupSession, withListedSessions } from '../../utils/sessions';
 import { useOpenSession } from '../../hooks/useOpenSession';
-import { useClassSessions } from '../../hooks/useClassSessions';
+import { useClassSessionsState } from '../../hooks/useClassSessions';
 import SessionCard from './SessionCard';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
@@ -69,11 +69,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     }
   };
 
-  // The coming week's class sessions nobody has booked yet (LT-211), from the
-  // moment the list opened: it lists what is ahead.
+  // The coming week's class sessions nobody has booked yet (LT-211): those
+  // ahead of the moment the list opened. Read from the start of the day, so a
+  // visit later the same day finds them already read (LT-358).
   const [openedAt] = useState(() => Date.now());
-  const listed = useClassSessions(openedAt, openedAt + EMPTY_CLASSES_DAYS * DAY_MS);
-  const upcomingListed = useMemo(() => listed.filter((session) => session.startMs > openedAt), [listed, openedAt]);
+  const fromDay = startOfDay(openedAt).valueOf();
+  const { sessions: listed, pending: classesPending } = useClassSessionsState(fromDay, fromDay + (EMPTY_CLASSES_DAYS + 1) * DAY_MS);
+  const upcomingListed = useMemo(
+    () => listed.filter((session) => session.startMs > openedAt && session.startMs <= openedAt + EMPTY_CLASSES_DAYS * DAY_MS),
+    [listed, openedAt]
+  );
 
   // Bookings sharing a service and a start time are one session (LT-152). A
   // one-to-one business has one participant per session, so every card below
@@ -112,7 +117,15 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
-        {sessions.length > 0 ? (
+        {/* The bookings and the classes show together (LT-358): the
+            classes are a request of their own and used to arrive a few
+            seconds after the list. A refetch keeps what is shown. */}
+        {classesPending || (loading && sessions.length === 0) ? (
+          <div className="py-16 flex flex-col items-center gap-3" role="status" data-testid="appointments-loading">
+            <span className="w-9 h-9 rounded-full border-[3px] border-primary/25 border-t-primary animate-spin" aria-hidden="true" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('appointments.loading')}</p>
+          </div>
+        ) : sessions.length > 0 ? (
           <div className="space-y-4">
             {sessions.map((session, i) => {
               const appointment = session.participants[0];
@@ -202,11 +215,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               </motion.div>
               );
             })}
-          </div>
-        ) : loading ? (
-          <div className="py-16 flex flex-col items-center gap-3" role="status" data-testid="appointments-loading">
-            <span className="w-9 h-9 rounded-full border-[3px] border-primary/25 border-t-primary animate-spin" aria-hidden="true" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t('appointments.loading')}</p>
           </div>
         ) : (
           <div className="py-12 text-center">

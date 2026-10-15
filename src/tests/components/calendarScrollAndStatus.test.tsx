@@ -75,7 +75,8 @@ describe('calendar auto-scroll (LT-315, H5)', () => {
     vi.setSystemTime(new Date(today.getFullYear(), today.getMonth(), today.getDate(), 10, 0));
     const scroll = vi.mocked(Element.prototype.scrollTo);
 
-    render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} />);
+    // Every hour at full height (LT-359 folds the empty ones otherwise).
+    render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
     // 10:00 is 4 hours of 88px below the 06:00 top; 160px of it shows above.
     expect(scroll).toHaveBeenCalledTimes(1);
     expect(scroll).toHaveBeenLastCalledWith({ top: 4 * 88 - 160 });

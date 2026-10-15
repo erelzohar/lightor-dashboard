@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { dropVerdict, edgeAt, isDraggable, startAtTop, topOf } from '../../utils/calendarDrag';
+import { dropVerdict, edgeAt, isDraggable, startAtMinutes } from '../../utils/calendarDrag';
 import { groupSessions } from '../../utils/sessions';
 import type { Appointment, AppointmentType } from '../../types';
 
 const HOUR = 3_600_000;
-const HOUR_PX = 88;
 const service: AppointmentType = { _id: 't1', name: 'Massage', webConfig_id: 'w1', price: '100', durationMS: String(HOUR) };
 const yoga: AppointmentType = { ...service, _id: 'c1', name: 'Yoga', kind: 'class', capacity: 10 };
 const day = new Date(2030, 2, 5); // a Tuesday
@@ -14,32 +13,26 @@ const booking = (id: string, start: number, over: Partial<Appointment> = {}): Ap
   _id: id, name: id, phone: '0501234567', status: 'scheduled', user_id: 'u1', timestamp: String(start), type: service, ...over,
 });
 
-describe('where a dragged booking lands (LT-345, LT-353)', () => {
-  // Read off where its top is drawn: 06:00 is the top of the column.
-  const land = (topPx: number, d = day) =>
-    startAtTop({ topPx, day: d, durationMS: HOUR, hourPx: HOUR_PX, firstHour: 6, lastHour: 22 });
+describe('where a dragged booking lands (LT-345, LT-353, LT-359)', () => {
+  // The minute of the day its top is drawn at, read off the calendar's scale.
+  const land = (minutes: number, d = day) =>
+    startAtMinutes({ minutes, day: d, durationMS: HOUR, firstHour: 6, lastHour: 22 });
 
-  it('lands at the time its top is drawn at, on whole five minutes', () => {
-    expect(land(5 * HOUR_PX)).toBe(at(11));
-    // 44px is half an hour; 47px is 32 minutes, which rounds to 30.
-    expect(land(4 * HOUR_PX + 44)).toBe(at(10, 30));
-    expect(land(4 * HOUR_PX + 47)).toBe(at(10, 30));
-    expect(land(4 * HOUR_PX - HOUR_PX / 12)).toBe(at(9, 55));
+  it('lands on whole five minutes', () => {
+    expect(land(11 * 60)).toBe(at(11));
+    expect(land(10 * 60 + 32)).toBe(at(10, 30));
+    expect(land(10 * 60 + 33)).toBe(at(10, 35));
+    expect(land(9 * 60 + 54)).toBe(at(9, 55));
   });
 
   it('keeps the whole booking inside the drawn hours', () => {
-    expect(land(-3 * HOUR_PX)).toBe(at(6));
-    expect(land(20 * HOUR_PX)).toBe(at(21));
+    expect(land(3 * 60)).toBe(at(6));
+    expect(land(23 * 60)).toBe(at(21));
   });
 
   it('lands on the day it is dropped on, at the minute shown', () => {
     const thursday = new Date(2030, 2, 7);
-    expect(land(5 * HOUR_PX, thursday)).toBe(at(11, 0, thursday));
-  });
-
-  it('draws a start as far down its column as its minutes', () => {
-    expect(topOf(at(11, 30), HOUR_PX, 6)).toBe(5.5 * HOUR_PX);
-    expect(topOf(at(9, 0, new Date(2030, 2, 7)), HOUR_PX, 6)).toBe(3 * HOUR_PX);
+    expect(land(11 * 60, thursday)).toBe(at(11, 0, thursday));
   });
 });
 

@@ -18,42 +18,37 @@ export const SNAP_MINUTES = 5;
 export const isDraggable = (appointment: Appointment): boolean =>
   appointment.type?.kind !== 'class' && getDisplayStatus(appointment) === 'scheduled';
 
-const minutesOfDay = (ms: number): number => {
+/** The minute of its day a time is at, on the clock the calendar draws by. */
+export const minutesOfDay = (ms: number): number => {
   const d = new Date(ms);
   return d.getHours() * 60 + d.getMinutes();
 };
 
 /**
- * Where a booking lands when its top is drawn `topPx` below the top of the
- * day's column (LT-353: read off where the pointer is, so the page may turn
- * under it): rounded to SNAP_MINUTES and kept inside the drawn hours with its
- * whole length. Built from the day's date and a minute count, so a day the
- * clocks change on still lands on the minute it shows.
+ * Where a booking lands when its top is drawn at `minutes` into the day (read
+ * off where the pointer is, LT-353, through the calendar's scale, LT-359):
+ * rounded to SNAP_MINUTES and kept inside the drawn hours with its whole
+ * length. Built from the day's date and a minute count, so a day the clocks
+ * change on still lands on the minute it shows.
  */
-export const startAtTop = ({
-  topPx,
+export const startAtMinutes = ({
+  minutes,
   day,
   durationMS,
-  hourPx,
   firstHour,
   lastHour,
 }: {
-  topPx: number;
+  minutes: number;
   day: Date;
   durationMS: number;
-  hourPx: number;
   firstHour: number;
   lastHour: number;
 }): number => {
-  const snapped = Math.round((firstHour * 60 + (topPx / hourPx) * 60) / SNAP_MINUTES) * SNAP_MINUTES;
+  const snapped = Math.round(minutes / SNAP_MINUTES) * SNAP_MINUTES;
   const latest = lastHour * 60 - Math.ceil(durationMS / 60_000);
-  const minutes = Math.min(Math.max(snapped, firstHour * 60), Math.max(latest, firstHour * 60));
-  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minutes).valueOf();
+  const clamped = Math.min(Math.max(snapped, firstHour * 60), Math.max(latest, firstHour * 60));
+  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, clamped).valueOf();
 };
-
-/** How far down its day's column a start is drawn. */
-export const topOf = (startMs: number, hourPx: number, firstHour: number): number =>
-  ((minutesOfDay(startMs) - firstHour * 60) / 60) * hourPx;
 
 /**
  * Which edge of the calendar a dragged booking is held at (LT-353): -1 over

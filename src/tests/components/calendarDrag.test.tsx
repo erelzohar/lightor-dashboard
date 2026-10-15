@@ -6,6 +6,9 @@ import { moveAppointment, swapAppointments } from '../../services/appointmentsAp
 import { Appointment, AppointmentType } from '../../types';
 
 /**
+ * Every hour at full height here (`foldFreeHours={false}`): these tests read
+ * places off a plain 88px-an-hour grid; folding has its own tests (LT-359).
+ *
  * LT-345 — a booking dragged in the week view: to another time (a window
  * asks, then the move is sent), or onto another booking (a swap).
  */
@@ -100,7 +103,7 @@ const drag = async (name: string, dx: number, dy: number) => {
 
 describe('dragging a booking in the calendar (LT-345)', () => {
   it('asks before moving it, then sends the new start', async () => {
-    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} />);
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
 
     await drag('Dana', 0, HOUR_PX + HOUR_PX / 2);
 
@@ -115,7 +118,7 @@ describe('dragging a booking in the calendar (LT-345)', () => {
     render(
       <AppointmentCalendar
         appointments={[booking('Dana', tomorrowAt(10)), booking('Avi', tomorrowAt(14))]}
-        onAppointmentClick={vi.fn()}
+        onAppointmentClick={vi.fn()} foldFreeHours={false}
       />
     );
 
@@ -130,7 +133,7 @@ describe('dragging a booking in the calendar (LT-345)', () => {
     render(
       <AppointmentCalendar
         appointments={[booking('Dana', tomorrowAt(10)), booking('Avi', tomorrowAt(14))]}
-        onAppointmentClick={vi.fn()}
+        onAppointmentClick={vi.fn()} foldFreeHours={false}
       />
     );
 
@@ -143,7 +146,7 @@ describe('dragging a booking in the calendar (LT-345)', () => {
 
   it('does nothing when the mouse barely moves: a click stays a click', async () => {
     const onClick = vi.fn();
-    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={onClick} />);
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={onClick} foldFreeHours={false} />);
     const block = blockOf('Dana');
 
     fireEvent.mouseDown(block, { button: 0, clientX: 100, clientY: 100 });
@@ -184,7 +187,7 @@ describe('dragging a booking to another week or day (LT-353)', () => {
   };
 
   it('a week ahead in the week view, with the hours left where they were', async () => {
-    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} />);
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
     vi.mocked(Element.prototype.scrollTo).mockClear();
 
     // Tomorrow is the second column (x 160-260).
@@ -198,7 +201,7 @@ describe('dragging a booking to another week or day (LT-353)', () => {
 
   it('a day ahead on a phone, where one day is on show', async () => {
     render(
-      <AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} openDay={new Date(dayAt(1, 0))} />
+      <AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} foldFreeHours={false} openDay={new Date(dayAt(1, 0))} />
     );
 
     await holdAhead('Dana', 700, 110);
@@ -209,7 +212,7 @@ describe('dragging a booking to another week or day (LT-353)', () => {
   });
 
   it('a moment at the side is not enough: no page turns, nothing moves', async () => {
-    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} />);
+    render(<AppointmentCalendar appointments={[booking('Dana', tomorrowAt(10))]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
 
     await holdAhead('Dana', 100, 210);
 

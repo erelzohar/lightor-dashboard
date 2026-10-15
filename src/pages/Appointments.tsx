@@ -13,7 +13,7 @@ import ExportAppointmentsButton from '../components/appointments/ExportAppointme
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { fetchAppointments } from '../store/slices/appointmentsSlice';
+import { fetchAppointments, fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
 import { useAppointmentsAutoRefresh } from '../hooks/useAppointmentsAutoRefresh';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +48,14 @@ const Appointments: React.FC = () => {
   const loaded = useAppSelector(state => state.appointments.loaded);
 
   useAppointmentsAutoRefresh(auth.user?._id);
+
+  // The services at once, beside the bookings (LT-358): a class is known by
+  // its service, and waiting for the business's config first put the classes
+  // a few seconds behind the bookings.
+  const typesCount = useAppSelector(state => state.appointments.appointmentTypes.length);
+  useEffect(() => {
+    if (!typesCount && auth.user?.webConfig_id) dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
+  }, [typesCount, auth.user?.webConfig_id, dispatch]);
 
   const refresh = useCallback(async () => {
     if (auth.user) await dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 }));
@@ -113,17 +121,10 @@ const Appointments: React.FC = () => {
     )
     .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
 
-  // The spinner is for the first load only (LT-204). A refetch — the
-  // 4-minute refresh, or the one after the owner seats a walk-in from a class
-  // roster — keeps the page mounted: tearing it down closed the open roster
-  // and threw the calendar back to this week.
-  if (isLoading && appointments.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  // No page-wide spinner (LT-358): the page stays up, and until the bookings
+  // are read the calendar draws placeholders and the list its loader. A
+  // refetch keeps everything mounted (LT-204: tearing it down closed the open
+  // roster and threw the calendar back to this week).
 
   return (
     <PullToRefresh onRefresh={refresh} fill>
@@ -202,6 +203,7 @@ const Appointments: React.FC = () => {
             appointments={appointments}
             onAppointmentClick={setSelectedAppointment}
             openDay={openDay}
+            loading={!loaded}
           />
         </motion.div>
       ) : (

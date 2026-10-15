@@ -24,7 +24,8 @@ import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors, type DragS
 import { getEventCoordinates } from '@dnd-kit/utilities';
 import { moveAppointment, swapAppointments } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
-import { dropVerdict, edgeAt, isDraggable, startAtTop, topOf, type DropVerdict } from '../../utils/calendarDrag';
+import { dropVerdict, edgeAt, isDraggable, minutesOfDay, startAtMinutes, type DropVerdict } from '../../utils/calendarDrag';
+import { bandHoursUnder, buildScale, markHours } from '../../utils/calendarScale';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay } from '../../utils/phone';
@@ -38,7 +39,7 @@ import { DragBlock, DropConfirm, pointerTracker, type DragHandle, type PendingDr
 import { useConfirm } from '../../hooks/useConfirm';
 import { cancelBookingQuestion } from './cancelQuestion';
 import { useOpenSession } from '../../hooks/useOpenSession';
-import { useClassSessions } from '../../hooks/useClassSessions';
+import { useClassSessions, useClassSessionsState } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
 import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 
@@ -50,6 +51,10 @@ interface AppointmentCalendarProps {
    * Date jumps there, so the same day asked for twice is shown twice.
    */
   openDay?: Date | null;
+  /** The bookings are not read yet (LT-358): placeholders instead of an empty week. */
+  loading?: boolean;
+  /** Fold the hours nothing is in (LT-359); off draws every hour at full height. */
+  foldFreeHours?: boolean;
 }
 
 // ── Deterministic palette per appointment type ─────────────────────────────
@@ -79,11 +84,22 @@ const getPalette = (appt: Appointment) => paletteOf(appt.type);
 const HOUR_START = 6;
 const HOUR_END   = 22;
 const HOUR_PX    = 88;
-/** Where the now-line sits on the grid, in px from its top. */
-const nowLinePx = (): number => {
+/** A run of empty hours, folded (LT-359). */
+const BAND_PX    = 32;
+/** The minute of the day the clock is at: the now line's place. */
+const nowMinutesOfDay = (): number => {
   const now = new Date();
-  return (getHours(now) + getMinutes(now) / 60 - HOUR_START) * HOUR_PX;
+  return getHours(now) * 60 + getMinutes(now);
 };
+// Placeholders while the bookings are read (LT-358): [start hour, length in
+// hours] per column, spread over the day so some show wherever it is scrolled.
+const SKELETON_BLOCKS = (column: number): [number, number][] => [
+  [7 + (column % 3) * 0.5, 1],
+  [10 + (column % 2), 1.5],
+  [13.5 - (column % 3) * 0.5, 1],
+  [16 + (column % 2) * 0.5, 1],
+  [19 - (column % 2), 1.5],
+];
 const TIME_GUTTER = 80;
 // Held this close to the far side, a dragged booking turns the page (LT-353);
 // the hours column is the near side's.
@@ -112,12 +128,14 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments,
   onAppointmentClick,
   openDay = null,
+  loading = false,
+  foldFreeHours = true,
 }) => {
   const [currentDate, setCurrentDate]           = useState(new Date());
   const [viewMode,    setViewMode]              = useState<ViewMode>('week');
   const [visibleDays, setVisibleDays]           = useState(7);
   // Measured at once (LT-315): the first auto-scroll reads it on mount.
-  const [nowPx,       setNowPx]                 = useState(nowLinePx);
+  const [nowMinutes,  setNowMinutes]            = useState(nowMinutesOfDay);
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
   const [selectedAppt,setSelectedAppt]          = useState<Appointment | null>(null);
   const [popupPos,    setPopupPos]              = useState<{ x: number; y: number } | null>(null);
@@ -150,7 +168,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   // puts it on the grid, with its roster one click away.
   const rangeStart = startOfDay(weekDays[0]).valueOf();
   const rangeEnd   = endOfDay(weekDays[weekDays.length - 1]).valueOf();
-  const listed     = useClassSessions(rangeStart, rangeEnd);
+  const { sessions: listed, pending: listedPending } = useClassSessionsState(rangeStart, rangeEnd);
+  // Placeholders until the bookings, and the classes the first time, are
+  // read (LT-358), so the two appear together; a page turned later draws at
+  // once.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!loading && !listedPending) setSettled(true);
+  }, [loading, listedPending]);
+  const showSkeleton = loading || (listedPending && !settled);
   // LT-293: the classes of the next two weeks, wherever the grid is — the
   // next-appointment card counts a class nobody has booked yet, too.
   const soonFrom   = startOfDay(new Date()).valueOf();
@@ -221,28 +247,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   // ── Now indicator ─────────────────────────────────────────────────────
   useEffect(() => {
-    const tick = () => setNowPx(nowLinePx());
+    const tick = () => setNowMinutes(nowMinutesOfDay());
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
   }, []);
-
-  // ── Auto-scroll ───────────────────────────────────────────────────────
-  // To the hours around now: on opening, when the days on show change, and
-  // on "Today" (LT-315). Not on the minute tick, which moves only the line —
-  // since the grid scrolls inside its own box (LT-307), following the tick
-  // snapped an owner reading 17:00 back to the morning every minute.
-  const [scrollAsk, setScrollAsk] = useState(0);
-  const scrolledFor = useRef<string | null>(null);
-  useEffect(() => {
-    const grid = scrollRef.current;
-    const key = `${startOfDay(currentDate).valueOf()}|${scrollAsk}`;
-    if (!grid || scrolledFor.current === key) return;
-    scrolledFor.current = key;
-    // A page turned under a held booking keeps its hours where they were (LT-353).
-    if (draggingRef.current) return;
-    grid.scrollTo({ top: Math.max(0, nowPx - 160) });
-  }, [currentDate, scrollAsk, nowPx]);
 
   // ── Close popup on Escape ─────────────────────────────────────────────
   useEffect(() => {
@@ -257,9 +266,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     end:   endOfWeek(endOfMonth(miniCalMonth), { weekStartsOn: 0 }),
   }), [miniCalMonth]);
 
-  const hours       = useMemo(() => Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i), []);
-  const totalHeight = (HOUR_END - HOUR_START) * HOUR_PX;
-  const nowVisible  = nowPx >= 0 && nowPx <= totalHeight;
 
   const uniqueTypes = useMemo(() => {
     const map = new Map<string, { type: AppointmentType; count: number }>();
@@ -306,6 +312,49 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       && (activeFilter === 'all' || sessionDisplayStatus(s) === activeFilter)),
   );
 
+  // ── The hours, folded where nothing is (LT-359) ───────────────────────
+  // An hour no day on show has anything in folds into a thin band with its
+  // neighbours; today's current hour stays open for the now line, and a band
+  // a dragged booking is held over opens to full height until it is dropped.
+  const [dragOpen, setDragOpen] = useState<ReadonlySet<number>>(() => new Set());
+  const busyHours = new Set<number>();
+  weekDays.forEach(day => getDaySessions(day).forEach(session => {
+    const start = minutesOfDay(session.startMs);
+    markHours(start, start + session.durationMS / 60_000, busyHours);
+  }));
+  if (weekDays.some(day => isToday(day))) markHours(nowMinutes, nowMinutes, busyHours);
+  const scale = buildScale({
+    firstHour: HOUR_START,
+    lastHour: HOUR_END,
+    hourPx: HOUR_PX,
+    bandPx: BAND_PX,
+    busy: busyHours,
+    open: !foldFreeHours || showSkeleton ? 'all' : dragOpen,
+  });
+  // What the layout is, for effects to follow it.
+  const scaleKey = scale.bands.map(band => `${band.from}-${band.to}`).join(',');
+  const totalHeight = scale.total;
+  const nowPx       = scale.yOf(nowMinutes);
+  const nowVisible  = nowMinutes >= HOUR_START * 60 && nowMinutes <= HOUR_END * 60;
+
+  // ── Auto-scroll ───────────────────────────────────────────────────────
+  // To the hours around now: on opening, when the days on show change, and
+  // on "Today" (LT-315). Not on the minute tick, which moves only the line —
+  // since the grid scrolls inside its own box (LT-307), following the tick
+  // snapped an owner reading 17:00 back to the morning every minute.
+  const [scrollAsk, setScrollAsk] = useState(0);
+  const scrolledFor = useRef<string | null>(null);
+  useEffect(() => {
+    const grid = scrollRef.current;
+    // Again once the placeholders give way: the hours may have folded.
+    const key = `${startOfDay(currentDate).valueOf()}|${scrollAsk}|${showSkeleton}`;
+    if (!grid || scrolledFor.current === key) return;
+    scrolledFor.current = key;
+    // A page turned under a held booking keeps its hours where they were (LT-353).
+    if (draggingRef.current) return;
+    grid.scrollTo({ top: Math.max(0, nowPx - 160) });
+  }, [currentDate, scrollAsk, nowPx, showSkeleton]);
+
   const miniHasAppts = (day: Date) =>
     appointments.some(a => isSameDay(new Date(parseInt(a.timestamp)), day));
 
@@ -318,7 +367,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       groupSessions(appointments.filter(a => getDisplayStatus(a) === 'scheduled' && parseInt(a.timestamp) > now)),
       soonListed.filter(s => s.startMs > now),
     )[0] ?? null;
-  }, [appointments, soonListed, nowPx]); // nowPx: looked at again each minute, so one that started moves on
+  }, [appointments, soonListed, nowMinutes]); // nowMinutes: looked at again each minute, so one that started moves on
   const nextIsGroup = !!nextSession && isGroupSession(nextSession);
   const nextEndMs = nextSession ? nextSession.startMs + nextSession.durationMS : 0;
   // Who: the customer; for a class, how full it is.
@@ -340,7 +389,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     const h = Math.floor(mins / 60), m = mins % 60;
     if (language === 'he') return mins < 60 ? `בעוד ${mins} דק׳` : `בעוד ${h} ש׳${m ? ` ו-${m} דק׳` : ''}`;
     return mins < 60 ? `in ${mins} min` : `in ${h}h${m ? ` ${m}m` : ''}`;
-  }, [nextSession, nowPx, language]);
+  }, [nextSession, nowMinutes, language]);
 
   // Which day — the card used to show only the hours, so a booking days
   // away read like one today (LT-287).
@@ -350,13 +399,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     if (isToday(start)) return language === 'he' ? 'היום' : 'Today';
     if (isTomorrow(start)) return language === 'he' ? 'מחר' : 'Tomorrow';
     return format(start, language === 'he' ? 'EEEE d/M' : 'EEE d MMM', { locale });
-  }, [nextSession, language, locale, nowPx]);
+  }, [nextSession, language, locale, nowMinutes]);
 
   const getSessionPos = (session: Session) => {
-    const ts   = new Date(session.startMs);
-    const h    = getHours(ts) + getMinutes(ts) / 60;
-    const durH = session.durationMS / 3_600_000;
-    return { top: Math.max(0, (h - HOUR_START) * HOUR_PX), height: Math.max(durH * HOUR_PX, 36) };
+    const start = minutesOfDay(session.startMs);
+    const top = scale.yOf(start);
+    return { top, height: Math.max(scale.yOf(start + session.durationMS / 60_000) - top, 36) };
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────
@@ -437,14 +485,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     if (!column) return null;
     const day = weekDays[index];
     const { appointment, grabDy } = grab;
-    const startMs = startAtTop({
-      topPx: pointer.y - grabDy - column.getBoundingClientRect().top,
+    const durationMS = Number(appointment.type?.durationMS) || 0;
+    const startMs = startAtMinutes({
+      minutes: scale.minutesAt(pointer.y - grabDy - column.getBoundingClientRect().top),
       day,
-      durationMS: Number(appointment.type?.durationMS) || 0,
-      hourPx: HOUR_PX,
+      durationMS,
       firstHour: HOUR_START,
       lastHour: HOUR_END,
     });
+    // Over folded hours, the band opens to full height (LT-359), whole, for
+    // the rest of the drag: the effect below reads the landing again off it.
+    const startMin = minutesOfDay(startMs);
+    const opening = bandHoursUnder(scale, startMin, startMin + Math.max(durationMS / 60_000, 1)).filter(hour => !dragOpen.has(hour));
+    if (opening.length) setDragOpen(open => new Set([...open, ...opening]));
     const under = Array.from(column.querySelectorAll<HTMLElement>('[data-booking-id]')).find(el => {
       if (el.dataset.bookingId === appointment._id) return false;
       const r = el.getBoundingClientRect();
@@ -481,12 +534,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setDragEdge(side);
   };
 
-  // The page turned under a held booking: where it lands is read again off
-  // the new days, though the pointer has not moved.
+  // The page turned, or a band opened, under a held booking: where it lands
+  // is read again off the new layout, though the pointer has not moved.
   useLayoutEffect(() => {
     if (grabRef.current) setDropPreview(locateDrop());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate]);
+  }, [currentDate, scaleKey]);
 
   const endDrag = () => {
     draggingRef.current = false;
@@ -498,6 +551,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setDragEdge(0);
     setHeld(null);
     setDropPreview(null);
+    setDragOpen(open => (open.size ? new Set() : open));
   };
   const handleDragStart = ({ active, activatorEvent }: DragStartEvent) => {
     const appointment = active.data.current?.appointment as Appointment | undefined;
@@ -1117,6 +1171,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               threw iPhone Safari's sticky day row out of line, for good. Clip
               (unlike hidden) clips without making a scroll box, so the slide
               never reaches the scroller. */}
+          {showSkeleton && <span role="status" className="sr-only">{t('appointments.loading')}</span>}
           <DndContext
             sensors={sensors}
             collisionDetection={trackPointer}
@@ -1141,10 +1196,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
               {/* Time gutter */}
               <div className="relative border-e border-gray-100 dark:border-gray-800/60" style={{ gridRow: 1 }}>
-                {hours.map(h => (
-                  <div key={h} className="absolute w-full" style={{ top: (h - HOUR_START) * HOUR_PX }}>
+                {/* Each full hour at its line; a folded run (LT-359) by the
+                    hour it starts at, so the axis reads 06:00, then 10:00
+                    under the band. */}
+                {scale.rows.filter(row => !row.folded || scale.bands.some(band => band.from === row.hour)).map(row => (
+                  <div key={row.hour} className="absolute w-full" style={{ top: row.top }}>
                     <span className="absolute end-3 text-[11px] text-gray-400 dark:text-gray-500 -translate-y-[9px] select-none whitespace-nowrap bg-white dark:bg-gray-900 px-1">
-                      {fmtHour(h)}
+                      {fmtHour(row.hour)}
                     </span>
                   </div>
                 ))}
@@ -1171,13 +1229,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                     }}>
 
                     {/* Hour grid lines */}
-                    {hours.map(h => (
-                      <React.Fragment key={h}>
+                    {scale.rows.filter(row => !row.folded).map(row => (
+                      <React.Fragment key={row.hour}>
                         <div className="absolute w-full border-t border-gray-100 dark:border-gray-800/40"
-                          style={{ top: (h - HOUR_START) * HOUR_PX }} />
+                          style={{ top: row.top }} />
                         <div className="absolute w-full border-t border-dashed border-gray-50 dark:border-gray-800/20"
-                          style={{ top: (h - HOUR_START) * HOUR_PX + HOUR_PX / 2 }} />
+                          style={{ top: row.top + row.height / 2 }} />
                       </React.Fragment>
+                    ))}
+                    {/* Folded empty hours (LT-359): a thin hatched band. */}
+                    {scale.bands.map(band => (
+                      <div key={`band-${band.from}`} aria-hidden="true" data-testid="folded-hours"
+                        className="absolute inset-x-0 border-y border-gray-100 dark:border-gray-800/60 bg-gray-50/70 dark:bg-gray-800/20"
+                        style={{ top: band.top, height: band.height, backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 7px, rgba(148,163,184,0.14) 7px 8px)' }} />
                     ))}
 
                     {/* Now line */}
@@ -1190,7 +1254,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                       </div>
                     )}
 
+                    {/* Placeholders while the bookings are read (LT-358). */}
+                    {showSkeleton && SKELETON_BLOCKS(dayIndex).map(([hour, length], i) => (
+                      <div key={i} aria-hidden="true" data-testid="calendar-skeleton"
+                        className="absolute rounded-xl bg-gray-200/70 dark:bg-gray-700/40 animate-pulse"
+                        style={{ top: scale.yOf(hour * 60), height: length * HOUR_PX - 6, insetInlineStart: 4, insetInlineEnd: 4 }} />
+                    ))}
+
                     {/* Event cards */}
+                    {!showSkeleton && (
                     <AnimatePresence>
                       {daySessions.map((session, idx) => {
                         // Absent only for a class nobody has booked yet (LT-211),
@@ -1306,6 +1378,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                           : renderBlock();
                       })}
                     </AnimatePresence>
+                    )}
 
                     {/* Where the held booking would land (LT-353), in five-
                         minute steps: ringed in the primary colour, red where it
@@ -1313,13 +1386,14 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                     {held && dropPreview?.index === dayIndex && (() => {
                       const pal = getPalette(held);
                       const durationMS = Number(held.type?.durationMS) || 0;
-                      const height = Math.max((durationMS / 3_600_000) * HOUR_PX, 36);
+                      const landingTop = scale.yOf(minutesOfDay(dropPreview.startMs));
+                      const height = Math.max(scale.yOf(minutesOfDay(dropPreview.startMs) + durationMS / 60_000) - landingTop, 36);
                       const kind = dropPreview.verdict.kind;
                       return (
                         <div aria-hidden="true" data-testid="drag-landing"
                           className={`absolute rounded-xl overflow-hidden select-none pointer-events-none border-s-[3px] ${pal.border} ${pal.bg} px-2.5 py-2 shadow-xl ring-2 ${
                             kind === 'refused' ? 'ring-rose-400' : kind === 'swap' ? 'ring-amber-400 opacity-80' : 'ring-primary'}`}
-                          style={{ top: topOf(dropPreview.startMs, HOUR_PX, HOUR_START), height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 40 }}>
+                          style={{ top: landingTop, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 40 }}>
                           <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text}`}>{held.type.name}</p>
                           <p className={`text-[10px] mt-0.5 font-semibold ${pal.sub}`}>
                             <span dir="ltr">{`${format(new Date(dropPreview.startMs), 'HH:mm')} – ${format(new Date(dropPreview.startMs + durationMS), 'HH:mm')}`}</span>
@@ -1340,6 +1414,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               })}
           </div>
           </DndContext>
+          {/* Every hour on show folded: nothing is booked in these days. */}
+          {!showSkeleton && scale.rows.every(row => row.folded) && (
+            <p className="py-10 text-center text-sm text-gray-400 dark:text-gray-500" data-testid="nothing-booked">
+              {t(visibleDays === 1 ? 'appointments.nothingThisDay' : 'appointments.nothingTheseDays')}
+            </p>
+          )}
         </div>
         </div>
       </section>

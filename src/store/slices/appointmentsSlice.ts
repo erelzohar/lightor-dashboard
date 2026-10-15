@@ -9,6 +9,8 @@ interface AppointmentsState {
   loading: boolean;
   /** The appointments have been read at least once (LT-331): before that an empty list means "not yet", not "none". */
   loaded: boolean;
+  /** The services are being read (LT-358): a second ask waits for this one. */
+  typesLoading: boolean;
   error: string | null;
 }
 
@@ -21,6 +23,7 @@ const initialState: AppointmentsState = {
   appointmentTypes: USE_MOCK_DATA ? MOCK_APPOINTMENT_TYPES : [],
   loading: false,
   loaded: USE_MOCK_DATA,
+  typesLoading: false,
   error: null,
 };
 
@@ -68,6 +71,11 @@ export const fetchAppointmentTypes = createAsyncThunk<AppointmentType[], { webCo
   async ({ webConfig_id }) => {
     const response = await appointmentsApi.getAppointmentTypes(webConfig_id);    
     return response;
+  },
+  {
+    // Asked for by the page and by each class-session reader at once (LT-358):
+    // one request is enough.
+    condition: (_, { getState }) => !(getState() as { appointments?: AppointmentsState }).appointments?.typesLoading,
   }
 );
 
@@ -133,8 +141,15 @@ const appointmentsSlice = createSlice({
         state.loaded = true;
         state.error = action.error.message || 'Failed to fetch appointments';
       })
+      .addCase(fetchAppointmentTypes.pending, (state) => {
+        state.typesLoading = true;
+      })
       .addCase(fetchAppointmentTypes.fulfilled, (state, action) => {
         state.appointmentTypes = action.payload;
+        state.typesLoading = false;
+      })
+      .addCase(fetchAppointmentTypes.rejected, (state) => {
+        state.typesLoading = false;
       })
       .addCase(updateAppointmentStatus.fulfilled, (state, action) => {
         const index = state.appointments.findIndex(app => app._id === action.payload._id);
