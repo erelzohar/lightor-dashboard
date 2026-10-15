@@ -37,6 +37,7 @@ import AiBuilder from './AiBuilder';
 import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { siteUrlOf } from '../utils/siteUrl';
+import { pop } from '../components/ui/pop-button';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -505,7 +506,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
             type="button"
             onClick={() => void save()}
             disabled={!draft.dirty || saving}
-            className={`ms-1 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-md disabled:opacity-50 ${justSaved ? 'bg-emerald-500 text-white' : 'bg-gradient-to-r from-primary to-violet-500 text-white'}`}
+            className={`ms-1 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
           >
             {justSaved ? <CheckCircle2 className="w-4 h-4" /> : saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span className="hidden sm:inline">{justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}</span>

@@ -5,6 +5,7 @@ import { uploadImage } from '../../services/imagesApi';
 import { resolveImage } from '../../utils/images';
 import { fieldLabel } from './labels';
 import AddPhotoButton from './AddPhotoButton';
+import { pop } from '../ui/pop-button';
 
 interface ImagePanelProps {
   path: string;
@@ -60,7 +61,7 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
           type="button"
           onClick={() => input.current?.click()}
           disabled={busy}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white text-sm font-medium disabled:opacity-60"
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${pop()} text-sm font-medium disabled:opacity-60`}
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
           {busy ? t('siteEditor.image.uploading') : t('siteEditor.image.replace')}

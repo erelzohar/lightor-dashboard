@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { localDateKey } from '../utils/bookingSlots';
 import type { RootState } from '../store/store';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
+import { pop } from '../components/ui/pop-button';
 
 /** A local calendar day from "YYYY-MM-DD"; null for anything else, 2026-02-31 included. */
 const parseDay = (value: string): Date | null => {
@@ -156,7 +157,7 @@ const Appointments: React.FC = () => {
           <button
             type="button"
             onClick={() => setBooking(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition-colors"
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold ${pop()}`}
           >
             <CalendarPlus size={15} className="shrink-0" />
             <span className="hidden sm:inline">{t('appointments.newAppointment')}</span>

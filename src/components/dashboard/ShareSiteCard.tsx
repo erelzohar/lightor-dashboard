@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Copy, Download, Loader2, Megaphone, MessageCircle, QrCode, X } from 'lucide-react';
 import { isNativeApp } from '../../lib/platform';
+import { pop } from '../ui/pop-button';
 
 interface ShareSiteCardProps {
   /** What the site converts to: the title speaks of inquiries or of bookings. */
@@ -229,7 +230,7 @@ const SiteQrModal: React.FC<SiteQrModalProps> = ({ open, subDomain, onClose }) =
                 href={image ?? undefined}
                 download={`${subDomain}-qr.png`}
                 aria-disabled={!image}
-                className={`mt-5 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-medium transition-colors ${
+                className={`mt-5 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl ${pop()} text-sm font-medium ${
                   image ? '' : 'opacity-60 pointer-events-none'
                 }`}
               >

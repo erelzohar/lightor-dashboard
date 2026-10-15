@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronRight, ArrowLeft, Check, Loader2, ImageOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { pop } from '../ui/pop-button';
 
 /**
  * Media picker for the Instagram portfolio import (LT-042).
@@ -288,7 +289,7 @@ const InstagramPhotoPicker: React.FC<Props> = ({ accessToken, source = 'facebook
             <button
               onClick={handleImport}
               disabled={selected.size === 0 || importing}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl ${pop()} text-sm font-medium disabled:opacity-50`}
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? t('igImport.importing') : t('igImport.importSelected')}

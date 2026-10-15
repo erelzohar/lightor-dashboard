@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, RefreshCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { pop } from './pop-button';
 
 interface UnsavedChangesBarProps {
   visible: boolean;
@@ -59,7 +60,7 @@ const UnsavedChangesBar: React.FC<UnsavedChangesBarProps> = ({
               <button
                 onClick={onSave}
                 disabled={saving || !!errorMessage}
-                className="px-5 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`px-5 py-2 rounded-xl ${pop()} font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
               >
                 {saving
                   ? <RefreshCcw size={14} className="animate-spin" />

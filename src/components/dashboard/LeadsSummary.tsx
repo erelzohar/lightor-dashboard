@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Inbox, Phone, MessageCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import type { LeadsPage, LeadStatus } from '../../services/leadsApi';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
+import { pop } from '../ui/pop-button';
 
 const STATUS_TINT: Record<LeadStatus, string> = {
   new: 'bg-primary/10 text-primary border-primary/30',
@@ -80,7 +81,7 @@ const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction }) => {
               <div className="flex flex-wrap gap-2">
                 <a
                   href={telHref(lead.phone)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary text-white text-sm font-medium"
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl ${pop()} text-sm font-medium`}
                 >
                   <Phone size={15} />
                   <span dir="ltr">{formatPhoneForDisplay(lead.phone)}</span>

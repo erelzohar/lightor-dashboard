@@ -20,6 +20,7 @@ import {
   rememberedDetails,
 } from '../../utils/bookingFields';
 import { Toggle } from '../ui/liquid-toggle';
+import { pop } from '../ui/pop-button';
 
 interface BookingFieldsEditorProps {
   value: BookingField[];
@@ -167,7 +168,7 @@ const BookingFieldsEditor: React.FC<BookingFieldsEditorProps> = ({ value, onChan
           onClick={add}
           disabled={atCap}
           title={atCap ? t('settings.bookingFields.limitReached') : undefined}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-sm font-medium shadow-sm hover:bg-primary/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${pop()} text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           <Plus size={14} />
           {copy('addQuestion')}

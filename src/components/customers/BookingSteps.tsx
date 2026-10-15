@@ -8,6 +8,7 @@ import { localDateKey } from '../../utils/bookingSlots';
 import { zonedDateOf, zonedTimeLabel, zonedToday } from '../../utils/businessTime';
 import { resolveImage } from '../../utils/images';
 import { isPastDay, type DayStatus } from '../../utils/ownerSchedule';
+import { pop } from '../ui/pop-button';
 
 /**
  * The site's booking flow in the owner's booking window (LT-211), one view
@@ -314,7 +315,7 @@ export const DayTimes: React.FC<DayTimesProps> = ({
             type="button"
             disabled={!/^\d{2}:\d{2}$/.test(otherValue)}
             onClick={() => onPickTime(otherValue)}
-            className="h-11 px-4 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-40"
+            className={`h-11 px-4 rounded-xl ${pop()} text-sm font-medium disabled:opacity-40`}
           >
             {t('customers.booking.otherTimeUse')}
           </button>

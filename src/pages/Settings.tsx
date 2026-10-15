@@ -28,6 +28,7 @@ import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import { Toggle } from '../components/ui/liquid-toggle';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { ComingSoonRow } from '../components/ui/ComingSoon';
+import { pop } from '../components/ui/pop-button';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
 // distinct from the owner's dashboard language (User.defaultLanguage). Native
@@ -540,7 +541,7 @@ const Settings: React.FC = () => {
                     <>
                       <label
                         htmlFor="logo-upload"
-                        className="cursor-pointer bg-primary text-white px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition text-sm font-medium flex items-center gap-1.5"
+                        className={`cursor-pointer ${pop()} px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1.5`}
                       >
                         {t('settings.uploadLogo')}
                         <ImageIcon width={15} />

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Account from '../../pages/Account';
-import { AuthRequestError } from '../../services/authApi';
+import { AuthRequestError, requestPasswordReset } from '../../services/authApi';
 import type { User } from '../../types';
 
 /**
@@ -21,6 +21,10 @@ vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ changeLanguag
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: null } }),
 }));
+vi.mock('../../services/authApi', async () => {
+  const real = await vi.importActual<typeof import('../../services/authApi')>('../../services/authApi');
+  return { ...real, requestPasswordReset: vi.fn() };
+});
 vi.mock('../../components/account/BillingSection', () => ({ default: (): null => null }));
 vi.mock('../../components/account/DangerZoneSection', () => ({ default: (): null => null }));
 vi.mock('../../components/account/NotificationsCard', () => ({ default: (): null => null }));
@@ -91,3 +95,53 @@ describe('Account page (LT-315)', () => {
   });
 });
 
+/**
+ * LT-363 — Erel: can someone who signed up with Google change a password?
+ * They could open "change password", which asked for a current password
+ * they never had and always called it wrong. They get "set a password"
+ * instead: the reset link to their inbox, as "forgot password" sends it.
+ */
+describe('Account page: an account with no password (LT-363)', () => {
+  const reset = requestPasswordReset as ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    reset.mockReset();
+    toastError.mockReset();
+  });
+
+  it('offers a Google sign-up a link to set a password, not the change form', async () => {
+    auth.user = { ...jane, googleId: 'g-1', hasPassword: false };
+    reset.mockResolvedValue(undefined);
+    render(<Account />);
+    expect(screen.queryByText('account.changePassword')).toBeNull();
+    expect(screen.getByTestId('set-password')).toHaveTextContent('account.setPasswordHint');
+    fireEvent.click(screen.getByText('account.setPasswordSend'));
+    await waitFor(() => expect(reset).toHaveBeenCalledWith('jane@biz.com'));
+    expect(await screen.findByRole('status')).toHaveTextContent('account.setPasswordSent');
+    // Sending again is a tap away.
+    fireEvent.click(screen.getByText('account.setPasswordAgain'));
+    expect(screen.getByText('account.setPasswordSend')).toBeInTheDocument();
+  });
+
+  it('says so when the link could not go out, or too many were asked for', async () => {
+    auth.user = { ...jane, googleId: 'g-1', hasPassword: false };
+    reset.mockRejectedValueOnce(new AuthRequestError('down', 500)).mockRejectedValueOnce(new AuthRequestError('slow down', 429));
+    render(<Account />);
+    fireEvent.click(screen.getByText('account.setPasswordSend'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('account.setPasswordError'));
+    fireEvent.click(screen.getByText('account.setPasswordSend'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('forgotPassword.tooMany'));
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('keeps the change form for a Google account that has a password, and guesses from the ids on an older API', () => {
+    auth.user = { ...jane, googleId: 'g-1', hasPassword: true };
+    const { unmount } = render(<Account />);
+    expect(screen.getAllByText('account.changePassword').length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('set-password')).toBeNull();
+    unmount();
+
+    auth.user = { ...jane, googleId: 'g-1' };
+    render(<Account />);
+    expect(screen.getByTestId('set-password')).toBeInTheDocument();
+  });
+});

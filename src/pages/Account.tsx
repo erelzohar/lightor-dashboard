@@ -6,7 +6,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
-import type { AuthRequestError } from '../services/authApi';
+import { requestPasswordReset, type AuthRequestError } from '../services/authApi';
 import { useTheme } from '../contexts/ThemeContext';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
 import BillingSection from '../components/account/BillingSection';
@@ -46,6 +46,26 @@ const Account: React.FC = () => {
   });
   const [language, setLanguage] = useState<SupportedLanguage>((auth.user?.defaultLanguage as SupportedLanguage) ?? 'he');
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+
+  // An account that signed up with Google (or Facebook) has no password
+  // (LT-363): "change password" asked it for a current one it never had and
+  // always said it was wrong. It sets one through the emailed link instead,
+  // as "forgot password" does: never on this page without proving the inbox.
+  // Read as the danger zone reads it (LT-315).
+  const socialProvider = auth.user?.googleId ? 'Google' : auth.user?.facebookId ? 'Facebook' : null;
+  const hasPassword = auth.user?.hasPassword ?? !socialProvider;
+  const [setLink, setSetLink] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const sendSetPasswordLink = async () => {
+    if (!auth.user?.email || setLink === 'sending') return;
+    setSetLink('sending');
+    try {
+      await requestPasswordReset(auth.user.email);
+      setSetLink('sent');
+    } catch (err) {
+      setSetLink('idle');
+      toast.error((err as AuthRequestError).status === 429 ? t('forgotPassword.tooMany') : t('account.setPasswordError'));
+    }
+  };
 
   const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -224,7 +244,36 @@ const Account: React.FC = () => {
           </div>
         )}
 
+        {/* No password yet (a Google or Facebook sign-up): a link to set one (LT-363). */}
+        {!hasPassword && (
+          <div className="mt-8 pt-6 border-t border-light-gray/10 dark:border-dark-gray/10" data-testid="set-password">
+            <div className="flex items-center gap-3 mb-2">
+              <KeyRound size={20} className="text-primary" />
+              <h3 className="font-semibold text-lg text-light-text dark:text-dark-text">{t('account.setPassword')}</h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {t('account.setPasswordHint', { provider: socialProvider ?? 'Google' })}
+            </p>
+            {setLink === 'sent' ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">
+                  {/* The address isolated (FSI…PDI), so a Hebrew line does not reorder it. */}
+                  {t('account.setPasswordSent', { email: `\u2068${auth.user?.email ?? ''}\u2069` })}
+                </p>
+                <Button variant="ghost" size="sm" onClick={() => setSetLink('idle')}>
+                  {t('account.setPasswordAgain')}
+                </Button>
+              </div>
+            ) : (
+              <Button variant="primary" size="sm" isLoading={setLink === 'sending'} onClick={() => void sendSetPasswordLink()}>
+                {t('account.setPasswordSend')}
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Change Password Section */}
+        {hasPassword && (
         <div className="mt-8 pt-6 border-t border-light-gray/10 dark:border-dark-gray/10">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
@@ -294,6 +343,7 @@ const Account: React.FC = () => {
             </form>
           )}
         </div>
+        )}
       </Card>
 
       {/* How and about what the owner hears — email, SMS or WhatsApp, one

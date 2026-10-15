@@ -17,6 +17,7 @@ import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
 import OwnerBookingModal from '../customers/OwnerBookingModal';
+import { pop } from '../ui/pop-button';
 
 interface SessionParticipantsProps {
   session: Session | null;
@@ -187,7 +188,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
               type="button"
               onClick={() => setAdding(true)}
               disabled={full}
-              className="ms-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`ms-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${pop()} disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <UserPlus size={13} className="shrink-0" />
               {full ? t('appointments.session.full') : t('appointments.session.addParticipant')}
