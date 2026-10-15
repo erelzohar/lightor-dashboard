@@ -19,7 +19,12 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { hoursForDate } from '../../utils/bookingSlots';
-import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
+import { fetchAppointments, updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
+import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent, type DragMoveEvent, type DragStartEvent, type Over } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { moveAppointment, swapAppointments } from '../../services/appointmentsApi';
+import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
+import { droppedStart, dropVerdict, isDraggable, offsetPx, type DropVerdict } from '../../utils/calendarDrag';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPhoneForDisplay } from '../../utils/phone';
@@ -29,6 +34,7 @@ import {
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
 import MoveAppointmentModal from './MoveAppointmentModal';
+import { DragBlock, DropColumn, DropConfirm, calendarCollision, type DragHandle, type PendingDrop } from './CalendarDrag';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
@@ -157,6 +163,24 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [moving, setMoving] = useState<Appointment | null>(null);
   const canMove = (appt: Appointment) => getDisplayStatus(appt) === 'scheduled' && appt.type?.kind !== 'class';
   const { auth } = useAuth();
+
+  // ── Dragging a booking (LT-345) ──────────────────────────────────────
+  // To another time, or onto another booking to swap the two; a window asks
+  // before anything is sent (each sends the customer a message).
+  const sensors = useSensors(
+    // A click stays a click: a drag starts once the mouse has moved.
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // On a phone a long press picks the booking up, so scrolling through the
+    // hours and the day swipe stay as they were.
+    useSensor(TouchSensor, { activationConstraint: { delay: 400, tolerance: 8 } }),
+  );
+  const [dropPreview, setDropPreview] = useState<{ startMs: number; verdict: DropVerdict } | null>(null);
+  const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
+  const [dropSaving, setDropSaving] = useState(false);
+  const draggingRef = useRef(false);
+  // The click a drag ends with is not a click on the booking, nor its touch a swipe.
+  const draggedAtRef = useRef(0);
+  const justDragged = () => draggingRef.current || Date.now() - draggedAtRef.current < 400;
   const locale   = language === 'he' ? he : undefined;
 
   // ── Resize handler ────────────────────────────────────────────────────
@@ -349,7 +373,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     const start = swipeRef.current;
     swipeRef.current = null;
     const p = e.changedTouches[0];
-    if (!start || !p) return;
+    if (!start || !p || justDragged()) return;
     const dx = p.clientX - start.x;
     const dy = p.clientY - start.y;
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - start.t > 800) return;
@@ -363,6 +387,93 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const handleViewMode = (m: ViewMode) => {
     setViewMode(m);
     setVisibleDays(m === 'day' ? 1 : window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 3 : 7);
+  };
+
+  /**
+   * Where a drag would land and what it would mean: the day under the pointer
+   * (the one dragged onto, for a swap), the start moved by the drag in
+   * five-minute steps, and the verdict for that time.
+   */
+  const readDrop = (appointment: Appointment, dy: number, over: Over | null) => {
+    const overId = String(over?.id ?? '');
+    const target = overId.startsWith('drop:') ? (over?.data.current?.appointment as Appointment | undefined) : undefined;
+    const ownDay = weekDays.find(d => isSameDay(d, new Date(Number(appointment.timestamp))));
+    const day = target
+      ? weekDays.find(d => isSameDay(d, new Date(Number(target.timestamp))))
+      : overId.startsWith('day:')
+        ? weekDays[Number(overId.slice(4))]
+        : ownDay;
+    if (!day) return null;
+    const startMs = droppedStart({
+      startMs: Number(appointment.timestamp),
+      durationMS: Number(appointment.type?.durationMS) || 0,
+      day,
+      dyPx: dy,
+      hourPx: HOUR_PX,
+      firstHour: HOUR_START,
+      lastHour: HOUR_END,
+    });
+    const verdict = dropVerdict({
+      appointment,
+      startMs,
+      day,
+      overAppointment: target,
+      sessions: getDaySessions(day),
+      hours: openingHours,
+    });
+    return { startMs, verdict };
+  };
+
+  const endDrag = () => {
+    draggingRef.current = false;
+    draggedAtRef.current = Date.now();
+    setDropPreview(null);
+  };
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    if (!active.data.current?.appointment) return;
+    draggingRef.current = true;
+    setSelectedAppt(null);
+    lightTick();
+  };
+  const handleDragMove = ({ active, delta, over }: DragMoveEvent) => {
+    const appointment = active.data.current?.appointment as Appointment | undefined;
+    if (appointment) setDropPreview(readDrop(appointment, delta.y, over));
+  };
+  const handleDragEnd = ({ active, delta, over }: DragEndEvent) => {
+    const appointment = active.data.current?.appointment as Appointment | undefined;
+    const drop = appointment ? readDrop(appointment, delta.y, over) : null;
+    endDrag();
+    if (!appointment || !drop) return;
+    const { verdict } = drop;
+    if (verdict.kind === 'move') setPendingDrop({ kind: 'move', appointment, startMs: verdict.startMs, warning: verdict.warning });
+    else if (verdict.kind === 'swap') setPendingDrop({ kind: 'swap', appointment, target: verdict.target });
+    else if (verdict.kind === 'refused') toast.error(t(`appointments.drag.${verdict.reason}`));
+  };
+
+  const SWAP_REFUSALS: Record<string, string> = {
+    SWAP_DOES_NOT_FIT: 'appointments.drag.swapDoesNotFit',
+    NOT_SWAPPABLE: 'appointments.drag.notSwappable',
+    CHANGED_MEANWHILE: 'appointments.drag.changed',
+  };
+  const confirmDrop = async () => {
+    if (!pendingDrop || dropSaving) return;
+    setDropSaving(true);
+    try {
+      if (pendingDrop.kind === 'move') {
+        await moveAppointment(pendingDrop.appointment._id, String(pendingDrop.startMs));
+        toast.success(t('appointments.move.success'));
+      } else {
+        await swapAppointments(pendingDrop.appointment._id, pendingDrop.target._id);
+        toast.success(t('appointments.drag.swapped'));
+      }
+      if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 }));
+    } catch (error) {
+      const refusal = Object.keys(SWAP_REFUSALS).find(code => isApiErrorCode(error, code));
+      toast.error(t(refusal ? SWAP_REFUSALS[refusal] : apiErrorStatus(error) === 409 ? 'appointments.drag.taken' : 'appointments.drag.failed'));
+    } finally {
+      setDropSaving(false);
+      setPendingDrop(null);
+    }
   };
 
   const handleEventClick = (appt: Appointment, e: React.MouseEvent) => {
@@ -907,6 +1018,26 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               threw iPhone Safari's sticky day row out of line, for good. Clip
               (unlike hidden) clips without making a scroll box, so the slide
               never reaches the scroller. */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={calendarCollision}
+            // One day on show: a booking moves up and down it only (another
+            // day from a phone comes later, Erel LT-345).
+            modifiers={visibleDays === 1 ? [restrictToVerticalAxis] : []}
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
+            onDragCancel={endDrag}
+            accessibility={{
+              screenReaderInstructions: { draggable: t('appointments.drag.instructions') },
+              announcements: {
+                onDragStart: () => t('appointments.drag.picked'),
+                onDragOver: () => undefined,
+                onDragEnd: () => undefined,
+                onDragCancel: () => t('appointments.drag.cancelled'),
+              },
+            }}
+          >
           <div className="relative overflow-x-clip" style={{ paddingTop: 16, height: totalHeight + 16,
             display: 'grid',
             gridTemplateColumns: `${TIME_GUTTER}px repeat(${visibleDays}, 1fr)`,
@@ -924,7 +1055,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               </div>
 
               {/* Day columns */}
-              {weekDays.map((day) => {
+              {weekDays.map((day, dayIndex) => {
                 const tod = isToday(day);
                 const daySessions = getDaySessions(day);
                 // Greyed when the business is closed that day (LT-340). It
@@ -933,7 +1064,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 const isClosed = openingHours?.workingDays?.length === 7 && hoursForDate(openingHours, day) === null;
 
                 return (
-                  <div key={day.toISOString()} className={`relative border-l border-gray-100 dark:border-gray-800/60${slideClass}`}
+                  <DropColumn key={day.toISOString()} index={dayIndex}>{(setColumnRef) => (
+                  <div ref={setColumnRef} className={`relative border-l border-gray-100 dark:border-gray-800/60${slideClass}`}
                     style={{
                       background: tod
                         ? 'rgba(99,102,241,0.02)'
@@ -978,20 +1110,46 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                         const ts     = new Date(session.startMs);
                         const endTs  = new Date(session.startMs + session.durationMS);
                         const ini    = appt ? initials(appt.name) : '';
+                        // One-to-one and ahead: may be dragged, and dropped onto (LT-345).
+                        const movable = !grouped && !!appt && isDraggable(appt);
 
-                        return (
+                        const renderBlock = (drag?: DragHandle) => {
+                          const lifted = !!drag?.isDragging;
+                          const landing = lifted ? dropPreview : null;
+                          // The block follows the pointer sideways and lands on
+                          // five-minute steps up and down.
+                          const liftY = landing ? offsetPx(session.startMs, landing.startMs, HOUR_PX) : drag?.transform?.y ?? 0;
+                          const liftX = lifted ? drag?.transform?.x ?? 0 : 0;
+                          const landingStart = landing?.verdict.kind === 'move' ? landing.verdict.startMs : null;
+                          const ring = lifted
+                            ? landing?.verdict.kind === 'refused' ? ' ring-2 ring-rose-400' : landing?.verdict.kind === 'swap' ? ' opacity-80' : ' ring-2 ring-primary'
+                            : drag?.isSwapTarget ? ' ring-2 ring-amber-400' : '';
+                          return (
                           <motion.div
                             key={session.id}
+                            ref={drag?.setNodeRef}
+                            {...(drag?.attributes ?? {})}
+                            {...(drag?.listeners ?? {})}
                             initial={{ opacity: 0, scale: 0.94 }}
                             animate={{ opacity: status === 'cancelled' ? 0.45 : 1, scale: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ delay: idx * 0.02, duration: 0.15 }}
-                            whileHover={{ scale: 1.025, zIndex: 25 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={e => grouped ? handleSessionClick(session, e) : handleEventClick(appt, e)}
-                            style={{ position: 'absolute', top, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 10 }}
+                            whileHover={lifted ? undefined : { scale: 1.025, zIndex: 25 }}
+                            whileTap={movable ? undefined : { scale: 0.97 }}
+                            onClick={e => {
+                              if (justDragged()) return;
+                              if (grouped) handleSessionClick(session, e);
+                              else handleEventClick(appt, e);
+                            }}
+                            style={{
+                              position: 'absolute', top, height, insetInlineStart: 4, insetInlineEnd: 4,
+                              zIndex: lifted ? 40 : 10,
+                              x: liftX,
+                              y: liftY,
+                              ...(movable ? { touchAction: 'manipulation', WebkitTouchCallout: 'none' } : {}),
+                            }}
                             className={`
-                              rounded-xl cursor-pointer overflow-hidden select-none
+                              rounded-xl cursor-pointer overflow-hidden select-none${ring}${lifted ? ' shadow-xl' : ''}
                               border-s-[3px] ${pal.border}
                               ${empty ? 'bg-white/90 dark:bg-gray-800/90 border border-dashed border-gray-300 dark:border-gray-600' : pal.bg}
                               px-2.5 py-2 shadow-sm hover:shadow-md transition-shadow duration-150
@@ -1018,9 +1176,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                                 {session.type.name}
                               </p>
                             </div>
-                            {height > 42 && (
-                              <p className={`text-[10px] mt-0.5 ${pal.sub} ${empty ? pal.emptyDarkSub : ''}`}>
-                                <span dir="ltr">{format(ts, 'HH:mm')} – {format(endTs, 'HH:mm')}</span>
+                            {(height > 42 || lifted) && (
+                              <p className={`text-[10px] mt-0.5 ${pal.sub} ${empty ? pal.emptyDarkSub : ''}${landingStart !== null ? ' font-semibold' : ''}`}>
+                                <span dir="ltr">
+                                  {landingStart !== null
+                                    ? `${format(new Date(landingStart), 'HH:mm')} – ${format(new Date(landingStart + session.durationMS), 'HH:mm')}`
+                                    : `${format(ts, 'HH:mm')} – ${format(endTs, 'HH:mm')}`}
+                                </span>
                               </p>
                             )}
                             {height > 62 && (
@@ -1052,13 +1214,19 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               )
                             )}
                           </motion.div>
-                        );
+                          );
+                        };
+                        return appt
+                          ? <DragBlock key={session.id} appointment={appt} enabled={movable}>{renderBlock}</DragBlock>
+                          : renderBlock();
                       })}
                     </AnimatePresence>
                   </div>
+                  )}</DropColumn>
                 );
               })}
           </div>
+          </DndContext>
         </div>
       </section>
 
@@ -1214,6 +1382,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       )}
 
       <MoveAppointmentModal appointment={moving} onClose={() => setMoving(null)} />
+      <DropConfirm pending={pendingDrop} saving={dropSaving} onConfirm={confirmDrop} onClose={() => setPendingDrop(null)} />
     </div>
   );
 };

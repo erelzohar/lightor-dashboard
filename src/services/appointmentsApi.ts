@@ -203,6 +203,17 @@ export const moveAppointment = async (id: string, timestamp: string): Promise<Ap
   return res.data.data;
 };
 
+/**
+ * The owner swaps two bookings' times (LT-345): each takes the other's start.
+ * The server checks that each fits in the other's place (409 SWAP_DOES_NOT_FIT
+ * / NOT_SWAPPABLE / CHANGED_MEANWHILE / CLASS_IN_THE_WAY) and tells both
+ * customers. Throws the request's own error, so the caller can read the code.
+ */
+export const swapAppointments = async (a: string, b: string): Promise<Appointment[]> => {
+  const res = await apiClient.post(`${APPOINTMENTS_URL}swap`, { a, b });
+  return res.data.data;
+};
+
 /* ------------------ Export (LT-217) ------------------ */
 
 /**
