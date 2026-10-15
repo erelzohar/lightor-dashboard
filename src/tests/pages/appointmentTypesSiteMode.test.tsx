@@ -274,3 +274,20 @@ describe('Services page — the form\'s delayed reset', () => {
     expect(input('name')).toHaveValue('Kitchen renovation');
   });
 });
+
+// LT-343: the "payment when booking" coming-soon sat inside the add/edit form,
+// where an owner looking at the page never saw it.
+describe('Services page — payment when booking, coming soon', () => {
+  it('shows on a booking site without opening the form', async () => {
+    renderPage('book');
+    expect(await screen.findByText('appointmentTypes.payment.title')).toBeInTheDocument();
+    expect(screen.getByTestId('coming-soon')).toBeInTheDocument();
+  });
+
+  it('is not on a leads site', async () => {
+    renderPage('lead');
+    await screen.findByText('appointmentTypes.title');
+    expect(screen.queryByText('appointmentTypes.payment.title')).toBeNull();
+  });
+});
+

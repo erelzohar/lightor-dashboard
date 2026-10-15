@@ -558,25 +558,6 @@ const AppointmentTypes: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Coming soon (LT-331): a deposit or the full price taken when this
-                      service is booked — a booking site's only. */}
-                  {!leadsSite && (
-                    <ComingSoonRow
-                      icon={CreditCard}
-                      title={t('appointmentTypes.payment.title')}
-                      description={t('appointmentTypes.payment.desc')}
-                      preview={
-                        <div className={cn(tabsListVariants(), 'w-fit')}>
-                          {(['none', 'deposit', 'full'] as const).map((k) => (
-                            <span key={k} data-state={k === 'none' ? 'active' : 'inactive'} className={tabsTriggerVariants({ size: 'sm' })}>
-                              {t(`appointmentTypes.payment.${k}`)}
-                            </span>
-                          ))}
-                        </div>
-                      }
-                    />
-                  )}
-
                   {/* Class toggle + action buttons on same row (no classes on a leads site) */}
                   <div className={`flex flex-col sm:flex-row sm:items-center gap-4 pt-1 ${leadsSite ? 'sm:justify-end' : ''}`}>
                     {/* Toggle */}
@@ -789,6 +770,27 @@ const AppointmentTypes: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Coming soon (LT-331): a deposit or the full price taken when a
+          service is booked — on the page itself, where the owner sees it,
+          not tucked inside the add/edit form (LT-343). Booking sites only. */}
+      {!leadsSite && (
+        <ComingSoonRow
+          icon={CreditCard}
+          title={t('appointmentTypes.payment.title')}
+          description={t('appointmentTypes.payment.desc')}
+          className="rounded-3xl p-5"
+          preview={
+            <div className={cn(tabsListVariants(), 'w-fit')}>
+              {(['none', 'deposit', 'full'] as const).map((k) => (
+                <span key={k} data-state={k === 'none' ? 'active' : 'inactive'} className={tabsTriggerVariants({ size: 'sm' })}>
+                  {t(`appointmentTypes.payment.${k}`)}
+                </span>
+              ))}
+            </div>
+          }
+        />
+      )}
     </motion.div>
   );
 };
