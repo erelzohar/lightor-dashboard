@@ -192,7 +192,7 @@ const AdminUserDetail: React.FC = () => {
 
       {/* ── Identity header ── */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-primary/20">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-primary/20">
           {user.name?.charAt(0).toUpperCase() || '?'}
         </div>
         <div className="min-w-0 flex-1">

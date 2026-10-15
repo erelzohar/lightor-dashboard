@@ -237,7 +237,7 @@ const Account: React.FC = () => {
       <Card>
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-medium shadow-lg shadow-primary/20">
+            <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-medium shadow-lg shadow-primary/20">
               {auth.user?.name.charAt(0).toUpperCase() || 'A'}
             </div>
             <div>

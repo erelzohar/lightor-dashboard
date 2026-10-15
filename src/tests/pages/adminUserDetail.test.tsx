@@ -65,6 +65,12 @@ describe('Admin user detail: site mode and leads', () => {
     expect(within(usageRow('admin.userDetail.usage.leads')).getByText('3 / 15')).toBeInTheDocument();
   });
 
+  it("shows the owner's initial in a round avatar (LT-369)", async () => {
+    vi.mocked(fetchUser).mockResolvedValue(detail({}));
+    renderPage();
+    expect(await screen.findByText('D', { exact: true })).toHaveClass('rounded-full');
+  });
+
   it('reads a config without a mode as a booking site, and an uncapped plan as unlimited', async () => {
     vi.mocked(fetchUser).mockResolvedValue(detail({ monthlyLeads: null }));
     renderPage();

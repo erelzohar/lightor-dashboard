@@ -43,6 +43,11 @@ describe('Account page: the phone (LT-360)', () => {
     vi.mocked(verifyPhoneCode).mockReset().mockResolvedValue('phone-proof');
   });
 
+  it('shows the initial in a round avatar (LT-369)', () => {
+    render(<Account />);
+    expect(screen.getByText('J', { exact: true })).toHaveClass('rounded-full');
+  });
+
   it('saves an unchanged phone (written another way) without a code', async () => {
     render(<Account />);
     fireEvent.click(screen.getByText('account.editDetails'));
