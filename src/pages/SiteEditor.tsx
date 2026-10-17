@@ -107,7 +107,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const [initialMessage, setInitialMessage] = useState(() => (location.state as { floatingMessage?: string } | null)?.floatingMessage);
   const initialMessageSent = useCallback(() => setInitialMessage(undefined), []);
   // LT-252: with nothing selected the panel is the whole site — its sections, or its design.
-  const [siteTab, setSiteTab] = useState<'sections' | 'design'>(initialMessage ? 'design' : 'sections');
+  // It opens on the design (LT-386, Erel); a phone opens no panel until a tab is tapped.
+  const [siteTab, setSiteTab] = useState<'sections' | 'design'>('design');
   // The add-section list, placed below a section (`after`) or where each one belongs (null).
   const [adding, setAdding] = useState<{ after: string | null } | null>(null);
   // The section the AI is drafting for the owner.

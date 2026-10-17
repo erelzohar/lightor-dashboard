@@ -31,8 +31,10 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
   useEffect(() => {
     let alive = true;
     void fetchMyEntitlements().then((e) => {
-      const limit = e?.limits.aiTokensPerMonth;
-      if (alive && e && limit) setUsage(Math.min(100, Math.round((e.usage.aiTokensThisMonth / limit) * 100)));
+      // A partial answer (no limits or usage) shows no bar rather than breaking the panel.
+      const limit = e?.limits?.aiTokensPerMonth;
+      const used = e?.usage?.aiTokensThisMonth;
+      if (alive && limit && typeof used === 'number') setUsage(Math.min(100, Math.round((used / limit) * 100)));
     });
     return () => { alive = false; };
   }, []);

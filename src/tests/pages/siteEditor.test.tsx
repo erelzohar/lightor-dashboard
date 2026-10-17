@@ -121,7 +121,8 @@ describe('the site editor (LT-249)', () => {
   });
 
   it("tells the preview that a Plus site's corner is Lighty (LT-312)", async () => {
-    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce({ plan: 'plus' } as never);
+    // Both the editor and the design tab (open from the start, LT-386) ask.
+    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce({ plan: 'plus' } as never).mockResolvedValueOnce({ plan: 'plus' } as never);
     renderEditor();
     await fromSite({ type: 'LT_READY' });
     await waitFor(() => expect((lastPosted('PREVIEW_DATA')?.[0] as { config: { assistant?: boolean } } | undefined)?.config.assistant).toBe(true));
@@ -211,10 +212,14 @@ describe('the site editor (LT-249)', () => {
   // ── LT-252: the page's sections ──
   const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig }).config;
   const row = (id: string) => within(screen.getByTestId(`section-row-${id}`));
+  // The panel opens on the design (LT-386); the sections are the other tab.
+  const toSections = () => fireEvent.mouseDown(screen.getByRole('tab', { name: 'siteEditor.sections.tab' }));
 
   it("with nothing selected, lists the page's sections; a tap selects one and shows it on the site", async () => {
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    expect(screen.getByRole('tab', { name: 'siteEditor.pageSettings' })).toHaveAttribute('aria-selected', 'true');
+    toSections();
     expect(screen.getByRole('tab', { name: 'siteEditor.sections.tab' })).toHaveAttribute('aria-selected', 'true');
     expect(row('b1').getByText('פתיחה')).toBeInTheDocument();
     expect(row('b2').getByText('שאלות נפוצות')).toBeInTheDocument();
@@ -237,6 +242,7 @@ describe('the site editor (LT-249)', () => {
     vi.mocked(aiService.draftSection).mockResolvedValue({ title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] });
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    toSections();
     fireEvent.click(screen.getByText('siteEditor.sections.add'));
     const list = await screen.findByTestId('add-section-panel');
     // The page has an FAQ already: not offered again. A gallery without photos
@@ -257,6 +263,7 @@ describe('the site editor (LT-249)', () => {
     vi.mocked(uploadImage).mockResolvedValue({ imageName: 'new.webp' } as Awaited<ReturnType<typeof uploadImage>>);
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    toSections();
     fireEvent.click(screen.getByText('siteEditor.sections.add'));
     fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('גלריה'));
     const panel = await screen.findByTestId('section-panel');
@@ -276,6 +283,7 @@ describe('the site editor (LT-249)', () => {
     vi.mocked(deleteImage).mockClear();
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    toSections();
     fireEvent.click(screen.getByText('siteEditor.sections.add'));
     fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('גלריה'));
     const panel = await screen.findByTestId('section-panel');
@@ -297,6 +305,7 @@ describe('the site editor (LT-249)', () => {
     vi.mocked(aiService.draftSection).mockRejectedValue({ response: { status: 429 } });
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    toSections();
     fireEvent.click(screen.getByText('siteEditor.sections.add'));
     fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('שלבים'));
     expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.stepTitle:1' })).toHaveValue('');
@@ -319,6 +328,7 @@ describe('the site editor (LT-249)', () => {
     state.webConfig.data = { ...saved, blocks: undefined };
     renderEditor();
     await fromSite({ type: 'LT_READY' });
+    toSections();
     await fromSite({
       type: 'LT_LAYOUT',
       blocks: [
@@ -363,6 +373,7 @@ describe('the site editor (LT-249)', () => {
   };
   const hideFaq = async () => {
     await fromSite({ type: 'LT_READY' });
+    toSections();
     fireEvent.click(row('b2').getByLabelText('siteEditor.sections.hide'));
     await waitFor(() => expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled());
   };
