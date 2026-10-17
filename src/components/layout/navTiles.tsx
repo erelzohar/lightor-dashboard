@@ -42,16 +42,15 @@ export const navTile = (path: string, Icon: typeof Inbox, ring: string, tile = T
     </span>
   );
 
-/** The same tile, larger, for the phone menu's tiles (LT-352). */
-export const bigNavTile = (path: string, Icon: typeof Inbox) =>
-  path === '/lighty' ? (
-    <span className="w-10 h-10 flex items-center justify-center flex-shrink-0">
-      <Icon className="w-10 h-10" />
-    </span>
-  ) : (
-    <span
-      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm bg-gradient-to-br ${TILE[path] ?? 'from-violet-400 to-violet-600'}`}
-    >
-      <Icon className="h-5 w-5 !text-white" strokeWidth={2.25} />
-    </span>
-  );
+/**
+ * The phone bar's items (LT-304), shared with the pages "More" adds to the
+ * bar (LT-378), so the grown bar reads as one bar. Colour lives on the
+ * active/idle branches, never on the shared classes: an idle
+ * `dark:text-gray-400` would outrank `text-primary` in dark mode.
+ */
+export const TAB_ITEM =
+  'group/tab flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1 rounded-[1.25rem] text-[10px] font-medium leading-tight transition-colors';
+export const TAB_IDLE = 'text-gray-500 dark:text-gray-400';
+export const TAB_ACTIVE = 'text-primary dark:text-primary font-semibold bg-violet-500/10 dark:bg-white/10';
+/** The active page: a ring around its tile, as in the sidebar (LT-278). */
+export const TAB_RING = 'group-aria-[current=page]/tab:ring-2 group-aria-[current=page]/tab:ring-violet-400/80';

@@ -22,7 +22,7 @@ import {
   Flag,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
-import BottomTabBar from './BottomTabBar';
+import BottomTabBar, { barPaths } from './BottomTabBar';
 import { PhoneMenu, type PhoneMenuSection } from './PhoneMenu';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -266,14 +266,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       : []),
   ];
 
-  // The phone menu's tiles (LT-352): the same pages, the same restriction.
-  const phoneSections: PhoneMenuSection[] = navSections
-    .map((section) => ({
-      id: section.id,
-      label: section.label,
-      items: section.items.filter(({ path }) => !isRestricted || ALLOWED_WHEN_RESTRICTED.includes(path)),
-    }))
-    .filter((section) => section.items.length > 0);
+  // What "More" adds to the phone bar (LT-378): the same pages under the same
+  // restriction, minus those the bar already shows. The owner's pages run on
+  // as one row of the bar's tiles (no captions for a handful); the
+  // operator's admin pages keep their own caption.
+  const inBar = new Set(barPaths(isRestricted, leadsSite));
+  const allowed = ({ path }: { path: string }) =>
+    !inBar.has(path) && (!isRestricted || ALLOWED_WHEN_RESTRICTED.includes(path));
+  const phoneSections: PhoneMenuSection[] = [
+    { id: 'pages', label: '', items: navSections.filter((s) => s.id !== 'admin').flatMap((s) => s.items).filter(allowed) },
+    ...navSections.filter((s) => s.id === 'admin').map((s) => ({ id: s.id, label: s.label, items: s.items.filter(allowed) })),
+  ].filter((section) => section.items.length > 0);
 
   return (
     <SidebarRoot open={open} setOpen={setOpen}>
@@ -315,7 +318,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         </div>
         <SidebarFooter />
       </SidebarBody>
-      {/* Phone-only thumb bar (LT-127); "More" opens the menu of tiles (LT-352). */}
+      {/* Phone-only thumb bar (LT-127); "More" grows it with the other pages (LT-378). */}
       <BottomTabBar
         isRestricted={isRestricted}
         leadsSite={leadsSite}

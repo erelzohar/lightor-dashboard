@@ -8,7 +8,7 @@ import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
 import { useHideOnScroll } from '../../hooks/useHideOnScroll';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
-import { navTile } from './navTiles';
+import { navTile, TAB_ITEM, TAB_IDLE, TAB_ACTIVE, TAB_RING } from './navTiles';
 
 interface BottomTabBarProps {
   /** Not-yet-onboarded accounts only get the pages the drawer allows them. */
@@ -20,11 +20,11 @@ interface BottomTabBarProps {
   leadsSite?: boolean;
   /** New leads (LT-197): a dot on the Leads tab while any wait. */
   newLeads?: number | null;
-  /** Opens or closes the full menu (the long tail of pages lives there). */
+  /** Opens or closes the rest of the pages (LT-378: the bar grows with them). */
   onMore: () => void;
-  /** The full menu is open (LT-352): it rises out of this bar, which stays under it. */
+  /** "More" is open: the bar has grown upwards with the pages it lacks. */
   menuOpen?: boolean;
-  /** The menu itself, drawn just above the bar while open. */
+  /** Those pages (PhoneMenu), drawn inside the bar above its own row. */
   menu?: React.ReactNode;
 }
 
@@ -34,8 +34,9 @@ interface BottomTabBarProps {
  * Under the `md` breakpoint the hover-rail sidebar collapses to a hamburger,
  * which makes every page change a two-tap trip through a full-screen drawer.
  * Native apps put the four daily destinations in a thumb-reach bar instead;
- * this is that bar. Everything else is behind "More": since LT-352 a sheet
- * of tiles that rises out of the bar, no longer a side drawer.
+ * this is that bar. Everything else is behind "More": since LT-378 the bar
+ * itself grows upwards with the pages it does not show (LT-352 opened a
+ * second menu over it, with the bar's pages again).
  *
  * Bottom padding follows `env(safe-area-inset-bottom)` so the bar clears the
  * iPhone home indicator inside the Capacitor shell (`viewport-fit=cover` in
@@ -43,6 +44,14 @@ interface BottomTabBarProps {
  * keyboard is up, otherwise it floats over the field being typed into.
  * Flex row + logical properties, so RTL just works.
  */
+/** The pages the bar itself shows; "More" adds only the others (LT-378). */
+export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
+  isRestricted
+    ? ['/', '/design']
+    : leadsSite
+      ? ['/', '/leads', '/lighty', '/schedule-vacations']
+      : ['/', '/appointments', '/lighty', '/schedule-vacations'];
+
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
@@ -77,14 +86,10 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
 
   if (keyboardOpen) return null;
 
-  // Colour lives on the active/idle branches, never on the shared classes:
-  // an idle `dark:text-gray-400` would outrank `text-primary` in dark mode.
-  const itemClasses =
-    'group/tab flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[44px] py-1 rounded-[1.25rem] text-[10px] font-medium leading-tight transition-colors';
-  const idleClasses = 'text-gray-500 dark:text-gray-400';
-  const activeClasses = 'text-primary dark:text-primary font-semibold bg-violet-500/10 dark:bg-white/10';
-  // The active page: a ring around its tile, as in the sidebar (LT-278).
-  const ring = 'group-aria-[current=page]/tab:ring-2 group-aria-[current=page]/tab:ring-violet-400/80';
+  const itemClasses = TAB_ITEM;
+  const idleClasses = TAB_IDLE;
+  const activeClasses = TAB_ACTIVE;
+  const ring = TAB_RING;
 
   return (
     <>
@@ -116,13 +121,18 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // (white, slate): the theme's own are bare CSS variables, and an
       // opacity modifier on them emits nothing.
       data-hidden={scrolledAway || undefined}
+      // LT-378: "More" grows this same bar upwards with the pages it lacks,
+      // so open it is opaque, with no backdrop blur on the large layer it
+      // becomes (WebKit stutters, LT-328).
       className={cn(
-        'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex items-stretch gap-0.5 p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
-        menuOpen ? 'z-[56]' : 'z-40',
+        'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex flex-col p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
+        menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
         'transition-transform duration-300 ease-out',
         scrolledAway && 'translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom))] pointer-events-none'
       )}
     >
+      <AnimatePresence initial={false}>{menuOpen && menu}</AnimatePresence>
+      <div className="flex items-stretch gap-0.5">
       {tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink
           key={path}
@@ -145,7 +155,6 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
           <span className="truncate max-w-full px-1">{label}</span>
         </NavLink>
       ))}
-      <AnimatePresence>{menuOpen && menu}</AnimatePresence>
       <button
         type="button"
         onClick={onMore}
@@ -157,6 +166,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
         {navTile('more', menuOpen ? X : LayoutGrid, '', 'from-slate-400 to-slate-500')}
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
+      </div>
     </nav>
     </>
   );

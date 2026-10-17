@@ -41,8 +41,8 @@ describe('phone chrome', () => {
     expect(openers).toHaveLength(1);
     expect(screen.getByTestId('bottom-tab-bar')).toContainElement(openers[0]);
 
-    expect(screen.queryByRole('dialog', { name: 'sidebar.menu' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'sidebar.menu' })).toBeNull();
     fireEvent.click(openers[0]);
-    expect(screen.getByRole('dialog', { name: 'sidebar.menu' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'sidebar.menu' })).toBeInTheDocument();
   });
 });

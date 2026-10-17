@@ -39,7 +39,7 @@ const renderAt = (path = '/', restricted = false) =>
     </MemoryRouter>
   );
 const more = () => within(screen.getByTestId('bottom-tab-bar')).getByRole('button', { name: /sidebar\.(open|close)Menu/ });
-const menu = () => screen.queryByRole('dialog', { name: 'sidebar.menu' });
+const menu = () => screen.queryByRole('region', { name: 'sidebar.menu' });
 const gone = () => waitFor(() => expect(menu()).toBeNull());
 const tileNames = (dialog: HTMLElement) => within(dialog).getAllByRole('link').map((a) => a.getAttribute('href'));
 
@@ -48,29 +48,38 @@ beforeEach(() => {
   newLeads = 0;
 });
 
-describe('the phone menu (LT-352)', () => {
-  it('rises out of the bar with every page as a tile, the current one marked', () => {
+describe('the phone menu (LT-352, LT-378)', () => {
+  it('grows the bar itself with only the pages the bar lacks, the current one marked (LT-378)', () => {
     renderAt('/customers');
     expect(more()).toHaveAttribute('aria-expanded', 'false');
+    const barLinks = () => within(screen.getByTestId('bottom-tab-bar')).getAllByRole('link');
+    const before = barLinks().map((a) => a.getAttribute('href'));
+    expect(before).toEqual(['/', '/appointments', '/lighty', '/schedule-vacations']);
     fireEvent.click(more());
 
-    const dialog = menu()!;
-    // Inside the bar, so it stands on it.
-    expect(screen.getByTestId('bottom-tab-bar')).toContainElement(dialog);
-    expect(tileNames(dialog)).toEqual([
-      '/', '/lighty', '/design', '/appointments',
-      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings',
-    ]);
-    expect(within(dialog).getByRole('region', { name: 'sidebar.navigation' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('region', { name: 'sidebar.manage' })).toBeInTheDocument();
-    expect(within(dialog).getByText('common.customers').closest('a')).toHaveAttribute('aria-current', 'page');
+    const added = menu()!;
+    // Part of the bar, above its own row: no second menu, no repeated pages.
+    expect(screen.getByTestId('bottom-tab-bar')).toContainElement(added);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(tileNames(added)).toEqual(['/design', '/customers', '/leads', '/appointment-types', '/portfolio', '/settings']);
+    tileNames(added).forEach((path) => expect(before).not.toContain(path));
+    // The bar's own row is still there, unchanged.
+    expect(barLinks().map((a) => a.getAttribute('href'))).toEqual([...tileNames(added), ...before]);
+    expect(within(added).getByText('common.customers').closest('a')).toHaveAttribute('aria-current', 'page');
     // The account, logging out and the theme are in it too.
-    expect(within(dialog).getByText('Erel')).toBeInTheDocument();
-    expect(within(dialog).getByText('common.logout')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'settings.darkMode' })).toBeInTheDocument();
+    expect(within(added).getByText('Erel')).toBeInTheDocument();
+    expect(within(added).getByRole('button', { name: 'common.logout' })).toBeInTheDocument();
+    expect(within(added).getByRole('button', { name: 'settings.darkMode' })).toBeInTheDocument();
     // "More" is now the way to close it.
     expect(more()).toHaveAccessibleName('sidebar.closeMenu');
     expect(more()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it("adds the leads site's own missing pages, never its bar's", () => {
+    conversion = 'lead';
+    renderAt('/');
+    fireEvent.click(more());
+    expect(tileNames(menu()!)).toEqual(['/design', '/appointment-types', '/portfolio', '/settings']);
   });
 
   it('shows the sign-in email under the name, in the sidebar and in the menu (LT-364)', () => {
@@ -112,10 +121,12 @@ describe('the phone menu (LT-352)', () => {
     expect(within(screen.getByTestId('bottom-tab-bar')).queryAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page')).toHaveLength(0);
   });
 
-  it('offers a not-yet-onboarded account only what it may open', () => {
+  it('offers a not-yet-onboarded account only what it may open: both are in the bar already', () => {
     renderAt('/', true);
     fireEvent.click(more());
-    expect(tileNames(menu()!)).toEqual(['/', '/design']);
+    expect(within(menu()!).queryAllByRole('link')).toHaveLength(0);
+    // Still the account and logging out.
+    expect(within(menu()!).getByRole('button', { name: 'common.logout' })).toBeInTheDocument();
   });
 
   it('counts new leads on the Leads tile', () => {
