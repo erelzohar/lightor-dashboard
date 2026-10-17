@@ -1676,6 +1676,10 @@
       "month": "Sum up my month",
       "services": "What are my services and prices?",
       "howHours": "How do I change my hours?"
+    },
+    "momentum": {
+      "leads": "Inquiries are up {{pct}}% on last week ⚡",
+      "income": "Income is up {{pct}}% on last week ⚡"
     }
   },
   "forgotPassword": {

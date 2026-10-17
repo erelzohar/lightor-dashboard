@@ -6,6 +6,7 @@ import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 import { impact, lightTick } from '../../lib/haptics';
 import { lazyOr } from '../../lib/lazyOr';
 import { DRAG_START_PX, cardPlacement, clampOffset, readOffset, saveOffset, type Home, type Offset } from '../../utils/floatingLighty';
+import type { Mood } from '../../utils/momentum';
 
 // three.js and the 1.8 MB model load after the page, never in its way. If
 // their chunk cannot load, nothing renders and his still face (shown until
@@ -20,7 +21,13 @@ interface FloatingAiAssistantProps {
   direction?: 'ltr' | 'rtl';
   /** Said in his speech bubble while the card is closed (the home page's greeting, LT-269). */
   greeting?: string;
+  /** LT-385: how the week is going against last week - his bolt crackles and he gets happier. */
+  mood?: Mood;
+  /** LT-385: why, in a line ("Inquiries are up 42% on last week"): under the greeting, or once a session elsewhere. */
+  note?: string;
 }
+
+const NOTE_KEY = 'lighty.momentumSaid';
 
 const QUICK = ['today', 'week', 'leads'] as const;
 const CARD_W = 340;
@@ -42,20 +49,33 @@ const GREETING_FADE_MS = 350;
  * tantrum in the air until he is put down — and stays where he was left
  * (per browser). A press that barely moves is still a tap. His card and his
  * greeting open on whichever side of him has room.
+ * LT-385: his `mood` reaches the 3D Lighty, and the `note` saying why joins
+ * the home page's greeting - elsewhere he says it once a session.
  */
-export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting }: FloatingAiAssistantProps) {
+export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting, mood = 0, note }: FloatingAiAssistantProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [modelReady, setModelReady] = useState(false);
+  // A note away from the home page: said once a session (per note), not on every page.
+  const [aside, setAside] = useState<string | undefined>();
+  useEffect(() => {
+    if (!note || greeting) return;
+    let said: string | null = null;
+    try { said = sessionStorage.getItem(NOTE_KEY); } catch { /* private mode: say it */ }
+    if (said === note) return;
+    try { sessionStorage.setItem(NOTE_KEY, note); } catch { /* nothing depends on it */ }
+    setAside(note);
+  }, [note, greeting]);
+  const said = greeting ? (note ? `${greeting}\n${note}` : greeting) : aside;
   // 'on' → 'fading' after GREETING_MS → 'off'. Each arrival on the page that
   // carries a greeting (the home page) says it again.
   const [bubble, setBubble] = useState<'on' | 'fading' | 'off'>('on');
   useEffect(() => {
-    if (!greeting) return;
+    if (!said) return;
     setBubble('on');
     const fade = setTimeout(() => setBubble('fading'), GREETING_MS);
     const gone = setTimeout(() => setBubble('off'), GREETING_MS + GREETING_FADE_MS);
     return () => { clearTimeout(fade); clearTimeout(gone); };
-  }, [greeting]);
+  }, [said]);
   const [message, setMessage] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -239,12 +259,12 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
         </div>
       )}
 
-      {greeting && !isChatOpen && bubble !== 'off' && (
+      {said && !isChatOpen && bubble !== 'off' && (
         <button
           type="button"
           onClick={openCard}
           dir={direction}
-          className={`floating-ai-button absolute bottom-14 ${onLeftHalf ? 'left-[4.75rem]' : 'right-[4.75rem]'} w-max max-w-[min(240px,calc(100vw-8rem))] px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-violet-100 dark:border-violet-900/50 shadow-lg text-sm font-semibold text-gray-800 dark:text-white text-start`}
+          className={`floating-ai-button absolute bottom-14 ${onLeftHalf ? 'left-[4.75rem]' : 'right-[4.75rem]'} w-max max-w-[min(240px,calc(100vw-8rem))] px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-violet-100 dark:border-violet-900/50 shadow-lg text-sm font-semibold text-gray-800 dark:text-white text-start whitespace-pre-line`}
           style={{
             animation: bubble === 'fading'
               ? `lightyBubbleOut ${GREETING_FADE_MS}ms ease-in forwards`
@@ -252,7 +272,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
           }}
           data-testid="lighty-greeting"
         >
-          {greeting}
+          {said}
           {/* the tail, pointing at Lighty */}
           <span
             aria-hidden="true"
@@ -288,6 +308,7 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
             thinking={false}
             cheerKey={0}
             dragging={dragging}
+            mood={mood}
             onReady={() => setModelReady(true)}
             // Held up, his shadow drops further below him.
             className={`absolute inset-0 pointer-events-none ${dragging ? 'drop-shadow-[0_18px_16px_rgba(124,58,237,0.4)]' : 'drop-shadow-[0_6px_10px_rgba(124,58,237,0.35)]'}`}

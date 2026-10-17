@@ -7,7 +7,7 @@ import { cardPlacement, clampOffset, readOffset, saveOffset } from '../../utils/
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
 vi.mock('../../components/lighty/Lighty3D', () => ({
-  default: ({ dragging }: { dragging?: boolean }) => <div data-testid="lighty-3d" data-dragging={String(!!dragging)} />,
+  default: ({ dragging, mood }: { dragging?: boolean; mood?: number }) => <div data-testid="lighty-3d" data-dragging={String(!!dragging)} data-mood={String(mood ?? 0)} />,
 }));
 const { lightTick, impact } = vi.hoisted(() => ({ lightTick: vi.fn(), impact: vi.fn() }));
 vi.mock('../../lib/haptics', () => ({ lightTick, impact }));
@@ -150,5 +150,33 @@ describe('the floating Lighty, dragged', () => {
     await act(() => new Promise((r) => setTimeout(r, 150)));
     fireEvent.click(lighty());
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+/** LT-385: how the week is going - his mood reaches the 3D Lighty, and he says why. */
+describe('the floating Lighty, in a mood', () => {
+  beforeEach(() => sessionStorage.clear());
+
+  it('passes his mood to the 3D Lighty', () => {
+    render(<FloatingAiAssistant onSend={vi.fn()} mood={3} />);
+    expect(screen.getByTestId('lighty-3d')).toHaveAttribute('data-mood', '3');
+  });
+
+  it("adds the reason under the home page's greeting", () => {
+    render(<FloatingAiAssistant onSend={vi.fn()} greeting="Good morning, Dana" note="Inquiries are up 42% on last week" />);
+    expect(screen.getByTestId('lighty-greeting').textContent).toContain('Good morning, Dana\nInquiries are up 42% on last week');
+  });
+
+  it('says it once a session on the other pages', () => {
+    const { unmount } = render(<FloatingAiAssistant onSend={vi.fn()} note="Income is up 35% on last week" />);
+    expect(screen.getByTestId('lighty-greeting').textContent).toContain('Income is up 35% on last week');
+    unmount();
+    render(<FloatingAiAssistant onSend={vi.fn()} note="Income is up 35% on last week" />);
+    expect(screen.queryByTestId('lighty-greeting')).toBeNull();
+  });
+
+  it('says nothing without a reason', () => {
+    render(<FloatingAiAssistant onSend={vi.fn()} mood={0} />);
+    expect(screen.queryByTestId('lighty-greeting')).toBeNull();
   });
 });

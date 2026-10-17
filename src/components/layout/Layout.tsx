@@ -14,6 +14,7 @@ import { useDeepLinkLeaveGuard } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
 import { greetingEmoji, greetingFor } from '../../lib/greeting';
+import { useMomentum } from '../../hooks/useMomentum';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 
 // Pages that deliberately bleed to the edges: they already cancel the
@@ -35,6 +36,11 @@ const Layout: React.FC = () => {
 
   const { direction } = useTheme();
   const { auth, updateUser } = useAuth();
+  // LT-385: how the week is going against last week - Lighty's mood, on every screen.
+  const momentum = useMomentum(!!auth.user);
+  const momentumNote = momentum.mood > 0 && momentum.kind && momentum.pct !== null
+    ? t(`lighty.momentum.${momentum.kind}`, { pct: momentum.pct })
+    : undefined;
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // Leaving a page with unsaved work asks first (LT-267).
@@ -166,6 +172,8 @@ const Layout: React.FC = () => {
         <FloatingAiAssistant
           direction={direction}
           greeting={pathname === '/' ? `${t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name })} ${greetingEmoji()}` : undefined}
+          mood={momentum.mood}
+          note={momentumNote}
           onSend={(msg) => leaveTo('/lighty', { lightyMessage: msg })}
           onOpenPage={() => leaveTo('/lighty')}
         />

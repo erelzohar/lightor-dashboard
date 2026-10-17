@@ -44,6 +44,9 @@ export interface LeadStats {
   lastMonth: number;
   /** The previous month up to the same day and hour (LT-281) — what this month is compared with. Absent from an older API. */
   lastMonthToDate?: number;
+  /** LT-385: this week so far (from Sunday), and last week up to the same weekday and time. Absent from an older API. */
+  thisWeek?: number;
+  lastWeekToDate?: number;
   /** Status 'new', all time. */
   waiting: number;
   /** Created in the last 30 days; handled = moved out of 'new'. */

@@ -1676,6 +1676,10 @@
       "month": "Resume mi mes",
       "services": "¿Cuáles son mis servicios y precios?",
       "howHours": "¿Cómo cambio mi horario?"
+    },
+    "momentum": {
+      "leads": "Las consultas suben un {{pct}}% respecto a la semana pasada ⚡",
+      "income": "Los ingresos suben un {{pct}}% respecto a la semana pasada ⚡"
     }
   },
   "forgotPassword": {

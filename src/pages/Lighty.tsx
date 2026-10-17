@@ -11,6 +11,7 @@ import { isLeadsSite } from '../utils/siteMode';
 import { LightyBubble, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
 import { lazyOr } from '../lib/lazyOr';
+import { useMomentum } from '../hooks/useMomentum';
 import { LightyTyped } from '../components/lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../components/lighty/LightySendIcon';
 
@@ -49,6 +50,8 @@ const LightyPage: React.FC = () => {
   const [loaded, setLoaded] = useState(false);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  // LT-385: his mood here too - how the week is going.
+  const momentum = useMomentum();
   const [error, setError] = useState<string | null>(null);
   const [cheer, setCheer] = useState(0);
   const [usage, setUsage] = useState<number | null>(null);
@@ -148,7 +151,7 @@ const LightyPage: React.FC = () => {
       <header className={empty ? 'flex flex-col items-center text-center gap-2 pt-2 md:pt-8' : 'flex items-center gap-3 pb-3 border-b border-gray-200/70 dark:border-slate-700/60'}>
         <div className={`shrink-0 transition-all duration-500 ${empty ? 'w-44 h-48 md:w-52 md:h-56' : 'w-12 h-14'}`}>
           <Suspense fallback={null}>
-            <Lighty3D thinking={busy} cheerKey={cheer} className="w-full h-full" />
+            <Lighty3D thinking={busy} cheerKey={cheer} mood={momentum.mood} className="w-full h-full" />
           </Suspense>
         </div>
         <div className={empty ? 'max-w-md' : 'flex-1 min-w-0'}>
