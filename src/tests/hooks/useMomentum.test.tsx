@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMomentum, resetMomentumCache } from '../../hooks/useMomentum';
+import { useMomentum, resetMomentumCache, readMoodPreview } from '../../hooks/useMomentum';
 import { fetchLeadStats } from '../../services/leadsApi';
 import { incomePeriods, samePointIn } from '../../components/dashboard/IncomeStats';
 
@@ -24,6 +24,7 @@ describe('useMomentum', () => {
     resetMomentumCache();
     vi.mocked(fetchLeadStats).mockReset();
     state.appointments.appointments = [];
+    sessionStorage.clear();
   });
 
   it("goes by the week's inquiries", async () => {
@@ -56,5 +57,15 @@ describe('useMomentum', () => {
   it('asks nothing when off', () => {
     renderHook(() => useMomentum(false));
     expect(fetchLeadStats).not.toHaveBeenCalled();
+  });
+
+  it('shows a mood to look at with ?lightyMood, for this tab, until ?lightyMood=off', async () => {
+    vi.mocked(fetchLeadStats).mockResolvedValue({ thisWeek: 2, lastWeekToDate: 2 } as never);
+    expect(readMoodPreview('?lightyMood=3')).toBe(3);
+    expect(readMoodPreview('')).toBe(3); // kept for the tab
+    const { result } = renderHook(() => useMomentum());
+    expect(result.current).toEqual({ mood: 3, kind: 'leads', pct: 80 });
+    expect(readMoodPreview('?lightyMood=off')).toBeNull();
+    expect(readMoodPreview('?lightyMood=7')).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAppSelector } from './useAppSelector';
 import { fetchLeadStats } from '../services/leadsApi';
 import { incomeIn, incomePeriods, samePointIn } from '../components/dashboard/IncomeStats';
-import { momentum, type Momentum, type WeekFigure } from '../utils/momentum';
+import { momentum, type Momentum, type Mood, type WeekFigure } from '../utils/momentum';
 
 /**
  * LT-385: the week so far against last week to the same point, for Lighty's
@@ -31,6 +31,26 @@ const leadsWeek = (): Promise<WeekFigure | null> => {
   return inflight;
 };
 
+const PREVIEW_KEY = 'lighty.moodPreview';
+const PREVIEW_PCT = [0, 20, 45, 80];
+
+/**
+ * A mood to look at without the numbers (LT-385): open the dashboard with
+ * ?lightyMood=0..3 and this tab shows that mood until ?lightyMood=off (or
+ * the tab closes). Only the viewer's own screen changes.
+ */
+export const readMoodPreview = (search: string = window.location.search): Mood | null => {
+  try {
+    const q = new URLSearchParams(search).get('lightyMood');
+    if (q === 'off') sessionStorage.removeItem(PREVIEW_KEY);
+    else if (q !== null && /^[0-3]$/.test(q)) sessionStorage.setItem(PREVIEW_KEY, q);
+    const v = sessionStorage.getItem(PREVIEW_KEY);
+    return v !== null && /^[0-3]$/.test(v) ? (Number(v) as Mood) : null;
+  } catch {
+    return null;
+  }
+};
+
 /** For tests: forget the cached inquiries. */
 export const resetMomentumCache = () => { cached = null; inflight = null; };
 
@@ -39,6 +59,7 @@ export function useMomentum(enabled = true): Momentum {
   const [leads, setLeads] = useState<WeekFigure | null>(cached?.leads ?? null);
   // Moves "now" along, so the week's cut-off point keeps up.
   const [tick, setTick] = useState(0);
+  const [preview] = useState(readMoodPreview);
 
   useEffect(() => {
     if (!enabled) return;
@@ -51,6 +72,7 @@ export function useMomentum(enabled = true): Momentum {
 
   return useMemo(() => {
     if (!enabled) return { mood: 0, kind: null, pct: null };
+    if (preview !== null) return preview ? { mood: preview, kind: 'leads', pct: PREVIEW_PCT[preview] } : { mood: 0, kind: null, pct: null };
     const now = new Date();
     const { weeks } = incomePeriods(now);
     const thisWeek = weeks[weeks.length - 1];
@@ -61,5 +83,5 @@ export function useMomentum(enabled = true): Momentum {
     return momentum(leads, income);
     // `tick` moves "now" on.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, appointments, leads, tick]);
+  }, [enabled, appointments, leads, tick, preview]);
 }
