@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Layers, Loader2, Monitor, Palette, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
+  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Layers, Loader2, Monitor, Palette, Plus, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { AxiosError } from 'axios';
@@ -38,6 +40,10 @@ import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { siteUrlOf } from '../utils/siteUrl';
 import { pop } from '../components/ui/pop-button';
+import { usePhoneBar } from '../contexts/PhoneBarContext';
+import { useIsPhone } from '../hooks/useIsPhone';
+import { navTile, TAB_ITEM, TAB_IDLE, TAB_ACTIVE } from '../components/layout/navTiles';
+import { cn } from '../lib/utils';
 
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
@@ -472,6 +478,89 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   }, [panelKey]);
   const iconButton = 'p-2 rounded-full text-gray-500 dark:text-slate-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-violet-900/20 disabled:opacity-40 disabled:hover:bg-transparent';
 
+  // LT-380: on a phone the tab bar itself is the editing menu: its row holds
+  // the editor's tabs (and "More", for the other pages) and the panel opens
+  // inside it, growing it upwards, as "More" does (LT-378). Desktop keeps the
+  // panel beside the preview.
+  const phoneBar = usePhoneBar();
+  const isPhone = useIsPhone();
+  const inBar = isPhone && !!phoneBar;
+  const setBarEditing = phoneBar?.setEditing;
+  const setBarMenuOpen = phoneBar?.setMenuOpen;
+  useEffect(() => {
+    if (!inBar || !setBarEditing) return;
+    setBarEditing(true);
+    return () => setBarEditing(false);
+  }, [inBar, setBarEditing]);
+  const openSite = (tab: 'sections' | 'design') => {
+    setBarMenuOpen?.(false);
+    const showing = sheetOpen && !adding && (tab === 'sections' ? !!selection || siteTab === 'sections' : !selection && siteTab === 'design');
+    if (showing) {
+      closePanel();
+      return;
+    }
+    setSelection(null);
+    setAdding(null);
+    setSiteTab(tab);
+    setPageOpen(true);
+  };
+  const toggleAdd = () => {
+    setBarMenuOpen?.(false);
+    // The lit tab again closes the panel, as the other tabs do.
+    if (adding) {
+      closePanel();
+      return;
+    }
+    setSelection(null);
+    setAdding({ after: null });
+  };
+  const editTabs = [
+    { id: 'sections', label: t('siteEditor.sections.tab'), Icon: Layers, tile: 'from-violet-400 to-violet-600', active: sheetOpen && !adding && (!!selection || siteTab === 'sections'), onClick: () => openSite('sections') },
+    { id: 'design', label: t('siteEditor.pageSettings'), Icon: Palette, tile: 'from-pink-400 to-fuchsia-500', active: sheetOpen && !adding && !selection && siteTab === 'design', onClick: () => openSite('design') },
+    { id: 'add', label: t('siteEditor.sections.add'), Icon: Plus, tile: 'from-emerald-400 to-green-500', active: !!adding, onClick: toggleAdd },
+  ];
+
+  const panelHeader = (
+    <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700/50 shrink-0">
+      <div className="flex items-center gap-1 min-w-0">
+        {(adding || selection) && (
+          <button type="button" onClick={goBack} className={iconButton} title={t('siteEditor.back')} aria-label={t('siteEditor.back')}>
+            <Back className="w-4 h-4" />
+          </button>
+        )}
+        <div className="min-w-0">
+          {selection && selection.kind !== 'section' && selection.sectionType && (
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 truncate">{sectionLabel(selection.sectionType, lang)}</p>
+          )}
+          <h2 className="font-semibold text-gray-800 dark:text-white truncate">{heading}</h2>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          className={`${iconButton} md:hidden`}
+          onClick={() => setFolded((f) => !f)}
+          aria-expanded={!folded}
+          title={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
+          aria-label={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
+        >
+          {folded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        {(selection || pageOpen || adding) && (
+          <button type="button" className={iconButton} onClick={closePanel} title={t('siteEditor.close')} aria-label={t('siteEditor.close')}>
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+  const panelBody = (
+    <div ref={panelScrollRef} className={`flex-1 min-h-0 overflow-y-auto p-4 ${folded ? 'hidden md:block' : ''}`}>
+      {!selection && !adding && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
+      {panel()}
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-gradient-to-br from-violet-50 via-slate-50 to-indigo-50/70 dark:from-slate-950 dark:via-violet-950/10 dark:to-slate-950">
       {/* ── Top bar ── */}
@@ -496,9 +585,12 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           <button type="button" className={iconButton} onClick={draft.redo} disabled={!draft.canRedo} title={t('siteEditor.redo')} aria-label={t('siteEditor.redo')}>
             <Redo2 className="w-4 h-4" />
           </button>
-          <button type="button" className={`${iconButton} md:hidden`} onClick={() => { setSelection(null); setAdding(null); setPageOpen((v) => !v); }} title={t('siteEditor.site')} aria-label={t('siteEditor.site')}>
-            <Layers className="w-4 h-4" />
-          </button>
+          {/* On a phone with the tab bar, its "sections" tab opens the site (LT-380). */}
+          {!inBar && (
+            <button type="button" className={`${iconButton} md:hidden`} onClick={() => { setSelection(null); setAdding(null); setPageOpen((v) => !v); }} title={t('siteEditor.site')} aria-label={t('siteEditor.site')}>
+              <Layers className="w-4 h-4" />
+            </button>
+          )}
           <button type="button" className={iconButton} onClick={() => setConfirmDiscard(true)} disabled={!draft.dirty || saving} title={t('siteEditor.discard')} aria-label={t('siteEditor.discard')}>
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -548,49 +640,59 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           </div>
         </section>
 
-        {/* ── Panel: beside the preview from md up, a bottom sheet on phones ── */}
+        {/* ── Panel: beside the preview from md up; on a phone inside the tab bar (LT-380), or a bottom sheet without one ── */}
+        {!inBar && (
         <aside
           className={`${sheetOpen ? 'flex' : 'hidden'} md:flex flex-col fixed md:static inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-auto z-40 max-h-[62vh] md:max-h-none md:w-[380px] shrink-0 rounded-t-3xl md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/80 md:dark:bg-slate-800/80 shadow-2xl md:shadow-lg border-t md:border border-gray-100 dark:border-slate-700/50 overflow-hidden`}
           aria-label={heading}
         >
-          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700/50 shrink-0">
-            <div className="flex items-center gap-1 min-w-0">
-              {(adding || selection) && (
-                <button type="button" onClick={goBack} className={iconButton} title={t('siteEditor.back')} aria-label={t('siteEditor.back')}>
-                  <Back className="w-4 h-4" />
-                </button>
-              )}
-              <div className="min-w-0">
-                {selection && selection.kind !== 'section' && selection.sectionType && (
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 truncate">{sectionLabel(selection.sectionType, lang)}</p>
-                )}
-                <h2 className="font-semibold text-gray-800 dark:text-white truncate">{heading}</h2>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                className={`${iconButton} md:hidden`}
-                onClick={() => setFolded((f) => !f)}
-                aria-expanded={!folded}
-                title={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
-                aria-label={t(folded ? 'siteEditor.unfold' : 'siteEditor.fold')}
-              >
-                {folded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              {(selection || pageOpen || adding) && (
-                <button type="button" className={iconButton} onClick={closePanel} title={t('siteEditor.close')} aria-label={t('siteEditor.close')}>
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-          <div ref={panelScrollRef} className={`flex-1 overflow-y-auto p-4 ${folded ? 'hidden md:block' : ''}`}>
-            {!selection && !adding && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
-            {panel()}
-          </div>
+          {panelHeader}
+          {panelBody}
         </aside>
+        )}
       </div>
+
+      {inBar && phoneBar?.rowEl && createPortal(
+        editTabs.map(({ id, label, Icon, tile, active, onClick }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            data-testid={`edit-tab-${id}`}
+            className={cn(TAB_ITEM, active ? TAB_ACTIVE : TAB_IDLE)}
+          >
+            {navTile(id, Icon, 'group-aria-pressed/tab:ring-2 group-aria-pressed/tab:ring-violet-400/80', tile)}
+            <span className="truncate max-w-full px-1">{label}</span>
+          </button>
+        )),
+        phoneBar.rowEl
+      )}
+      {inBar && phoneBar?.panelEl && createPortal(
+        <AnimatePresence initial={false}>
+          {sheetOpen && (
+            <motion.div
+              key="editor-panel"
+              role="region"
+              aria-label={heading}
+              data-testid="editor-panel"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ height: { type: 'spring', stiffness: 420, damping: 38 }, opacity: { duration: 0.15 } }}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-col" style={{ maxHeight: 'min(62vh, calc(100svh - env(safe-area-inset-top) - 10rem))' }}>
+                {panelHeader}
+                {panelBody}
+              </div>
+              {/* Where the bar's own row starts. */}
+              <div className="mx-2 mb-1 border-t border-gray-100 dark:border-white/10" aria-hidden="true" />
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        phoneBar.panelEl
+      )}
 
       <ConfirmDialog
         open={confirmDiscard}

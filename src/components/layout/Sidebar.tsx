@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
+import { usePhoneBar } from '../../contexts/PhoneBarContext';
 import { PhoneMenu, type PhoneMenuSection } from './PhoneMenu';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -190,7 +191,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   // The phone's menu (LT-352), apart from the desktop rail's hover state.
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Shared with the page under the bar when the layout provides it (LT-380:
+  // the site editor closes it from its own tabs); its own otherwise.
+  const phoneBar = usePhoneBar();
+  const [ownMenuOpen, setOwnMenuOpen] = useState(false);
+  const menuOpen = phoneBar ? phoneBar.menuOpen : ownMenuOpen;
+  const setMenuOpen = phoneBar ? phoneBar.setMenuOpen : setOwnMenuOpen;
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
@@ -210,7 +216,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   useEffect(() => {
     setMenuOpen(false);
     if (!isRestricted) void refreshNewLeadsCount();
-  }, [location.pathname, isRestricted]);
+  }, [location.pathname, isRestricted, setMenuOpen]);
 
   const navSections = [
     {
@@ -329,6 +335,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         newLeads={newLeads}
         menuOpen={menuOpen}
         onMore={() => setMenuOpen((wasOpen) => !wasOpen)}
+        editing={phoneBar?.editing ?? false}
+        rowRef={phoneBar?.setRowEl}
+        panelRef={phoneBar?.setPanelEl}
         menu={<PhoneMenu key="phone-menu" sections={phoneSections} onClose={() => setMenuOpen(false)} />}
       />
     </SidebarRoot>

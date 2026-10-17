@@ -6,6 +6,7 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import SiteEditor from '../../pages/SiteEditor';
 import BottomTabBar from '../../components/layout/BottomTabBar';
 import { LeaveGuardProvider } from '../../contexts/LeaveGuardContext';
+import { PhoneBarProvider, usePhoneBar } from '../../contexts/PhoneBarContext';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
@@ -493,5 +494,116 @@ describe('the site editor (LT-249)', () => {
       await waitFor(() => expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled());
       expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toHaveValue('First, then more');
     });
+  });
+});
+
+/**
+ * LT-380 — Erel: on the phone the tab bar itself should become the editing
+ * menu and grow with the panel, as "More" grows it (LT-378).
+ */
+describe('the site editor on a phone (LT-380)', () => {
+  const realMatchMedia = window.matchMedia;
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('max-width'),
+      media: query,
+      addEventListener: (): void => undefined,
+      removeEventListener: (): void => undefined,
+      addListener: (): void => undefined,
+      removeListener: (): void => undefined,
+    })) as unknown as typeof window.matchMedia;
+  });
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+  });
+
+  /** The layout's bar, wired to the shared state as Sidebar wires it. */
+  const Bar = () => {
+    const bar = usePhoneBar()!;
+    return (
+      <BottomTabBar
+        onMore={() => bar.setMenuOpen((open) => !open)}
+        menuOpen={bar.menuOpen}
+        menu={<div key="pages" data-testid="pages-menu" />}
+        editing={bar.editing}
+        rowRef={bar.setRowEl}
+        panelRef={bar.setPanelEl}
+      />
+    );
+  };
+  const renderOnPhone = () =>
+    render(
+      <MemoryRouter initialEntries={['/design']}>
+        <LeaveGuardProvider>
+          <PhoneBarProvider>
+            <SiteEditor />
+            <Bar />
+          </PhoneBarProvider>
+        </LeaveGuardProvider>
+      </MemoryRouter>
+    );
+  const bar = () => within(screen.getByTestId('bottom-tab-bar'));
+  const tab = (id: string) => screen.getByTestId(`edit-tab-${id}`);
+  const panel = () => screen.queryByTestId('editor-panel');
+  const shut = () => waitFor(() => expect(panel()).toBeNull());
+
+  it("puts the editor's tabs in the bar's row instead of the pages, and keeps More", () => {
+    renderOnPhone();
+    expect(bar().getAllByRole('button').map((b) => b.getAttribute('data-testid') ?? b.getAttribute('aria-label'))).toEqual([
+      'edit-tab-sections', 'edit-tab-design', 'edit-tab-add', 'sidebar.openMenu',
+    ]);
+    expect(bar().queryByRole('link')).toBeNull();
+    // No second panel beside or over the preview: it lives in the bar.
+    expect(screen.queryByRole('complementary')).toBeNull();
+    expect(screen.queryByLabelText('siteEditor.site')).toBeNull();
+  });
+
+  it('grows the bar with the panel: the sections, the design, the add list; the same tab closes it', async () => {
+    renderOnPhone();
+    expect(panel()).toBeNull();
+
+    fireEvent.click(tab('sections'));
+    expect(screen.getByTestId('bottom-tab-bar')).toContainElement(panel());
+    expect(tab('sections')).toHaveAttribute('aria-pressed', 'true');
+    expect(within(panel()!).getByRole('heading', { name: 'siteEditor.site' })).toBeInTheDocument();
+    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.sections.tab' })).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(tab('design'));
+    expect(tab('design')).toHaveAttribute('aria-pressed', 'true');
+    expect(tab('sections')).toHaveAttribute('aria-pressed', 'false');
+    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.pageSettings' })).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(tab('add'));
+    expect(within(panel()!).getByRole('heading', { name: 'siteEditor.sections.add' })).toBeInTheDocument();
+
+    fireEvent.click(tab('add'));
+    await shut();
+  });
+
+  it('opens what was tapped on the site inside the bar, and its X closes it', async () => {
+    renderOnPhone();
+    await fromSite({ type: 'LT_READY' });
+    await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero', count: 1 });
+    expect(screen.getByTestId('bottom-tab-bar')).toContainElement(panel());
+    expect(within(panel()!).getByDisplayValue('Old title')).toBeInTheDocument();
+    // A section is being edited: the sections tab is the lit one.
+    expect(tab('sections')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(panel()!).getByLabelText('siteEditor.close'));
+    await shut();
+  });
+
+  it('More shows the pages over the panel and keeps what is in it; an editor tab brings it back', async () => {
+    renderOnPhone();
+    fireEvent.click(tab('sections'));
+    fireEvent.click(bar().getByRole('button', { name: 'sidebar.openMenu' }));
+    expect(screen.getByTestId('pages-menu')).toBeInTheDocument();
+    // Out of sight, still mounted.
+    expect(screen.getByTestId('phone-bar-panel')).not.toBeVisible();
+    expect(panel()).not.toBeNull();
+
+    fireEvent.click(tab('design'));
+    await waitFor(() => expect(screen.queryByTestId('pages-menu')).toBeNull());
+    expect(screen.getByTestId('phone-bar-panel')).toBeVisible();
+    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.pageSettings' })).toHaveAttribute('aria-selected', 'true');
   });
 });

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
+import { PhoneBarProvider } from '../../contexts/PhoneBarContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
@@ -115,6 +116,7 @@ const Layout: React.FC = () => {
   };
 
   return (
+    <PhoneBarProvider>
     <div
       // pt: the status bar. The app draws under it (LT-210), and on phones
       // there is no top bar any more to hold that space; zero in a browser.
@@ -208,6 +210,7 @@ const Layout: React.FC = () => {
         </motion.main>
       </div>
     </div>
+    </PhoneBarProvider>
   );
 };
 

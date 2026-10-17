@@ -26,6 +26,14 @@ interface BottomTabBarProps {
   menuOpen?: boolean;
   /** Those pages (PhoneMenu), drawn inside the bar above its own row. */
   menu?: React.ReactNode;
+  /**
+   * A page has taken the bar over (LT-380, the site editor): its tabs go in
+   * `rowRef`'s element instead of the pages, and its panel in `panelRef`'s,
+   * above the row. "More" stays, for the other pages.
+   */
+  editing?: boolean;
+  rowRef?: (el: HTMLElement | null) => void;
+  panelRef?: (el: HTMLElement | null) => void;
 }
 
 /**
@@ -52,13 +60,14 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
       ? ['/', '/leads', '/lighty', '/schedule-vacations']
       : ['/', '/appointments', '/lighty', '/schedule-vacations'];
 
-const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu }) => {
+const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
   // Scrolling down, it slides away; up, or on another page, it is back (LT-342).
   const { pathname } = useLocation();
-  // Never away while its menu is open: the menu stands on it.
-  const scrolledAway = useHideOnScroll(pathname) && !menuOpen;
+  // Never away while its menu is open: the menu stands on it; nor while a
+  // page edits through it.
+  const scrolledAway = useHideOnScroll(pathname) && !menuOpen && !editing;
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
@@ -84,7 +93,9 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
           { path: '/schedule-vacations', Icon: Calendar, label: t('common.scheduleVacations') },
         ];
 
-  if (keyboardOpen) return null;
+  // While typing the bar gets out of the way; an editing page keeps its
+  // panel (the field being typed in is in it) and only loses the row.
+  if (keyboardOpen && !editing) return null;
 
   const itemClasses = TAB_ITEM;
   const idleClasses = TAB_IDLE;
@@ -126,14 +137,18 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // becomes (WebKit stutters, LT-328).
       className={cn(
         'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex flex-col p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
-        menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
+        menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : editing ? 'z-40 bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
         'transition-transform duration-300 ease-out',
         scrolledAway && 'translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom))] pointer-events-none'
       )}
     >
       <AnimatePresence initial={false}>{menuOpen && menu}</AnimatePresence>
-      <div className="flex items-stretch gap-0.5">
-      {tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
+      {/* The editing page's panel (LT-380); out of sight, not out of the
+          tree, while "More" is open, so what is typed in it stays. */}
+      {editing && <div ref={panelRef} hidden={menuOpen} data-testid="phone-bar-panel" />}
+      <div className={cn('flex items-stretch gap-0.5', editing && keyboardOpen && 'hidden')}>
+      {editing && <div ref={rowRef} className="contents" data-testid="phone-bar-row" />}
+      {!editing && tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink
           key={path}
           to={path}
