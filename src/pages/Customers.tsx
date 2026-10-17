@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { UsersRound, UserPlus, Download, Ban, Repeat, Sparkles, Lock } from 'lucide-react';
+import { UsersRound, UserPlus, Download, Ban, Repeat, Sparkles, Lock, Inbox } from 'lucide-react';
 import DataTable, { DataTableColumn } from '../components/ui/DataTable';
 import StatCard from '../components/ui/StatCard';
 import Select from '../components/ui/Select';
@@ -27,15 +27,21 @@ import {
 import { Paginated } from '../services/adminApi';
 import { formatPhoneForDisplay } from '../utils/phone';
 import { pastVisits } from '../utils/customerVisits';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { isLeadsSite } from '../utils/siteMode';
 
 /**
- * Customers (LT-122): every person who has booked with this business, keyed
- * by phone number — searchable, sortable, blockable — plus who comes back
- * most. Server-paginated like the admin tables; a row opens the drawer.
+ * Customers (LT-122): every person who has booked with this business, or
+ * written to it through the site (LT-376), keyed by phone number —
+ * searchable, sortable, blockable — plus who comes back most.
+ * Server-paginated like the admin tables; a row opens the drawer.
  */
 const Customers: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  // A leads site takes no bookings (LT-376): its table counts what each
+  // customer wrote where a booking site counts visits and revenue.
+  const leadsSite = isLeadsSite(useAppSelector((state) => state.webConfig.data));
 
   const [result, setResult] = useState<Paginated<CustomerRow> | null>(null);
   const [overview, setOverview] = useState<CustomersOverview | null>(null);
@@ -149,38 +155,67 @@ const Customers: React.FC = () => {
         </div>
       ),
     },
-    {
-      key: 'visits',
-      label: t('customers.columns.visits'),
-      sortable: true,
-      render: (row) => (
-        <span className="font-medium text-gray-800 dark:text-gray-100">
-          {/* Visits that took place, then the upcoming ones (LT-315): the
-              API's count includes those, so "1+1" was one booking twice. */}
-          {pastVisits(row)}
-          {row.upcoming > 0 && (
-            <span className="ms-1.5 text-[11px] text-primary">+{row.upcoming}</span>
-          )}
-        </span>
-      ),
-    },
-    {
-      key: 'lastVisit',
-      label: t('customers.columns.lastVisit'),
-      sortable: true,
-      className: 'hidden sm:table-cell',
-      render: (row) => <span className="text-gray-500">{formatDate(row.lastVisit)}</span>,
-    },
-    {
-      key: 'revenue',
-      label: t('customers.columns.revenue'),
-      className: 'hidden lg:table-cell',
-      render: (row) => (
-        <span className="text-gray-500">
-          {t('appointments.currencySymbol')}{Math.round(row.revenue).toLocaleString()}
-        </span>
-      ),
-    },
+    ...(leadsSite
+      ? ([
+          {
+            key: 'inquiries',
+            label: t('customers.columns.inquiries'),
+            sortable: true,
+            render: (row) => (
+              <span className="font-medium text-gray-800 dark:text-gray-100">{row.inquiries ?? 0}</span>
+            ),
+          },
+          {
+            key: 'lastInquiry',
+            label: t('customers.columns.lastInquiry'),
+            sortable: true,
+            className: 'hidden sm:table-cell',
+            render: (row) => <span className="text-gray-500">{formatDate(row.lastInquiry)}</span>,
+          },
+        ] satisfies DataTableColumn<CustomerRow>[])
+      : ([
+          {
+            key: 'visits',
+            label: t('customers.columns.visits'),
+            sortable: true,
+            render: (row) => (
+              <span className="font-medium text-gray-800 dark:text-gray-100">
+                {/* Visits that took place, then the upcoming ones (LT-315): the
+                    API's count includes those, so "1+1" was one booking twice. */}
+                {pastVisits(row)}
+                {row.upcoming > 0 && (
+                  <span className="ms-1.5 text-[11px] text-primary">+{row.upcoming}</span>
+                )}
+                {/* Wrote through the site too (LT-376): why someone with no
+                    visits is on the list. */}
+                {row.inquiries > 0 && (
+                  <span className="ms-1.5 inline-flex items-center gap-0.5 text-[11px] text-gray-400" title={t('customers.columns.inquiries')}>
+                    <Inbox size={11} aria-hidden="true" />
+                    <span className="sr-only">{t('customers.columns.inquiries')}:</span>
+                    {row.inquiries}
+                  </span>
+                )}
+              </span>
+            ),
+          },
+          {
+            key: 'lastVisit',
+            label: t('customers.columns.lastVisit'),
+            sortable: true,
+            className: 'hidden sm:table-cell',
+            render: (row) => <span className="text-gray-500">{formatDate(row.lastVisit)}</span>,
+          },
+          {
+            key: 'revenue',
+            label: t('customers.columns.revenue'),
+            className: 'hidden lg:table-cell',
+            render: (row) => (
+              <span className="text-gray-500">
+                {t('appointments.currencySymbol')}{Math.round(row.revenue).toLocaleString()}
+              </span>
+            ),
+          },
+        ] satisfies DataTableColumn<CustomerRow>[])),
     {
       key: 'status',
       label: t('customers.columns.status'),
@@ -220,7 +255,9 @@ const Customers: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Returning customers and the top lists are about visits: a leads
+          site shows the other three. */}
+      <div className={`grid grid-cols-1 gap-4 ${leadsSite ? 'sm:grid-cols-3' : 'sm:grid-cols-2 xl:grid-cols-4'}`}>
         <StatCard label={t('customers.stats.total')} value={totals?.customers ?? '-'} icon={<UsersRound size={20} />} />
         <StatCard
           label={t('customers.stats.newThisMonth')}
@@ -230,15 +267,17 @@ const Customers: React.FC = () => {
           accent="text-emerald-600 dark:text-emerald-400"
           delay={0.05}
         />
-        <StatCard
-          label={t('customers.stats.returning')}
-          value={totals?.returning ?? '-'}
-          subline={t('customers.stats.returningHint')}
-          icon={<Repeat size={20} />}
-          iconBg="bg-blue-100 dark:bg-blue-900/30"
-          accent="text-blue-600 dark:text-blue-400"
-          delay={0.1}
-        />
+        {!leadsSite && (
+          <StatCard
+            label={t('customers.stats.returning')}
+            value={totals?.returning ?? '-'}
+            subline={t('customers.stats.returningHint')}
+            icon={<Repeat size={20} />}
+            iconBg="bg-blue-100 dark:bg-blue-900/30"
+            accent="text-blue-600 dark:text-blue-400"
+            delay={0.1}
+          />
+        )}
         <StatCard
           label={t('customers.stats.blocked')}
           value={totals?.blocked ?? '-'}
@@ -249,7 +288,7 @@ const Customers: React.FC = () => {
         />
       </div>
 
-      {insightsLocked ? (
+      {leadsSite ? null : insightsLocked ? (
         <UpgradeCard title={t('customers.upgrade.insightsTitle')} description={t('customers.upgrade.insightsDesc')} />
       ) : (
         <TopCustomers
@@ -281,7 +320,7 @@ const Customers: React.FC = () => {
         searchPlaceholder={t('customers.search')}
         // A search or filter that finds no one is not an empty customer
         // list (LT-340): it said "no customers yet" to a business with dozens.
-        emptyMessage={t(search.trim() || blocked ? 'customers.noMatch' : 'customers.empty')}
+        emptyMessage={t(search.trim() || blocked ? 'customers.noMatch' : leadsSite ? 'customers.emptyLeads' : 'customers.empty')}
         onRowClick={(row) => setSelectedId(row._id)}
         toolbar={
           <Select
@@ -305,6 +344,7 @@ const Customers: React.FC = () => {
       <CustomerDetailDrawer customerId={selectedId} onClose={() => setSelectedId(null)} onChanged={refreshAll} />
       <AddCustomerModal
         open={adding}
+        leadsSite={leadsSite}
         onClose={() => setAdding(false)}
         onSaved={(id) => {
           refreshAll();

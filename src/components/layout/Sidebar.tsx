@@ -195,10 +195,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
-  // A leads site (LT-199) has no calendar: no Appointments and no Customers
-  // (customers are booking-only), the leads are the daily destination, and
-  // the weekly hours are just the hours the site shows. The routes stay
-  // reachable by URL — a push tap for a lead opens /leads either way.
+  // A leads site (LT-199) has no calendar: no Appointments, the leads are the
+  // daily destination, and the weekly hours are just the hours the site
+  // shows. Customers are there too since LT-376: everyone who wrote is one.
+  // The routes stay reachable by URL — a push tap for a lead opens /leads
+  // either way.
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const leadsLink = { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined };
@@ -234,7 +235,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       label: t('sidebar.manage'),
       items: [
         ...(leadsSite
-          ? [{ path: '/schedule-vacations', Icon: Calendar, name: t('common.openingHours') }]
+          ? [
+              { path: '/customers', Icon: UsersRound, name: t('common.customers') },
+              { path: '/schedule-vacations', Icon: Calendar, name: t('common.openingHours') },
+            ]
           : [
               { path: '/customers', Icon: UsersRound, name: t('common.customers') },
               leadsLink,

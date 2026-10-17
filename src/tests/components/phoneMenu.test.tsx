@@ -79,7 +79,8 @@ describe('the phone menu (LT-352, LT-378)', () => {
     conversion = 'lead';
     renderAt('/');
     fireEvent.click(more());
-    expect(tileNames(menu()!)).toEqual(['/design', '/appointment-types', '/portfolio', '/settings']);
+    // Customers too since LT-376: everyone who wrote is one.
+    expect(tileNames(menu()!)).toEqual(['/design', '/customers', '/appointment-types', '/portfolio', '/settings']);
   });
 
   it('shows the sign-in email under the name, in the sidebar and in the menu (LT-364)', () => {

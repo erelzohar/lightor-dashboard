@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { X, Phone, Ban, ShieldCheck, CalendarPlus, StickyNote, Loader } from 'lucide-react';
+import { X, Phone, Ban, ShieldCheck, CalendarPlus, StickyNote, Loader, Inbox } from 'lucide-react';
 import Button from '../ui/Button';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import StatusBadge from '../admin/StatusBadge';
@@ -11,6 +12,9 @@ import BlockCustomerDialog from './BlockCustomerDialog';
 import OwnerBookingModal from './OwnerBookingModal';
 import AnswersList from '../appointments/AnswersList';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { isLeadsSite } from '../../utils/siteMode';
+import { LEAD_STATUS_TINT } from '../../utils/leadStatus';
 import {
   fetchCustomer,
   setCustomerBlock,
@@ -22,8 +26,10 @@ import { firstVisitOf, historyStatus, pastVisits } from '../../utils/customerVis
 
 /**
  * One customer, in full (LT-122): who they are, how to reach them, what they
- * have booked, the owner's private notes, and the block switch. Slides in
- * from the end side so the list stays visible behind it.
+ * have booked or written through the site (LT-376), the owner's private
+ * notes, and the block switch. Slides in from the end side so the list stays
+ * visible behind it. On a leads site there are no bookings: what they wrote
+ * takes the visits' place.
  */
 interface CustomerDetailDrawerProps {
   customerId: string | null;
@@ -41,6 +47,8 @@ const WhatsAppGlyph: React.FC = () => (
 const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId, onClose, onChanged }) => {
   const { t, i18n } = useTranslation();
   const { direction } = useTheme();
+  const webConfig = useAppSelector((state) => state.webConfig.data);
+  const leadsSite = isLeadsSite(webConfig);
 
   const [detail, setDetail] = useState<CustomerDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -124,6 +132,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
 
   const customer = detail?.customer;
   const stats = detail?.stats;
+  const leads = detail?.leads ?? [];
   const notesDirty = detail ? notes !== (detail.customer.notes ?? '') : false;
 
   return createPortal(
@@ -200,9 +209,11 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                     >
                       <WhatsAppGlyph /> WhatsApp
                     </a>
-                    <Button size="sm" variant="primary" leftIcon={<CalendarPlus size={15} />} onClick={() => setBookingOpen(true)}>
-                      {t('customers.detail.schedule')}
-                    </Button>
+                    {!leadsSite && (
+                      <Button size="sm" variant="primary" leftIcon={<CalendarPlus size={15} />} onClick={() => setBookingOpen(true)}>
+                        {t('customers.detail.schedule')}
+                      </Button>
+                    )}
                     {customer.isBlocked ? (
                       <Button size="sm" variant="outline" leftIcon={<ShieldCheck size={15} />} onClick={() => setUnblockOpen(true)}>
                         {t('customers.block.unblockConfirm')}
@@ -214,43 +225,72 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                     )}
                   </div>
 
-                  {/* Stats strip */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      // Visits that took place; the upcoming ones have their own tile (LT-315).
-                      { label: t('customers.columns.visits'), value: pastVisits(stats) },
-                      { label: t('customers.detail.cancelledCount'), value: stats.cancelled },
-                      { label: t('customers.detail.upcoming'), value: stats.upcoming },
-                      {
-                        label: t('customers.columns.revenue'),
-                        value: `${t('appointments.currencySymbol')}${Math.round(stats.revenue).toLocaleString()}`,
-                      },
-                    ].map((item) => (
-                      <div key={item.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
-                        <p className="text-[11px] uppercase tracking-wide text-gray-400">{item.label}</p>
-                        <p className="text-lg font-bold text-gray-900 dark:text-dark-text">{item.value}</p>
+                  {leadsSite ? (
+                    <>
+                      {/* What they wrote, in numbers (LT-376). */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: t('customers.columns.inquiries'), value: detail.leadStats?.inquiries ?? leads.length },
+                          { label: t('customers.columns.lastInquiry'), value: formatDate(detail.leadStats?.lastInquiry) },
+                        ].map((item) => (
+                          <div key={item.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
+                            <p className="text-[11px] uppercase tracking-wide text-gray-400">{item.label}</p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-dark-text">{item.value}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs text-gray-400">{t('customers.columns.lastVisit')}</p>
-                      <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(stats.lastVisit)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">{t('customers.detail.nextVisit')}</p>
-                      <p className="font-medium text-gray-800 dark:text-gray-100">{formatDateTime(stats.nextVisit)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">{t('customers.detail.firstSeen')}</p>
-                      {/* The first appointment's date, not the record's (LT-315). */}
-                      <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(firstVisitOf(detail.history))}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">{t('customers.detail.source')}</p>
-                      <p className="font-medium text-gray-800 dark:text-gray-100">{t(`customers.source.${customer.source}`)}</p>
-                    </div>
-                  </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.detail.customerSince')}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(customer.firstSeenAt)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.detail.source')}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{t(`customers.source.${customer.source}`)}</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Stats strip */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {[
+                          // Visits that took place; the upcoming ones have their own tile (LT-315).
+                          { label: t('customers.columns.visits'), value: pastVisits(stats) },
+                          { label: t('customers.detail.cancelledCount'), value: stats.cancelled },
+                          { label: t('customers.detail.upcoming'), value: stats.upcoming },
+                          {
+                            label: t('customers.columns.revenue'),
+                            value: `${t('appointments.currencySymbol')}${Math.round(stats.revenue).toLocaleString()}`,
+                          },
+                        ].map((item) => (
+                          <div key={item.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
+                            <p className="text-[11px] uppercase tracking-wide text-gray-400">{item.label}</p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-dark-text">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.columns.lastVisit')}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(stats.lastVisit)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.detail.nextVisit')}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{formatDateTime(stats.nextVisit)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.detail.firstSeen')}</p>
+                          {/* The first appointment's date, not the record's (LT-315). */}
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{formatDate(firstVisitOf(detail.history))}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400">{t('customers.detail.source')}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-100">{t(`customers.source.${customer.source}`)}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   {/* The details kept for their next booking (LT-217) —
                       the owner's booking window fills them in. */}
@@ -284,37 +324,78 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                     </div>
                   </section>
 
-                  {/* History */}
-                  <section>
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                      {t('customers.detail.history')}
-                    </h3>
-                    {detail.history.length === 0 ? (
-                      <p className="text-sm text-gray-400 py-6 text-center">{t('customers.detail.noHistory')}</p>
-                    ) : (
-                      <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {detail.history.map((row) => (
-                          <li key={row._id} className="flex items-center gap-3 py-2.5">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">
-                                {row.typeName ?? '-'}
-                              </p>
-                              <p className="text-xs text-gray-400">{formatDateTime(row.scheduledAt)}</p>
-                              {/* What they answered that time (LT-217). */}
-                              <AnswersList answers={row.answers} className="mt-1 text-xs" />
-                            </div>
-                            {row.typePrice && (
-                              <span className="text-xs text-gray-500 whitespace-nowrap">
-                                {t('appointments.currencySymbol')}{row.typePrice}
-                              </span>
-                            )}
-                            {/* In the owner's language, as the calendar shows it (LT-315). */}
-                            <StatusBadge status={historyStatus(row)} i18nPrefix="admin.appointmentStatus" />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </section>
+                  {/* History: the bookings, on a site that takes them. */}
+                  {!leadsSite && (
+                    <section>
+                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        {t('customers.detail.history')}
+                      </h3>
+                      {detail.history.length === 0 ? (
+                        <p className="text-sm text-gray-400 py-6 text-center">{t('customers.detail.noHistory')}</p>
+                      ) : (
+                        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                          {detail.history.map((row) => (
+                            <li key={row._id} className="flex items-center gap-3 py-2.5">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">
+                                  {row.typeName ?? '-'}
+                                </p>
+                                <p className="text-xs text-gray-400">{formatDateTime(row.scheduledAt)}</p>
+                                {/* What they answered that time (LT-217). */}
+                                <AnswersList answers={row.answers} className="mt-1 text-xs" />
+                              </div>
+                              {row.typePrice && (
+                                <span className="text-xs text-gray-500 whitespace-nowrap">
+                                  {t('appointments.currencySymbol')}{row.typePrice}
+                                </span>
+                              )}
+                              {/* In the owner's language, as the calendar shows it (LT-315). */}
+                              <StatusBadge status={historyStatus(row)} i18nPrefix="admin.appointmentStatus" />
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  )}
+
+                  {/* What they wrote through the site (LT-376): always on a
+                      leads site, on a booking site when there is something. */}
+                  {(leadsSite || leads.length > 0) && (
+                    <section data-testid="customer-inquiries">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                          <Inbox size={15} className="text-primary" /> {t('customers.detail.inquiries')}
+                        </h3>
+                        {leads.length > 0 && (
+                          <Link to="/leads" onClick={onClose} className="text-xs font-medium text-primary hover:underline">
+                            {t('customers.detail.allLeads')}
+                          </Link>
+                        )}
+                      </div>
+                      {leads.length === 0 ? (
+                        <p className="text-sm text-gray-400 py-6 text-center">{t('customers.detail.noInquiries')}</p>
+                      ) : (
+                        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                          {leads.map((lead) => (
+                            <li key={lead._id} className="py-2.5 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <p className="flex-1 text-xs text-gray-400">{formatDateTime(lead.createdAt)}</p>
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${LEAD_STATUS_TINT[lead.status]}`}>
+                                  {t(`leads.status.${lead.status}`)}
+                                </span>
+                              </div>
+                              {lead.message && (
+                                <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap break-words [overflow-wrap:anywhere] line-clamp-4">
+                                  {lead.message}
+                                </p>
+                              )}
+                              <AnswersList answers={lead.answers} fields={webConfig?.leadFields ?? []} className="text-xs" />
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  )}
                 </>
               ) : null}
             </div>
@@ -325,6 +406,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
               <BlockCustomerDialog
                 open={blockOpen}
                 customerName={customer.name}
+                leadsSite={leadsSite}
                 upcomingCount={stats?.upcoming ?? 0}
                 loading={blocking}
                 onClose={() => setBlockOpen(false)}
@@ -333,27 +415,29 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
               <ConfirmDialog
                 open={unblockOpen}
                 title={t('customers.block.unblockTitle')}
-                message={t('customers.block.unblockMessage', { name: customer.name })}
+                message={t(leadsSite ? 'customers.block.unblockMessageLeads' : 'customers.block.unblockMessage', { name: customer.name })}
                 confirmLabel={t('customers.block.unblockConfirm')}
                 cancelLabel={t('customers.block.cancel')}
                 loading={blocking}
                 onClose={() => setUnblockOpen(false)}
                 onConfirm={() => applyBlock(false)}
               />
-              <OwnerBookingModal
-                open={bookingOpen}
-                customer={{
-                  name: customer.name,
-                  phone: customer.phone,
-                  channelType: detail?.history.find((h) => h.channelType)?.channelType,
-                  answers: customer.answers,
-                }}
-                onClose={() => setBookingOpen(false)}
-                onBooked={() => {
-                  load();
-                  onChanged();
-                }}
-              />
+              {!leadsSite && (
+                <OwnerBookingModal
+                  open={bookingOpen}
+                  customer={{
+                    name: customer.name,
+                    phone: customer.phone,
+                    channelType: detail?.history.find((h) => h.channelType)?.channelType,
+                    answers: customer.answers,
+                  }}
+                  onClose={() => setBookingOpen(false)}
+                  onBooked={() => {
+                    load();
+                    onChanged();
+                  }}
+                />
+              )}
             </>
           )}
         </div>

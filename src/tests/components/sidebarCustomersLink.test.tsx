@@ -11,8 +11,9 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', darkMode: false, toggleDarkMode: vi.fn() }),
 }));
+const state = vi.hoisted(() => ({ webConfig: { data: undefined as undefined | { conversion: string } } }));
 vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (): unknown => undefined,
+  useAppSelector: (selector: (s: typeof state) => unknown): unknown => selector(state),
 }));
 
 const mockOwner = () => {
@@ -48,5 +49,18 @@ describe('Sidebar customers link', () => {
     );
     expect(screen.queryAllByText('common.customers')).toHaveLength(0);
     expect(screen.getAllByText('common.dashboard').length).toBeGreaterThan(0);
+  });
+
+  it('shows it on a leads site too: everyone who wrote is a customer (LT-376)', () => {
+    mockOwner();
+    state.webConfig.data = { conversion: 'lead' };
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    );
+    expect(screen.getAllByText('common.customers').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('common.appointments')).toHaveLength(0);
+    state.webConfig.data = undefined;
   });
 });

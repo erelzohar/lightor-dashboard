@@ -1272,7 +1272,8 @@
     "title": "Customers",
     "subtitle": "{{count}} customers",
     "search": "Search by name or phone…",
-    "empty": "No customers yet - they appear here after their first booking",
+    "empty": "No customers yet - they appear here after their first booking or inquiry",
+    "emptyLeads": "No customers yet - they appear here after their first inquiry",
     "noMatch": "No customers match your search",
     "filter": {
       "all": "All customers",
@@ -1284,6 +1285,8 @@
       "phone": "Phone",
       "visits": "Visits",
       "lastVisit": "Last visit",
+      "inquiries": "Inquiries",
+      "lastInquiry": "Last inquiry",
       "revenue": "Revenue",
       "status": "Status"
     },
@@ -1293,7 +1296,8 @@
     },
     "source": {
       "booking": "Booked online",
-      "manual": "Added by you"
+      "manual": "Added by you",
+      "lead": "Sent an inquiry online"
     },
     "stats": {
       "total": "Customers",
@@ -1318,6 +1322,7 @@
       "upcoming": "Upcoming",
       "nextVisit": "Next visit",
       "firstSeen": "First visit",
+      "customerSince": "Customer since",
       "source": "Source",
       "notes": "Private notes",
       "notesPlaceholder": "Only you can see this - preferences, allergies, reminders…",
@@ -1325,11 +1330,15 @@
       "notesSaved": "Notes saved",
       "history": "Appointment history",
       "noHistory": "No appointments yet",
+      "inquiries": "Inquiries from the site",
+      "noInquiries": "No inquiries yet",
+      "allLeads": "All inquiries",
       "savedDetails": "Saved for next time"
     },
     "block": {
       "title": "Block customer",
       "message": "{{name}} will no longer be able to book with you online or reschedule existing appointments. They can still cancel.",
+      "messageLeads": "{{name}} will no longer be able to send you inquiries through the site.",
       "cancelUpcoming": "Also cancel their upcoming appointments",
       "cancelUpcomingHint": "{{count}} upcoming - no message is sent to the customer",
       "reason": "Reason (optional)",
@@ -1340,6 +1349,7 @@
       "doneWithCancelled": "Customer blocked · {{count}} upcoming appointments cancelled",
       "unblockTitle": "Unblock customer",
       "unblockMessage": "{{name}} will be able to book with you again.",
+      "unblockMessageLeads": "{{name}} will be able to send you inquiries again.",
       "unblockConfirm": "Unblock",
       "unblocked": "Customer unblocked"
     },
@@ -1351,6 +1361,7 @@
       "notes": "Notes (optional)",
       "blockNow": "Block immediately",
       "blockNowHint": "Refuse online bookings from this number",
+      "blockNowHintLeads": "Refuse inquiries from this number on the site",
       "submit": "Add",
       "done": "Customer added",
       "exists": "This phone number is already in your customers"
@@ -1424,6 +1435,7 @@
     "emptyFiltered": "No inquiries with this status",
     "emptyHint": "When someone fills in the contact form on your site, it shows up here.",
     "whatsapp": "WhatsApp",
+    "customerCard": "Customer card",
     "delete": "Delete inquiry",
     "deleteTitle": "Delete this inquiry?",
     "deleteMessage": "The inquiry from {{name}} will be deleted for good.",

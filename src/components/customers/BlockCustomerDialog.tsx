@@ -7,12 +7,15 @@ import Input from '../ui/Input';
  * "Block this customer" (LT-122): a danger confirm with two extras — the
  * checkbox that also cancels their upcoming appointments (on by default; the
  * common reason to block is a no-show, and their pending slots are the
- * immediate problem) and an optional reason the owner sees later.
+ * immediate problem) and an optional reason the owner sees later. A leads
+ * site has no appointments (LT-376): blocking stops the number's messages,
+ * and there is nothing to cancel.
  */
 interface BlockCustomerDialogProps {
   open: boolean;
   customerName: string;
   upcomingCount: number;
+  leadsSite?: boolean;
   loading?: boolean;
   onConfirm: (options: { reason?: string; cancelUpcoming: boolean }) => void;
   onClose: () => void;
@@ -22,6 +25,7 @@ const BlockCustomerDialog: React.FC<BlockCustomerDialogProps> = ({
   open,
   customerName,
   upcomingCount,
+  leadsSite = false,
   loading = false,
   onConfirm,
   onClose,
@@ -46,28 +50,30 @@ const BlockCustomerDialog: React.FC<BlockCustomerDialogProps> = ({
       confirmLabel={t('customers.block.confirm')}
       cancelLabel={t('customers.block.cancel')}
       onClose={onClose}
-      onConfirm={() => onConfirm({ reason: reason.trim() || undefined, cancelUpcoming })}
+      onConfirm={() => onConfirm({ reason: reason.trim() || undefined, cancelUpcoming: cancelUpcoming && !leadsSite })}
       message={
         <div className="space-y-4">
-          <p>{t('customers.block.message', { name: customerName })}</p>
+          <p>{t(leadsSite ? 'customers.block.messageLeads' : 'customers.block.message', { name: customerName })}</p>
 
-          <label className="flex items-start gap-3 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/30"
-              checked={cancelUpcoming}
-              onChange={(e) => setCancelUpcoming(e.target.checked)}
-              data-testid="cancel-upcoming"
-            />
-            <span>
-              <span className="block font-medium text-gray-800 dark:text-gray-100">
-                {t('customers.block.cancelUpcoming')}
+          {!leadsSite && (
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/30"
+                checked={cancelUpcoming}
+                onChange={(e) => setCancelUpcoming(e.target.checked)}
+                data-testid="cancel-upcoming"
+              />
+              <span>
+                <span className="block font-medium text-gray-800 dark:text-gray-100">
+                  {t('customers.block.cancelUpcoming')}
+                </span>
+                <span className="block text-xs text-gray-500 dark:text-gray-400">
+                  {t('customers.block.cancelUpcomingHint', { count: upcomingCount })}
+                </span>
               </span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">
-                {t('customers.block.cancelUpcomingHint', { count: upcomingCount })}
-              </span>
-            </span>
-          </label>
+            </label>
+          )}
 
           <Input
             label={t('customers.block.reason')}

@@ -1272,7 +1272,8 @@
     "title": "Clientes",
     "subtitle": "{{count}} clientes",
     "search": "Buscar por nombre o teléfono…",
-    "empty": "Aún no hay clientes - aparecerán aquí tras su primera reserva",
+    "empty": "Aún no hay clientes - aparecerán aquí tras su primera reserva o consulta",
+    "emptyLeads": "Aún no hay clientes - aparecerán aquí tras su primera consulta",
     "noMatch": "Ningún cliente coincide con la búsqueda",
     "filter": {
       "all": "Todos los clientes",
@@ -1284,6 +1285,8 @@
       "phone": "Teléfono",
       "visits": "Visitas",
       "lastVisit": "Última visita",
+      "inquiries": "Consultas",
+      "lastInquiry": "Última consulta",
       "revenue": "Ingresos",
       "status": "Estado"
     },
@@ -1293,7 +1296,8 @@
     },
     "source": {
       "booking": "Reservó en línea",
-      "manual": "Añadido por ti"
+      "manual": "Añadido por ti",
+      "lead": "Envió una consulta en línea"
     },
     "stats": {
       "total": "Clientes",
@@ -1318,6 +1322,7 @@
       "upcoming": "Próximas",
       "nextVisit": "Próxima visita",
       "firstSeen": "Primera visita",
+      "customerSince": "Cliente desde",
       "source": "Origen",
       "notes": "Notas privadas",
       "notesPlaceholder": "Solo tú lo ves - preferencias, alergias, recordatorios…",
@@ -1325,11 +1330,15 @@
       "notesSaved": "Notas guardadas",
       "history": "Historial de citas",
       "noHistory": "Aún no hay citas",
+      "inquiries": "Consultas desde el sitio",
+      "noInquiries": "Aún no hay consultas",
+      "allLeads": "Todas las consultas",
       "savedDetails": "Guardado para la próxima vez"
     },
     "block": {
       "title": "Bloquear cliente",
       "message": "{{name}} ya no podrá reservar en línea ni cambiar sus citas existentes. Podrá seguir cancelando.",
+      "messageLeads": "{{name}} ya no podrá enviarte consultas a través del sitio.",
       "cancelUpcoming": "Cancelar también sus próximas citas",
       "cancelUpcomingHint": "{{count}} próximas - no se envía ningún mensaje al cliente",
       "reason": "Motivo (opcional)",
@@ -1340,6 +1349,7 @@
       "doneWithCancelled": "Cliente bloqueado · {{count}} próximas citas canceladas",
       "unblockTitle": "Desbloquear cliente",
       "unblockMessage": "{{name}} podrá volver a reservar contigo.",
+      "unblockMessageLeads": "{{name}} podrá volver a enviarte consultas.",
       "unblockConfirm": "Desbloquear",
       "unblocked": "Cliente desbloqueado"
     },
@@ -1351,6 +1361,7 @@
       "notes": "Notas (opcional)",
       "blockNow": "Bloquear de inmediato",
       "blockNowHint": "Rechazar reservas en línea desde este número",
+      "blockNowHintLeads": "Rechazar consultas en línea desde este número",
       "submit": "Añadir",
       "done": "Cliente añadido",
       "exists": "Este número ya está entre tus clientes"
@@ -1424,6 +1435,7 @@
     "emptyFiltered": "No hay consultas con este estado",
     "emptyHint": "Cuando alguien complete el formulario de contacto de tu sitio, aparecerá aquí.",
     "whatsapp": "WhatsApp",
+    "customerCard": "Ficha del cliente",
     "delete": "Eliminar consulta",
     "deleteTitle": "¿Eliminar esta consulta?",
     "deleteMessage": "La consulta de {{name}} se eliminará definitivamente.",

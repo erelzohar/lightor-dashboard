@@ -39,8 +39,9 @@ const groupHrefs = (name: string) =>
 
 /**
  * Navigation by what the site does (LT-199). A booking site keeps today's
- * sidebar; a leads site has no calendar, so no Appointments and no Customers,
- * its leads move into the first group, and its hours are "Opening hours".
+ * sidebar; a leads site has no calendar, so no Appointments (its Customers
+ * are the people who wrote, LT-376), its leads move into the first group,
+ * and its hours are "Opening hours".
  */
 describe('Sidebar by site mode', () => {
   beforeEach(() => {
@@ -63,12 +64,12 @@ describe('Sidebar by site mode', () => {
     expect(within(screen.getByRole('group', { name: 'sidebar.manage' })).getByText('common.scheduleVacations')).toBeInTheDocument();
   });
 
-  it('drops Appointments and Customers and brings Leads up on a leads site', async () => {
+  it('drops Appointments, keeps Customers (LT-376) and brings Leads up on a leads site', async () => {
     state.webConfig.data.conversion = 'lead';
     renderSidebar();
 
     expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/leads']);
-    expect(groupHrefs('sidebar.manage')).toEqual(['/schedule-vacations', '/appointment-types', '/portfolio', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings']);
     const manage = within(screen.getByRole('group', { name: 'sidebar.manage' }));
     expect(manage.getByText('common.openingHours')).toBeInTheDocument();
     expect(manage.queryByText('common.scheduleVacations')).not.toBeInTheDocument();

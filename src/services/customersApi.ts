@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import globals from './globals';
 import { Paginated } from './adminApi';
 import type { AppointmentAnswer } from '../types';
+import type { LeadStatus } from './leadsApi';
 
 /**
  * Customers directory API (LT-122) — 1:1 with `/api/customers/*`.
@@ -57,14 +58,23 @@ export interface CustomerStats {
   nextVisit: string | null;
 }
 
-export interface CustomerRow extends CustomerStats {
+/** Where a record began (LT-376 added the contact form). */
+export type CustomerSource = 'booking' | 'manual' | 'lead';
+
+/** What they wrote through the site's contact form (LT-376). */
+export interface CustomerLeadStats {
+  inquiries: number;
+  lastInquiry: string | null;
+}
+
+export interface CustomerRow extends CustomerStats, CustomerLeadStats {
   _id: string;
   name: string;
   phone: string;
   phoneNormalized: string;
   isBlocked: boolean;
   blockedAt: string | null;
-  source: 'booking' | 'manual';
+  source: CustomerSource;
   firstSeenAt: string;
   lastSeenAt: string;
   createdAt: string;
@@ -79,7 +89,7 @@ export interface CustomerRecord {
   blockedAt: string | null;
   blockReason: string | null;
   notes: string;
-  source: 'booking' | 'manual';
+  source: CustomerSource;
   firstSeenAt: string;
   lastSeenAt: string;
   createdAt: string;
@@ -104,10 +114,22 @@ export interface CustomerHistoryRow {
   answers?: AppointmentAnswer[];
 }
 
+/** One message they sent through the site (LT-376), newest first. */
+export interface CustomerLeadRow {
+  _id: string;
+  createdAt: string;
+  status: LeadStatus;
+  message: string;
+  answers: AppointmentAnswer[];
+}
+
 export interface CustomerDetail {
   customer: CustomerRecord;
   stats: CustomerStats;
   history: CustomerHistoryRow[];
+  /** Absent from an API deployed before LT-376. */
+  leadStats?: CustomerLeadStats;
+  leads?: CustomerLeadRow[];
 }
 
 export interface TopCustomer {
@@ -127,7 +149,7 @@ export interface CustomersOverview {
   entitlements: { insights: boolean; export: boolean };
 }
 
-export type CustomerSort = 'name' | 'lastSeenAt' | 'createdAt' | 'visits' | 'lastVisit';
+export type CustomerSort = 'name' | 'lastSeenAt' | 'createdAt' | 'visits' | 'lastVisit' | 'inquiries' | 'lastInquiry';
 
 export interface CustomerListParams {
   page?: number;

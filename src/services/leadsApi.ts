@@ -21,6 +21,8 @@ export interface Lead {
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;
+  /** Who wrote is a customer (LT-376); null when there is no record, absent from an older API. */
+  customerId?: string | null;
 }
 
 export interface LeadsPage {

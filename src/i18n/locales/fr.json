@@ -1272,7 +1272,8 @@
     "title": "Clients",
     "subtitle": "{{count}} clients",
     "search": "Rechercher par nom ou téléphone…",
-    "empty": "Aucun client pour l’instant - ils apparaissent ici après leur première réservation",
+    "empty": "Aucun client pour l’instant - ils apparaissent ici après leur première réservation ou demande",
+    "emptyLeads": "Aucun client pour l’instant - ils apparaissent ici après leur première demande",
     "noMatch": "Aucun client ne correspond à votre recherche",
     "filter": {
       "all": "Tous les clients",
@@ -1284,6 +1285,8 @@
       "phone": "Téléphone",
       "visits": "Visites",
       "lastVisit": "Dernière visite",
+      "inquiries": "Demandes",
+      "lastInquiry": "Dernière demande",
       "revenue": "Revenu",
       "status": "Statut"
     },
@@ -1293,7 +1296,8 @@
     },
     "source": {
       "booking": "Réservé en ligne",
-      "manual": "Ajouté par vous"
+      "manual": "Ajouté par vous",
+      "lead": "A envoyé une demande en ligne"
     },
     "stats": {
       "total": "Clients",
@@ -1318,6 +1322,7 @@
       "upcoming": "À venir",
       "nextVisit": "Prochaine visite",
       "firstSeen": "Première visite",
+      "customerSince": "Client depuis",
       "source": "Origine",
       "notes": "Notes privées",
       "notesPlaceholder": "Visible par vous seul - préférences, allergies, rappels…",
@@ -1325,11 +1330,15 @@
       "notesSaved": "Notes enregistrées",
       "history": "Historique des rendez-vous",
       "noHistory": "Aucun rendez-vous pour l’instant",
+      "inquiries": "Demandes reçues par le site",
+      "noInquiries": "Aucune demande pour l’instant",
+      "allLeads": "Toutes les demandes",
       "savedDetails": "Gardé pour la prochaine fois"
     },
     "block": {
       "title": "Bloquer le client",
       "message": "{{name}} ne pourra plus réserver en ligne ni déplacer ses rendez-vous. Il pourra toujours annuler.",
+      "messageLeads": "{{name}} ne pourra plus vous envoyer de demandes par le site.",
       "cancelUpcoming": "Annuler aussi ses rendez-vous à venir",
       "cancelUpcomingHint": "{{count}} à venir - aucun message n’est envoyé au client",
       "reason": "Motif (facultatif)",
@@ -1340,6 +1349,7 @@
       "doneWithCancelled": "Client bloqué · {{count}} rendez-vous à venir annulés",
       "unblockTitle": "Débloquer le client",
       "unblockMessage": "{{name}} pourra de nouveau réserver chez vous.",
+      "unblockMessageLeads": "{{name}} pourra de nouveau vous envoyer des demandes.",
       "unblockConfirm": "Débloquer",
       "unblocked": "Client débloqué"
     },
@@ -1351,6 +1361,7 @@
       "notes": "Notes (facultatif)",
       "blockNow": "Bloquer immédiatement",
       "blockNowHint": "Refuser les réservations en ligne de ce numéro",
+      "blockNowHintLeads": "Refuser les demandes en ligne de ce numéro",
       "submit": "Ajouter",
       "done": "Client ajouté",
       "exists": "Ce numéro figure déjà dans vos clients"
@@ -1424,6 +1435,7 @@
     "emptyFiltered": "Aucune demande avec ce statut",
     "emptyHint": "Quand quelqu'un remplit le formulaire de contact de votre site, la demande apparaît ici.",
     "whatsapp": "WhatsApp",
+    "customerCard": "Fiche client",
     "delete": "Supprimer la demande",
     "deleteTitle": "Supprimer cette demande ?",
     "deleteMessage": "La demande de {{name}} sera supprimée définitivement.",

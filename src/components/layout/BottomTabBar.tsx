@@ -62,7 +62,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
-  // Customers (booking sites) and Services (leads sites) are under "More".
+  // Customers, and on a leads site Services, are under "More".
   const lighty = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' };
 
   const tabs = isRestricted

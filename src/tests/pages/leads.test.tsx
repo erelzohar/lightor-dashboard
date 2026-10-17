@@ -8,6 +8,7 @@ import Leads from '../../pages/Leads';
 const renderAt = (ui: React.ReactElement, path = '/leads') =>
   render(<MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>);
 import { fetchLeads, updateLeadStatus, deleteLead } from '../../services/leadsApi';
+import { fetchCustomer } from '../../services/customersApi';
 import { useNewLeadsCount } from '../../hooks/useNewLeadsCount';
 
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
@@ -27,6 +28,11 @@ vi.mock('../../hooks/useAppSelector', () => ({
 }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: (): (() => void) => vi.fn() }));
 vi.mock('../../store/slices/webConfigSlice', () => ({ fetchWebConfig: vi.fn() }));
+vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
+vi.mock('../../services/customersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/customersApi')>()),
+  fetchCustomer: vi.fn(),
+}));
 vi.mock('../../services/leadsApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/leadsApi')>()),
   fetchLeads: vi.fn(),
@@ -124,5 +130,32 @@ describe('Leads page', () => {
     renderAt(<Leads />);
     expect(await screen.findByTestId('leads-empty')).toBeInTheDocument();
     expect(screen.getByText('leads.empty')).toBeInTheDocument();
+  });
+
+  it("opens the writer's customer card from the lead, when there is one (LT-376)", async () => {
+    vi.mocked(fetchLeads).mockReset().mockResolvedValue(page([
+      lead('l1', 'Dana Levi', { customerId: 'c9' }),
+      lead('l2', 'Moshe Cohen', { customerId: null }),
+    ]) as never);
+    vi.mocked(fetchCustomer).mockResolvedValue({
+      customer: {
+        _id: 'c9', name: 'Dana Levi', phone: '0584006014', phoneNormalized: '+972584006014', isBlocked: false, blockedAt: null,
+        blockReason: null, notes: '', source: 'lead', firstSeenAt: '2026-09-27T10:00:00.000Z', lastSeenAt: '2026-09-27T10:00:00.000Z',
+        createdAt: '2026-09-27T10:00:00.000Z',
+      },
+      stats: { visits: 0, cancelled: 0, upcoming: 0, revenue: 0, lastVisit: null, nextVisit: null },
+      history: [],
+      leadStats: { inquiries: 1, lastInquiry: '2026-09-27T10:00:00.000Z' },
+      leads: [{ _id: 'l1', createdAt: '2026-09-27T10:00:00.000Z', status: 'new', message: 'Kitchen', answers: [] }],
+    });
+    renderAt(<Leads />);
+
+    const cards = await screen.findAllByTestId('lead-card');
+    expect(within(cards[1]).queryByText('leads.customerCard')).toBeNull();
+    fireEvent.click(within(cards[0]).getByText('leads.customerCard'));
+
+    const card = await screen.findByRole('dialog', { name: 'customers.detail.title' });
+    expect(fetchCustomer).toHaveBeenCalledWith('c9');
+    expect(await within(card).findByText('Kitchen')).toBeInTheDocument();
   });
 });

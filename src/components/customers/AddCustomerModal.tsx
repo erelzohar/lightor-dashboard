@@ -21,9 +21,11 @@ interface AddCustomerModalProps {
   onClose: () => void;
   onSaved: (customerId: string) => void;
   onExists: (customerId: string) => void;
+  /** A block on a leads site refuses messages, not bookings (LT-376). */
+  leadsSite?: boolean;
 }
 
-const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSaved, onExists }) => {
+const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSaved, onExists, leadsSite = false }) => {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', blockNow: false, notes: '' });
@@ -134,7 +136,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
               <div className="flex items-center justify-between py-1">
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('customers.add.blockNow')}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('customers.add.blockNowHint')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t(leadsSite ? 'customers.add.blockNowHintLeads' : 'customers.add.blockNowHint')}</p>
                 </div>
                 <ToggleSwitch checked={form.blockNow} onChange={(checked: boolean) => set('blockNow', checked)} ariaLabel={t('customers.add.blockNow')} />
               </div>

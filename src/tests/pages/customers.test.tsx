@@ -171,4 +171,20 @@ describe('Customers purchase prompts inside the app', () => {
     expect(await screen.findByText('customers.upgrade.insightsTitle')).toBeInTheDocument();
     expect(screen.getByText('customers.export.button')).toBeInTheDocument();
   });
+
+  it('marks a customer who wrote through the site, so no visits is not a puzzle (LT-376)', async () => {
+    vi.mocked(fetchCustomers).mockResolvedValue({
+      success: true,
+      count: 1,
+      pagination: { total: 1, page: 1, limit: 20, pages: 1 },
+      data: [row('c3', 'Rona', { visits: 0, upcoming: 0, revenue: 0, lastVisit: null, source: 'lead', inquiries: 2, lastInquiry: '2026-06-01T00:00:00.000Z' })],
+    } as never);
+    render(<Customers />);
+
+    expect(await screen.findByText('Rona')).toBeInTheDocument();
+    expect(screen.getByTitle('customers.columns.inquiries')).toHaveTextContent('2');
+    // A booking site keeps its visit columns.
+    expect(screen.getByText('customers.columns.visits')).toBeInTheDocument();
+    expect(screen.queryByText('customers.columns.lastInquiry')).toBeNull();
+  });
 });
