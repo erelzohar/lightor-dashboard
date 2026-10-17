@@ -1272,8 +1272,8 @@
     "title": "Clients",
     "subtitle": "{{count}} clients",
     "search": "Rechercher par nom ou téléphone…",
-    "empty": "Aucun client pour l’instant - ils apparaissent ici après leur première réservation ou demande",
-    "emptyLeads": "Aucun client pour l’instant - ils apparaissent ici après leur première demande",
+    "empty": "Aucun client pour l’instant - ils apparaissent ici après leur première réservation",
+    "emptyLeads": "Aucun client pour l’instant - ajoutez-en un, ou ajoutez une demande à vos clients depuis la page Demandes",
     "noMatch": "Aucun client ne correspond à votre recherche",
     "filter": {
       "all": "Tous les clients",
@@ -1297,7 +1297,7 @@
     "source": {
       "booking": "Réservé en ligne",
       "manual": "Ajouté par vous",
-      "lead": "A envoyé une demande en ligne"
+      "lead": "Ajouté depuis une demande"
     },
     "stats": {
       "total": "Clients",
@@ -1333,6 +1333,8 @@
       "inquiries": "Demandes reçues par le site",
       "noInquiries": "Aucune demande pour l’instant",
       "allLeads": "Toutes les demandes",
+      "removeLead": "Retirer de ce client",
+      "leadRemoved": "La demande a été retirée de ce client",
       "savedDetails": "Gardé pour la prochaine fois"
     },
     "block": {
@@ -1436,6 +1438,21 @@
     "emptyHint": "Quand quelqu'un remplit le formulaire de contact de votre site, la demande apparaît ici.",
     "whatsapp": "WhatsApp",
     "customerCard": "Fiche client",
+    "addToCustomers": "Ajouter aux clients",
+    "toCustomer": {
+      "title": "Ajouter aux clients",
+      "new": "Nouveau client",
+      "existing": "Client existant",
+      "addNew": "Ajouter",
+      "addToPicked": "Ajouter à ce client",
+      "added": "Ajouté à vos clients",
+      "attached": "La demande a été ajoutée à {{name}}",
+      "exists": "Ce numéro appartient déjà à un client.",
+      "openExisting": "Ouvrir sa fiche",
+      "pick": "Choisir un client",
+      "noCustomers": "Aucun client pour l’instant",
+      "failed": "Ajout impossible. Réessayez."
+    },
     "delete": "Supprimer la demande",
     "deleteTitle": "Supprimer cette demande ?",
     "deleteMessage": "La demande de {{name}} sera supprimée définitivement.",

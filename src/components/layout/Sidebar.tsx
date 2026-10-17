@@ -203,7 +203,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const newLeads = useNewLeadsCount(false);
   // A leads site (LT-199) has no calendar: no Appointments, the leads are the
   // daily destination, and the weekly hours are just the hours the site
-  // shows. Customers are there too since LT-376: everyone who wrote is one.
+  // shows. Customers are there too (LT-376): the owner adds them by hand or
+  // from a lead (LT-382).
   // The routes stay reachable by URL — a push tap for a lead opens /leads
   // either way.
   const webConfig = useAppSelector((state) => state.webConfig.data);

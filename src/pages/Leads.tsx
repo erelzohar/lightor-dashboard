@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Inbox, Phone, MessageCircle, Trash2, ChevronLeft, ChevronRight, Loader2, UserRound } from 'lucide-react';
+import { Inbox, Phone, MessageCircle, Trash2, ChevronLeft, ChevronRight, Loader2, UserRound, UserPlus } from 'lucide-react';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CustomerDetailDrawer from '../components/customers/CustomerDetailDrawer';
+import LeadToCustomerDialog from '../components/customers/LeadToCustomerDialog';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import AnswersList from '../components/appointments/AnswersList';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -47,8 +48,10 @@ const Leads: React.FC = () => {
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Lead | null>(null);
-  // Who wrote is a customer (LT-376): their card opens over the list.
+  // A lead's customer card opens over the list (LT-376); a lead with none
+  // can be added to the customers (LT-382).
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [toCustomer, setToCustomer] = useState<Lead | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   document.title = t('leads.title');
@@ -75,6 +78,17 @@ const Leads: React.FC = () => {
   // Stable, so the open card does not load itself again on every render here.
   const closeCustomer = useCallback(() => setCustomerId(null), []);
   const reloadLeads = useCallback(() => void load(), [load]);
+  const closeToCustomer = useCallback(() => setToCustomer(null), []);
+  // Added: the list is read again, as other leads from the same number now
+  // belong to that customer too.
+  const addedToCustomer = useCallback(() => {
+    setToCustomer(null);
+    void load();
+  }, [load]);
+  const openExistingCustomer = useCallback((id: string) => {
+    setToCustomer(null);
+    setCustomerId(id);
+  }, []);
 
   useEffect(() => {
     load();
@@ -216,7 +230,7 @@ const Leads: React.FC = () => {
                     <MessageCircle size={15} />
                     {t('leads.whatsapp')}
                   </a>
-                  {lead.customerId && (
+                  {lead.customerId ? (
                     <button
                       type="button"
                       onClick={() => setCustomerId(lead.customerId ?? null)}
@@ -225,6 +239,18 @@ const Leads: React.FC = () => {
                       <UserRound size={15} />
                       {t('leads.customerCard')}
                     </button>
+                  ) : (
+                    // An older API sends no customerId at all: nothing to offer then.
+                    lead.customerId === null && (
+                      <button
+                        type="button"
+                        onClick={() => setToCustomer(lead)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:border-primary/50 transition-colors"
+                      >
+                        <UserPlus size={15} />
+                        {t('leads.addToCustomers')}
+                      </button>
+                    )
                   )}
                 </div>
 
@@ -298,6 +324,12 @@ const Leads: React.FC = () => {
         />
 
         <CustomerDetailDrawer customerId={customerId} onClose={closeCustomer} onChanged={reloadLeads} />
+        <LeadToCustomerDialog
+          lead={toCustomer}
+          onClose={closeToCustomer}
+          onAdded={addedToCustomer}
+          onOpenCustomer={openExistingCustomer}
+        />
       </motion.div>
     </PullToRefresh>
   );

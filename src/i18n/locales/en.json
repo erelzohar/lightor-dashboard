@@ -1272,8 +1272,8 @@
     "title": "Customers",
     "subtitle": "{{count}} customers",
     "search": "Search by name or phone…",
-    "empty": "No customers yet - they appear here after their first booking or inquiry",
-    "emptyLeads": "No customers yet - they appear here after their first inquiry",
+    "empty": "No customers yet - they appear here after their first booking",
+    "emptyLeads": "No customers yet - add one, or add an inquiry to your customers from the Inquiries page",
     "noMatch": "No customers match your search",
     "filter": {
       "all": "All customers",
@@ -1297,7 +1297,7 @@
     "source": {
       "booking": "Booked online",
       "manual": "Added by you",
-      "lead": "Sent an inquiry online"
+      "lead": "Added from an inquiry"
     },
     "stats": {
       "total": "Customers",
@@ -1333,6 +1333,8 @@
       "inquiries": "Inquiries from the site",
       "noInquiries": "No inquiries yet",
       "allLeads": "All inquiries",
+      "removeLead": "Remove from this customer",
+      "leadRemoved": "The inquiry was removed from this customer",
       "savedDetails": "Saved for next time"
     },
     "block": {
@@ -1436,6 +1438,21 @@
     "emptyHint": "When someone fills in the contact form on your site, it shows up here.",
     "whatsapp": "WhatsApp",
     "customerCard": "Customer card",
+    "addToCustomers": "Add to customers",
+    "toCustomer": {
+      "title": "Add to customers",
+      "new": "New customer",
+      "existing": "Existing customer",
+      "addNew": "Add",
+      "addToPicked": "Add to this customer",
+      "added": "Added to your customers",
+      "attached": "The inquiry was added to {{name}}",
+      "exists": "This number already belongs to a customer.",
+      "openExisting": "Open their card",
+      "pick": "Choose a customer",
+      "noCustomers": "No customers yet",
+      "failed": "Couldn't add it. Try again."
+    },
     "delete": "Delete inquiry",
     "deleteTitle": "Delete this inquiry?",
     "deleteMessage": "The inquiry from {{name}} will be deleted for good.",

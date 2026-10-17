@@ -58,7 +58,7 @@ export interface CustomerStats {
   nextVisit: string | null;
 }
 
-/** Where a record began (LT-376 added the contact form). */
+/** Where a record began; `lead`: the owner added it from a lead (LT-382). */
 export type CustomerSource = 'booking' | 'manual' | 'lead';
 
 /** What they wrote through the site's contact form (LT-376). */
@@ -121,6 +121,8 @@ export interface CustomerLeadRow {
   status: LeadStatus;
   message: string;
   answers: AppointmentAnswer[];
+  /** Here only because the owner added it (another number): it can be taken off (LT-382). */
+  byChoice?: boolean;
 }
 
 export interface CustomerDetail {

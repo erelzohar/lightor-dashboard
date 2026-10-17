@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import CustomerDetailDrawer from '../../components/customers/CustomerDetailDrawer';
 import { fetchCustomer, type CustomerDetail } from '../../services/customersApi';
+import { removeLeadFromCustomer } from '../../services/leadsApi';
 
 /**
- * LT-376 — everyone who wrote through the site is a customer. On a leads
- * site the card shows what they wrote instead of visits, has no booking
- * button, and blocking speaks of messages; on a booking site what they wrote
- * joins the visits when there is any.
+ * LT-376, LT-382 — a customer's leads in their card. On a leads site the
+ * card shows what they wrote instead of visits, has no booking button, and
+ * blocking speaks of messages; on a booking site what they wrote joins the
+ * visits when there is any. A lead the owner added from another number can
+ * be taken off.
  */
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
@@ -22,6 +24,10 @@ vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): nu
 vi.mock('../../services/customersApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/customersApi')>()),
   fetchCustomer: vi.fn(),
+}));
+vi.mock('../../services/leadsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/leadsApi')>()),
+  removeLeadFromCustomer: vi.fn().mockResolvedValue(undefined),
 }));
 
 const record: CustomerDetail['customer'] = {
@@ -98,5 +104,23 @@ describe('the customer card and what they wrote (LT-376)', () => {
     const card = await openCard({ customer: { ...record, source: 'booking' }, stats: noVisits, history: [] });
     expect(await within(card).findByText('customers.detail.history')).toBeInTheDocument();
     expect(within(card).queryByTestId('customer-inquiries')).toBeNull();
+  });
+
+  it('takes off a lead the owner added from another number, and only that one (LT-382)', async () => {
+    state.webConfig.data = { conversion: 'lead' };
+    const card = await openCard({
+      customer: record, stats: noVisits, history: [],
+      leadStats: { inquiries: 2, lastInquiry: '2026-10-01T09:00:00Z' },
+      leads: [{ ...wrote[0], byChoice: true }, wrote[1]],
+    });
+
+    const inquiries = await within(card).findByTestId('customer-inquiries');
+    const offButtons = within(inquiries).getAllByText('customers.detail.removeLead');
+    expect(offButtons).toHaveLength(1);
+    const loads = vi.mocked(fetchCustomer).mock.calls.length;
+    fireEvent.click(offButtons[0]);
+
+    await waitFor(() => expect(removeLeadFromCustomer).toHaveBeenCalledWith('l2'));
+    await waitFor(() => expect(vi.mocked(fetchCustomer).mock.calls.length).toBeGreaterThan(loads));
   });
 });

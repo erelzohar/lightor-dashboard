@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 import globals from './globals';
 import type { AppointmentAnswer } from '../types';
+import type { CustomerRecord } from './customersApi';
 
 /**
  * Leads API (LT-197) — 1:1 with `/api/leads/*`: the messages visitors left
@@ -21,7 +22,10 @@ export interface Lead {
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;
-  /** Who wrote is a customer (LT-376); null when there is no record, absent from an older API. */
+  /**
+   * Its customer (LT-382): the one the owner added it to, or else the one
+   * with its phone number; null when neither, absent from an older API.
+   */
   customerId?: string | null;
 }
 
@@ -89,3 +93,29 @@ export const deleteLead = async (id: string): Promise<void> => {
     headers: authHeaders(),
   });
 };
+
+/**
+ * Add a lead to the customers (LT-382): a new customer (name and phone
+ * default to the lead's) or an existing one (`customerId`). A number that is
+ * already a customer throws, with `code: 'CUSTOMER_EXISTS'` and its
+ * `customerId` on the response.
+ */
+export const addLeadToCustomer = async (
+  id: string,
+  body: { customerId: string } | { name?: string; phone?: string; notes?: string }
+): Promise<CustomerRecord> => {
+  const response = await apiClient.post(`${globals.leadsUrl}${id}/customer`, body, {
+    withCredentials: true,
+    headers: authHeaders(),
+  });
+  return response.data.data.customer as CustomerRecord;
+};
+
+/** Take a lead off the customer the owner added it to (LT-382). */
+export const removeLeadFromCustomer = async (id: string): Promise<void> => {
+  await apiClient.delete(`${globals.leadsUrl}${id}/customer`, {
+    withCredentials: true,
+    headers: authHeaders(),
+  });
+};
+

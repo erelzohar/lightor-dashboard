@@ -15,6 +15,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { isLeadsSite } from '../../utils/siteMode';
 import { LEAD_STATUS_TINT } from '../../utils/leadStatus';
+import { removeLeadFromCustomer } from '../../services/leadsApi';
 import {
   fetchCustomer,
   setCustomerBlock,
@@ -29,7 +30,8 @@ import { firstVisitOf, historyStatus, pastVisits } from '../../utils/customerVis
  * have booked or written through the site (LT-376), the owner's private
  * notes, and the block switch. Slides in from the end side so the list stays
  * visible behind it. On a leads site there are no bookings: what they wrote
- * takes the visits' place.
+ * takes the visits' place. A lead the owner added here from another number
+ * can be taken off again (LT-382).
  */
 interface CustomerDetailDrawerProps {
   customerId: string | null;
@@ -58,6 +60,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
   const [unblockOpen, setUnblockOpen] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [removingLead, setRemovingLead] = useState<string | null>(null);
 
   const open = customerId !== null;
 
@@ -127,6 +130,20 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
       toast.error(t('customers.errors.saveFailed'));
     } finally {
       setBlocking(false);
+    }
+  };
+
+  const takeLeadOff = async (leadId: string) => {
+    setRemovingLead(leadId);
+    try {
+      await removeLeadFromCustomer(leadId);
+      toast.success(t('customers.detail.leadRemoved'));
+      await load();
+      onChanged();
+    } catch {
+      toast.error(t('customers.errors.saveFailed'));
+    } finally {
+      setRemovingLead(null);
     }
   };
 
@@ -390,6 +407,16 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                                 </p>
                               )}
                               <AnswersList answers={lead.answers} fields={webConfig?.leadFields ?? []} className="text-xs" />
+                              {lead.byChoice && (
+                                <button
+                                  type="button"
+                                  onClick={() => void takeLeadOff(lead._id)}
+                                  disabled={removingLead === lead._id}
+                                  className="text-xs font-medium text-gray-500 hover:text-rose-600 disabled:opacity-50 transition-colors"
+                                >
+                                  {t('customers.detail.removeLead')}
+                                </button>
+                              )}
                             </li>
                           ))}
                         </ul>

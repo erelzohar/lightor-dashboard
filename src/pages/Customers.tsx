@@ -31,16 +31,17 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
 
 /**
- * Customers (LT-122): every person who has booked with this business, or
- * written to it through the site (LT-376), keyed by phone number —
- * searchable, sortable, blockable — plus who comes back most.
+ * Customers (LT-122): every person who has booked with this business, and
+ * whoever the owner added, by hand or from a lead (LT-382), keyed by phone
+ * number — searchable, sortable, blockable — plus who comes back most.
  * Server-paginated like the admin tables; a row opens the drawer.
  */
 const Customers: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   // A leads site takes no bookings (LT-376): its table counts what each
-  // customer wrote where a booking site counts visits and revenue.
+  // customer wrote where a booking site counts visits and revenue. Its
+  // customers are the ones the owner adds (LT-382).
   const leadsSite = isLeadsSite(useAppSelector((state) => state.webConfig.data));
 
   const [result, setResult] = useState<Paginated<CustomerRow> | null>(null);

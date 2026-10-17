@@ -1272,8 +1272,8 @@
     "title": "Clientes",
     "subtitle": "{{count}} clientes",
     "search": "Buscar por nombre o teléfono…",
-    "empty": "Aún no hay clientes - aparecerán aquí tras su primera reserva o consulta",
-    "emptyLeads": "Aún no hay clientes - aparecerán aquí tras su primera consulta",
+    "empty": "Aún no hay clientes - aparecerán aquí tras su primera reserva",
+    "emptyLeads": "Aún no hay clientes - añade uno, o añade una consulta a tus clientes desde la página Consultas",
     "noMatch": "Ningún cliente coincide con la búsqueda",
     "filter": {
       "all": "Todos los clientes",
@@ -1297,7 +1297,7 @@
     "source": {
       "booking": "Reservó en línea",
       "manual": "Añadido por ti",
-      "lead": "Envió una consulta en línea"
+      "lead": "Añadido desde una consulta"
     },
     "stats": {
       "total": "Clientes",
@@ -1333,6 +1333,8 @@
       "inquiries": "Consultas desde el sitio",
       "noInquiries": "Aún no hay consultas",
       "allLeads": "Todas las consultas",
+      "removeLead": "Quitar de este cliente",
+      "leadRemoved": "La consulta se quitó de este cliente",
       "savedDetails": "Guardado para la próxima vez"
     },
     "block": {
@@ -1436,6 +1438,21 @@
     "emptyHint": "Cuando alguien complete el formulario de contacto de tu sitio, aparecerá aquí.",
     "whatsapp": "WhatsApp",
     "customerCard": "Ficha del cliente",
+    "addToCustomers": "Añadir a clientes",
+    "toCustomer": {
+      "title": "Añadir a clientes",
+      "new": "Cliente nuevo",
+      "existing": "Cliente existente",
+      "addNew": "Añadir",
+      "addToPicked": "Añadir a este cliente",
+      "added": "Añadido a tus clientes",
+      "attached": "La consulta se añadió a {{name}}",
+      "exists": "Este número ya pertenece a un cliente.",
+      "openExisting": "Abrir su ficha",
+      "pick": "Elegir un cliente",
+      "noCustomers": "Aún no hay clientes",
+      "failed": "No se pudo añadir. Inténtalo de nuevo."
+    },
     "delete": "Eliminar consulta",
     "deleteTitle": "¿Eliminar esta consulta?",
     "deleteMessage": "La consulta de {{name}} se eliminará definitivamente.",
