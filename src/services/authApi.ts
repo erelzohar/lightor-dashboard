@@ -148,6 +148,19 @@ export const googleLoginWithIdToken = async (idToken: string): Promise<{ token: 
   return { token: response.data?.token, user: response.data.data };
 };
 
+/**
+ * LT-383: Sign in with Apple, from the iPhone app or the web. The API checks
+ * Apple's token (signature, audience, nonce) and links or opens the account.
+ * Errors keep the API's message, as the native Google call does.
+ */
+export const appleLogin = async (payload: {
+  idToken: string; nonce: string; authorizationCode?: string; name?: string;
+}): Promise<{ token: string; user: User }> => {
+  const response = await apiClient.post(globals.authUrl + 'apple', payload, { withCredentials: true });
+  if (!response.data?.success) throw new Error('Apple login failed');
+  return { token: response.data?.token, user: response.data.data };
+};
+
 export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(

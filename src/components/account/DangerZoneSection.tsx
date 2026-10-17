@@ -27,7 +27,7 @@ const DangerZoneSection: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const isSocial = Boolean(auth.user?.googleId || auth.user?.facebookId);
+  const isSocial = Boolean(auth.user?.googleId || auth.user?.appleId || auth.user?.facebookId);
   const hasPassword = auth.user?.hasPassword ?? !isSocial;
   const [modalOpen, setModalOpen] = useState(false);
   const [needPassword, setNeedPassword] = useState(hasPassword);

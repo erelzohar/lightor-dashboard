@@ -43,12 +43,13 @@ const config: CapacitorConfig = {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
     FirebaseAuthentication: {
-      // We only need Google's ID token, which our own API verifies (LT-128).
+      // We only need Google's (LT-128) and Apple's (LT-383) ID tokens, which
+      // our own API verifies.
       // Signing the user into Firebase Auth as well would create a Firebase
       // user record nothing reads and, on iOS, write to the keychain — which
       // fails outright on unsigned simulator builds ("keychain error").
       skipNativeAuth: true,
-      providers: ['google.com'],
+      providers: ['google.com', 'apple.com'],
     },
   },
   // iOS uses Swift Package Manager (CocoaPods is not installed on the build

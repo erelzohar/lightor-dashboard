@@ -281,6 +281,8 @@ export interface User {
   /** Present on accounts created via social login — no password exists. */
   googleId?: string;
   facebookId?: string;
+  /** LT-383: an account that signs in with Apple. */
+  appleId?: string;
   /**
    * Whether the account has a password (LT-315, from /auth/me). A password
    * account that later linked Google has both this and googleId, so it is

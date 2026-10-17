@@ -436,7 +436,10 @@
     "noAccount": "אין לך חשבון?",
     "registerHere": "הירשם כאן",
     "sessionExpired": "פג תוקף החיבור. יש להתחבר מחדש.",
-    "forgotPassword": "שכחת סיסמה?"
+    "forgotPassword": "שכחת סיסמה?",
+    "apple": "המשך עם Apple",
+    "appleNoEmail": "Apple לא שיתפה כתובת מייל, ובלעדיה אי אפשר לפתוח חשבון. נסו שוב ובחרו לשתף את המייל (אפשר גם את הכתובת המוסתרת של Apple).",
+    "appleFailed": "ההתחברות עם Apple נכשלה. נסו שוב."
   },
   "onboarding": {
     "welcomeTitle": "ברוך הבא, {{name}}!",

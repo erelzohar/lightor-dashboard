@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { AuthState, User } from '../types';
-import { loginUser, googleLogin, googleLoginWithIdToken, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
+import { loginUser, googleLogin, googleLoginWithIdToken, appleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -18,6 +18,8 @@ interface AuthContextType {
   loginWithGoogle: (token: string) => Promise<void>;
   /** Native Google Sign-In (LT-128 §3): the plugin's ID token, not an access token. */
   loginWithGoogleIdToken: (idToken: string) => Promise<void>;
+  /** LT-383: Sign in with Apple; rethrows, like the native Google call, so the page can show why. */
+  loginWithApple: (payload: { idToken: string; nonce: string; authorizationCode?: string; name?: string }) => Promise<void>;
   loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -220,6 +222,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = (credential: string) =>
     finishGoogleLogin(() => googleLogin(credential)).catch(() => {});
   const loginWithGoogleIdToken = (idToken: string) => finishGoogleLogin(() => googleLoginWithIdToken(idToken));
+  const loginWithApple = (payload: { idToken: string; nonce: string; authorizationCode?: string; name?: string }) =>
+    finishGoogleLogin(() => appleLogin(payload));
 
   const loginWithFacebook = async (accessToken: string) => {
     setLoading(true);
@@ -325,7 +329,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   logoutRef.current = logout;
 
   return (
-    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
+    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithApple, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

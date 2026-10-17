@@ -436,7 +436,10 @@
     "noAccount": "¿No tienes cuenta?",
     "registerHere": "Regístrate aquí",
     "sessionExpired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
-    "forgotPassword": "¿Olvidaste tu contraseña?"
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "apple": "Continuar con Apple",
+    "appleNoEmail": "Apple no compartió una dirección de correo, y una cuenta la necesita. Inténtalo de nuevo y comparte tu correo (la dirección oculta de Apple también sirve).",
+    "appleFailed": "No se pudo iniciar sesión con Apple. Inténtalo de nuevo."
   },
   "onboarding": {
     "welcomeTitle": "¡Bienvenido, {{name}}!",

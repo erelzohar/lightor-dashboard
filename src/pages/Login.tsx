@@ -7,6 +7,7 @@ import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 import { SignInCard } from '../components/ui/sign-in-card-2';
 import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 import { isNativeApp } from '../lib/platform';
+import { appleSignInAvailable, isAppleCancel, signInWithApple } from '../lib/appleSignIn';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const NATIVE_GOOGLE_ENABLED = true;
@@ -16,7 +17,7 @@ const FacebookLogin =
 import { motion } from 'framer-motion';
 
 const Login: React.FC = () => {
-  const { auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithFacebook, loading } = useAuth();
+  const { auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithApple, loginWithFacebook, loading } = useAuth();
   const { t } = useTranslation();
   const [nativeError, setNativeError] = React.useState<string | null>(null);
 
@@ -65,6 +66,23 @@ const Login: React.FC = () => {
     }
   };
   const onGoogleLogin = isNativeApp() ? nativeGoogleLogin : () => googleLogin();
+
+  // LT-383: Sign in with Apple — Apple's sheet in the app, Apple's popup on
+  // the web (once its Services ID exists). Backing out is not an error.
+  const appleLogin = async () => {
+    setNativeError(null);
+    try {
+      await loginWithApple(await signInWithApple());
+    } catch (err) {
+      if (isAppleCancel(err)) return;
+      // The API's own words when it answered; Apple's sheet speaks in system
+      // codes ("AuthorizationError error 1000"), so those get our sentence.
+      const e = err as { response?: { data?: { error?: string; code?: string } } };
+      setNativeError(e.response?.data?.code === 'APPLE_NO_EMAIL'
+        ? t('login.appleNoEmail')
+        : e.response?.data?.error || t('login.appleFailed'));
+    }
+  };
 
   if (auth.isLoading) return null;
   if (auth.isAuthenticated) return <Navigate to="/" />;
@@ -162,6 +180,7 @@ const Login: React.FC = () => {
                 }}
                 onGoogleLogin={() => void onGoogleLogin()}
                 onFacebookLogin={onFacebookLogin ?? (() => {})}
+                onAppleLogin={appleSignInAvailable() ? () => void appleLogin() : undefined}
                 isLoading={loading}
                 // nativeError first: on the native path both are set for the
                 // same failure and this one carries the extra context (the

@@ -59,7 +59,7 @@ const Account: React.FC = () => {
   // always said it was wrong. It sets one through the emailed link instead,
   // as "forgot password" does: never on this page without proving the inbox.
   // Read as the danger zone reads it (LT-315).
-  const socialProvider = auth.user?.googleId ? 'Google' : auth.user?.facebookId ? 'Facebook' : null;
+  const socialProvider = auth.user?.googleId ? 'Google' : auth.user?.appleId ? 'Apple' : auth.user?.facebookId ? 'Facebook' : null;
   const hasPassword = auth.user?.hasPassword ?? !socialProvider;
   const [setLink, setSetLink] = useState<'idle' | 'sending' | 'sent'>('idle');
   const sendSetPasswordLink = async () => {

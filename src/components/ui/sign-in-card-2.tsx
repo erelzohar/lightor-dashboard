@@ -29,11 +29,13 @@ interface SignInCardProps {
   /** Hide the "or" divider and the social sign-in buttons entirely. */
   hideSocial?: boolean;
   onFacebookLogin: () => void;
+  /** LT-383: Sign in with Apple, beside Google (App Store guideline 4.8); absent = no button. */
+  onAppleLogin?: () => void;
   isLoading?: boolean;
   error?: string | null;
 }
 
-export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error, hideRememberMe = false, hideSocial = false }: SignInCardProps) {
+export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLogin, isLoading = false, error, hideRememberMe = false, hideSocial = false }: SignInCardProps) {
   // LT-375: the beams that travel round the card stand still when the device
   // asks for less motion (iOS Reduce Motion in the app).
   const reduceMotion = useReducedMotion();
@@ -303,7 +305,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
               </div>
 
               {/* Social login buttons */}
-              <div className={`grid gap-3 ${META_FEATURES_ENABLED ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <div className={`grid gap-3 ${[true, !!onAppleLogin, META_FEATURES_ENABLED].filter(Boolean).length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
@@ -321,6 +323,26 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
                     <span className="text-white/80 group-hover/google:text-white transition-colors text-xs">Google</span>
                   </div>
                 </motion.button>
+
+                {/* LT-383: Apple's white button for dark backgrounds (Human
+                    Interface Guidelines): the Apple logo and one of Apple's
+                    approved titles, as tall as Google's beside it. */}
+                {onAppleLogin && (
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={onAppleLogin}
+                  data-testid="apple-sign-in"
+                  className="relative"
+                >
+                  <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg flex items-center justify-center gap-1.5 px-2">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M16.37 1.43c0 1.14-.42 2.2-1.12 2.98-.84.93-1.98 1.47-3.08 1.38-.13-1.1.42-2.25 1.1-2.99.77-.85 2.07-1.48 3.1-1.37zM20.5 17.24c-.55 1.27-.81 1.84-1.52 2.96-.99 1.56-2.38 3.5-4.11 3.52-1.53.01-1.93-1-4.01-.99-2.08.01-2.52 1-4.05.99-1.73-.02-3.05-1.77-4.04-3.33C.01 16.03-.28 10.97 1.46 8.29c1.24-1.9 3.19-3.01 5.03-3.01 1.87 0 3.05 1.03 4.6 1.03 1.5 0 2.42-1.03 4.58-1.03 1.64 0 3.38.89 4.62 2.43-4.06 2.23-3.4 8.03.21 9.53z" />
+                    </svg>
+                    <span className="text-xs truncate">{t('login.apple')}</span>
+                  </div>
+                </motion.button>
+                )}
 
                 {META_FEATURES_ENABLED && (
                 <motion.button

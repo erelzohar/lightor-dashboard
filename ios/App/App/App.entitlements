@@ -10,5 +10,10 @@
 	<array>
 		<string>applinks:dashboard.lightor.app</string>
 	</array>
+	<!-- Sign in with Apple (LT-383; App Store guideline 4.8, beside Google). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

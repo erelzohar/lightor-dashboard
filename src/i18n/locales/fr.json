@@ -436,7 +436,10 @@
     "noAccount": "Vous n'avez pas de compte ?",
     "registerHere": "Inscrivez-vous ici",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-    "forgotPassword": "Mot de passe oublié ?"
+    "forgotPassword": "Mot de passe oublié ?",
+    "apple": "Continuer avec Apple",
+    "appleNoEmail": "Apple n'a pas partagé d'adresse e-mail, et un compte en a besoin. Réessayez en partageant votre e-mail (l'adresse masquée d'Apple convient aussi).",
+    "appleFailed": "La connexion avec Apple a échoué. Veuillez réessayer."
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue, {{name}} !",

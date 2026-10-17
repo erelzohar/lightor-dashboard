@@ -436,7 +436,10 @@
     "noAccount": "ليس لديك حساب؟",
     "registerHere": "سجّل هنا",
     "sessionExpired": "انتهت جلستك. يرجى تسجيل الدخول مجددًا.",
-    "forgotPassword": "نسيت كلمة المرور؟"
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "apple": "المتابعة مع Apple",
+    "appleNoEmail": "لم تشارك Apple عنوان بريد إلكتروني، والحساب يحتاج إليه. حاول مرة أخرى وشارك بريدك (العنوان المخفي من Apple يصلح أيضًا).",
+    "appleFailed": "فشل تسجيل الدخول عبر Apple. حاول مرة أخرى."
   },
   "onboarding": {
     "welcomeTitle": "مرحبًا، {{name}}!",
