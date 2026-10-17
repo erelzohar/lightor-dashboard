@@ -1696,5 +1696,19 @@
       "plan": "Plan",
       "verification": "Verificación"
     }
+  },
+  "colorPicker": {
+    "title": "Colores",
+    "grid": "Cuadrícula",
+    "spectrum": "Espectro",
+    "sliders": "Controles",
+    "red": "Rojo",
+    "green": "Verde",
+    "blue": "Azul",
+    "hex": "Código hex",
+    "recent": "Colores recientes",
+    "add": "Guardar este color",
+    "eyedropper": "Tomar un color de la pantalla",
+    "close": "Cerrar"
   }
 }

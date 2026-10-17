@@ -1696,5 +1696,19 @@
       "plan": "Formule",
       "verification": "Vérification"
     }
+  },
+  "colorPicker": {
+    "title": "Couleurs",
+    "grid": "Grille",
+    "spectrum": "Spectre",
+    "sliders": "Curseurs",
+    "red": "Rouge",
+    "green": "Vert",
+    "blue": "Bleu",
+    "hex": "Code hex",
+    "recent": "Couleurs récentes",
+    "add": "Garder cette couleur",
+    "eyedropper": "Prélever une couleur à l'écran",
+    "close": "Fermer"
   }
 }

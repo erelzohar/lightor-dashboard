@@ -1,5 +1,5 @@
-import React from 'react';
-import { HexColorPicker } from 'react-colorful';
+import React, { useId, useState } from 'react';
+import AppleColorPicker from './apple-color-picker';
 
 interface ColorPickerProps {
   color: string;
@@ -7,59 +7,31 @@ interface ColorPickerProps {
   label: string;
 }
 
+/**
+ * LT-384: a colour field is a round swatch of the colour itself (Erel: no
+ * hex box beside it); a tap opens the colour picker (`apple-color-picker`),
+ * which changes it live. Its label sits above it as a Select's does, so the
+ * two line up in one row.
+ */
 const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange, label }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  
-  // Toggle color picker popup
-  const togglePicker = () => setIsOpen(!isOpen);
-
-  // Close picker when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.color-picker-container')) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
+  const [open, setOpen] = useState(false);
+  const labelId = `${useId()}-label`;
   return (
-    <div className="mb-4 relative color-picker-container">
-      <label className="block text-sm font-medium text-light-text mb-1">
+    <div className="shrink-0">
+      <span id={labelId} className="block text-[0.875rem] font-medium text-gray-700 dark:text-gray-300 mb-2 ms-0.5">
         {label}
-      </label>
-      
-      <div className="flex items-center">
-        <div 
-          className="w-10 h-10 rounded-md cursor-pointer border border-light-gray shadow-sm"
-          style={{ backgroundColor: color }}
-          onClick={togglePicker}
-          aria-label={`Select color for ${label}`}
-        />
-        
-        <input
-          type="text"
-          value={color}
-          onChange={(e) => onChange(e.target.value)}
-          className="ml-3 px-3 py-2 border border-light-gray rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-32"
-          pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-          title="Hexadecimal color code (e.g. #ff0000)"
-        />
-      </div>
-      
-      {isOpen && (
-        <div className="absolute z-10 mt-2">
-          <HexColorPicker color={color} onChange={onChange} />
-        </div>
-      )}
+      </span>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-labelledby={labelId}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        data-testid="color-swatch"
+        className="block w-[50px] h-[50px] rounded-full border-4 border-white dark:border-slate-700 shadow-md ring-1 ring-gray-200 dark:ring-slate-600 transition-transform active:scale-95 focus:outline-none focus-visible:ring-[0.1875rem] focus-visible:ring-primary/40"
+        style={{ backgroundColor: color }}
+      />
+      <AppleColorPicker isOpen={open} onClose={() => setOpen(false)} initialColor={color} onChange={onChange} />
     </div>
   );
 };

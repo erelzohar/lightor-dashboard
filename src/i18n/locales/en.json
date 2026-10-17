@@ -1696,5 +1696,19 @@
       "plan": "Plan",
       "verification": "Verification"
     }
+  },
+  "colorPicker": {
+    "title": "Colors",
+    "grid": "Grid",
+    "spectrum": "Spectrum",
+    "sliders": "Sliders",
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue",
+    "hex": "Hex code",
+    "recent": "Recent colors",
+    "add": "Keep this color",
+    "eyedropper": "Pick a color from the screen",
+    "close": "Close"
   }
 }

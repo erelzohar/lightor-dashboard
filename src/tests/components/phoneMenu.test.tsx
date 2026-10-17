@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
+import { useEffect } from 'react';
+import { PhoneBarProvider, usePhoneBar } from '../../contexts/PhoneBarContext';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -81,6 +83,27 @@ describe('the phone menu (LT-352, LT-378)', () => {
     fireEvent.click(more());
     // Customers too since LT-376: everyone who wrote is one.
     expect(tileNames(menu()!)).toEqual(['/design', '/customers', '/appointment-types', '/portfolio', '/settings']);
+  });
+
+  it('shows every page under More while a page edits through the bar (LT-384)', () => {
+    const Editing = (): null => {
+      const bar = usePhoneBar()!;
+      useEffect(() => bar.setEditing(true), [bar]);
+      return null;
+    };
+    render(
+      <MemoryRouter initialEntries={['/design']}>
+        <PhoneBarProvider>
+          <Editing />
+          <Sidebar />
+        </PhoneBarProvider>
+      </MemoryRouter>
+    );
+    fireEvent.click(more());
+    expect(tileNames(menu()!)).toEqual([
+      '/', '/lighty', '/design', '/appointments',
+      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings',
+    ]);
   });
 
   it('shows the sign-in email under the name, in the sidebar and in the menu (LT-364)', () => {

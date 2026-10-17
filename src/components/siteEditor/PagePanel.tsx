@@ -66,23 +66,29 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
     <div className="flex flex-col gap-5" data-testid="page-panel">
       {/* LT-256: Lighty's line first; the design controls below it. */}
       <SiteChat config={config} onApply={(update) => onUpdate(update)} initialMessage={initialMessage} onInitialMessageSent={onInitialMessageSent} />
-      <Select
-        id="site-theme-preset"
-        label={t('siteEditor.theme.preset')}
-        value={design.stylePreset ?? ''}
-        onChange={(e) => e.target.value && choosePreset(e.target.value)}
-        helperText={t('siteEditor.theme.presetHint')}
-        options={[
-          { value: '', label: t('siteEditor.theme.pickPreset'), disabled: true },
-          ...Object.keys(PRESETS).map((v) => ({ value: v, label: optionLabel(PRESETS, v, lang) })),
-        ]}
-      />
-
-      <ColorPicker
-        label={t('siteEditor.theme.color')}
-        color={primary}
-        onChange={(color) => onUpdate(setAt(setAt(config, 'pallete.colorPrimary', color), 'pallete.colorPrimaryDark', color), 'pallete.colorPrimary')}
-      />
+      {/* LT-384: the style and the main colour side by side, the hint under both. */}
+      <div>
+        <div className="flex items-end gap-3">
+          <div className="flex-1 min-w-0">
+            <Select
+              id="site-theme-preset"
+              label={t('siteEditor.theme.preset')}
+              value={design.stylePreset ?? ''}
+              onChange={(e) => e.target.value && choosePreset(e.target.value)}
+              options={[
+                { value: '', label: t('siteEditor.theme.pickPreset'), disabled: true },
+                ...Object.keys(PRESETS).map((v) => ({ value: v, label: optionLabel(PRESETS, v, lang) })),
+              ]}
+            />
+          </div>
+          <ColorPicker
+            label={t('siteEditor.theme.color')}
+            color={primary}
+            onChange={(color) => onUpdate(setAt(setAt(config, 'pallete.colorPrimary', color), 'pallete.colorPrimaryDark', color), 'pallete.colorPrimary')}
+          />
+        </div>
+        <p className="mt-1 text-sm text-light-gray">{t('siteEditor.theme.presetHint')}</p>
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         {select('headingFont', FONTS, t('siteEditor.theme.headingFont'))}

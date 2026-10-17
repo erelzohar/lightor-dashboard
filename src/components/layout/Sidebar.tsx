@@ -280,7 +280,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // restriction, minus those the bar already shows. The owner's pages run on
   // as one row of the bar's tiles (no captions for a handful); the
   // operator's admin pages keep their own caption.
-  const inBar = new Set(barPaths(isRestricted, leadsSite));
+  // While a page has taken the bar over (LT-380, the site editor) its row
+  // holds that page's tabs, so "More" shows every page (LT-384).
+  const inBar = new Set(phoneBar?.editing ? [] : barPaths(isRestricted, leadsSite));
   const allowed = ({ path }: { path: string }) =>
     !inBar.has(path) && (!isRestricted || ALLOWED_WHEN_RESTRICTED.includes(path));
   const phoneSections: PhoneMenuSection[] = [
