@@ -68,7 +68,11 @@ const MASK_SIZE = 512;
 /** The bolt: the yellow-orange of his texture (red high, green mid-high, blue low). */
 const isBolt = (r: number, g: number, b: number) => r > 170 && g > 110 && b < 120 && r - b > 110;
 
-/** Jagged arcs of electricity from the middle outwards, on a transparent square. */
+/**
+ * Jagged arcs of electricity close around the middle, on a transparent square.
+ * Erel (LT-385): hugging his body, not flying off - short arcs that curl
+ * around rather than shoot outwards.
+ */
 function drawSparks(ctx: CanvasRenderingContext2D, mood: Mood) {
   const S = ctx.canvas.width;
   ctx.clearRect(0, 0, S, S);
@@ -77,15 +81,18 @@ function drawSparks(ctx: CanvasRenderingContext2D, mood: Mood) {
   ctx.lineJoin = 'round';
   for (let a = 0; a < arcs; a++) {
     const ang = Math.random() * Math.PI * 2;
-    const r0 = S * (0.12 + Math.random() * 0.12);
-    const r1 = S * (0.34 + Math.random() * 0.13);
+    const r0 = S * (0.16 + Math.random() * 0.1);
+    const r1 = S * (0.26 + Math.random() * 0.1);
+    // Curling around him: the arc turns as it goes.
+    const turn = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.5);
     const steps = 6;
     const pts: [number, number][] = [];
     for (let k = 0; k <= steps; k++) {
       const t = k / steps;
       const r = r0 + (r1 - r0) * t;
-      const jitter = (Math.random() - 0.5) * 0.5 * (k && k < steps ? 1 : 0);
-      pts.push([S / 2 + Math.cos(ang + jitter) * r, S / 2 + Math.sin(ang + jitter) * r]);
+      const jitter = (Math.random() - 0.5) * 0.35 * (k && k < steps ? 1 : 0);
+      const a2 = ang + turn * t + jitter;
+      pts.push([S / 2 + Math.cos(a2) * r, S / 2 + Math.sin(a2) * r]);
     }
     for (const [width, color, blur] of [[7, 'rgba(255,201,60,0.55)', 14], [2.5, '#fffbe8', 4]] as const) {
       ctx.strokeStyle = color;
@@ -185,7 +192,9 @@ function wireBolt(model: Object3D) {
   const at = spine.worldToLocal(centre.clone().add(new Vector3(0, 0, 0.08)));
   const ws = new Vector3();
   spine.getWorldScale(ws);
-  const size = Math.max(hi.x - lo.x, hi.y - lo.y) * 1.7;
+  const bolt = Math.max(hi.x - lo.x, hi.y - lo.y);
+  // The sparks' square: just past the bolt, so they stay on him (it was 1.7x and they flew off).
+  const size = bolt * 1.3;
   sprite.position.copy(at);
   sprite.scale.set(size / ws.x, size / ws.y, 1);
   // A soft glow behind the sparks, over the bolt.
@@ -205,7 +214,7 @@ function wireBolt(model: Object3D) {
     halo = new Sprite(new SpriteMaterial({ map: haloTex, transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending }));
     halo.visible = false;
     halo.position.copy(at);
-    halo.scale.set((size * 0.8) / ws.x, (size * 0.8) / ws.y, 1);
+    halo.scale.set((bolt * 1.3) / ws.x, (bolt * 1.3) / ws.y, 1);
     spine.add(halo);
   }
   spine.add(sprite);
