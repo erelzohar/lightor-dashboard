@@ -368,3 +368,15 @@ html[dir="rtl"] body {
 @media (prefers-reduced-motion: reduce) {
   .animate-\[ai-sweep_1\.6s_ease-in-out_infinite\] { animation: none; }
 }
+
+/* LT-375: under the device's "reduce motion" (iOS Reduce Motion in the app),
+   the endless decorative loops stand still: the login page's drifting blobs,
+   Lighty's thinking and typing dots. Loading spinners keep turning (they say
+   that something is happening); framer-motion follows the same setting
+   through MotionConfig in App.tsx. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob,
+  .dot-wave,
+  .animate-bounce,
+  .animate-ping { animation: none; }
+}

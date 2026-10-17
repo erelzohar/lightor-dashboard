@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Context
@@ -47,7 +47,12 @@ import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 function App() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
+  // LT-375: every framer-motion animation follows the device's "reduce
+  // motion" setting (iOS Reduce Motion in the app, the OS setting on the web):
+  // movement and scaling are dropped, fades stay. The CSS loops follow the
+  // same setting in index.css.
   return (
+    <MotionConfig reducedMotion="user">
     <GoogleOAuthProvider clientId={googleClientId}>
       <BrowserRouter>
         <ThemeProvider>
@@ -110,6 +115,7 @@ function App() {
         </ThemeProvider>
       </BrowserRouter>
     </GoogleOAuthProvider>
+    </MotionConfig>
   );
 }
 

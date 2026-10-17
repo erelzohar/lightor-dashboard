@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,9 @@ interface SignInCardProps {
 }
 
 export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading = false, error, hideRememberMe = false, hideSocial = false }: SignInCardProps) {
+  // LT-375: the beams that travel round the card stand still when the device
+  // asks for less motion (iOS Reduce Motion in the app).
+  const reduceMotion = useReducedMotion();
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
   const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +74,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
           />
 
           {/* Traveling light beams */}
-          <div className="absolute -inset-[1px] rounded-2xl overflow-hidden">
+          {!reduceMotion && <div className="absolute -inset-[1px] rounded-2xl overflow-hidden" aria-hidden="true">
             <motion.div
               className="absolute top-0 left-0 h-[3px] w-[50%] bg-gradient-to-r from-transparent via-white to-transparent opacity-70"
               animate={{ left: ['-50%', '100%'], opacity: [0.3, 0.7, 0.3] }}
@@ -96,7 +99,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, isLoading
             <motion.div className="absolute top-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.4, repeat: Infinity, repeatType: 'mirror', delay: 0.5 }} />
             <motion.div className="absolute bottom-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.2, repeat: Infinity, repeatType: 'mirror', delay: 1 }} />
             <motion.div className="absolute bottom-0 left-0 h-[5px] w-[5px] rounded-full bg-white/40 blur-[1px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.3, repeat: Infinity, repeatType: 'mirror', delay: 1.5 }} />
-          </div>
+          </div>}
 
           {/* Card border glow */}
           <div className="absolute -inset-[0.5px] rounded-2xl bg-gradient-to-r from-white/3 via-white/7 to-white/3 opacity-50" />
