@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React from 'react';
 import { Calendar, Clock, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +42,7 @@ const FACES_SHOWN = 4;
  */
 const SessionCard: React.FC<SessionCardProps> = ({ session, dateLabel, onOpen }) => {
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
 
   const going = activeParticipants(session);
   const status = sessionDisplayStatus(session);
@@ -126,7 +128,7 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, dateLabel, onOpen })
           </div>
           {revenue !== null && (
             <span className="font-medium text-primary tabular-nums">
-              {t('appointments.currencySymbol')}{revenue}
+              {currency}{revenue}
             </span>
           )}
         </div>

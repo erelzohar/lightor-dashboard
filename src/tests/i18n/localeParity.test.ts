@@ -64,12 +64,14 @@ describe('dashboard translations', () => {
     expect(mismatched).toEqual([]);
   });
 
-  it('prices in shekels in every language (LT-218)', () => {
-    // There is no currency setting; the English, Arabic, French and Spanish
-    // dashboards showed every price and revenue figure in dollars.
+  it("prices in the business's currency in every language (LT-218, LT-395)", () => {
+    // The language never decides the money: the English, Arabic, French and
+    // Spanish dashboards once showed every price in dollars (LT-218). Since
+    // LT-395 the symbol is the business's own, passed into the label.
     for (const lang of Object.keys(locales) as (keyof typeof locales)[]) {
       expect(locales[lang]['appointments.currencySymbol']).toBe('₪');
-      expect(locales[lang]['appointmentTypes.price']).toContain('(₪)');
+      expect(locales[lang]['appointmentTypes.price']).toContain('({{symbol}})');
+      expect(locales[lang]['appointmentTypes.price']).not.toMatch(/[₪$€£]/);
     }
   });
 

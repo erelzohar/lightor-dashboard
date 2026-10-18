@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Coins } from 'lucide-react';
@@ -66,6 +67,7 @@ const Ranked: React.FC<{
 
 const TopCustomers: React.FC<TopCustomersProps> = ({ byVisits, byRevenue, onSelect }) => {
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Ranked
@@ -81,7 +83,7 @@ const TopCustomers: React.FC<TopCustomersProps> = ({ byVisits, byRevenue, onSele
         hint={t('customers.top.estimated')}
         icon={<Coins size={16} />}
         rows={byRevenue}
-        metric={(r) => `${t('appointments.currencySymbol')}${Math.round(r.revenue).toLocaleString()}`}
+        metric={(r) => `${currency}${Math.round(r.revenue).toLocaleString()}`}
         emptyLabel={t('customers.top.empty')}
         onSelect={onSelect}
       />

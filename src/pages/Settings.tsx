@@ -1,6 +1,7 @@
+import { CURRENCIES, currencyOf, currencySymbol } from '../utils/currency';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink } from 'lucide-react';
+import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink, Banknote } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -137,6 +138,9 @@ const Settings: React.FC = () => {
   // default, and only trimmed text is stored.
   const ctaOf = (config: WebConfig | null) => (config?.components?.hero?.cta ?? '').trim();
   const ctaChanged = !!localWebConfig && !!webConfig && ctaOf(localWebConfig) !== ctaOf(webConfig);
+  // The currency (LT-395): absent reads as shekels.
+  const currencyChanged =
+    !!localWebConfig && !!webConfig && currencyOf(localWebConfig.currency) !== currencyOf(webConfig.currency);
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
@@ -168,6 +172,7 @@ const Settings: React.FC = () => {
       ctaChanged ||
       hideFromSearchChanged ||
       a11yMenuChanged ||
+      currencyChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -362,6 +367,8 @@ const Settings: React.FC = () => {
       // Only when the owner flipped it (LT-208), as the mode above.
       if (hideFromSearchChanged) payload.hideFromSearch = !!localWebConfig.hideFromSearch;
       if (a11yMenuChanged) payload.accessibility = { widgetHidden: a11yMenuHidden(localWebConfig) };
+      // The currency only when the owner chose one (LT-395).
+      if (currencyChanged) payload.currency = currencyOf(localWebConfig.currency);
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -917,6 +924,43 @@ const Settings: React.FC = () => {
                   error={errors?.cta}
                   onChange={(e) => handleChange('components.hero', 'cta', e.target.value)}
                 />
+              </div>
+            </SettingsSection>
+
+            {/* The site's currency (LT-395): picked by the AI from the
+                business's country when the site was built; the owner fixes it
+                here if it guessed wrong. Prices on the site and income here. */}
+            <SettingsSection
+              icon={Banknote}
+              title={t('settings.site.currencyTitle')}
+              titleId="site-currency-title"
+              description={t('settings.site.currencyHelp')}
+            >
+              <div role="radiogroup" aria-labelledby="site-currency-title" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {CURRENCIES.map((code) => {
+                  const selected = currencyOf(localWebConfig.currency) === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      data-testid={`currency-${code}`}
+                      onClick={() => handleChange('root', 'currency', code)}
+                      className={`flex items-center gap-2 p-3 rounded-2xl border text-start transition-colors ${
+                        selected
+                          ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20'
+                          : 'border-gray-200 dark:border-gray-700 bg-white/40 dark:bg-white/[0.02] hover:border-primary/40'
+                      }`}
+                    >
+                      <span className={`text-lg font-bold w-6 text-center ${selected ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`} aria-hidden="true">
+                        {currencySymbol(code)}
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white">{t(`settings.site.currency.${code}`)}</span>
+                      {selected && <Check className="w-4 h-4 text-primary ms-auto shrink-0" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
               </div>
             </SettingsSection>
 

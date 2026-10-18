@@ -226,6 +226,14 @@
     "site": {
       "title": "Votre site",
       "modeTitle": "Ce que fait le site",
+      "currencyTitle": "Devise",
+      "currencyHelp": "La devise des prix sur votre site et de vos revenus ici. Elle a été choisie selon le pays de votre activité à la création du site.",
+      "currency": {
+        "ILS": "Shekel",
+        "USD": "Dollar américain",
+        "EUR": "Euro",
+        "GBP": "Livre sterling"
+      },
       "modeBook": "Réservations",
       "modeBookDesc": "Les clients réservent un créneau dans votre agenda. Le formulaire de contact reste aussi.",
       "modeLead": "Demandes",
@@ -277,7 +285,7 @@
     "fillDetails": "Remplissez les informations ci-dessous",
     "tapToAdd": "Touchez pour ajouter un nouveau service",
     "serviceName": "Nom du service",
-    "price": "Prix (₪)",
+    "price": "Prix ({{symbol}})",
     "duration": "Durée (minutes)",
     "services": "Services",
     "addNew": "Ajouter",

@@ -242,6 +242,8 @@ export interface WebConfig {
    * (utils/businessTime), never inline.
    */
   timeZone?: string;
+  /** LT-395: the money its prices and income are in; none on older sites (shekels). Read through utils/currency. */
+  currency?: 'ILS' | 'USD' | 'EUR' | 'GBP';
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, subYears, startOfYear, endOfYear, addMonths, addYears, addWeeks, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
@@ -31,6 +32,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
 }) => {
   const { language, direction, darkMode } = useTheme();
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1300);
 
   React.useEffect(() => {
@@ -314,7 +316,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                       <br />
                       <span className="text-primary font-medium mt-1">
                         {t('appointmentsGraph.expectedIncome')}
-                        {t('appointments.currencySymbol')}
+                        {currency}
                         {dayData?.expectedIncome || 0}
                       </span>
                     </>

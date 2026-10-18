@@ -226,6 +226,14 @@
     "site": {
       "title": "Your site",
       "modeTitle": "What the site does",
+      "currencyTitle": "Currency",
+      "currencyHelp": "The currency of your prices on the site and of your income here. It was set from your business's country when the site was built.",
+      "currency": {
+        "ILS": "Shekel",
+        "USD": "US dollar",
+        "EUR": "Euro",
+        "GBP": "Pound"
+      },
       "modeBook": "Bookings",
       "modeBookDesc": "Customers book a time in your calendar. The contact form stays too.",
       "modeLead": "Inquiries",
@@ -277,7 +285,7 @@
     "fillDetails": "Fill in the details below",
     "tapToAdd": "Tap to add a new service",
     "serviceName": "Service Name",
-    "price": "Price (₪)",
+    "price": "Price ({{symbol}})",
     "duration": "Duration (minutes)",
     "services": "Services",
     "addNew": "Add New",

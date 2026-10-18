@@ -226,6 +226,14 @@
     "site": {
       "title": "Tu sitio",
       "modeTitle": "Qué hace el sitio",
+      "currencyTitle": "Moneda",
+      "currencyHelp": "La moneda de los precios en tu sitio y de tus ingresos aquí. Se eligió según el país de tu negocio al crear el sitio.",
+      "currency": {
+        "ILS": "Séquel",
+        "USD": "Dólar estadounidense",
+        "EUR": "Euro",
+        "GBP": "Libra esterlina"
+      },
       "modeBook": "Reservas",
       "modeBookDesc": "Los clientes reservan una hora en tu calendario. El formulario de contacto también se queda.",
       "modeLead": "Consultas",
@@ -277,7 +285,7 @@
     "fillDetails": "Completa los datos a continuación",
     "tapToAdd": "Toca para añadir un servicio nuevo",
     "serviceName": "Nombre del servicio",
-    "price": "Precio (₪)",
+    "price": "Precio ({{symbol}})",
     "duration": "Duración (minutos)",
     "services": "Servicios",
     "addNew": "Añadir",

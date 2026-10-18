@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -52,11 +53,12 @@ const useLongDate = () => {
 /** "30 min · ₪80 · Group class" — a service as the site describes it. */
 const useServiceMeta = () => {
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   return (service: AppointmentType) => {
     const minutes = Math.round(Number(service.durationMS) / 60_000);
     return [
       minutes > 0 ? `${minutes} ${t('appointments.minutes')}` : '',
-      service.price?.toString().trim() ? `${t('appointments.currencySymbol')}${service.price}` : '',
+      service.price?.toString().trim() ? `${currency}${service.price}` : '',
       service.kind === 'class' ? t('appointmentTypes.class.toggle') : '',
     ]
       .filter(Boolean)

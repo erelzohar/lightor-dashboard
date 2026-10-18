@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useMemo, useState } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -36,6 +37,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 }) => {
   const { language, direction } = useTheme();
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const locale = language === 'he' ? he : enUS;
 
   const getStatusTag = (status: string) => {
@@ -206,7 +208,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         </span>
                       </div>
                       <span className="font-medium text-primary">
-                        {t('appointments.currencySymbol')}{appointment.type.price}
+                        {currency}{appointment.type.price}
                       </span>
                     </div>
                   </div>

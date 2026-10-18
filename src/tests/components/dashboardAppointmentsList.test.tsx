@@ -68,7 +68,7 @@ describe('the home list with a class in it', () => {
     // Desktop and phone layouts are both in the DOM: one row, drawn twice.
     expect(screen.getAllByText('appointments.session.participants:12')).toHaveLength(2);
     expect(screen.getAllByText('Group training')).toHaveLength(2);
-    expect(screen.getAllByText('appointments.currencySymbol720')).toHaveLength(2);
+    expect(screen.getAllByText('₪720')).toHaveLength(2);
     // Nobody is named on the row, and there is no one number to call.
     expect(screen.queryByText('Trainee 1')).toBeNull();
     expect(screen.queryAllByTitle('appointments.call')).toHaveLength(0);
@@ -123,7 +123,7 @@ describe('the home list with a class in it', () => {
     expect(screen.getByText('3 dashboardList.total')).toBeTruthy();
     expect(screen.getAllByText('Dana Cohen')).toHaveLength(2);
     expect(screen.getAllByText('Avi Levi')).toHaveLength(2);
-    expect(screen.getAllByText('appointments.currencySymbol80')).toHaveLength(4);
+    expect(screen.getAllByText('₪80')).toHaveLength(4);
     expect(screen.getAllByTitle('appointments.call')).toHaveLength(2);
 
     // Still in start order: the two haircuts come before the class.
@@ -145,6 +145,6 @@ describe('the home list with a class in it', () => {
     expect(screen.getByText('1 dashboardList.total')).toBeTruthy();
     // The headcount and the takings leave the cancelled booking out.
     expect(screen.getAllByText('appointments.session.participants:12')).toHaveLength(2);
-    expect(screen.getAllByText('appointments.currencySymbol720')).toHaveLength(2);
+    expect(screen.getAllByText('₪720')).toHaveLength(2);
   });
 });

@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../hooks/useCurrencySymbol';
 import React, { useCallback, useEffect, useState } from 'react';
 import { canOfferPurchases } from '../lib/platform';
 import { motion } from 'framer-motion';
@@ -38,6 +39,7 @@ import { isLeadsSite } from '../utils/siteMode';
  */
 const Customers: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const currency = useCurrencySymbol();
   const navigate = useNavigate();
   // A leads site takes no bookings (LT-376): its table counts what each
   // customer wrote where a booking site counts visits and revenue. Its
@@ -212,7 +214,7 @@ const Customers: React.FC = () => {
             className: 'hidden lg:table-cell',
             render: (row) => (
               <span className="text-gray-500">
-                {t('appointments.currencySymbol')}{Math.round(row.revenue).toLocaleString()}
+                {currency}{Math.round(row.revenue).toLocaleString()}
               </span>
             ),
           },

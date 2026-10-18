@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
@@ -48,6 +49,7 @@ const WhatsAppGlyph: React.FC = () => (
 
 const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId, onClose, onChanged }) => {
   const { t, i18n } = useTranslation();
+  const currency = useCurrencySymbol();
   const { direction } = useTheme();
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
@@ -278,7 +280,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                           { label: t('customers.detail.upcoming'), value: stats.upcoming },
                           {
                             label: t('customers.columns.revenue'),
-                            value: `${t('appointments.currencySymbol')}${Math.round(stats.revenue).toLocaleString()}`,
+                            value: `${currency}${Math.round(stats.revenue).toLocaleString()}`,
                           },
                         ].map((item) => (
                           <div key={item.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
@@ -363,7 +365,7 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                               </div>
                               {row.typePrice && (
                                 <span className="text-xs text-gray-500 whitespace-nowrap">
-                                  {t('appointments.currencySymbol')}{row.typePrice}
+                                  {currency}{row.typePrice}
                                 </span>
                               )}
                               {/* In the owner's language, as the calendar shows it (LT-315). */}

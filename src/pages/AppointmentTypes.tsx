@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../hooks/useCurrencySymbol';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus, CreditCard } from 'lucide-react';
@@ -67,6 +68,7 @@ const InputField: React.FC<{
 
 const AppointmentTypes: React.FC = () => {
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentType, setCurrentType] = useState<AppointmentType | null>(null);
@@ -434,7 +436,7 @@ const AppointmentTypes: React.FC = () => {
                       icon={<Tag size={16} />}
                       prefix={
                         <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
-                          {t('appointments.currencySymbol')}
+                          {currency}
                         </span>
                       }
                       inputProps={{
@@ -450,12 +452,12 @@ const AppointmentTypes: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
                       <InputField
-                        label={t('appointmentTypes.price')}
+                        label={t('appointmentTypes.price', { symbol: currency })}
                         icon={<Banknote size={16} />}
                         prefix={
                           <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-focus-within/input:text-primary transition-colors">
                             {/* The site's currency, not "$" (LT-315). */}
-                            {t('appointments.currencySymbol')}
+                            {currency}
                           </span>
                         }
                         inputProps={{
@@ -699,14 +701,14 @@ const AppointmentTypes: React.FC = () => {
                           // Content only (LT-199): the price when there is one, no duration.
                           !!type.price?.toString().trim() && (
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {t('appointments.currencySymbol')}{type.price}
+                              {currency}{type.price}
                             </span>
                           )
                         ) : (
                           <>
                             <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                               <Banknote size={11} className="text-green-400" />
-                              {t('appointments.currencySymbol')}{type.price}
+                              {currency}{type.price}
                             </span>
                             {isBookableService(type) ? (
                               <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">

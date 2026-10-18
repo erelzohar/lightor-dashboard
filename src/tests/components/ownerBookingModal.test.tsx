@@ -222,9 +222,9 @@ describe('OwnerBookingModal: the services', () => {
 
     const cards = within(screen.getByTestId('booking-services')).getAllByRole('button');
     expect(cards.map((card) => card.textContent)).toEqual([
-      'Massage60 appointments.minutes · appointments.currencySymbol100',
-      'Home visit60 appointments.minutes · appointments.currencySymbol200',
-      'Yoga60 appointments.minutes · appointments.currencySymbol50 · appointmentTypes.class.toggle',
+      'Massage60 appointments.minutes · ₪100',
+      'Home visit60 appointments.minutes · ₪200',
+      'Yoga60 appointments.minutes · ₪50 · appointmentTypes.class.toggle',
     ]);
     // Nothing is picked for the owner, and nothing is booked from here.
     expect(screen.queryByTestId('booking-calendar')).toBeNull();

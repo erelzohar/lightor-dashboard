@@ -122,7 +122,8 @@ describe('Services page - by site mode', () => {
     expect(input('price')).not.toBeRequired();
     expect(screen.getByText('appointmentTypes.priceOptional')).toBeInTheDocument();
     expect(screen.queryByText('$')).not.toBeInTheDocument();
-    expect(screen.getByText('appointments.currencySymbol')).toBeInTheDocument();
+    // The business's own symbol (LT-395); shekels for this site, made before it.
+    expect(screen.getByText('₪')).toBeInTheDocument();
 
     fireEvent.change(input('name')!, { target: { value: 'Kitchen renovation' } });
     fireEvent.click(screen.getByText('appointmentTypes.addNew'));
@@ -157,8 +158,8 @@ describe('Services page - by site mode', () => {
 
     await screen.findByText('Bathroom');
     // One price line, for the service that has a price: symbol then amount.
-    expect(screen.getAllByText(/appointments\.currencySymbol/).map((el) => el.textContent)).toEqual([
-      'appointments.currencySymbol5000',
+    expect(screen.getAllByText(/₪/).map((el) => el.textContent)).toEqual([
+      '₪5000',
     ]);
     expect(screen.queryByText('appointmentTypes.noDuration')).not.toBeInTheDocument();
     expect(screen.queryByText(/minutes|דקות/)).not.toBeInTheDocument();

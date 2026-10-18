@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, CalendarDays, CalendarClock, Clock, User, Phone, Check, XCircle } from 'lucide-react';
@@ -28,6 +29,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   const [moving, setMoving] = React.useState(false);
   const { language } = useTheme();
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const dispatch = useAppDispatch();
   const { confirm, dialog } = useConfirm();
   const locale = language === 'he' ? he : undefined;
@@ -169,7 +171,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
             {appointment.type.name}
           </span>
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">
-            ₪{appointment.type.price}
+            {currency}{appointment.type.price}
           </span>
         </div>
 

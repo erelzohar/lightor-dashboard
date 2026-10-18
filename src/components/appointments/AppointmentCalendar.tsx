@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -193,6 +194,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
   const { t }    = useTranslation();
+  const currency = useCurrencySymbol();
   const dispatch = useAppDispatch();
   const { confirm, dialog } = useConfirm();
   // The business's own hours (LT-340), to grey out the days it is closed.
@@ -1515,7 +1517,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {selectedAppt.type.name}
               </span>
               <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">
-                ₪{selectedAppt.type.price}
+                {currency}{selectedAppt.type.price}
               </span>
             </div>
 

@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Appointment } from '../../types';
@@ -92,6 +93,7 @@ export const samePointIn = (previous: Period, now: Date, unit: 'day' | 'week' | 
 
 const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
 
   const cards = useMemo(() => {
     const now = new Date();
@@ -103,7 +105,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       return {
         label,
         changeLabel,
-        value: `${t('appointments.currencySymbol')}${current.income.toLocaleString()}`,
+        value: `${currency}${current.income.toLocaleString()}`,
         sub: `${current.count} ${t('incomeStats.appointments')}`,
         change: change(current.income, previous.income),
         series: totals.map((x) => x.income),

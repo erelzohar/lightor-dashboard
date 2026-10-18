@@ -1,3 +1,4 @@
+import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Phone, Clock, Calendar, ChevronRight, ChevronLeft, Users } from 'lucide-react';
@@ -58,6 +59,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
 }) => {
   const { language, direction } = useTheme();
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const locale = language === 'he' ? he : enUS;
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -230,7 +232,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                     {/* Price + action buttons (shown on hover) */}
                     <div className="w-28 flex items-center justify-end gap-1.5">
                       <span className="text-sm font-bold text-primary group-hover:hidden">
-                        {t('appointments.currencySymbol')}{appointment.type.price}
+                        {currency}{appointment.type.price}
                       </span>
                       <div className="hidden group-hover:flex items-center gap-1.5">
                         <a
@@ -281,7 +283,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                           {getDateDisplay(appointment.timestamp)}
                         </span>
                         <span className="text-xs font-bold text-primary">
-                          {t('appointments.currencySymbol')}{appointment.type.price}
+                          {currency}{appointment.type.price}
                         </span>
                       </div>
                     </div>
@@ -327,6 +329,7 @@ interface SessionRowProps {
 const SessionRow: React.FC<SessionRowProps> = ({ session, index, statusConfig, avatarColor, dateLabel, onOpen }) => {
   const { direction } = useTheme();
   const { t } = useTranslation();
+  const currency = useCurrencySymbol();
   const ArrowIcon = direction === 'rtl' ? ChevronLeft : ChevronRight;
 
   const going = activeParticipants(session);
@@ -334,7 +337,7 @@ const SessionRow: React.FC<SessionRowProps> = ({ session, index, statusConfig, a
   const durationMin = Math.round(session.durationMS / 60000);
   const perHead = Number(session.type?.price);
   const revenue = Number.isFinite(perHead) ? perHead * going.length : null;
-  const revenueLabel = revenue !== null ? `${t('appointments.currencySymbol')}${revenue}` : null;
+  const revenueLabel = revenue !== null ? `${currency}${revenue}` : null;
 
   const avatar = (size: string) => (
     <div
