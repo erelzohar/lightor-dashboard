@@ -42,6 +42,7 @@ import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions, useClassSessionsState } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
 import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
+import { pop } from '../ui/pop-button';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -1033,23 +1034,23 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         <header className="h-[72px] flex items-center justify-between px-4 sm:px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700/60 shrink-0 gap-3">
 
           {/* Under lg the side panel (the month, the next booking, the
-              filters) is a drawer. Its button stands out in the primary
-              colour (LT-355: a grey hamburger went unnoticed), and the month
-              itself opens it too. */}
+              filters) is a drawer. LT-355 tinted its icon in the primary
+              colour, which still read as an icon (LT-391, Erel): it is one
+              solid button now, the calendar icon, the month and an arrow,
+              in the dashboard's pop look. */}
           <div className="flex items-center gap-2 min-w-0">
-            <button className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/30 hover:bg-primary/15 dark:bg-primary/25 dark:text-violet-200 transition-colors shrink-0"
-              aria-label={language === 'he' ? 'פתח תפריט לוח שנה' : 'Open calendar menu'}
-              onClick={e => { e.stopPropagation(); setSidebarOpen(true); }}>
-              <CalendarDays size={20} />
-            </button>
             <h1 className="text-2xl font-semibold text-gray-800 dark:text-white min-w-0">
-              <button type="button" className="lg:hidden flex items-center gap-1 max-w-full" data-testid="month-opens-drawer"
+              <button type="button" data-testid="month-opens-drawer"
+                className={`lg:hidden inline-flex items-center gap-1.5 h-10 ps-3 pe-2.5 max-w-full rounded-xl text-base font-semibold select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${pop()}`}
                 onClick={e => { e.stopPropagation(); setSidebarOpen(true); }}>
+                <CalendarDays size={18} className="shrink-0" aria-hidden="true" />
+                {/* Its name is what it says, after what it does. */}
+                <span className="sr-only">{language === 'he' ? 'פתח תפריט לוח שנה' : 'Open calendar menu'}: </span>
                 <span className="truncate">
                   <span className="sm:hidden">{format(currentDate, 'MMM yyyy', { locale })}</span>
                   <span className="hidden sm:inline">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
                 </span>
-                <ChevronDown size={18} className="shrink-0 text-gray-400" />
+                <ChevronDown size={16} className="shrink-0 opacity-80" aria-hidden="true" />
               </button>
               <span className="hidden lg:block truncate">{format(currentDate, 'MMMM, yyyy', { locale })}</span>
             </h1>

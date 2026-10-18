@@ -38,8 +38,11 @@ describe('the calendar drawer on a phone', () => {
 
   it('opens from its button, and closes on the day picked in it', async () => {
     const { container } = render(<AppointmentCalendar appointments={[]} onAppointmentClick={vi.fn()} />);
-    const open = screen.getByRole('button', { name: 'Open calendar menu' });
-    expect(open.className).toContain('bg-primary/10');
+    // LT-391: one solid button, the icon and the month in it.
+    const open = screen.getByRole('button', { name: /^Open calendar menu:/ });
+    expect(open).toBe(screen.getByTestId('month-opens-drawer'));
+    expect(open.className).toContain('bg-primary ');
+    expect(open.querySelector('svg')).not.toBeNull();
 
     fireEvent.click(open);
     expect(drawer()).toBeTruthy();
