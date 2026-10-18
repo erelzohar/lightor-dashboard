@@ -1887,34 +1887,6 @@
         "title": "Ordenarlas",
         "body": "Arrastra una foto para cambiar el orden."
       }
-    },
-    "settings": {
-      "tabs": {
-        "title": "Ajustes por tema",
-        "body": "General, contacto, el sitio y las reservas."
-      },
-      "tabsLeads": {
-        "title": "Ajustes por tema",
-        "body": "General, contacto y el sitio."
-      },
-      "general": {
-        "title": "Datos generales",
-        "body": "El nombre que aparece en tu sitio, el logo y la dirección. Los cambios se guardan con el botón que aparece abajo."
-      }
-    },
-    "account": {
-      "notifications": {
-        "title": "Notificaciones",
-        "body": "Cómo te mantengo al día, por correo, por mensaje o en la app, y sobre qué."
-      },
-      "billing": {
-        "title": "Tu suscripción",
-        "body": "Tu plan y cuándo se renueva."
-      },
-      "tours": {
-        "title": "Este recorrido",
-        "body": "Desde aquí puedes empezarlo de nuevo o desactivarlo."
-      }
     }
   }
 }

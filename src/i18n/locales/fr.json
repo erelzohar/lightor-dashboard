@@ -1887,34 +1887,6 @@
         "title": "Les ranger",
         "body": "Glissez une photo pour changer l'ordre."
       }
-    },
-    "settings": {
-      "tabs": {
-        "title": "Les réglages par sujet",
-        "body": "Général, contact, le site et les réservations."
-      },
-      "tabsLeads": {
-        "title": "Les réglages par sujet",
-        "body": "Général, contact et le site."
-      },
-      "general": {
-        "title": "Les informations générales",
-        "body": "Le nom affiché sur votre site, le logo et l'adresse. Les changements s'enregistrent avec le bouton qui apparaît en bas."
-      }
-    },
-    "account": {
-      "notifications": {
-        "title": "Notifications",
-        "body": "Comment je vous tiens au courant, par e-mail, par message ou dans l'application, et de quoi."
-      },
-      "billing": {
-        "title": "Votre abonnement",
-        "body": "Votre formule et sa date de renouvellement."
-      },
-      "tours": {
-        "title": "Cette visite",
-        "body": "Recommencez-la d'ici, ou désactivez-la."
-      }
     }
   }
 }

@@ -455,9 +455,7 @@ const Account: React.FC = () => {
 
       {/* How and about what the owner hears — email, SMS or WhatsApp, one
           switch per event (LT-129, LT-213) */}
-      <div data-tour="notifications">
-        <NotificationsCard leadsSite={leadsSite} />
-      </div>
+      <NotificationsCard leadsSite={leadsSite} />
 
       {/* Lighty's page tours: on, off, or all over again (LT-389) */}
       <ToursCard />
@@ -489,9 +487,7 @@ const Account: React.FC = () => {
         </div>
       </Card>
 
-      <div data-tour="billing">
-        <BillingSection leadsSite={leadsSite} />
-      </div>
+      <BillingSection leadsSite={leadsSite} />
 
       <DangerZoneSection />
 

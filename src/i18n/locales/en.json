@@ -1887,34 +1887,6 @@
         "title": "Arrange them",
         "body": "Drag a picture to change the order."
       }
-    },
-    "settings": {
-      "tabs": {
-        "title": "Settings by topic",
-        "body": "General, contact, the site and bookings."
-      },
-      "tabsLeads": {
-        "title": "Settings by topic",
-        "body": "General, contact and the site."
-      },
-      "general": {
-        "title": "General details",
-        "body": "The name shown on your site, the logo and the address. Changes are saved with the button that appears at the bottom."
-      }
-    },
-    "account": {
-      "notifications": {
-        "title": "Notifications",
-        "body": "How I keep you posted, by email, message or in the app, and about what."
-      },
-      "billing": {
-        "title": "Your plan",
-        "body": "Your plan and when it renews."
-      },
-      "tours": {
-        "title": "This tour",
-        "body": "Start it over from here, or turn it off."
-      }
     }
   }
 }

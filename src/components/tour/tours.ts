@@ -8,6 +8,9 @@
  * at different things. A step whose target is not on screen (an empty list,
  * a hidden tab, the app's own layout) is left out. A step with no target is
  * a card in the middle of the screen. Texts are `tour.<key>.title|body`.
+ *
+ * Settings and the account page have none: their fields carry tooltips,
+ * and Erel said that is enough there.
  */
 export interface TourStep {
   key: string;
@@ -103,23 +106,6 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
         steps: [
           { key: 'gallery.add', target: at('add-image') },
           { key: 'gallery.grid', target: at('images') },
-        ],
-      };
-    case '/settings':
-      return {
-        id: 'settings',
-        steps: [
-          { key: leadsSite ? 'settings.tabsLeads' : 'settings.tabs', target: at('settings-tabs') },
-          { key: 'settings.general', target: at('settings-general') },
-        ],
-      };
-    case '/account':
-      return {
-        id: 'account',
-        steps: [
-          { key: 'account.notifications', target: at('notifications') },
-          { key: 'account.billing', target: at('billing') },
-          { key: 'account.tours', target: at('tours-card') },
         ],
       };
     default:

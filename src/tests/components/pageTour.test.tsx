@@ -147,11 +147,16 @@ describe('Lighty page tours (LT-389)', () => {
     expect(await screen.findByRole('dialog', { name: 'tour.home.statsLeads.title' })).toBeInTheDocument();
   });
 
+  it('leaves settings and the account page to their tooltips', () => {
+    expect(tourFor('/settings', false)).toBeNull();
+    expect(tourFor('/account', true)).toBeNull();
+  });
+
   it('has its words in all five languages', () => {
     const paths = ['/', '/lighty', '/design', '/appointments', '/leads', '/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings', '/account'];
     const keys = new Set<string>();
     for (const p of paths) for (const leads of [false, true]) tourFor(p, leads)?.steps.forEach((s) => keys.add(s.key));
-    expect(keys.size).toBeGreaterThan(30);
+    expect(keys.size).toBeGreaterThan(20);
     for (const locale of [he, en, ar, fr, es] as unknown as Array<{ tour: Record<string, unknown> }>) {
       for (const ui of ['next', 'prev', 'done', 'skip', 'turnOff', 'step']) expect(typeof locale.tour[ui]).toBe('string');
       for (const key of keys) {

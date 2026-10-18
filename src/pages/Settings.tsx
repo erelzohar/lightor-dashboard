@@ -488,7 +488,6 @@ const Settings: React.FC = () => {
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             {/* The name of a business, a brand, an event or a project (LT-370): "general", not "the business". */}
-            <div data-tour="settings-general">
             <SettingsSection icon={Info} title={t('settings.sections.business')} description={t('settings.sections.businessDesc')}>
               <div className="max-w-md">
                 <Input
@@ -599,7 +598,6 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </SettingsSection>
-            </div>
 
             <SettingsSection icon={MapPin} title={t('settings.addressTitle')} description={t('settings.sections.addressDesc')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1106,9 +1104,7 @@ const Settings: React.FC = () => {
 
       <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }}>
         <Card>
-          <div data-tour="settings-tabs">
-            <WebConfigTabs activeTab={activeTab} onTabChange={setActiveTab} bookings={!leadsSite} />
-          </div>
+          <WebConfigTabs activeTab={activeTab} onTabChange={setActiveTab} bookings={!leadsSite} />
 
           <div className="my-6">
             {renderTabContent()}
