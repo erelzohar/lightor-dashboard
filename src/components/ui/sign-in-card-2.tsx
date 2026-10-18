@@ -110,8 +110,12 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
 
           {/* Glass card */}
           <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl overflow-hidden">
+            {/* Decoration only: positioned, it paints over the card's
+                unpositioned content, so it must let taps through (LT-397:
+                "Forgot password?" and "Remember me" could not be tapped). */}
             <div
-              className="absolute inset-0 opacity-[0.03]"
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.03] pointer-events-none"
               style={{
                 backgroundImage: `linear-gradient(135deg, white 0.5px, transparent 0.5px), linear-gradient(45deg, white 0.5px, transparent 0.5px)`,
                 backgroundSize: '30px 30px',
