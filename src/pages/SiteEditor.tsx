@@ -597,6 +597,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           </button>
           <button
             type="button"
+            data-tour="editor-save"
             onClick={() => void save()}
             disabled={!draft.dirty || saving}
             className={`ms-1 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
@@ -644,6 +645,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         {/* ── Panel: beside the preview from md up; on a phone inside the tab bar (LT-380), or a bottom sheet without one ── */}
         {!inBar && (
         <aside
+          data-tour="editor-panel"
           className={`${sheetOpen ? 'flex' : 'hidden'} md:flex flex-col fixed md:static inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-auto z-40 max-h-[62vh] md:max-h-none md:w-[380px] shrink-0 rounded-t-3xl md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/80 md:dark:bg-slate-800/80 shadow-2xl md:shadow-lg border-t md:border border-gray-100 dark:border-slate-700/50 overflow-hidden`}
           aria-label={heading}
         >

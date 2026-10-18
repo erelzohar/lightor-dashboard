@@ -243,6 +243,7 @@ const Customers: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
+            data-tour="export-customers"
             leftIcon={exportLocked ? <Lock size={15} /> : <Download size={15} />}
             onClick={handleExport}
             isLoading={exporting}
@@ -251,7 +252,7 @@ const Customers: React.FC = () => {
             {t('customers.export.button')}
           </Button>
         )}
-        <Button variant="primary" size="sm" leftIcon={<UserPlus size={15} />} onClick={() => setAdding(true)}>
+        <Button variant="primary" size="sm" data-tour="add-customer" leftIcon={<UserPlus size={15} />} onClick={() => setAdding(true)}>
           {t('customers.add.title')}
         </Button>
       </div>
@@ -299,6 +300,7 @@ const Customers: React.FC = () => {
         />
       )}
 
+      <div data-tour="customers-table">
       <DataTable
         columns={columns}
         rows={result?.data ?? []}
@@ -341,6 +343,7 @@ const Customers: React.FC = () => {
           />
         }
       />
+      </div>
 
       <CustomerDetailDrawer customerId={selectedId} onClose={() => setSelectedId(null)} onChanged={refreshAll} />
       <AddCustomerModal

@@ -304,6 +304,7 @@ const AppointmentTypes: React.FC = () => {
         <button
           type="button"
           onClick={toggleForm}
+          data-tour="new-service"
           className="w-full flex items-center gap-4 px-6 py-5 text-left transition-colors hover:bg-white/[0.02] group"
         >
           {/* Animated + / × circle */}
@@ -645,6 +646,7 @@ const AppointmentTypes: React.FC = () => {
               ))}
             </div>
           ) : appointmentTypes.length > 0 ? (
+            <div data-tour="services">
             <AnimatePresence initial={false}>
               {appointmentTypes.map((type, i) => (
                 <motion.div
@@ -751,6 +753,7 @@ const AppointmentTypes: React.FC = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+            </div>
           ) : (
             /* Empty state */
             <motion.div

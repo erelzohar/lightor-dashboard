@@ -127,7 +127,7 @@ const LightyPage: React.FC = () => {
   };
 
   const chips = (
-    <div className={`flex gap-2 ${empty ? 'flex-wrap justify-center' : 'overflow-x-auto pb-1 [scrollbar-width:none]'}`}>
+    <div data-tour="lighty-chips" className={`flex gap-2 ${empty ? 'flex-wrap justify-center' : 'overflow-x-auto pb-1 [scrollbar-width:none]'}`}>
       {suggestions.map((key) => (
         <button
           key={key}
@@ -204,6 +204,7 @@ const LightyPage: React.FC = () => {
       {!empty && turns.length > 0 && !busy && <div className="pb-2">{chips}</div>}
 
       <form
+        data-tour="lighty-input"
         className="flex items-end gap-2 rounded-3xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm focus-within:ring-2 focus-within:ring-violet-300/50"
         onSubmit={(e) => { e.preventDefault(); void send(input); }}
       >

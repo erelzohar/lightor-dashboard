@@ -686,6 +686,14 @@
       "failed": "We could not send or check the code. Try again.",
       "pending": "60 days of Lightor+ are waiting for you: add your mobile number and verify it with a code.",
       "verifyNow": "Verify phone number"
+    },
+    "tours": {
+      "title": "Lighty's tours",
+      "description": "A short tour of each page, the first time you open it.",
+      "show": "Show tours on pages",
+      "restart": "Start over",
+      "restarted": "The tours will show again on every page",
+      "failed": "Couldn't save. Try again."
     }
   },
   "incomeStats": {
@@ -1738,5 +1746,175 @@
   "siteBuilder": {
     "frameTitle": "Build your site with Lighty",
     "loading": "Loading Lighty..."
+  },
+  "tour": {
+    "next": "Next",
+    "prev": "Back",
+    "done": "Done",
+    "skip": "Skip",
+    "turnOff": "Don't show tours",
+    "step": "{{n}} of {{total}}",
+    "home": {
+      "intro": {
+        "title": "Hi, I'm Lighty!",
+        "body": "I'll show you what each page is for. You can skip any time."
+      },
+      "setup": {
+        "title": "Your setup list",
+        "body": "A few short steps and your site is fully ready. Each step opens the right place."
+      },
+      "stats": {
+        "title": "How it's going",
+        "body": "Your appointments, visits and income at a glance."
+      },
+      "statsLeads": {
+        "title": "Your inquiries",
+        "body": "How many inquiries came in, and how many are waiting for a reply."
+      },
+      "nav": {
+        "title": "All the pages",
+        "body": "Move between pages here. On a phone, \"More\" opens the rest."
+      },
+      "lighty": {
+        "title": "And I'm always here",
+        "body": "Tap me to chat. Ask me anything about your business."
+      }
+    },
+    "lighty": {
+      "input": {
+        "title": "Ask me",
+        "body": "Write what you'd like to know: what's on today, who your regulars are, how many inquiries came in."
+      },
+      "chips": {
+        "title": "Ready questions",
+        "body": "Or tap one of these and I'll answer right away."
+      }
+    },
+    "design": {
+      "preview": {
+        "title": "Your site",
+        "body": "Exactly as your customers see it. Tap any text or picture to edit it."
+      },
+      "panel": {
+        "title": "Editing tools",
+        "body": "Arrange and add sections, change the overall look, and ask me for changes in words."
+      },
+      "save": {
+        "title": "Save & publish",
+        "body": "Changes reach your site only after \"Save & publish\". Undo and redo are right beside it."
+      }
+    },
+    "appointments": {
+      "calendar": {
+        "title": "Your calendar",
+        "body": "Tap an appointment to open it. On a computer you can also drag it to another time."
+      },
+      "view": {
+        "title": "Calendar or list",
+        "body": "Switch between the calendar and the list here."
+      },
+      "new": {
+        "title": "New appointment",
+        "body": "Book an appointment yourself, even at a time the site doesn't offer."
+      }
+    },
+    "leads": {
+      "filters": {
+        "title": "Inquiries by status",
+        "body": "New, contacted and closed. The number beside each says how many."
+      },
+      "actions": {
+        "title": "Get back to them",
+        "body": "From each inquiry you can call, send a WhatsApp, and add the person to your customers."
+      },
+      "status": {
+        "title": "Update the status",
+        "body": "Once you have handled an inquiry, mark it \"Contacted\" or \"Closed\"."
+      }
+    },
+    "customers": {
+      "add": {
+        "title": "Add a customer",
+        "body": "Add a customer yourself. Anyone who books on your site joins the list on their own."
+      },
+      "addLeads": {
+        "title": "Add a customer",
+        "body": "Add a customer yourself. You can also add an inquiry to your customers from the Inquiries page."
+      },
+      "table": {
+        "title": "All your customers",
+        "body": "Search by name or phone. Tap a customer to open their card: notes, history and blocking."
+      },
+      "export": {
+        "title": "Export",
+        "body": "All your customers in one file, for Excel."
+      }
+    },
+    "schedule": {
+      "hours": {
+        "title": "Opening hours",
+        "body": "When customers can book with you. You can add a break on any day."
+      },
+      "hoursLeads": {
+        "title": "Opening hours",
+        "body": "The hours your site shows."
+      },
+      "special": {
+        "title": "Special days",
+        "body": "Different hours for a certain date, like a holiday eve."
+      },
+      "vacations": {
+        "title": "Vacations",
+        "body": "On vacation days the site offers no appointments."
+      }
+    },
+    "services": {
+      "new": {
+        "title": "New service",
+        "body": "A name, a price and a length. It can also be a group class with a number of places."
+      },
+      "list": {
+        "title": "Your services",
+        "body": "Tap a service to edit it."
+      }
+    },
+    "gallery": {
+      "add": {
+        "title": "Add pictures",
+        "body": "Pictures of your work, up to 12. They show in your site's gallery."
+      },
+      "grid": {
+        "title": "Arrange them",
+        "body": "Drag a picture to change the order."
+      }
+    },
+    "settings": {
+      "tabs": {
+        "title": "Settings by topic",
+        "body": "General, contact, the site and bookings."
+      },
+      "tabsLeads": {
+        "title": "Settings by topic",
+        "body": "General, contact and the site."
+      },
+      "general": {
+        "title": "General details",
+        "body": "The name shown on your site, the logo and the address. Changes are saved with the button that appears at the bottom."
+      }
+    },
+    "account": {
+      "notifications": {
+        "title": "Notifications",
+        "body": "How I keep you posted, by email, message or in the app, and about what."
+      },
+      "billing": {
+        "title": "Your plan",
+        "body": "Your plan and when it renews."
+      },
+      "tours": {
+        "title": "This tour",
+        "body": "Start it over from here, or turn it off."
+      }
+    }
   }
 }

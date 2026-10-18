@@ -10,6 +10,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
+import PageTour from '../tour/PageTour';
 import { useDeepLinkLeaveGuard } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
@@ -180,6 +181,10 @@ const Layout: React.FC = () => {
       )}
 
       <Sidebar isRestricted={isRestricted} />
+
+      {/* Lighty's page tours (LT-389): not while the account is still being
+          set up, nor under the first-run welcome. */}
+      <PageTour enabled={!!auth.user && !isRestricted && !(boardingStatus === 'new' && !welcomeDismissed)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <motion.main

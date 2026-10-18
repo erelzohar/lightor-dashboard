@@ -12,6 +12,7 @@ import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
 import BillingSection from '../components/account/BillingSection';
 import DangerZoneSection from '../components/account/DangerZoneSection';
 import NotificationsCard from '../components/account/NotificationsCard';
+import ToursCard from '../components/account/ToursCard';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -454,7 +455,12 @@ const Account: React.FC = () => {
 
       {/* How and about what the owner hears — email, SMS or WhatsApp, one
           switch per event (LT-129, LT-213) */}
-      <NotificationsCard leadsSite={leadsSite} />
+      <div data-tour="notifications">
+        <NotificationsCard leadsSite={leadsSite} />
+      </div>
+
+      {/* Lighty's page tours: on, off, or all over again (LT-389) */}
+      <ToursCard />
 
       {/* Dashboard Language Card */}
       <Card>
@@ -483,7 +489,9 @@ const Account: React.FC = () => {
         </div>
       </Card>
 
-      <BillingSection leadsSite={leadsSite} />
+      <div data-tour="billing">
+        <BillingSection leadsSite={leadsSite} />
+      </div>
 
       <DangerZoneSection />
 

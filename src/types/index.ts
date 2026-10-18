@@ -310,6 +310,11 @@ export interface User {
    * merges a partial object.
    */
   notificationPrefs?: NotificationPrefs;
+  /**
+   * Lighty's page tours (LT-389): the tours done and the off switch. Absent
+   * until the first tour is finished; every tour shows once until then.
+   */
+  tours?: { seen?: string[]; off?: boolean };
 }
 
 /** The owner's own alerts (LT-213). SMS and WhatsApp are Plus channels. */

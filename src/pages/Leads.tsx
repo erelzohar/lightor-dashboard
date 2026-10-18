@@ -162,7 +162,7 @@ const Leads: React.FC = () => {
             setSearchParams(next ? { status: next } : {}, { replace: true });
           }}
         >
-          <TabsList aria-label={t('leads.filter.label')} className="w-fit max-w-full overflow-x-auto scrollbar-hide">
+          <TabsList data-tour="lead-filters" aria-label={t('leads.filter.label')} className="w-fit max-w-full overflow-x-auto scrollbar-hide">
             {filters.map((f) => (
               <TabsTrigger key={f.value || 'all'} value={f.value || 'all'}>
                 {f.label}
@@ -186,7 +186,7 @@ const Leads: React.FC = () => {
           </div>
         ) : (
           <ul className="space-y-3" data-testid="leads-list">
-            {result.data.map((lead) => (
+            {result.data.map((lead, i) => (
               <li
                 key={lead._id}
                 data-testid="lead-card"
@@ -213,7 +213,8 @@ const Leads: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                {/* The first card's parts are the tour's (LT-389). */}
+                <div className="flex flex-wrap gap-2" data-tour={i === 0 ? 'lead-actions' : undefined}>
                   <a
                     href={telHref(lead.phone)}
                     className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl ${pop()} text-sm font-medium`}
@@ -262,7 +263,7 @@ const Leads: React.FC = () => {
 
                 <AnswersList answers={lead.answers} fields={webConfig?.leadFields ?? []} />
 
-                <div className="flex flex-wrap items-center gap-1.5 pt-1" role="group" aria-label={t('leads.statusLabel')}>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1" role="group" aria-label={t('leads.statusLabel')} data-tour={i === 0 ? 'lead-status' : undefined}>
                   {LEAD_STATUSES.map((s) => (
                     <button
                       key={s}

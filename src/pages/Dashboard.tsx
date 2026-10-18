@@ -237,7 +237,7 @@ const Dashboard: React.FC = () => {
       <div className={isEmpty ? 'flex-1 flex flex-col justify-center space-y-5' : 'space-y-5'}>
       {/* Onboarding UI — while it is unfinished it leads, above Lighty's welcome (LT-269) */}
       {showOnboarding && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} data-tour="setup">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 shadow-xl">
             <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
             <div className="absolute bottom-0 left-1/2 w-56 h-56 bg-black/10 rounded-full blur-2xl translate-y-1/3 pointer-events-none" />
@@ -561,11 +561,13 @@ const Dashboard: React.FC = () => {
       {leadsSite && leadsPage !== undefined && leadStats !== undefined && !!(leadsTotal || leadsPage === null) && (
         <>
           {leadStats && (
-            <ErrorBoundaryWithLanguage
-              fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
-            >
-              <LeadsStats stats={leadStats} onOpenLeads={() => navigate('/leads?status=new')} />
-            </ErrorBoundaryWithLanguage>
+            <div data-tour="stats">
+              <ErrorBoundaryWithLanguage
+                fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
+              >
+                <LeadsStats stats={leadStats} onOpenLeads={() => navigate('/leads?status=new')} />
+              </ErrorBoundaryWithLanguage>
+            </div>
           )}
 
           {/* Chart (2/3) + topics (1/3), like the bookings graph and donut */}
@@ -603,7 +605,7 @@ const Dashboard: React.FC = () => {
       {!leadsSite && appointments.length > 0 && (
         <>
           {/* ── Row 1: Income Stats ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-tour="stats">
             <ErrorBoundaryWithLanguage
               fallback={<DashboardFallback language={language} title={t('common.errorLoadingIncome')} />}
             >

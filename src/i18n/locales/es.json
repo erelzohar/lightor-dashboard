@@ -686,6 +686,14 @@
       "failed": "No pudimos enviar o comprobar el código. Inténtalo de nuevo.",
       "pending": "60 días de Lightor+ te esperan: añade tu número de móvil y verifícalo con un código.",
       "verifyNow": "Verificar teléfono"
+    },
+    "tours": {
+      "title": "Los recorridos de Lighty",
+      "description": "Un recorrido corto por cada página, la primera vez que la abres.",
+      "show": "Mostrar recorridos en las páginas",
+      "restart": "Empezar de nuevo",
+      "restarted": "Los recorridos volverán a aparecer en cada página",
+      "failed": "No se pudo guardar. Inténtalo de nuevo."
     }
   },
   "incomeStats": {
@@ -1738,5 +1746,175 @@
   "siteBuilder": {
     "frameTitle": "Crea tu sitio con Lighty",
     "loading": "Cargando Lighty..."
+  },
+  "tour": {
+    "next": "Siguiente",
+    "prev": "Anterior",
+    "done": "Listo",
+    "skip": "Omitir",
+    "turnOff": "No mostrar recorridos",
+    "step": "{{n}} de {{total}}",
+    "home": {
+      "intro": {
+        "title": "¡Hola, soy Lighty!",
+        "body": "Te muestro en breve para qué sirve cada página. Puedes omitirlo en cualquier momento."
+      },
+      "setup": {
+        "title": "Tu lista de configuración",
+        "body": "Unos pocos pasos y tu sitio queda listo del todo. Cada paso abre el lugar correcto."
+      },
+      "stats": {
+        "title": "Cómo va todo",
+        "body": "Tus citas, visitas e ingresos de un vistazo."
+      },
+      "statsLeads": {
+        "title": "Tus consultas",
+        "body": "Cuántas consultas llegaron y cuántas esperan respuesta."
+      },
+      "nav": {
+        "title": "Todas las páginas",
+        "body": "Aquí pasas de una página a otra. En el móvil, «Más» abre el resto."
+      },
+      "lighty": {
+        "title": "Y siempre estoy aquí",
+        "body": "Tócame para hablar. Pregúntame lo que quieras sobre tu negocio."
+      }
+    },
+    "lighty": {
+      "input": {
+        "title": "Pregúntame",
+        "body": "Escribe lo que quieras saber: qué tienes hoy, quiénes son tus clientes habituales, cuántas consultas llegaron."
+      },
+      "chips": {
+        "title": "Preguntas listas",
+        "body": "O toca una y te respondo al momento."
+      }
+    },
+    "design": {
+      "preview": {
+        "title": "Tu sitio",
+        "body": "Tal como lo ven tus clientes. Toca un texto o una imagen para editarlo."
+      },
+      "panel": {
+        "title": "Herramientas de edición",
+        "body": "Ordena y añade secciones, cambia el aspecto general y pídeme cambios con palabras."
+      },
+      "save": {
+        "title": "Guardar y publicar",
+        "body": "Los cambios llegan a tu sitio solo después de «Guardar y publicar». Deshacer y rehacer están al lado."
+      }
+    },
+    "appointments": {
+      "calendar": {
+        "title": "Tu calendario",
+        "body": "Toca una cita para abrirla. En el ordenador también puedes arrastrarla a otra hora."
+      },
+      "view": {
+        "title": "Calendario o lista",
+        "body": "Aquí cambias entre el calendario y la lista."
+      },
+      "new": {
+        "title": "Nueva cita",
+        "body": "Reserva una cita tú mismo, incluso a una hora que el sitio no ofrece."
+      }
+    },
+    "leads": {
+      "filters": {
+        "title": "Consultas por estado",
+        "body": "Nuevas, contactadas y cerradas. El número al lado de cada una dice cuántas hay."
+      },
+      "actions": {
+        "title": "Volver a contactar",
+        "body": "Desde cada consulta puedes llamar, enviar un WhatsApp y añadir a la persona a tus clientes."
+      },
+      "status": {
+        "title": "Actualiza el estado",
+        "body": "Cuando hayas atendido una consulta, elige «Contactado» o «Cerrada»."
+      }
+    },
+    "customers": {
+      "add": {
+        "title": "Añadir cliente",
+        "body": "Añade un cliente tú mismo. Quien reserva en tu sitio entra en la lista solo."
+      },
+      "addLeads": {
+        "title": "Añadir cliente",
+        "body": "Añade un cliente tú mismo. También puedes añadir una consulta a tus clientes desde la página Consultas."
+      },
+      "table": {
+        "title": "Todos tus clientes",
+        "body": "Busca por nombre o teléfono. Toca un cliente para abrir su ficha: notas, historial y bloqueo."
+      },
+      "export": {
+        "title": "Exportar",
+        "body": "Todos tus clientes en un solo archivo, para Excel."
+      }
+    },
+    "schedule": {
+      "hours": {
+        "title": "Horario de atención",
+        "body": "Las horas en que se puede reservar contigo. Puedes añadir una pausa cualquier día."
+      },
+      "hoursLeads": {
+        "title": "Horario de atención",
+        "body": "Las horas que muestra tu sitio."
+      },
+      "special": {
+        "title": "Días especiales",
+        "body": "Otro horario para una fecha concreta, como la víspera de una fiesta."
+      },
+      "vacations": {
+        "title": "Vacaciones",
+        "body": "En los días de vacaciones el sitio no ofrece citas."
+      }
+    },
+    "services": {
+      "new": {
+        "title": "Nuevo servicio",
+        "body": "Un nombre, un precio y una duración. También puede ser una clase grupal con un número de plazas."
+      },
+      "list": {
+        "title": "Tus servicios",
+        "body": "Toca un servicio para editarlo."
+      }
+    },
+    "gallery": {
+      "add": {
+        "title": "Añadir fotos",
+        "body": "Fotos de tu trabajo, hasta 12. Aparecen en la galería de tu sitio."
+      },
+      "grid": {
+        "title": "Ordenarlas",
+        "body": "Arrastra una foto para cambiar el orden."
+      }
+    },
+    "settings": {
+      "tabs": {
+        "title": "Ajustes por tema",
+        "body": "General, contacto, el sitio y las reservas."
+      },
+      "tabsLeads": {
+        "title": "Ajustes por tema",
+        "body": "General, contacto y el sitio."
+      },
+      "general": {
+        "title": "Datos generales",
+        "body": "El nombre que aparece en tu sitio, el logo y la dirección. Los cambios se guardan con el botón que aparece abajo."
+      }
+    },
+    "account": {
+      "notifications": {
+        "title": "Notificaciones",
+        "body": "Cómo te mantengo al día, por correo, por mensaje o en la app, y sobre qué."
+      },
+      "billing": {
+        "title": "Tu suscripción",
+        "body": "Tu plan y cuándo se renueva."
+      },
+      "tours": {
+        "title": "Este recorrido",
+        "body": "Desde aquí puedes empezarlo de nuevo o desactivarlo."
+      }
+    }
   }
 }

@@ -156,6 +156,7 @@ const Appointments: React.FC = () => {
           <ExportAppointmentsButton />
           <button
             type="button"
+            data-tour="new-appointment"
             onClick={() => setBooking(true)}
             className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold ${pop()}`}
           >
@@ -176,6 +177,7 @@ const Appointments: React.FC = () => {
               localStorage.setItem('appointments_view_mode', next);
             }}
             className="shrink-0"
+            data-tour="view-toggle"
           >
             <TabsList>
               <TabsTrigger value="calendar" aria-label={t('appointments.calendarView') || 'Calendar'}>
@@ -199,6 +201,7 @@ const Appointments: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
           className="rounded-2xl overflow-hidden shadow-sm flex-1 min-h-0"
+          data-tour="calendar"
         >
           <AppointmentCalendar
             appointments={appointments}
@@ -214,6 +217,7 @@ const Appointments: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
           className="flex-1 min-h-0 flex flex-col"
+          data-tour="calendar"
         >
           <AppointmentsList
             appointments={upcomingAppointments}

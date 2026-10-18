@@ -686,6 +686,14 @@
       "failed": "Impossible d’envoyer ou de vérifier le code. Réessayez.",
       "pending": "60 jours de Lightor+ vous attendent : ajoutez votre numéro de mobile et vérifiez-le avec un code.",
       "verifyNow": "Vérifier le numéro"
+    },
+    "tours": {
+      "title": "Les visites de Lighty",
+      "description": "Une courte visite de chaque page, la première fois que vous l'ouvrez.",
+      "show": "Afficher les visites des pages",
+      "restart": "Recommencer",
+      "restarted": "Les visites s'afficheront à nouveau sur chaque page",
+      "failed": "Impossible d'enregistrer. Réessayez."
     }
   },
   "incomeStats": {
@@ -1738,5 +1746,175 @@
   "siteBuilder": {
     "frameTitle": "Créez votre site avec Lighty",
     "loading": "Chargement de Lighty..."
+  },
+  "tour": {
+    "next": "Suivant",
+    "prev": "Précédent",
+    "done": "Terminer",
+    "skip": "Passer",
+    "turnOff": "Ne plus afficher les visites",
+    "step": "{{n}} sur {{total}}",
+    "home": {
+      "intro": {
+        "title": "Bonjour, je suis Lighty !",
+        "body": "Je vous montre en bref à quoi sert chaque page. Vous pouvez passer à tout moment."
+      },
+      "setup": {
+        "title": "Votre liste de configuration",
+        "body": "Quelques étapes courtes, et votre site est entièrement prêt. Chaque étape ouvre le bon endroit."
+      },
+      "stats": {
+        "title": "Où vous en êtes",
+        "body": "Vos rendez-vous, vos visites et vos revenus en un coup d'œil."
+      },
+      "statsLeads": {
+        "title": "Vos demandes",
+        "body": "Combien de demandes sont arrivées, et combien attendent une réponse."
+      },
+      "nav": {
+        "title": "Toutes les pages",
+        "body": "Passez d'une page à l'autre ici. Sur téléphone, « Plus » ouvre le reste."
+      },
+      "lighty": {
+        "title": "Et je suis toujours là",
+        "body": "Touchez-moi pour discuter. Posez-moi n'importe quelle question sur votre activité."
+      }
+    },
+    "lighty": {
+      "input": {
+        "title": "Demandez-moi",
+        "body": "Écrivez ce que vous voulez savoir : votre journée, vos clients fidèles, le nombre de demandes."
+      },
+      "chips": {
+        "title": "Questions prêtes",
+        "body": "Ou touchez-en une, et je réponds aussitôt."
+      }
+    },
+    "design": {
+      "preview": {
+        "title": "Votre site",
+        "body": "Tel que vos clients le voient. Touchez un texte ou une image pour le modifier."
+      },
+      "panel": {
+        "title": "Les outils d'édition",
+        "body": "Organisez et ajoutez des sections, changez l'apparence générale, et demandez-moi des changements avec des mots."
+      },
+      "save": {
+        "title": "Enregistrer et publier",
+        "body": "Les changements arrivent sur votre site seulement après « Enregistrer et publier ». Annuler et rétablir sont juste à côté."
+      }
+    },
+    "appointments": {
+      "calendar": {
+        "title": "Votre agenda",
+        "body": "Touchez un rendez-vous pour l'ouvrir. Sur ordinateur, vous pouvez aussi le glisser vers une autre heure."
+      },
+      "view": {
+        "title": "Agenda ou liste",
+        "body": "Passez ici de l'agenda à la liste."
+      },
+      "new": {
+        "title": "Nouveau rendez-vous",
+        "body": "Prenez un rendez-vous vous-même, même à une heure que le site ne propose pas."
+      }
+    },
+    "leads": {
+      "filters": {
+        "title": "Les demandes par statut",
+        "body": "Nouvelles, contactées et clôturées. Le nombre à côté de chacune indique combien il y en a."
+      },
+      "actions": {
+        "title": "Recontacter",
+        "body": "Depuis chaque demande, vous pouvez appeler, envoyer un WhatsApp et ajouter la personne à vos clients."
+      },
+      "status": {
+        "title": "Mettre à jour le statut",
+        "body": "Une fois la demande traitée, choisissez « Contacté » ou « Clôturée »."
+      }
+    },
+    "customers": {
+      "add": {
+        "title": "Ajouter un client",
+        "body": "Ajoutez un client vous-même. Ceux qui réservent sur votre site rejoignent la liste d'eux-mêmes."
+      },
+      "addLeads": {
+        "title": "Ajouter un client",
+        "body": "Ajoutez un client vous-même. Vous pouvez aussi ajouter une demande à vos clients depuis la page Demandes."
+      },
+      "table": {
+        "title": "Tous vos clients",
+        "body": "Recherche par nom ou téléphone. Touchez un client pour ouvrir sa fiche : notes, historique et blocage."
+      },
+      "export": {
+        "title": "Exporter",
+        "body": "Tous vos clients dans un seul fichier, pour Excel."
+      }
+    },
+    "schedule": {
+      "hours": {
+        "title": "Heures d'ouverture",
+        "body": "Les heures où l'on peut réserver chez vous. Vous pouvez ajouter une pause chaque jour."
+      },
+      "hoursLeads": {
+        "title": "Heures d'ouverture",
+        "body": "Les heures affichées sur votre site."
+      },
+      "special": {
+        "title": "Jours particuliers",
+        "body": "D'autres horaires pour une date précise, comme une veille de fête."
+      },
+      "vacations": {
+        "title": "Congés",
+        "body": "Pendant les congés, le site ne propose pas de rendez-vous."
+      }
+    },
+    "services": {
+      "new": {
+        "title": "Nouveau service",
+        "body": "Un nom, un prix et une durée. Cela peut aussi être un cours collectif avec un nombre de places."
+      },
+      "list": {
+        "title": "Vos services",
+        "body": "Touchez un service pour le modifier."
+      }
+    },
+    "gallery": {
+      "add": {
+        "title": "Ajouter des photos",
+        "body": "Des photos de votre travail, jusqu'à 12. Elles apparaissent dans la galerie de votre site."
+      },
+      "grid": {
+        "title": "Les ranger",
+        "body": "Glissez une photo pour changer l'ordre."
+      }
+    },
+    "settings": {
+      "tabs": {
+        "title": "Les réglages par sujet",
+        "body": "Général, contact, le site et les réservations."
+      },
+      "tabsLeads": {
+        "title": "Les réglages par sujet",
+        "body": "Général, contact et le site."
+      },
+      "general": {
+        "title": "Les informations générales",
+        "body": "Le nom affiché sur votre site, le logo et l'adresse. Les changements s'enregistrent avec le bouton qui apparaît en bas."
+      }
+    },
+    "account": {
+      "notifications": {
+        "title": "Notifications",
+        "body": "Comment je vous tiens au courant, par e-mail, par message ou dans l'application, et de quoi."
+      },
+      "billing": {
+        "title": "Votre abonnement",
+        "body": "Votre formule et sa date de renouvellement."
+      },
+      "tours": {
+        "title": "Cette visite",
+        "body": "Recommencez-la d'ici, ou désactivez-la."
+      }
+    }
   }
 }

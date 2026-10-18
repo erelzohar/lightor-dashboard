@@ -361,7 +361,7 @@ const Portfolio: React.FC = () => {
                     autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 5 }}
                     measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
                 >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-tour={items.length ? 'images' : undefined}>
                         <SortableContext items={items.map((i: any) => i.url)} strategy={rectSortingStrategy}>
                             {items.map((item: any) => (
                                 <SortableImageItem
@@ -378,6 +378,7 @@ const Portfolio: React.FC = () => {
                         {canAddMore && (
                             <label
                                 htmlFor="portfolio-image-upload"
+                                data-tour="add-image"
                                 className="aspect-square flex flex-col items-center justify-center group cursor-pointer transition-all duration-300 hover:bg-primary/5"
                                 style={{
                                     background: 'rgba(255,255,255,0.02)',

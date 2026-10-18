@@ -471,6 +471,7 @@ const ScheduleVacations: React.FC = () => {
                 return (
                   <motion.div
                     key={index}
+                    data-tour={index === 0 ? 'hours' : undefined}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.04 * index }}
@@ -498,6 +499,7 @@ const ScheduleVacations: React.FC = () => {
                 return (
                   <motion.div
                     key={index}
+                    data-tour={index === 0 ? 'hours' : undefined}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.04 * index }}
@@ -515,6 +517,7 @@ const ScheduleVacations: React.FC = () => {
               return (
                 <motion.div
                   key={index}
+                  data-tour={index === 0 ? 'hours' : undefined}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.04 * index }}
@@ -544,7 +547,7 @@ const ScheduleVacations: React.FC = () => {
           {/* ── Special hours (per-date overrides) — a booking site's only ── */}
           {!leadsSite && (
             <div className="pt-6 border-t border-black/10 dark:border-white/5 flex flex-col gap-5">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4" data-tour="special-hours">
                 <div>
                   <h3 className="text-lg font-semibold text-light-text dark:text-dark-text tracking-tight">
                     {t('scheduleVacations.specialHours')}
@@ -696,7 +699,7 @@ const ScheduleVacations: React.FC = () => {
             <div className="glass-panel rounded-3xl p-8 lg:p-10 flex flex-col group">
 
               {/* Panel header */}
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5">
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/10 dark:border-white/5" data-tour="vacations">
                 <div>
                   <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text tracking-tight">
                     {t('scheduleVacations.vacationManagement')}
