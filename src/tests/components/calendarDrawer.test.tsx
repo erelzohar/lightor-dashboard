@@ -46,6 +46,8 @@ describe('the calendar drawer on a phone', () => {
 
     fireEvent.click(open);
     expect(drawer()).toBeTruthy();
+    // No profile row above the month (LT-393).
+    expect(within(drawer()!).queryByText('Business Account')).toBeNull();
 
     // Tomorrow, unless it is next month's first: then the day before today.
     const today = new Date();

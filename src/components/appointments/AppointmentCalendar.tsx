@@ -723,44 +723,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   // ══════════════════════════════════════════════════════════════════════
   // RENDER
   // ══════════════════════════════════════════════════════════════════════
-  const userName = auth?.user?.name ?? '';
-
   // Side panel (mini calendar, next appointment, calendars, categories).
+  // No profile row on top any more (LT-393, Erel: the name above the month
+  // said nothing; "today" is in the header).
   // Rendered in the desktop aside AND the phone drawer (LT-127) — the drawer
   // used to be an empty shell.
   const sidePanel = (
     <>
-        {/* ── Profile ─────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
-              style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: '2px solid rgba(99,102,241,0.5)' }}>
-              {initials(userName)}
-            </div>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: '#f1f5f9' }}>{userName}</p>
-              <p className="text-xs" style={{ color: '#6b7280' }}>
-                {language === 'he' ? 'חשבון עסקי' : 'Business Account'}
-              </p>
-            </div>
-          </div>
-          <div className="relative">
-            <button className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
-              // A day picked here closes the phone's drawer on it (LT-355).
-              onClick={e => { e.stopPropagation(); goToday(); setSidebarOpen(false); }}
-            >
-              <CalendarDays size={14} style={{ color: '#9ca3af' }} />
-            </button>
-            {appointments.filter(a => getDisplayStatus(a) === 'scheduled' && parseInt(a.timestamp) > Date.now()).length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center text-white"
-                style={{ background: '#6366f1', border: '2px solid #1a1b26' }}>
-                {Math.min(9, appointments.filter(a => getDisplayStatus(a) === 'scheduled' && parseInt(a.timestamp) > Date.now()).length)}
-              </span>
-            )}
-          </div>
-        </div>
-
         {/* ── Mini Calendar ───────────────────────────────────────── */}
         <div className="mx-4 my-4 rounded-2xl p-4" style={{ background: '#15161e' }}>
           <div className="flex items-center justify-between mb-3">
