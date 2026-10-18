@@ -22,6 +22,10 @@ export const phoneCodeErrorKey = (error: unknown): string => {
   const data = (error.response.data ?? {}) as { code?: string; error?: string; message?: string };
   const text = `${data.error ?? ''} ${data.message ?? ''}`;
   if (data.code === 'PHONE_INVALID') return 'account.phoneCode.israelOnly';
+  // The business phone's save (LT-404): the server read the number, or its proof, differently.
+  if (data.code === 'CONTACT_PHONE_INVALID') return 'phoneInput.invalidAny';
+  if (data.code === 'PHONE_NOT_VERIFIED') return 'phoneInput.notVerified';
+  if (data.code === 'PHONE_MISMATCH') return 'phoneInput.mismatch';
   if (data.code === 'OTP_NUMBER_CAP') return 'account.phoneCode.dailyCap';
   if (status === 429) return 'account.phoneCode.wait';
   if (status === 403 && /Too many failed attempts/i.test(text)) return 'account.phoneCode.tooManyTries';
@@ -30,8 +34,5 @@ export const phoneCodeErrorKey = (error: unknown): string => {
   return 'account.phoneCode.failed';
 };
 
-/** Two ways of writing one number (dashes, spaces, +972 or 0) are one number. */
-export const samePhone = (a?: string | null, b?: string | null): boolean => {
-  const digits = (v?: string | null) => (v ?? '').replace(/\D/g, '').replace(/^972/, '0');
-  return digits(a) !== '' && digits(a) === digits(b);
-};
+/** Two ways of writing one number (dashes, spaces, +972 or 0) are one number (LT-404: read as E.164). */
+export { samePhone } from '../utils/phone';

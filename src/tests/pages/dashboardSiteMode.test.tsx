@@ -143,7 +143,7 @@ describe('Dashboard home by site mode', () => {
     const rows = within(summary).getAllByTestId('leads-summary-row');
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getByText('Dana Levi')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('0584006014').closest('a')).toHaveAttribute('href', 'tel:0584006014');
+    expect(within(rows[0]).getByText('058-4006014').closest('a')).toHaveAttribute('href', 'tel:+972584006014');
     expect(within(rows[0]).getByText('leads.whatsapp').closest('a')).toHaveAttribute('href', 'https://wa.me/972584006014');
 
     // The store still holds an appointment from before the switch: no widget shows it.

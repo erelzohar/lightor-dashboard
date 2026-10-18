@@ -10,7 +10,7 @@ import { isToday, isTomorrow, format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
-import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import { telHref, whatsAppHref } from '../../utils/phone';
 import { Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus } from '../../utils/sessions';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import SessionParticipants from '../appointments/SessionParticipants';
@@ -236,7 +236,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                       </span>
                       <div className="hidden group-hover:flex items-center gap-1.5">
                         <a
-                          href={`tel:${formatPhoneForDisplay(appointment.phone)}`}
+                          href={telHref(appointment.phone)}
                           onClick={(e) => e.stopPropagation()}
                           className="p-1.5 rounded-full bg-teal-100 text-teal-700 hover:bg-teal-200 transition-colors"
                           title={t('appointments.call')}

@@ -11,6 +11,7 @@ import type { NotificationPrefs, OwnerChannel } from '../../types';
 import { tabsListVariants, tabsTriggerVariants } from '../ui/segmented-tabs';
 import { cn } from '../../lib/utils';
 import { lightTick } from '../../lib/haptics';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 /**
  * How and about what the owner hears about their business (LT-129, LT-213).
@@ -103,7 +104,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
     void save(event, { notificationPrefs: { ...prefs, [event]: value } });
   };
 
-  const destination = channel === 'email' ? user?.email : phone;
+  const destination = channel === 'email' ? user?.email : formatPhoneForDisplay(phone);
 
   return (
     <Card>

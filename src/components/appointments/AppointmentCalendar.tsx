@@ -29,7 +29,7 @@ import { dropVerdict, edgeAt, isDraggable, minutesOfDay, startAtMinutes, type Dr
 import { buildScale, markHours } from '../../utils/calendarScale';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { formatPhoneForDisplay } from '../../utils/phone';
+import { formatPhoneForDisplay, telHref } from '../../utils/phone';
 import {
   Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus, withListedSessions,
 } from '../../utils/sessions';
@@ -1496,11 +1496,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {/* Phone */}
               <div className="flex items-center gap-3 px-3 py-1">
                 <Phone size={14} className="text-gray-400 shrink-0" />
-                <a href={`tel:${formatPhoneForDisplay(selectedAppt.phone)}`}
+                <a href={telHref(selectedAppt.phone)}
                   className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                   onClick={e => e.stopPropagation()}>
                   <Phone size={11} />
-                  {formatPhoneForDisplay(selectedAppt.phone)}
+                  <span dir="ltr">{formatPhoneForDisplay(selectedAppt.phone)}</span>
                 </a>
               </div>
 

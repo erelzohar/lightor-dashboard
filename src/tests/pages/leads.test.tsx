@@ -81,7 +81,7 @@ describe('Leads page', () => {
     expect(first.getByText('Dana Levi')).toBeInTheDocument();
     expect(first.getByText('Kitchen renovation')).toBeInTheDocument();
     expect(first.getByText('Haifa')).toBeInTheDocument();
-    expect(first.getByText('0584006014').closest('a')).toHaveAttribute('href', 'tel:0584006014');
+    expect(first.getByText('058-4006014').closest('a')).toHaveAttribute('href', 'tel:+972584006014');
     expect(first.getByText('leads.whatsapp').closest('a')).toHaveAttribute('href', 'https://wa.me/972584006014');
     await waitFor(() => expect(screen.getByTestId('badge')).toHaveTextContent('1'));
   });

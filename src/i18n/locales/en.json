@@ -1896,5 +1896,13 @@
         "body": "Drag a picture to change the order."
       }
     }
+  },
+  "phoneInput": {
+    "invalidMobile": "Enter a valid Israeli mobile number",
+    "invalidAny": "Enter a valid Israeli phone number",
+    "country": "Israel (+972)",
+    "notVerified": "Confirm this mobile number with the code sent to it, then save again.",
+    "mismatch": "The code was confirmed for another number. Save again for a new code.",
+    "businessCodeHint": "To show a mobile number that is not yours on your site, confirm it with a code."
   }
 }

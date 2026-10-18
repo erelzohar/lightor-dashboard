@@ -14,7 +14,7 @@ import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
-import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
 import OwnerBookingModal from '../customers/OwnerBookingModal';
 import { pop } from '../ui/pop-button';
@@ -228,9 +228,10 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
                         {participant.name}
                       </p>
                       <a
-                        href={`tel:${formatPhoneForDisplay(participant.phone)}`}
+                        href={telHref(participant.phone)}
                         onClick={(e) => e.stopPropagation()}
                         className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary transition-colors tabular-nums"
+                        dir="ltr"
                       >
                         {formatPhoneForDisplay(participant.phone)}
                       </a>
@@ -250,7 +251,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
 
                   <div className="flex items-center gap-1.5 mt-2.5">
                     <a
-                      href={`tel:${formatPhoneForDisplay(participant.phone)}`}
+                      href={telHref(participant.phone)}
                       title={t('appointments.call')}
                       aria-label={t('appointments.call')}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#088F8F] text-white hover:opacity-90 transition-opacity"

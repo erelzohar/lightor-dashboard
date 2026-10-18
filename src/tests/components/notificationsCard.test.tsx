@@ -218,7 +218,7 @@ describe('NotificationsCard', () => {
 
       await waitFor(() => expect(updateUserInfo).toHaveBeenCalledWith('u1', { channelType: 'whatsapp' }));
       await waitFor(() => expect(channelButton('channels.whatsapp')).toHaveAttribute('aria-checked', 'true'));
-      expect(screen.getByTestId('notification-channel-hint')).toHaveTextContent('0501234567');
+      expect(screen.getByTestId('notification-channel-hint')).toHaveTextContent('050-1234567');
     });
 
     it('keeps the old channel when the save fails', async () => {

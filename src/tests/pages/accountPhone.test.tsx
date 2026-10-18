@@ -54,8 +54,31 @@ describe('Account page: the phone (LT-360)', () => {
     fireEvent.change(phoneInput(), { target: { name: 'phone', value: '+972 50-123-4567' } });
     fireEvent.click(screen.getByText('account.saveChanges'));
 
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane', phone: '+972 50-123-4567' }));
+    // Sent in E.164, the form it is stored in (LT-404).
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane', phone: '+972501234567' }));
     expect(sendPhoneCode).not.toHaveBeenCalled();
+  });
+
+  it('formats the number as it is typed and says a landline is no mobile (LT-404)', async () => {
+    render(<Account />);
+    fireEvent.click(screen.getByText('account.editDetails'));
+    fireEvent.change(phoneInput(), { target: { name: 'phone', value: '0527654321' } });
+    expect(phoneInput()).toHaveValue('052-765-4321');
+    expect(phoneInput()).toHaveAttribute('type', 'tel');
+
+    fireEvent.change(phoneInput(), { target: { name: 'phone', value: '03-1234567' } });
+    fireEvent.click(screen.getByText('account.saveChanges'));
+
+    expect(await screen.findByText('phoneInput.invalidMobile')).toBeInTheDocument();
+    expect(phoneInput()).toHaveAttribute('aria-invalid', 'true');
+    expect(sendPhoneCode).not.toHaveBeenCalled();
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  it('shows the stored phone nationally, whatever its shape', () => {
+    auth.user = { ...jane, phone: '+972501234567' };
+    render(<Account />);
+    expect(screen.getByText('050-1234567')).toBeInTheDocument();
   });
 
   it('sends a code to a new number and saves it only with the proof', async () => {
@@ -65,13 +88,14 @@ describe('Account page: the phone (LT-360)', () => {
     fireEvent.click(screen.getByText('account.saveChanges'));
 
     expect(await screen.findByTestId('account-phone-code')).toBeInTheDocument();
-    expect(sendPhoneCode).toHaveBeenCalledWith('0527654321', 'sms', 'he');
+    // The code goes to the number in E.164, and the save sends that form (LT-404).
+    expect(sendPhoneCode).toHaveBeenCalledWith('+972527654321', 'sms', 'he');
     expect(updateUser).not.toHaveBeenCalled();
 
     fireEvent.change(document.querySelector('input[name="phoneCode"]')!, { target: { value: '123456' } });
 
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane', phone: '0527654321', phoneToken: 'phone-proof' }));
-    expect(verifyPhoneCode).toHaveBeenCalledWith('0527654321', '123456');
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane', phone: '+972527654321', phoneToken: 'phone-proof' }));
+    expect(verifyPhoneCode).toHaveBeenCalledWith('+972527654321', '123456');
   });
 
   it('says a wrong code is wrong and saves nothing', async () => {

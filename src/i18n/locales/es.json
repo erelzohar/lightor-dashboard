@@ -1896,5 +1896,13 @@
         "body": "Arrastra una foto para cambiar el orden."
       }
     }
+  },
+  "phoneInput": {
+    "invalidMobile": "Introduce un número de móvil israelí válido",
+    "invalidAny": "Introduce un número de teléfono israelí válido",
+    "country": "Israel (+972)",
+    "notVerified": "Confirma este número de móvil con el código que se le envió y vuelve a guardar.",
+    "mismatch": "El código se confirmó para otro número. Vuelve a guardar para recibir un código nuevo.",
+    "businessCodeHint": "Para mostrar en tu sitio un móvil que no es el tuyo, confírmalo con un código."
   }
 }

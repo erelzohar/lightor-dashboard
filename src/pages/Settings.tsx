@@ -7,6 +7,10 @@ import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
+import PhoneInput from '../components/ui/PhoneInput';
+import Button from '../components/ui/Button';
+import { formatPhoneForDisplay, israeliPhoneKind, samePhone, toE164 } from '../utils/phone';
+import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 import WebConfigTabs from '../components/settings/WebConfigTabs';
 import toast from 'react-hot-toast';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -50,6 +54,16 @@ const WEBSITE_LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map((lng) => ({
 // the unsaved-changes bar never cleared after saving it (LT-315).
 const socialKey = (social: WebConfig['social'] | undefined): string =>
   JSON.stringify(Object.entries(social ?? {}).map(([key, value]) => [key, value || null]).sort());
+
+// One number however it is written (LT-404): the stored "050-1234567" and
+// the field's "+972501234567" are no change.
+const contactKey = (contact: WebConfig['contact'] | undefined): string =>
+  JSON.stringify({ ...(contact ?? {}), phone: toE164(contact?.phone) ?? contact?.phone ?? '' });
+
+// What the server says about the business phone (LT-404), in the owner's words.
+const CONTACT_PHONE_CODES = new Set(['CONTACT_PHONE_INVALID', 'PHONE_NOT_VERIFIED', 'PHONE_MISMATCH']);
+const contactPhoneErrorKey = (code: string): string =>
+  code === 'PHONE_NOT_VERIFIED' ? 'phoneInput.notVerified' : code === 'PHONE_MISMATCH' ? 'phoneInput.mismatch' : 'phoneInput.invalidAny';
 
 /**
  * One topic of the settings page (LT-316): an icon, a title, a line on what
@@ -108,6 +122,21 @@ const Settings: React.FC = () => {
   // open flag, so the dialog keeps its words while it animates out.
   const [switchTarget, setSwitchTarget] = useState<'book' | 'lead'>('lead');
   const [switchOpen, setSwitchOpen] = useState(false);
+  // The business phone (LT-404). A mobile that is neither the owner's nor
+  // the one stored is proven by a code sent to it, as the account's phone
+  // is: the save waits here, the code field shows under the number, and
+  // the save goes out again with the proof (`contactPhoneToken`).
+  const [triedSave, setTriedSave] = useState(false);
+  const [phoneCodeFor, setPhoneCodeFor] = useState<string | null>(null);
+  const [phoneCode, setPhoneCode] = useState('');
+  const [phoneCodeError, setPhoneCodeError] = useState<string | null>(null);
+  const [phoneCodeBusy, setPhoneCodeBusy] = useState(false);
+  const [contactPhoneError, setContactPhoneError] = useState<string | null>(null);
+  const clearPhoneCode = () => {
+    setPhoneCodeFor(null);
+    setPhoneCode('');
+    setPhoneCodeError(null);
+  };
 
   const resolveLogoUrl = (imgName: string): string => {
     if (!imgName) return '';
@@ -176,7 +205,7 @@ const Settings: React.FC = () => {
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
-      JSON.stringify(localWebConfig.contact) !== JSON.stringify(webConfig.contact) ||
+      contactKey(localWebConfig.contact) !== contactKey(webConfig.contact) ||
       socialKey(localWebConfig.social) !== socialKey(webConfig.social) ||
       JSON.stringify(localWebConfig.components?.introPopup) !== JSON.stringify(webConfig.components?.introPopup) ||
       imageToUpload ||
@@ -276,11 +305,9 @@ const Settings: React.FC = () => {
     street: (value) =>
       value?.trim() && value.trim().length < 3 ? t('validation.streetMin') : null,
 
-    phone: (value) => {
-      if (!value) return t('validation.phoneRequired');
-      if (!/^05\d{8}$/.test(value)) return t('validation.phoneFormat');
-      return null;
-    },
+    // Any valid Israeli number, mobile or landline (LT-404). The field shows
+    // its own message; this entry keeps the save shut meanwhile.
+    phone: (value) => (israeliPhoneKind(value) ? null : t('phoneInput.invalidAny')),
 
     mail: (value) =>
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? t('validation.emailInvalid') : null,
@@ -314,10 +341,14 @@ const Settings: React.FC = () => {
     setSubdomainError(null);
     setErrors(null);
     setSwitchOpen(false);
+    setTriedSave(false);
+    setContactPhoneError(null);
+    clearPhoneCode();
   };
 
-  const handleSave = async () => {
+  const handleSave = async (contactPhoneToken?: string) => {
     if (!localWebConfig) return;
+    setTriedSave(true);
 
     if (
       errors ||
@@ -328,6 +359,34 @@ const Settings: React.FC = () => {
       !bookingFieldsValid(localWebConfig.leadFields ?? [])
     ) {
       toast.error(t('settings.formErrors'));
+      if (errors?.phone) setActiveTab('contact');
+      return;
+    }
+
+    // A new mobile that is not the owner's own first gets a code (LT-404).
+    // A landline cannot take one and needs none; the stored number and the
+    // owner's (proven when it was set) need none either.
+    const typedPhone = localWebConfig.contact?.phone;
+    const needsCode =
+      !contactPhoneToken &&
+      israeliPhoneKind(typedPhone) === 'mobile' &&
+      !samePhone(typedPhone, webConfig?.contact?.phone) &&
+      !samePhone(typedPhone, auth.user?.phone);
+    if (needsCode) {
+      const e164 = toE164(typedPhone) as string;
+      setActiveTab('contact');
+      // Already sent to this number: the code field is waiting for it.
+      if (phoneCodeFor === e164) return;
+      setPhoneCodeError(null);
+      setPhoneCodeBusy(true);
+      try {
+        await sendPhoneCode(e164, 'sms', auth.user?.defaultLanguage || 'he');
+        setPhoneCodeFor(e164);
+      } catch (error) {
+        setPhoneCodeError(t(phoneCodeErrorKey(error)));
+      } finally {
+        setPhoneCodeBusy(false);
+      }
       return;
     }
 
@@ -350,7 +409,10 @@ const Settings: React.FC = () => {
       // No time zone here (LT-334): it is set once, when the site is made
       // (the signing-up device's zone, else the server's default), and the
       // owner never has to think about it — the page leaves it as stored.
-      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact, defaultLanguage };
+      // The phone in E.164, the form the server stores (LT-404).
+      const fixedContact = contact ? { ...contact, phone: toE164(contact.phone) ?? contact.phone } : contact;
+      const payload: any = { _id, businessName, subDomain, address, minCancelTimeMS, social: fixedSocials, contact: fixedContact, defaultLanguage };
+      if (contactPhoneToken) payload.contactPhoneToken = contactPhoneToken;
       // Sent only once the owner has a value, so an untouched form never
       // writes the default over nothing (LT-156).
       if (bookingHorizonDays !== undefined) payload.bookingHorizonDays = bookingHorizonDays;
@@ -392,9 +454,21 @@ const Settings: React.FC = () => {
 
       const res = await dispatch(updateWebConfig(payload));
       if (updateWebConfig.rejected.match(res)) {
+        const code = res.error?.code;
+        if (code && CONTACT_PHONE_CODES.has(code)) {
+          const message = t(contactPhoneErrorKey(code));
+          setContactPhoneError(message);
+          clearPhoneCode();
+          setActiveTab('contact');
+          toast.error(message);
+          return;
+        }
         toast.error(t('settings.saveFailed'));
         return;
       }
+      setContactPhoneError(null);
+      clearPhoneCode();
+      setTriedSave(false);
       // The server assigns a key to every new question. Adopt them into the
       // draft, or the next save would send those questions keyless again and
       // have them re-keyed (LT-178).
@@ -433,6 +507,24 @@ const Settings: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // The code for the business mobile: checked, then the save goes out with its proof.
+  const confirmPhoneCode = async (value: string) => {
+    if (!phoneCodeFor || value.length !== 6 || phoneCodeBusy) return;
+    setPhoneCodeBusy(true);
+    setPhoneCodeError(null);
+    let token: string;
+    try {
+      token = await verifyPhoneCode(phoneCodeFor, value);
+    } catch (error) {
+      setPhoneCode('');
+      setPhoneCodeError(t(phoneCodeErrorKey(error)));
+      setPhoneCodeBusy(false);
+      return;
+    }
+    setPhoneCodeBusy(false);
+    await handleSave(token);
   };
 
   const handleChange = (section: string, field: string, value: any) => {
@@ -645,14 +737,20 @@ const Settings: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Phone} title={t('settings.contactTitle')} description={t('settings.sections.contactDesc')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
+                {/* Mobile or landline, Israeli (LT-404). */}
+                <PhoneInput
                   label={t('settings.phone')}
-                  value={localWebConfig.contact.phone}
-                  minLength={10}
-                  maxLength={10}
-                  error={errors?.phone}
-                  leftIcon={<Phone className="w-4 h-4 text-gray-400" />}
-                  onChange={(e) => handleChange('contact', 'phone', e.target.value)}
+                  name="contactPhone"
+                  accept="any"
+                  value={localWebConfig.contact.phone ?? ''}
+                  required
+                  showError={triedSave}
+                  error={contactPhoneError}
+                  onChange={(phone) => {
+                    handleChange('contact', 'phone', phone);
+                    setContactPhoneError(null);
+                    clearPhoneCode();
+                  }}
                 />
 
                 <Input
@@ -664,6 +762,36 @@ const Settings: React.FC = () => {
                   onChange={(e) => handleChange('contact', 'mail', e.target.value)}
                 />
               </div>
+
+              {/* The code sent to a new business mobile (LT-404). */}
+              {phoneCodeFor && (
+                <div className="space-y-3 max-w-md" data-testid="contact-phone-code">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {t('phoneInput.businessCodeHint')} {t('account.phoneCode.sent', { phone: formatPhoneForDisplay(phoneCodeFor) })}
+                  </p>
+                  <Input
+                    id="contact-phone-code"
+                    label={t('account.phoneCode.label')}
+                    name="contactPhoneCode"
+                    dir="ltr"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={phoneCode}
+                    disabled={phoneCodeBusy}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setPhoneCode(digits);
+                      setPhoneCodeError(null);
+                      if (digits.length === 6) void confirmPhoneCode(digits);
+                    }}
+                  />
+                  <Button type="button" isLoading={phoneCodeBusy} disabled={phoneCode.length !== 6} onClick={() => void confirmPhoneCode(phoneCode)}>
+                    {t('account.phoneCode.confirm')}
+                  </Button>
+                </div>
+              )}
+              {phoneCodeError && <p className="text-sm text-red-600 dark:text-red-400" role="alert">{phoneCodeError}</p>}
             </SettingsSection>
 
             <SettingsSection icon={Instagram} title={t('settings.socialMedia')} description={t('settings.sections.socialDesc')}>
@@ -1140,9 +1268,9 @@ const Settings: React.FC = () => {
       {/* Floating unsaved-changes bar (shared with Schedule & Vacations). */}
       <UnsavedChangesBar
         visible={!!changesDetected}
-        onSave={handleSave}
+        onSave={() => void handleSave()}
         onDiscard={handleDiscard}
-        saving={isSaving || isCheckingSubdomain}
+        saving={isSaving || isCheckingSubdomain || phoneCodeBusy}
         errorMessage={subdomainError}
       />
 

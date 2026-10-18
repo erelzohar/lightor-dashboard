@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 import { WebConfig } from '../../types';
 import * as webConfigApi from '../../services/webConfigApi';
 
@@ -32,9 +33,17 @@ export const createWebConfig = createAsyncThunk(
 
 export const updateWebConfig = createAsyncThunk(
   'webConfig/update',
-  async (config: Partial<WebConfig> & { _id: string }) => {
-    const response = await webConfigApi.updateWebConfig(config);
-    return response;
+  async (config: Partial<WebConfig> & { _id: string; contactPhoneToken?: string }) => {
+    try {
+      return await webConfigApi.updateWebConfig(config);
+    } catch (err) {
+      // The server's own code (LT-404: CONTACT_PHONE_INVALID, PHONE_NOT_VERIFIED,
+      // PHONE_MISMATCH) rides on the rejected action's `error.code`, which
+      // otherwise carries axios's generic one. The message stays axios's.
+      const serverCode = axios.isAxiosError(err) ? (err.response?.data as { code?: unknown } | undefined)?.code : undefined;
+      if (typeof serverCode === 'string') throw Object.assign(new Error((err as Error).message), { code: serverCode });
+      throw err;
+    }
   }
 );
 

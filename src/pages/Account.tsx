@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { User, Phone, KeyRound, Eye, EyeOff, Languages, Gift } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
+import PhoneInput from '../components/ui/PhoneInput';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
 import { phoneCodeErrorKey, samePhone, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
+import { checkPhone, formatPhoneForDisplay, toE164 } from '../utils/phone';
 
 // Native names — a language selector should read in the language it selects.
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
@@ -43,6 +45,8 @@ const Account: React.FC = () => {
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState<string | null>(null);
   const [codeBusy, setCodeBusy] = useState(false);
+  // Save was pressed (LT-404): the phone field shows its error without a blur.
+  const [triedSave, setTriedSave] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -136,9 +140,12 @@ const Account: React.FC = () => {
   const saveDetails = async (phoneToken?: string) => {
     // Only what this form edits: the language has its own card, and a
     // stale copy here would undo a change made there meanwhile (LT-315).
-    await updateUser({ name: formData.name, phone: formData.phone, ...(phoneToken ? { phoneToken } : {}) });
+    // Stored in E.164 (LT-404): an untouched older value goes up in that form too.
+    const phone = toE164(formData.phone) ?? formData.phone;
+    await updateUser({ name: formData.name, phone, ...(phoneToken ? { phoneToken } : {}) });
     toast.success(t('account.updateSuccess'));
     setIsEditing(false);
+    setTriedSave(false);
     setCodeFor(null);
     setCode('');
   };
@@ -147,8 +154,12 @@ const Account: React.FC = () => {
     e.preventDefault();
     if (codeFor) return;
     setCodeError(null);
+    setTriedSave(true);
     // A new number first gets a code (LT-360); the same one saves at once.
+    // A new one must be an Israeli mobile (LT-404): the only kind a code
+    // reaches. The stored number, however it is written, saves as it is.
     if (!samePhone(formData.phone, auth.user?.phone)) {
+      if (!checkPhone(formData.phone, 'mobile').valid) return;
       setCodeBusy(true);
       try {
         await sendPhoneCode(formData.phone, 'sms', language);
@@ -247,7 +258,10 @@ const Account: React.FC = () => {
           </div>
           <Button
             variant={isEditing ? 'secondary' : 'primary'}
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => {
+              setIsEditing(!isEditing);
+              setTriedSave(false);
+            }}
           >
             {isEditing ? t('common.cancel') : t('account.editDetails')}
           </Button>
@@ -278,18 +292,18 @@ const Account: React.FC = () => {
               required
             />
 
-            <Input
+            <PhoneInput
               label={t('account.phone')}
               name="phone"
+              accept="mobile"
               value={formData.phone}
-              onChange={(e) => {
-                handleChange(e);
+              showError={triedSave && !samePhone(formData.phone, auth.user?.phone)}
+              onChange={(phone) => {
+                setFormData(prev => ({ ...prev, phone }));
                 setCodeFor(null);
                 setCode('');
                 setCodeError(null);
               }}
-              leftIcon={<Phone size={18} />}
-              dir="ltr"
               required
             />
 
@@ -297,7 +311,7 @@ const Account: React.FC = () => {
             {codeFor && (
               <div className="space-y-2" data-testid="account-phone-code">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {t('account.phoneCode.sent', { phone: codeFor })}
+                  {t('account.phoneCode.sent', { phone: formatPhoneForDisplay(codeFor) })}
                 </p>
                 <Input
                   id="account-phone-code"
@@ -336,7 +350,7 @@ const Account: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Phone size={18} className="text-light-gray dark:text-dark-gray" />
-              <span className="text-light-text dark:text-dark-text">{auth.user?.phone}</span>
+              <span dir="ltr" className="text-light-text dark:text-dark-text">{formatPhoneForDisplay(auth.user?.phone)}</span>
             </div>
           </div>
         )}

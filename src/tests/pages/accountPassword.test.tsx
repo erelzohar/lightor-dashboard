@@ -84,7 +84,8 @@ describe('Account page (LT-315)', () => {
     expect((document.querySelector('input[name="name"]') as HTMLInputElement).value).toBe('Jane Cohen');
 
     fireEvent.click(screen.getByText('account.saveChanges'));
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane Cohen', phone: '0501234567' }));
+    // The stored number goes up in E.164 (LT-404).
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane Cohen', phone: '+972501234567' }));
   });
 
   it('says a new password equal to the old one is refused (400 SAME_PASSWORD)', async () => {

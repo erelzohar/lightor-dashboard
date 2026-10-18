@@ -11,7 +11,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { formatPhoneForDisplay, whatsAppHref } from '../../utils/phone';
+import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
 import AnswersList from './AnswersList';
 import MoveAppointmentModal from './MoveAppointmentModal';
 import { useConfirm } from '../../hooks/useConfirm';
@@ -140,11 +140,11 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <div className="flex items-center gap-2 px-3 py-2">
             <Phone size={14} className="text-gray-400 shrink-0" />
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <a href={`tel:${formatPhoneForDisplay(appointment.phone)}`}
+              <a href={telHref(appointment.phone)}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors truncate"
                 onClick={e => e.stopPropagation()}>
                 <Phone size={11} />
-                {formatPhoneForDisplay(appointment.phone)}
+                <span dir="ltr" className="truncate">{formatPhoneForDisplay(appointment.phone)}</span>
               </a>
               <a href={whatsAppHref(appointment.phone)}
                 target="_blank" rel="noopener noreferrer"

@@ -38,6 +38,7 @@ import {
 } from '../../services/adminApi';
 import { isLeadsSite } from '../../utils/siteMode';
 import { siteUrlOf } from '../../utils/siteUrl';
+import { formatPhoneForDisplay } from '../../utils/phone';
 
 /**
  * Admin → user detail (LT-058): identity, site, usage-vs-limits, recent
@@ -204,7 +205,7 @@ const AdminUserDetail: React.FC = () => {
           </div>
           <p className="text-sm text-gray-500 truncate" dir="ltr">
             {user.email}
-            {user.phone ? ` · ${user.phone}` : ''}
+            {user.phone ? ` · ${formatPhoneForDisplay(user.phone)}` : ''}
           </p>
         </div>
         <Button
