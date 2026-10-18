@@ -27,7 +27,7 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'u1', webConfig_id: 'wc1' } } }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ direction: 'rtl' }) }));
-vi.mock('../../pages/AiBuilder', () => ({ default: (): null => null }));
+vi.mock('../../pages/SiteBuilder', () => ({ default: (): null => null }));
 vi.mock('../../services/entitlementsApi', () => ({ fetchMyEntitlements: vi.fn(async () => null) }));
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn(), deleteImage: vi.fn(async () => undefined) }));
 vi.mock('../../services/appointmentsApi', () => ({ updateAppointmentType: vi.fn(async () => ({})) }));

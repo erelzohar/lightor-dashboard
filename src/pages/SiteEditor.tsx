@@ -35,7 +35,7 @@ import PagePanel from '../components/siteEditor/PagePanel';
 import SectionsPanel from '../components/siteEditor/SectionsPanel';
 import AddSectionPanel from '../components/siteEditor/AddSectionPanel';
 import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/labels';
-import AiBuilder from './AiBuilder';
+import SiteBuilder from './SiteBuilder';
 import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { siteUrlOf } from '../utils/siteUrl';
@@ -63,8 +63,8 @@ const siteImagesOf = (config: WebConfig): string[] => {
  * LT-249 — the site editor (lightor-ai-split-plan.md §4). The live site in a
  * preview; a click on any text, picture or section selects it here; the panel
  * edits it by hand or with the AI; every change lands in one draft with undo
- * and redo; one Save publishes. A business without a site yet gets today's
- * "describe your business" builder instead.
+ * and redo; one Save publishes. A business without a site yet builds it with
+ * the signup wizard, framed (SiteBuilder, LT-388).
  */
 const SiteEditor: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -79,7 +79,7 @@ const SiteEditor: React.FC = () => {
     if (auth.user?.webConfig_id) {
       return <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
     }
-    return <AiBuilder />;
+    return <SiteBuilder />;
   }
   return <Editor key={webConfig._id} saved={webConfig} />;
 };

@@ -1734,5 +1734,9 @@
     "add": "שמירת הצבע",
     "eyedropper": "דגימת צבע מהמסך",
     "close": "סגירה"
+  },
+  "siteBuilder": {
+    "frameTitle": "בניית האתר עם Lighty",
+    "loading": "טוענים את Lighty..."
   }
 }

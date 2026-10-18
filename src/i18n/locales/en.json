@@ -1734,5 +1734,9 @@
     "add": "Keep this color",
     "eyedropper": "Pick a color from the screen",
     "close": "Close"
+  },
+  "siteBuilder": {
+    "frameTitle": "Build your site with Lighty",
+    "loading": "Loading Lighty..."
   }
 }

@@ -1734,5 +1734,9 @@
     "add": "Guardar este color",
     "eyedropper": "Tomar un color de la pantalla",
     "close": "Cerrar"
+  },
+  "siteBuilder": {
+    "frameTitle": "Crea tu sitio con Lighty",
+    "loading": "Cargando Lighty..."
   }
 }

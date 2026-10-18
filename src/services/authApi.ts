@@ -161,6 +161,18 @@ export const appleLogin = async (payload: {
   return { token: response.data?.token, user: response.data.data };
 };
 
+/**
+ * LT-388: a short pass for the signup wizard framed on the site page of an
+ * account with no site yet. The frame lives on register.lightor.app, where
+ * this page's session never reaches, so it builds and saves the site with this.
+ */
+export const builderPass = async (): Promise<string> => {
+  const response = await apiClient.post(globals.authUrl + 'builder-pass', {}, { withCredentials: true });
+  const token = response.data?.token;
+  if (!response.data?.success || typeof token !== 'string') throw new Error('No builder pass');
+  return token;
+};
+
 export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(
