@@ -45,7 +45,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
+  // Ticked from the start (LT-398, Erel): a plain login lasts 60 minutes,
+  // a remembered one 180 days; the owner can still untick it.
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
