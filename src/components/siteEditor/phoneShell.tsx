@@ -2,13 +2,14 @@ import type { CSSProperties } from 'react';
 
 /**
  * LT-324: the site editor's phone preview wears the register's iPhone
- * (lightor-register Hero.tsx's device shell): a brushed-aluminium rim, a
- * pinhole camera, the home indicator, the side buttons and a violet glow.
+ * (lightor-register Hero.tsx's device shell): a brushed-aluminium rim, the
+ * home indicator, the side buttons and a violet glow. No pinhole camera: drawn
+ * over the screen, it hid the site's own top bar (LT-394).
  *
  * The shell is split so the preview's iframe never remounts on a switch
  * (a remount reloads the site and loses the editor's place): the editor keeps
  * ONE box around the iframe and only restyles it (`phoneBox`), drawing the
- * camera and home bar inside it (`PhoneScreenMarks`) and the glow and buttons
+ * home bar inside it (`PhoneScreenMarks`) and the glow and buttons
  * in a sibling of the same size behind it (`PhoneSurround`).
  */
 export const PHONE_BORDER = 10;
@@ -33,14 +34,9 @@ export const phoneBox: CSSProperties = {
   boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 48px 96px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09)',
 };
 
-/** The camera and the home bar, over the screen. */
+/** The home bar, over the screen. */
 export const PhoneScreenMarks = () => (
   <>
-    <div
-      className="absolute left-1/2 -translate-x-1/2 z-20 rounded-full pointer-events-none"
-      style={{ top: '1.6%', width: 8, height: 8, background: '#050508', border: '1px solid rgba(255,255,255,0.07)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.9)' }}
-      aria-hidden="true"
-    />
     <div
       className="absolute bottom-[1.2%] left-1/2 -translate-x-1/2 z-20 rounded-full pointer-events-none"
       style={{ width: '32%', height: 4, background: 'rgba(0,0,0,0.28)' }}
