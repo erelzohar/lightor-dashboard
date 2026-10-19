@@ -659,9 +659,14 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setPopupPos(p => (p && p.x === x && p.y === y ? p : { x, y }));
   }, []);
 
+  // Placed once per opened booking, before paint (LT-412). Not on its own
+  // position as well: that made every placement a reason to place again, and
+  // tapping one booking and then another looped until React gave up (#185,
+  // "maximum update depth", reported from an iPhone). Scrolls, resizes and
+  // the card's own size changes place it again through the effect below.
   useLayoutEffect(() => {
     if (selectedAppt) placePopup();
-  }, [selectedAppt, popupPos, placePopup]);
+  }, [selectedAppt, placePopup]);
 
   useEffect(() => {
     if (!selectedAppt) return;

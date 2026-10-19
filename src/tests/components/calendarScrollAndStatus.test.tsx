@@ -148,3 +148,29 @@ describe('status changes wait for the server (LT-315, M2)', () => {
     expect(onUpdate).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * LT-412 - Erel (an iPhone, /appointments): tapping one booking and then
+ * another crashed the calendar with React #185 ("maximum update depth"):
+ * the card's placement re-ran on every position it set. jsdom lays nothing
+ * out and does not loop on the old code either; the loop was reproduced, and
+ * gone with the fix, in Chrome at 390px on the dashboard harness. This keeps
+ * the behaviour: the card follows the second booking.
+ */
+describe("the booking card, from one booking to another (LT-412)", () => {
+  it('opens the second booking without looping', () => {
+    const { container } = render(
+      <AppointmentCalendar
+        appointments={[booking('a1', 'Dana Cohen', tomorrowAt(10)), booking('a2', 'Noa Levi', tomorrowAt(13))]}
+        onAppointmentClick={vi.fn()}
+        foldFreeHours={false}
+      />
+    );
+    const grid = container.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
+    fireEvent.click(within(grid).getAllByText('Dana Cohen')[0]);
+    expect(screen.getAllByText('Dana Cohen').length).toBeGreaterThan(1);
+    expect(() => fireEvent.click(within(grid).getAllByText('Noa Levi')[0])).not.toThrow();
+    // The card now shows the second booking.
+    expect(screen.getAllByText('Noa Levi').length).toBeGreaterThan(1);
+  });
+});
