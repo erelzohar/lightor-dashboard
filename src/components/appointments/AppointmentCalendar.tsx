@@ -1616,12 +1616,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       )}
 
       <MoveAppointmentModal appointment={moving} onClose={() => setMoving(null)} />
-      {/* The booking's customer, opened from its card (LT-413). */}
-      <CustomerDetailDrawer
-        customerId={customerCardId}
-        onClose={() => setCustomerCardId(null)}
-        onChanged={() => { if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 })); }}
-      />
+      {/* The booking's customer, opened from its card (LT-413); mounted only
+          while open, so a closed calendar carries none of its hooks. */}
+      {customerCardId && (
+        <CustomerDetailDrawer
+          customerId={customerCardId}
+          onClose={() => setCustomerCardId(null)}
+          onChanged={() => { if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 })); }}
+        />
+      )}
       <DropConfirm pending={pendingDrop} saving={dropSaving} onConfirm={confirmDrop} onClose={() => setPendingDrop(null)} />
     </div>
   );
