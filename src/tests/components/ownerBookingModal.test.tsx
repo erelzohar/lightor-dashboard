@@ -209,6 +209,19 @@ describe('OwnerBookingModal: booking questions', () => {
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
     expect(sentBody().answers).toEqual([]);
   });
+  // LT-408: found in the live pass - a new owner's first booking, before the
+  // email is verified, toasted the server's English.
+  it('tells an owner who has not verified the email yet to do that first', async () => {
+    vi.mocked(createAppointment).mockReset().mockRejectedValue({
+      response: { status: 403, data: { success: false, error: 'This business account is not verified' } },
+    });
+    renderModal();
+    await toDetails('Home visit', 4, '11:00');
+    fireEvent.click(submitButton());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('customers.booking.verifyEmailFirst'));
+    expect(toast.error).not.toHaveBeenCalledWith('This business account is not verified');
+  });
 });
 
 /**

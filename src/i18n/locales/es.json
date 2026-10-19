@@ -1412,6 +1412,7 @@
       "submit": "Reservar",
       "success": "Cita reservada",
       "slotTaken": "Esa hora ya está ocupada - elige otra",
+      "verifyEmailFirst": "Para reservar citas, primero verifica tu correo electrónico - el enlace está en tu bandeja de entrada",
       "failed": "No se pudo reservar la cita",
       "addressSuggestions": "Sugerencias de direcciones",
       "noAddresses": "No hay direcciones que coincidan",

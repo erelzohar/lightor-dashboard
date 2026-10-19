@@ -1412,6 +1412,7 @@
       "submit": "Réserver",
       "success": "Rendez-vous réservé",
       "slotTaken": "Ce créneau est déjà pris - choisissez-en un autre",
+      "verifyEmailFirst": "Vérifiez d'abord votre adresse e-mail pour prendre des rendez-vous - le lien est dans votre boîte mail",
       "failed": "Impossible de réserver le rendez-vous",
       "addressSuggestions": "Suggestions d'adresses",
       "noAddresses": "Aucune adresse correspondante",

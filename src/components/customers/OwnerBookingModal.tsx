@@ -360,7 +360,13 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
         if (!fixedSession) setStep('time');
       } else {
         const serverMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-        toast.error(serverMessage || t('customers.booking.failed'));
+        // LT-408: an owner who has not verified the email yet is refused
+        // (403, no code) - say what to do, not the server's English.
+        if (apiErrorStatus(error) === 403 && /not verified/i.test(serverMessage ?? '')) {
+          toast.error(t('customers.booking.verifyEmailFirst'));
+        } else {
+          toast.error(serverMessage || t('customers.booking.failed'));
+        }
       }
     } finally {
       setSaving(false);

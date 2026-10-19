@@ -1412,6 +1412,7 @@
       "submit": "Book",
       "success": "Appointment booked",
       "slotTaken": "That time is already taken - pick another",
+      "verifyEmailFirst": "Verify your email address first to book appointments - the link is in your inbox",
       "failed": "Could not book the appointment",
       "addressSuggestions": "Address suggestions",
       "noAddresses": "No matching addresses",
