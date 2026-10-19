@@ -223,11 +223,15 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
           </h3>
           {timeRange !== 'all' && (
             <div className="flex items-center gap-2">
+              {/* LT-423: the start-side button goes back, as the calendar's
+                  does - the icon was mirrored for RTL and the handler swapped
+                  too, so in Hebrew the right arrow went forward. */}
               <Button
                 variant="primary"
                 size="sm"
-                onClick={direction === 'rtl' ? handleNext : handlePrevious}
-                disabled={direction === 'rtl' ? isAtFutureLimit() : isAtPastLimit()}
+                onClick={handlePrevious}
+                disabled={isAtPastLimit()}
+                aria-label={t('appointments.calendar.prevPeriod')}
               >
                 <PrevButton size={16} />
               </Button>
@@ -236,6 +240,7 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                 size="sm"
                 onClick={handleReset}
                 className="min-w-[2.5rem]"
+                aria-label={t('dashboard.graph.reset')}
               >
                 <RotateCcw size={16} />
               </Button>
@@ -245,8 +250,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
               <Button
                 variant="primary"
                 size="sm"
-                onClick={direction === 'rtl' ? handlePrevious : handleNext}
-                disabled={direction === 'rtl' ? isAtPastLimit() : isAtFutureLimit()}
+                onClick={handleNext}
+                disabled={isAtFutureLimit()}
+                aria-label={t('appointments.calendar.nextPeriod')}
               >
                 <NextButton size={16} />
               </Button>

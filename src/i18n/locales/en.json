@@ -431,6 +431,10 @@
       "customer": "Customer card",
       "noCustomer": "This customer has no card yet",
       "customerFailed": "Could not open the customer card"
+    },
+    "calendar": {
+      "prevPeriod": "Previous",
+      "nextPeriod": "Next"
     }
   },
   "login": {
@@ -820,6 +824,9 @@
       "title": "60 days of Lightor+ are waiting for you",
       "body": "Verify your mobile number to start them.",
       "cta": "Verify phone"
+    },
+    "graph": {
+      "reset": "Back to the current period"
     }
   },
   "billing": {

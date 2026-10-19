@@ -294,3 +294,31 @@ describe('Services page - payment when booking, coming soon', () => {
   });
 });
 
+
+/**
+ * LT-423 (the exploratory pass): editing a service with no price (the AI
+ * wizard's) right after one with a price still showed that price - the form
+ * took `price: undefined`, which left the input uncontrolled with its old
+ * value. And the list drew a lone currency sign for a service with no price.
+ */
+describe('Services page - a service with no price', () => {
+  it("does not show the price of the service edited before, and draws no bare sign", async () => {
+    answerTypes(() => [
+      service({ _id: 's1', name: 'Gel build', price: '250', durationMS: '7200000' }),
+      service({ _id: 's2', name: 'Haircut', price: undefined as unknown as string, durationMS: '1800000' }),
+    ]);
+    renderPage('book');
+    expect(await screen.findByText('Haircut')).toBeInTheDocument();
+    // The list in order: "Gel build ₪250 2h", then "Haircut 30m" with no sign.
+    const list = screen.getByText('Haircut').closest('ul, section, div[class*="space-y"]') as HTMLElement;
+    const [gel, haircut] = (list.textContent ?? '').split('Haircut');
+    expect(gel).toContain('₪250');
+    expect(haircut).not.toContain('₪');
+
+    const edits = screen.getAllByRole('button', { name: 'common.edit' });
+    fireEvent.click(edits[0]);
+    expect(input('price')?.value).toBe('250');
+    fireEvent.click(screen.getAllByRole('button', { name: 'common.edit' })[1]);
+    expect(input('price')?.value).toBe('');
+  });
+});

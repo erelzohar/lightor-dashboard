@@ -559,6 +559,8 @@ const ScheduleVacations: React.FC = () => {
                 <button
                   onClick={() => setIsAddingOverride(prev => !prev)}
                   title={t('scheduleVacations.addDate')}
+                  aria-label={t('scheduleVacations.addDate')}
+                  aria-expanded={isAddingOverride}
                   className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
                     isAddingOverride
                       ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'
@@ -710,6 +712,9 @@ const ScheduleVacations: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setIsAddingVacation(prev => !prev)}
+                  title={t('scheduleVacations.addVacation')}
+                  aria-label={t('scheduleVacations.addVacation')}
+                  aria-expanded={isAddingVacation}
                   className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 active:scale-90 ${
                     isAddingVacation
                       ? 'bg-red-500/10 border-red-400/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50'

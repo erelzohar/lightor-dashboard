@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { hasPrice } from '../../utils/currency';
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Phone, Clock, Calendar, ChevronRight, ChevronLeft, Users } from 'lucide-react';
@@ -232,7 +233,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                     {/* Price + action buttons (shown on hover) */}
                     <div className="w-28 flex items-center justify-end gap-1.5">
                       <span className="text-sm font-bold text-primary group-hover:hidden">
-                        {currency}{appointment.type.price}
+                        {hasPrice(appointment.type.price) && `${currency}${appointment.type.price}`}
                       </span>
                       <div className="hidden group-hover:flex items-center gap-1.5">
                         <a
@@ -282,9 +283,11 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
                           <Calendar size={10} />
                           {getDateDisplay(appointment.timestamp)}
                         </span>
-                        <span className="text-xs font-bold text-primary">
-                          {currency}{appointment.type.price}
-                        </span>
+                        {hasPrice(appointment.type.price) && (
+                          <span className="text-xs font-bold text-primary">
+                            {currency}{appointment.type.price}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <ArrowIcon size={16} className="text-light-gray/50 shrink-0 mt-1" />

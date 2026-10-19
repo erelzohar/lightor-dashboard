@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../hooks/useCurrencySymbol';
+import { hasPrice } from '../utils/currency';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus, CreditCard } from 'lucide-react';
@@ -137,7 +138,10 @@ const AppointmentTypes: React.FC = () => {
   const openForEdit = (type: AppointmentType) => {
     cancelReset();
     setCurrentType(type);
-    setFormData({ name: type.name, price: type.price, durationMS: type.durationMS, image: type.image ?? '' });
+    // LT-423: a service with no price (the AI wizard's) or no duration (a
+    // leads site's) sets '' - undefined left the input uncontrolled, still
+    // showing the price of the service edited before.
+    setFormData({ name: type.name, price: type.price ?? '', durationMS: type.durationMS ?? '', image: type.image ?? '' });
     resetClassFields(type);
     setIsFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -706,10 +710,12 @@ const AppointmentTypes: React.FC = () => {
                           )
                         ) : (
                           <>
-                            <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                              <Banknote size={11} className="text-green-400" />
-                              {currency}{type.price}
-                            </span>
+                            {hasPrice(type.price) && (
+                              <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <Banknote size={11} className="text-green-400" />
+                                {currency}{type.price}
+                              </span>
+                            )}
                             {isBookableService(type) ? (
                               <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                                 <Timer size={11} className="text-blue-400" />

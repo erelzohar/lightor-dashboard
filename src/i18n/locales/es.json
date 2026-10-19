@@ -431,6 +431,10 @@
       "customer": "Ficha del cliente",
       "noCustomer": "Este cliente aún no tiene ficha",
       "customerFailed": "No se pudo abrir la ficha del cliente"
+    },
+    "calendar": {
+      "prevPeriod": "Anterior",
+      "nextPeriod": "Siguiente"
     }
   },
   "login": {
@@ -820,6 +824,9 @@
       "title": "60 días de Lightor+ te esperan",
       "body": "Verifica tu número de móvil para empezarlos.",
       "cta": "Verificar teléfono"
+    },
+    "graph": {
+      "reset": "Volver al periodo actual"
     }
   },
   "billing": {

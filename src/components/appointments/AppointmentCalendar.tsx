@@ -661,6 +661,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               {[{ dir: -1, Icon: ChevronLeft }, { dir: 1, Icon: ChevronRight }].map(({ dir, Icon }) => (
                 <button key={dir}
                   onClick={e => { e.stopPropagation(); setMiniCalMonth(m => (dir < 0) !== (direction === 'rtl') ? subMonths(m, 1) : addMonths(m, 1)); }}
+                  aria-label={t((dir < 0) !== (direction === 'rtl') ? 'customers.booking.prevMonth' : 'customers.booking.nextMonth')}
                   className="w-6 h-6 rounded flex items-center justify-center transition-colors"
                   style={{ background: 'rgba(255,255,255,0.05)' }}
                 >
@@ -797,6 +798,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                               return n;
                             });
                           }}
+                          role="checkbox"
+                          aria-checked={!hidden}
+                          aria-label={type.name}
                           className="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all"
                           style={{
                             border: `2px solid ${hidden ? '#374151' : pal.checkColor}`,
@@ -961,6 +965,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             {/* Navigation */}
             <div className="flex items-center gap-1" dir="ltr">
               <button onClick={e => { e.stopPropagation(); (direction === 'rtl' ? nextPeriod : prevPeriod)(); }}
+                aria-label={t(direction === 'rtl' ? 'appointments.calendar.nextPeriod' : 'appointments.calendar.prevPeriod')}
                 className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <ChevronLeft size={14} />
               </button>
@@ -969,6 +974,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {language === 'he' ? 'היום' : 'Today'}
               </button>
               <button onClick={e => { e.stopPropagation(); (direction === 'rtl' ? prevPeriod : nextPeriod)(); }}
+                aria-label={t(direction === 'rtl' ? 'appointments.calendar.prevPeriod' : 'appointments.calendar.nextPeriod')}
                 className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <ChevronRight size={14} />
               </button>

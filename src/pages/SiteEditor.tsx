@@ -598,6 +598,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           <button
             type="button"
             data-tour="editor-save"
+            // Its words hide on a phone (LT-423): the name stays.
+            aria-label={justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}
             onClick={() => void save()}
             disabled={!draft.dirty || saving}
             className={`ms-1 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
