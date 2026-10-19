@@ -53,7 +53,14 @@
     "leads": "الاستفسارات",
     "openingHours": "ساعات العمل",
     "siteDesign": "تصميم الموقع",
-    "comingSoon": "قريبًا"
+    "comingSoon": "قريبًا",
+    "sortable": {
+      "instructions": "لتغيير الترتيب: اضغط المسافة للالتقاط، والأسهم للتحريك، والمسافة للإفلات، وEscape للإلغاء.",
+      "picked": "تم التقاط {{name}}.",
+      "over": "{{name}} فوق {{over}}.",
+      "dropped": "تم إفلات {{name}} مكان {{over}}.",
+      "cancelled": "تم إلغاء النقل."
+    }
   },
   "greetings": {
     "morning": "صباح الخير",
@@ -1531,13 +1538,13 @@
       "sectionDescription": "وصف القسم",
       "aboutIntro": "الفقرة الافتتاحية",
       "aboutMission": "الفقرة الثانية",
-      "featureTitle": "ميزة {{n}} – عنوان",
-      "featureDescription": "ميزة {{n}} – نص",
+      "featureTitle": "ميزة {{n}} - عنوان",
+      "featureDescription": "ميزة {{n}} - نص",
       "galleryImage": "صورة {{n}} في المعرض",
-      "galleryTitle": "صورة {{n}} – عنوان",
-      "galleryDescription": "صورة {{n}} – وصف",
+      "galleryTitle": "صورة {{n}} - عنوان",
+      "galleryDescription": "صورة {{n}} - وصف",
       "quoteText": "تقييم {{n}}",
-      "quoteName": "تقييم {{n}} – الاسم",
+      "quoteName": "تقييم {{n}} - الاسم",
       "faqQuestion": "سؤال {{n}}",
       "faqAnswer": "إجابة {{n}}",
       "footerDescription": "نص التذييل",
@@ -1547,9 +1554,9 @@
       "blockTitle": "عنوان",
       "blockImage": "صورة",
       "statValue": "رقم {{n}}",
-      "statLabel": "رقم {{n}} – وصف",
+      "statLabel": "رقم {{n}} - وصف",
       "stepTitle": "خطوة {{n}}",
-      "stepText": "خطوة {{n}} – نص",
+      "stepText": "خطوة {{n}} - نص",
       "serviceName": "اسم الخدمة",
       "servicePrice": "السعر",
       "serviceImage": "صورة الخدمة",
@@ -1686,7 +1693,8 @@
       }
     },
     "fold": "طي اللوحة",
-    "unfold": "توسيع اللوحة"
+    "unfold": "توسيع اللوحة",
+    "keepEditing": "متابعة التعديل"
   },
   "lighty": {
     "hello": "مرحباً! أنا Lighty",

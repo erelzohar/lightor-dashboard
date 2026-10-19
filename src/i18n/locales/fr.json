@@ -53,7 +53,14 @@
     "leads": "Demandes",
     "openingHours": "Horaires",
     "siteDesign": "Design du site",
-    "comingSoon": "Bientôt"
+    "comingSoon": "Bientôt",
+    "sortable": {
+      "instructions": "Pour réordonner : espace pour saisir, flèches pour déplacer, espace pour déposer, Échap pour annuler.",
+      "picked": "{{name}} saisi.",
+      "over": "{{name}} au-dessus de {{over}}.",
+      "dropped": "{{name}} déposé à la place de {{over}}.",
+      "cancelled": "Déplacement annulé."
+    }
   },
   "greetings": {
     "morning": "Bonjour",
@@ -1531,13 +1538,13 @@
       "sectionDescription": "Description de la section",
       "aboutIntro": "Paragraphe d'ouverture",
       "aboutMission": "Deuxième paragraphe",
-      "featureTitle": "Atout {{n}} – titre",
-      "featureDescription": "Atout {{n}} – texte",
+      "featureTitle": "Atout {{n}} - titre",
+      "featureDescription": "Atout {{n}} - texte",
       "galleryImage": "Photo {{n}} de la galerie",
-      "galleryTitle": "Photo {{n}} – titre",
-      "galleryDescription": "Photo {{n}} – légende",
+      "galleryTitle": "Photo {{n}} - titre",
+      "galleryDescription": "Photo {{n}} - légende",
       "quoteText": "Avis {{n}}",
-      "quoteName": "Avis {{n}} – nom",
+      "quoteName": "Avis {{n}} - nom",
       "faqQuestion": "Question {{n}}",
       "faqAnswer": "Réponse {{n}}",
       "footerDescription": "Texte du pied de page",
@@ -1547,9 +1554,9 @@
       "blockTitle": "Titre",
       "blockImage": "Image",
       "statValue": "Chiffre {{n}}",
-      "statLabel": "Chiffre {{n}} – libellé",
+      "statLabel": "Chiffre {{n}} - libellé",
       "stepTitle": "Étape {{n}}",
-      "stepText": "Étape {{n}} – texte",
+      "stepText": "Étape {{n}} - texte",
       "serviceName": "Nom du service",
       "servicePrice": "Prix",
       "serviceImage": "Image du service",
@@ -1686,7 +1693,8 @@
       }
     },
     "fold": "Réduire le panneau",
-    "unfold": "Agrandir le panneau"
+    "unfold": "Agrandir le panneau",
+    "keepEditing": "Continuer à modifier"
   },
   "lighty": {
     "hello": "Salut ! Je suis Lighty",

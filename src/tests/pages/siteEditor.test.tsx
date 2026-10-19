@@ -325,6 +325,60 @@ describe('the site editor (LT-249)', () => {
     expect(payload.blocks?.find((b) => b.type === 'process')).toBeUndefined();
   });
 
+  it('undoing an added section closes its field that was left open (LT-429)', async () => {
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    toSections();
+    fireEvent.click(screen.getByText('siteEditor.sections.add'));
+    fireEvent.click(within(await screen.findByTestId('add-section-panel')).getByText('המלצות'));
+    // Reviews are the owner's: the section opens on its first field.
+    expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.quoteText:1' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('siteEditor.undo'));
+    await waitFor(() => expect(lastConfig().blocks?.map((b) => b.id)).toEqual(['b1', 'b2']));
+    // Nothing left to type into: the panel is the site's again.
+    await waitFor(() => expect(screen.queryByRole('textbox', { name: 'siteEditor.fields.quoteText:1' })).toBeNull());
+    expect(screen.getByRole('tab', { name: 'siteEditor.sections.tab' })).toBeInTheDocument();
+  });
+
+  it("a section's service fields name their service (LT-429)", async () => {
+    state.webConfig.data = {
+      ...saved,
+      appointmentTypes: [
+        { _id: 'svc1', name: 'Gel', price: '140', durationMS: '3600000', webConfig_id: 'wc1' },
+        { _id: 'svc2', name: 'Pedicure', price: '200', durationMS: '3600000', webConfig_id: 'wc1' },
+      ],
+    } as unknown as WebConfig;
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await fromSite({
+      type: 'LT_SELECT', kind: 'section', path: null, section: 'b2', sectionType: 'faq', count: 1,
+      fields: [{ path: 'services.svc1.name', kind: 'text' }, { path: 'services.svc2.name', kind: 'text' }],
+    });
+    expect(await screen.findByText('siteEditor.fields.serviceName - Gel')).toBeInTheDocument();
+    expect(screen.getByText('siteEditor.fields.serviceName - Pedicure')).toBeInTheDocument();
+  });
+
+  it('the discard question offers to keep editing, not a second "cancel" (LT-429)', async () => {
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    toSections();
+    fireEvent.click(row('b2').getByLabelText('siteEditor.sections.hide'));
+    fireEvent.click(await screen.findByLabelText('siteEditor.discard'));
+    expect(await screen.findByText('siteEditor.discardTitle')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'siteEditor.keepEditing' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+  });
+
+  it('the sections list tells a screen reader how to reorder, in the owner\'s language (LT-429)', async () => {
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    toSections();
+    const handle = row('b2').getByLabelText('siteEditor.sections.drag');
+    const describedBy = handle.getAttribute('aria-describedby');
+    expect(describedBy && document.getElementById(describedBy)).toHaveTextContent('common.sortable.instructions');
+  });
+
   it('a legacy page: listed as the site draws it, and turned into those blocks by the first change', async () => {
     state.webConfig.data = { ...saved, blocks: undefined };
     renderEditor();

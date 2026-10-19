@@ -40,6 +40,7 @@ import InstagramPhotoPicker from '../components/portfolio/InstagramPhotoPicker';
 import SortableImageItem, { type PortfolioItemEdit } from '../components/portfolio/SortableImageItem';
 import { PortfolioItem } from '../types';
 import { useTranslation } from 'react-i18next';
+import { sortableA11y } from '../utils/sortableA11y';
 import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 
 /**
@@ -358,6 +359,10 @@ const Portfolio: React.FC = () => {
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
+                    accessibility={sortableA11y(t, (id) => {
+                        const at = items.findIndex((i: any) => i.url === id);
+                        return items[at]?.title || t('siteEditor.fields.galleryImage', { n: at + 1 });
+                    })}
                     autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 5 }}
                     measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
                 >

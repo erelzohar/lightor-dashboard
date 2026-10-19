@@ -9,6 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { SectionRow } from '../../utils/siteSections';
 import { SECTION_ICONS } from './sectionIcons';
 import { sectionLabel, vocabLang } from './labels';
+import { sortableA11y } from '../../utils/sortableA11y';
 
 interface SectionsPanelProps {
   rows: SectionRow[];
@@ -88,7 +89,9 @@ function Row({ row, selected, locked, onSelect, onToggleHidden }: RowProps) {
  * the preview; and the way to add the sections the page does not have.
  */
 function SectionsPanel({ rows, selectedId, onSelect, onToggleHidden, onMove, onAdd }: SectionsPanelProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = vocabLang(i18n.language);
+  const a11y = sortableA11y(t, (id) => sectionLabel(rows.find((r) => r.id === id)?.type, lang));
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
@@ -107,7 +110,7 @@ function SectionsPanel({ rows, selectedId, onSelect, onToggleHidden, onMove, onA
   return (
     <div className="flex flex-col gap-3" data-testid="sections-panel">
       <p className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.sections.hint')}</p>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis, restrictToParentElement]} onDragEnd={onDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis, restrictToParentElement]} onDragEnd={onDragEnd} accessibility={a11y}>
         <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
           <ul className="rounded-2xl border border-gray-200 dark:border-slate-700 divide-y divide-gray-100 dark:divide-slate-800 overflow-hidden">
             {rows.map((row, i) => (

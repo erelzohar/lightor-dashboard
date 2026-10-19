@@ -45,3 +45,25 @@ describe('no em-dash in the app', () => {
     expect(Object.entries(SOURCES).flatMap(offenders)).toEqual([]);
   });
 });
+
+/**
+ * LT-429: the en-dash stays only in time ranges ("9:00–13:00", "{{from}}–{{to}}");
+ * a label like "Review 1 – name" takes the plain hyphen too.
+ */
+const LOCALES = import.meta.glob('../../i18n/locales/*.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const strings = (node: unknown, path: string, out: Array<[string, string]>) => {
+  if (typeof node === 'string') out.push([path, node]);
+  else if (node && typeof node === 'object') for (const [k, v] of Object.entries(node)) strings(v, path ? `${path}.${k}` : k, out);
+  return out;
+};
+
+describe('no en-dash in the locales outside a range', () => {
+  it('has none between words', () => {
+    expect(Object.keys(LOCALES).length).toBe(5);
+    const between = /(?<![\d}])–|–(?![\d{])/;
+    const found = Object.entries(LOCALES).flatMap(([file, raw]) =>
+      strings(JSON.parse(raw), '', []).filter(([, v]) => between.test(v)).map(([k]) => `${file.split('/').pop()}:${k}`)
+    );
+    expect(found).toEqual([]);
+  });
+});

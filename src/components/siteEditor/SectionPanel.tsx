@@ -80,6 +80,14 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
   const pinned = type === 'hero' || type === 'footer';
   const move = onMove ?? (composed && block ? (by: -1 | 1) => onUpdate(moveBlock(config, block.id, by)) : undefined);
 
+  // A service's fields read the same for every service: the list names the service too (LT-429).
+  const listLabel = (path: string) => {
+    const id = /^services\.([^.]+)\./.exec(path)?.[1];
+    const services = getAt(config, 'appointmentTypes');
+    const service = id && Array.isArray(services) ? (services as Array<{ _id?: string; name?: string }>).find((s) => s._id === id)?.name : null;
+    return service ? `${fieldLabel(t, path)} - ${service}` : fieldLabel(t, path);
+  };
+
   const textFields = fields.filter((f) => f.kind === 'text' && aiEditable(f.path));
   const aiFields = textFields.map((f) => ({
     path: f.path,
@@ -226,7 +234,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-start text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
                 >
                   {f.kind === 'image' ? <ImageIcon className="w-4 h-4 shrink-0 text-gray-400" /> : <Type className="w-4 h-4 shrink-0 text-gray-400" />}
-                  <span className="truncate">{fieldLabel(t, f.path)}</span>
+                  <span className="truncate">{listLabel(f.path)}</span>
                 </button>
               </li>
             ))}

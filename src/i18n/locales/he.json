@@ -53,7 +53,14 @@
     "leads": "לידים",
     "openingHours": "שעות פעילות",
     "siteDesign": "עיצוב האתר",
-    "comingSoon": "בקרוב"
+    "comingSoon": "בקרוב",
+    "sortable": {
+      "instructions": "כדי לשנות סדר: רווח כדי להרים, חצים כדי להזיז, רווח כדי לשחרר, Escape כדי לבטל.",
+      "picked": "{{name}} הורם.",
+      "over": "{{name}} מעל {{over}}.",
+      "dropped": "{{name}} שוחרר במקום של {{over}}.",
+      "cancelled": "ההזזה בוטלה."
+    }
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -1531,13 +1538,13 @@
       "sectionDescription": "תיאור האזור",
       "aboutIntro": "פסקת פתיחה",
       "aboutMission": "פסקה שנייה",
-      "featureTitle": "יתרון {{n}} – כותרת",
-      "featureDescription": "יתרון {{n}} – תיאור",
+      "featureTitle": "יתרון {{n}} - כותרת",
+      "featureDescription": "יתרון {{n}} - תיאור",
       "galleryImage": "תמונה {{n}} בגלריה",
-      "galleryTitle": "תמונה {{n}} – כותרת",
-      "galleryDescription": "תמונה {{n}} – תיאור",
+      "galleryTitle": "תמונה {{n}} - כותרת",
+      "galleryDescription": "תמונה {{n}} - תיאור",
       "quoteText": "המלצה {{n}}",
-      "quoteName": "המלצה {{n}} – שם",
+      "quoteName": "המלצה {{n}} - שם",
       "faqQuestion": "שאלה {{n}}",
       "faqAnswer": "תשובה {{n}}",
       "footerDescription": "טקסט בתחתית",
@@ -1547,9 +1554,9 @@
       "blockTitle": "כותרת",
       "blockImage": "תמונה",
       "statValue": "מספר {{n}}",
-      "statLabel": "מספר {{n}} – תיאור",
+      "statLabel": "מספר {{n}} - תיאור",
       "stepTitle": "שלב {{n}}",
-      "stepText": "שלב {{n}} – תיאור",
+      "stepText": "שלב {{n}} - תיאור",
       "serviceName": "שם השירות",
       "servicePrice": "מחיר",
       "serviceImage": "תמונת השירות",
@@ -1686,7 +1693,8 @@
       }
     },
     "fold": "הקטנת החלונית",
-    "unfold": "הגדלת החלונית"
+    "unfold": "הגדלת החלונית",
+    "keepEditing": "להמשיך לערוך"
   },
   "lighty": {
     "hello": "היי! אני Lighty",

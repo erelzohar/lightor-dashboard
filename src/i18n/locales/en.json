@@ -53,7 +53,14 @@
     "leads": "Inquiries",
     "openingHours": "Opening hours",
     "siteDesign": "Site design",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "sortable": {
+      "instructions": "To reorder: press space to pick up, the arrow keys to move, space to drop, Escape to cancel.",
+      "picked": "Picked up {{name}}.",
+      "over": "{{name}} is over {{over}}.",
+      "dropped": "{{name}} was dropped on {{over}}.",
+      "cancelled": "The move was cancelled."
+    }
   },
   "greetings": {
     "morning": "Good morning",
@@ -1531,13 +1538,13 @@
       "sectionDescription": "Section description",
       "aboutIntro": "Opening paragraph",
       "aboutMission": "Second paragraph",
-      "featureTitle": "Highlight {{n}} – title",
-      "featureDescription": "Highlight {{n}} – text",
+      "featureTitle": "Highlight {{n}} - title",
+      "featureDescription": "Highlight {{n}} - text",
       "galleryImage": "Gallery photo {{n}}",
-      "galleryTitle": "Photo {{n}} – title",
-      "galleryDescription": "Photo {{n}} – caption",
+      "galleryTitle": "Photo {{n}} - title",
+      "galleryDescription": "Photo {{n}} - caption",
       "quoteText": "Review {{n}}",
-      "quoteName": "Review {{n}} – name",
+      "quoteName": "Review {{n}} - name",
       "faqQuestion": "Question {{n}}",
       "faqAnswer": "Answer {{n}}",
       "footerDescription": "Footer text",
@@ -1547,9 +1554,9 @@
       "blockTitle": "Title",
       "blockImage": "Picture",
       "statValue": "Number {{n}}",
-      "statLabel": "Number {{n}} – label",
+      "statLabel": "Number {{n}} - label",
       "stepTitle": "Step {{n}}",
-      "stepText": "Step {{n}} – text",
+      "stepText": "Step {{n}} - text",
       "serviceName": "Service name",
       "servicePrice": "Price",
       "serviceImage": "Service picture",
@@ -1686,7 +1693,8 @@
       }
     },
     "fold": "Fold the panel",
-    "unfold": "Unfold the panel"
+    "unfold": "Unfold the panel",
+    "keepEditing": "Keep editing"
   },
   "lighty": {
     "hello": "Hi! I'm Lighty",

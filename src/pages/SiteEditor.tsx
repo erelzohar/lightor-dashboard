@@ -169,9 +169,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // ── LT-252: the page's sections ──
   const rows = useMemo(() => rowsOf(draft.value, bridge.layout), [draft.value, bridge.layout]);
 
-  // A selection whose section is gone (removed, or undone back to a legacy page) closes.
+  // A selection whose section is gone (removed, or undone back to a legacy page) closes -
+  // a field of it too (LT-429: undoing an added section left its field open, typing into nothing).
   useEffect(() => {
-    const id = selection?.kind === 'section' ? selection.section : null;
+    const id = selection?.section ?? null;
     if (!id || id === 'navbar' || id === 'contactButton') return;
     const blocks = draft.value.blocks;
     if (blocks?.length ? !blocks.some((b) => b.id === id) : /^b\d+$/.test(id)) setSelection(null);
@@ -704,7 +705,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         title={t('siteEditor.discardTitle')}
         message={t('siteEditor.discardBody')}
         confirmLabel={t('siteEditor.discard')}
-        cancelLabel={t('common.cancel')}
+        cancelLabel={t('siteEditor.keepEditing')}
         danger
         onConfirm={() => void discard()}
         onClose={() => setConfirmDiscard(false)}
