@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import BottomTabBar from '../../components/layout/BottomTabBar';
+import BottomTabBar, { HOLD_CLICK_WAIT_MS } from '../../components/layout/BottomTabBar';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -181,5 +181,46 @@ describe('BottomTabBar', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
     fireEvent.click(bar, { clientX: 250, clientY: 600 }); // above the row: the menu's or a panel's
     expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
+  });
+
+  // LT-419: iOS sends no click for a touch held a little longer than a tap.
+  describe('a held touch on a link', () => {
+    const setup = () => {
+      vi.useFakeTimers();
+      const Where = () => <span data-testid="where">{useLocation().pathname}</span>;
+      render(
+        <MemoryRouter initialEntries={['/lighty']}>
+          <BottomTabBar onMore={vi.fn()} />
+          <Where />
+        </MemoryRouter>
+      );
+      const link = screen.getByText('common.appointments').closest('a') as HTMLAnchorElement;
+      document.elementFromPoint = vi.fn(() => link);
+      return link;
+    };
+    const press = (link: HTMLElement, { type = 'touch', dx = 0 } = {}) => {
+      fireEvent.pointerDown(link, { pointerType: type, clientX: 100, clientY: 700 });
+      fireEvent.pointerUp(link, { pointerType: type, clientX: 100 + dx, clientY: 700 });
+    };
+    afterEach(() => { vi.useRealTimers(); });
+
+    it('opens the link when iOS sent no click', () => {
+      const link = setup();
+      press(link);
+      expect(screen.getByTestId('where')).toHaveTextContent('/lighty');
+      act(() => { vi.advanceTimersByTime(HOLD_CLICK_WAIT_MS); });
+      expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
+    });
+
+    it('adds nothing when iOS clicked, slid away, or for a mouse', () => {
+      const link = setup();
+      const clicks = vi.spyOn(link, 'click');
+      press(link);
+      fireEvent.click(link); // the browser's own click
+      press(link, { dx: 40 }); // slid off: a scroll, not a press
+      press(link, { type: 'mouse' });
+      act(() => { vi.advanceTimersByTime(HOLD_CLICK_WAIT_MS * 2); });
+      expect(clicks).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, X } from 'lucide-react';
@@ -59,6 +59,11 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
       ? ['/', '/leads', '/lighty', '/schedule-vacations']
       : ['/', '/appointments', '/lighty', '/schedule-vacations'];
 
+/** LT-419: how far a held touch may slide and still open its link, and how
+ *  long iOS gets to send its own click first (it does within ~50 ms). */
+export const HOLD_SLOP_PX = 24;
+export const HOLD_CLICK_WAIT_MS = 350;
+
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
@@ -67,6 +72,10 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   // went untappable while it still showed.
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
+  // LT-419: a touch on a link held a little longer than a tap gets no click
+  // from iOS (held longer still, Safari's link preview took it, which
+  // `-webkit-touch-callout: none` turns off).
+  const press = useRef<{ item: HTMLAnchorElement; x: number; y: number; clicked: boolean } | null>(null);
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
   // Customers, and on a leads site Services, are under "More".
   const lighty = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' };
@@ -119,6 +128,25 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
     best?.click();
   };
 
+  // LT-419: a touch that ends on the link it began on, without sliding
+  // away, opens it when iOS sent no click of its own.
+  const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    const item = event.pointerType === 'touch' ? (event.target as Element).closest<HTMLAnchorElement>('a[href]') : null;
+    press.current = item ? { item, x: event.clientX, y: event.clientY, clicked: false } : null;
+  };
+  const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
+    const p = press.current;
+    if (!p || Math.hypot(event.clientX - p.x, event.clientY - p.y) > HOLD_SLOP_PX) return;
+    if (document.elementFromPoint(event.clientX, event.clientY)?.closest('a[href]') !== p.item) return;
+    setTimeout(() => {
+      if (!p.clicked && p.item.isConnected) p.item.click();
+      if (press.current === p) press.current = null;
+    }, HOLD_CLICK_WAIT_MS);
+  };
+  const onClickCapture = () => {
+    if (press.current) press.current.clicked = true;
+  };
+
   return (
     <>
     {/* LT-352: the page dims under the open menu, the floating Lighty (z 50)
@@ -148,12 +176,18 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // clearing 4.5rem + the inset still clear it. Stock colours with alpha
       // (white, slate): the theme's own are bare CSS variables, and an
       // opacity modifier on them emits nothing.
+      // LT-419: no link preview on a held tab ([-webkit-touch-callout:none]).
       // LT-378: "More" grows this same bar upwards with the pages it lacks,
       // so open it is opaque, with no backdrop blur on the large layer it
       // becomes (WebKit stutters, LT-328).
       onClick={tapNearestItem}
+      onClickCapture={onClickCapture}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={() => { press.current = null; }}
       className={cn(
         'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex flex-col p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
+        '[-webkit-touch-callout:none]',
         menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : editing ? 'z-40 bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
       )}
     >
