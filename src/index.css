@@ -61,6 +61,14 @@ html {
   @apply scroll-smooth;
 }
 
+/* LT-417: the page never scrolls (the content pane does), so it must not
+   rubber-band either: on iPhone a finger that slid a few points while tapping
+   the tab bar bounced the page, and iOS cancelled the tap. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   user-select: none;
   @apply font-sans bg-light-bg text-light-text transition-colors duration-200;
