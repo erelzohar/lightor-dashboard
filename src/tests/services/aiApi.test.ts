@@ -62,7 +62,7 @@ describe('aiApi conversation history', () => {
         { role: 'assistant', content: 'Built it.' },
       ];
 
-      await aiService.editSite('make it blue', config, null, history);
+      await aiService.editSite('make it blue', config, [], history);
 
       expect(post).toHaveBeenCalledWith(
         `${globals.aiUrl}edit`,
@@ -77,7 +77,7 @@ describe('aiApi conversation history', () => {
     it('omits the history field when there are no prior turns', async () => {
       const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
 
-      await aiService.editSite('make it blue', config, null, []);
+      await aiService.editSite('make it blue', config, [], []);
 
       expect(sentForm(post).has('history')).toBe(false);
     });
@@ -85,26 +85,39 @@ describe('aiApi conversation history', () => {
     it('stays backward compatible when the param is not passed at all', async () => {
       const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
 
-      await aiService.editSite('make it blue', config, null);
+      await aiService.editSite('make it blue', config);
 
       expect(sentForm(post).has('history')).toBe(false);
     });
   });
 
-  describe('generateSite', () => {
-    it('appends the history field on onboarding too', async () => {
-      const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
-      const history: ChatTurn[] = [{ role: 'user', content: 'first try' }];
+  // LT-426: the owner's pictures, as the register sends them (LT-381).
+  it('sends the pictures as `images`, one field each', async () => {
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok);
+    const a = new File([new Uint8Array(1)], 'a.png', { type: 'image/png' });
+    const b = new File([new Uint8Array(1)], 'b.jpg', { type: 'image/jpeg' });
 
-      await aiService.generateSite('a barbershop', null, history);
+    await aiService.editSite('put these on the site', config, [a, b]);
 
-      expect(post).toHaveBeenCalledWith(
-        `${globals.aiUrl}onboarding`,
-        expect.any(FormData),
-        expect.objectContaining({ withCredentials: true })
-      );
-      const form = sentForm(post);
-      expect(JSON.parse(form.get('history') as string)).toEqual(history);
-    });
+    const form = sentForm(post);
+    expect(form.getAll('images').map((f) => (f as File).name)).toEqual(['a.png', 'b.jpg']);
+    expect(form.has('image')).toBe(false);
+  });
+
+  // LT-426: an edit is charged before the model runs; one failure is one try.
+  it('never retries a failed edit', async () => {
+    const post = vi.spyOn(apiClient, 'post').mockRejectedValue({ response: { status: 500 } });
+
+    await expect(aiService.editSite('make it blue', config)).rejects.toEqual({ response: { status: 500 } });
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  // LT-426: the register's style try-on, on the owner's own site.
+  it('asks the server for a style look with the site palette and seed', async () => {
+    const look = { design: { stylePreset: 'serene' }, pallete: { colorLightBg: '#f5f0e8' } };
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue({ data: { success: true, data: look } } as never);
+
+    await expect(aiService.restyle({ colorPrimary: '#111111' }, 'serene', 'site-1')).resolves.toEqual(look);
+    expect(post).toHaveBeenCalledWith(`${globals.aiUrl}restyle`, { pallete: { colorPrimary: '#111111' }, style: 'serene', designSeed: 'site-1', keepPalette: false });
   });
 });

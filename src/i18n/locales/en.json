@@ -1617,6 +1617,8 @@
       "hiddenNote": "This section is hidden on your site. It shows faded here so you can bring it back."
     },
     "theme": {
+      "tryStyle": "Tap a style to see your site in it",
+      "styleFailed": "The style could not be changed. Try again.",
       "preset": "Site style",
       "pickPreset": "Pick a style",
       "presetHint": "A style replaces the whole design.",
@@ -1630,6 +1632,11 @@
       "mode": "Mode"
     },
     "chat": {
+      "picturesOnly": "Put these pictures on the site",
+      "addImages": "Add pictures - up to {{count}}",
+      "removeImage": "Remove the picture {{name}}",
+      "dropImages": "Drop here - up to {{count}} pictures",
+      "imagesLimit": "Up to {{count}} pictures - JPG, PNG or WebP",
       "title": "Lighty - changes across the site",
       "placeholder": "What should change on the site? Tell Lighty…",
       "changed": "Changed: {{list}}",

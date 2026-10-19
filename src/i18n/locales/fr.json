@@ -1617,6 +1617,8 @@
       "hiddenNote": "Cette section est masquée sur votre site. Elle apparaît estompée ici pour pouvoir la réafficher."
     },
     "theme": {
+      "tryStyle": "Touchez un style pour voir votre site avec",
+      "styleFailed": "Le style n’a pas pu être changé. Réessayez.",
       "preset": "Style du site",
       "pickPreset": "Choisir un style",
       "presetHint": "Un style remplace tout le design.",
@@ -1630,6 +1632,11 @@
       "mode": "Mode"
     },
     "chat": {
+      "picturesOnly": "Place ces photos sur le site",
+      "addImages": "Ajouter des photos - jusqu’à {{count}}",
+      "removeImage": "Retirer la photo {{name}}",
+      "dropImages": "Déposez ici - jusqu’à {{count}} photos",
+      "imagesLimit": "Jusqu’à {{count}} photos - JPG, PNG ou WebP",
       "title": "Lighty - modifications sur tout le site",
       "placeholder": "Que changer sur le site ? Dites-le à Lighty…",
       "changed": "Modifié : {{list}}",

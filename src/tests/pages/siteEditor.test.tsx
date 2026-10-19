@@ -11,6 +11,7 @@ import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import { aiService } from '../../services/aiApi';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { deleteImage, uploadImage } from '../../services/imagesApi';
+import { updateAppointmentType } from '../../services/appointmentsApi';
 import type { WebConfig } from '../../types';
 
 /**
@@ -32,7 +33,7 @@ vi.mock('../../services/entitlementsApi', () => ({ fetchMyEntitlements: vi.fn(as
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn(), deleteImage: vi.fn(async () => undefined) }));
 vi.mock('../../services/appointmentsApi', () => ({ updateAppointmentType: vi.fn(async () => ({})) }));
 vi.mock('../../services/aiApi', () => ({
-  aiService: { editElement: vi.fn(), editSite: vi.fn(), draftSection: vi.fn() },
+  aiService: { editElement: vi.fn(), editSite: vi.fn(), draftSection: vi.fn(), restyle: vi.fn() },
   trimHistory: (m: unknown[]) => m,
 }));
 
@@ -437,6 +438,79 @@ describe('the site editor (LT-249)', () => {
     fireEvent.click(screen.getByText('siteEditor.save'));
     await waitFor(() => expect(deleteImage).toHaveBeenCalledWith('old.webp'));
     expect(deleteImage).not.toHaveBeenCalledWith('hero.webp');
+  });
+
+  // LT-426: the register's style pictures and try-on (LT-326/330).
+  describe('the style pictures', () => {
+    const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig & { design: Record<string, unknown>; pallete: Record<string, unknown>; blocks: Record<string, unknown>[] } }).config;
+
+    it("offer the ten styles as pictures, the site's own first, and a tap dresses the site in one", async () => {
+      vi.mocked(aiService.restyle).mockReset().mockResolvedValue({ design: { stylePreset: 'serene', headingFont: 'fraunces' }, pallete: { colorLightBg: '#f5f0e8' } });
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      const cards = within(screen.getByTestId('style-cards')).getAllByRole('radio');
+      expect(cards).toHaveLength(11);
+      // "boutique" has no picture: offered first, as the site's.
+      expect(cards[0]).toHaveAttribute('data-style', 'boutique');
+      expect(cards[0]).toHaveAttribute('aria-checked', 'true');
+      expect(cards[1].querySelector('img')).toHaveAttribute('src', '/styles/atelier.webp');
+
+      fireEvent.click(screen.getByRole('radio', { name: /serene|רגוע/ }));
+      await waitFor(() => expect(aiService.restyle).toHaveBeenCalledWith(saved.pallete, 'serene', 'wc1'));
+      await waitFor(() => expect(lastConfig().design).toEqual({ stylePreset: 'serene', headingFont: 'fraunces' }));
+      expect(lastConfig().pallete).toEqual({ colorPrimary: '#d71676', colorPrimaryDark: '#e5609b', colorLightBg: '#f5f0e8' });
+      // The sections give up their own layouts to the style's.
+      expect(lastConfig().blocks).toEqual([{ id: 'b1', type: 'hero' }, { id: 'b2', type: 'faq' }]);
+    });
+
+    it('says so when the style could not be fetched, and leaves the site as it was', async () => {
+      vi.mocked(aiService.restyle).mockReset().mockRejectedValue(new Error('down'));
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await waitFor(() => expect(posted('PREVIEW_DATA').length).toBeGreaterThan(0));
+      fireEvent.click(screen.getByRole('radio', { name: /serene|רגוע/ }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('siteEditor.theme.styleFailed');
+      expect(lastConfig().design).toEqual({ stylePreset: 'boutique' });
+    });
+  });
+
+  // LT-426: pictures in Lighty's chat, as in the register (LT-381).
+  describe("the chat's pictures", () => {
+    const picture = (name: string, type = 'image/png') => new File([new Uint8Array(1)], name, { type });
+    const pick = (...files: File[]) => fireEvent.change(screen.getByTestId('site-chat-file'), { target: { files } });
+
+    it('go with the message, up to three; the AI places them, and a service picture is saved on the service', async () => {
+      const placed = {
+        ...saved,
+        components: { ...saved.components, hero: { ...saved.components.hero, heroImageSrc: 'https://api.lightor.app/api/images/tmp-ai-1.webp' } },
+        appointmentTypes: [{ _id: 'svc1', name: 'Gel', image: 'https://api.lightor.app/api/images/tmp-ai-2.webp' }],
+      };
+      vi.mocked(aiService.editSite).mockReset().mockResolvedValue({ config: placed, message: 'Placed them' } as never);
+      vi.mocked(updateAppointmentType).mockClear();
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      const [a, b, c] = [picture('a.png'), picture('b.jpg', 'image/jpeg'), picture('c.webp', 'image/webp')];
+      pick(a, b);
+      pick(c, picture('d.png'));
+      expect(screen.getByTestId('site-chat-images').querySelectorAll('img')).toHaveLength(3);
+      expect(screen.getByRole('status')).toHaveTextContent('siteEditor.chat.imagesLimit');
+      fireEvent.click(screen.getAllByLabelText('siteEditor.chat.removeImage')[0]); // a.png
+      pick(c);
+
+      // Pictures alone are a request: put them on the site.
+      fireEvent.click(screen.getByRole('button', { name: 'siteEditor.ai.send' }));
+      await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
+      const [ask, , sent] = vi.mocked(aiService.editSite).mock.calls[0];
+      expect(ask).toBe('siteEditor.chat.picturesOnly');
+      expect((sent as File[]).map((f) => f.name)).toEqual(['b.jpg', 'c.webp', 'c.webp']);
+      expect(screen.queryByTestId('site-chat-images')).toBeNull();
+
+      await waitFor(() => expect(lastConfig().components.hero.heroImageSrc).toBe('https://api.lightor.app/api/images/tmp-ai-1.webp'));
+      fireEvent.click(screen.getByText('siteEditor.save'));
+      await waitFor(() => expect(updateAppointmentType).toHaveBeenCalledWith('svc1', expect.objectContaining({ image: 'https://api.lightor.app/api/images/tmp-ai-2.webp' })));
+    });
+
+    const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig }).config;
   });
 
   describe('answers that land late (LT-315)', () => {

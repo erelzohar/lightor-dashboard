@@ -1,7 +1,8 @@
-import { type AxiosError } from 'axios';
 import apiClient from './apiClient';
 import globals from './globals';
 import i18n from '../i18n/config';
+import { shrinkImage } from '../lib/ownerImages';
+import type { StyleLook } from '../lib/styles';
 
 // LT-052: the AI's chat reply must answer in the language the user is reading
 // the dashboard in, not the site's content language (a Hebrew business edited
@@ -69,15 +70,6 @@ function applyDefaultSocials(config: AiSiteConfig): AiSiteConfig {
   return { ...config, social: patched };
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (err) => reject(err);
-  });
-}
-
 // LT-009 transition shim: sessions ride the HttpOnly cookie now; this only
 // finds a token on sessions that predate the cookie. Delete by 2027-02.
 function getAuthHeaders() {
@@ -85,86 +77,21 @@ function getAuthHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-const MAX_RETRIES = 3;
-
-// LT-103: one random seed per builder CONVERSATION drives the server's design
-// rotation (preset family, hero layout, background, image set) — same
-// contract as the register app. Without it the server seeded off business
-// name + message, so regenerating similar text converged on the same look.
-let currentDesignSeed: string | null = null;
-
-const mintDesignSeed = (): string =>
-  (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
-
+// No automatic retries (LT-426, as the register since LT-315): an edit is
+// charged before the model runs, so retrying a 500 three times spent the
+// owner's AI on one failure and kept them waiting. They see the error and
+// decide.
 export const aiService = {
-  generateSite: async (
-    prompt: string,
-    logoFile: File | null,
-    history: ChatTurn[] = []
-  ): Promise<AiChatResult> => {
-    const formData = new FormData();
-    formData.append('message', prompt);
-    formData.append('replyLanguage', replyLanguage());
-    if (history.length) formData.append('history', JSON.stringify(history));
-    if (logoFile) formData.append('logo', logoFile);
-    // Fresh conversation → fresh seed; follow-up turns reuse it.
-    if (!history.length || !currentDesignSeed) currentDesignSeed = mintDesignSeed();
-    formData.append('designSeed', currentDesignSeed);
-
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        const response = await apiClient.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
-          `${globals.aiUrl}onboarding`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              ...getAuthHeaders(),
-            },
-            withCredentials: true,
-          }
-        );
-
-        if (!response.data.success) throw new Error('AI generation failed');
-
-        let config = applyDefaultSocials({ ...response.data.data });
-
-        if (logoFile) {
-          try {
-            const logoBase64 = await fileToBase64(logoFile);
-            config.logoImageName = logoBase64;
-            config = {
-              ...config,
-              components: {
-                ...config.components,
-                hero: { ...config.components.hero, heroImageSrc: logoBase64 },
-              },
-            };
-          } catch {
-            // non-fatal
-          }
-        }
-
-        return { config, message: response.data.message };
-      } catch (err) {
-        const status = (err as AxiosError)?.response?.status;
-        if (status === 500 && attempt < MAX_RETRIES) {
-          lastError = err;
-          continue;
-        }
-        throw err;
-      }
-    }
-
-    throw lastError;
-  },
-
+  /**
+   * The whole-site chat (LT-249). LT-426: up to three of the owner's
+   * pictures go as `images`; the server shows them to the AI, which says
+   * what each is - a logo, the opening photo, the gallery, a service's
+   * picture - and puts each in its place (LT-381).
+   */
   editSite: async (
     prompt: string,
     webConfig: AiSiteConfig,
-    logoFile: File | null,
+    images: File[] = [],
     history: ChatTurn[] = []
   ): Promise<AiChatResult> => {
     const formData = new FormData();
@@ -172,56 +99,38 @@ export const aiService = {
     formData.append('webConfig', JSON.stringify(webConfig));
     formData.append('replyLanguage', replyLanguage());
     if (history.length) formData.append('history', JSON.stringify(history));
-    if (logoFile) formData.append('image', logoFile);
+    for (const image of await Promise.all(images.map(shrinkImage))) formData.append('images', image);
 
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        const response = await apiClient.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
-          `${globals.aiUrl}edit`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              ...getAuthHeaders(),
-            },
-            withCredentials: true,
-          }
-        );
-
-        if (!response.data.success) throw new Error('AI edit failed');
-
-        let config = applyDefaultSocials({ ...response.data.data });
-
-        if (logoFile) {
-          try {
-            const logoBase64 = await fileToBase64(logoFile);
-            config.logoImageName = logoBase64;
-            config = {
-              ...config,
-              components: {
-                ...config.components,
-                hero: { ...config.components.hero, heroImageSrc: logoBase64 },
-              },
-            };
-          } catch {
-            // non-fatal
-          }
-        }
-
-        return { config, message: response.data.message };
-      } catch (err) {
-        const status = (err as AxiosError)?.response?.status;
-        if (status === 500 && attempt < MAX_RETRIES) {
-          lastError = err;
-          continue;
-        }
-        throw err;
+    const response = await apiClient.post<{ success: boolean; data: AiSiteConfig; message?: string }>(
+      `${globals.aiUrl}edit`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...getAuthHeaders(),
+        },
+        withCredentials: true,
       }
-    }
+    );
 
-    throw lastError;
+    if (!response.data.success) throw new Error('AI edit failed');
+    return { config: applyDefaultSocials({ ...response.data.data }), message: response.data.message };
+  },
+
+  /**
+   * LT-426: the site in another style (the register's try-on, LT-326) - its
+   * design and palette as a build in that style draws them. No AI, nothing
+   * stored; `designSeed` keeps one site's look the same on every try.
+   */
+  restyle: async (pallete: unknown, style: string, designSeed: string): Promise<StyleLook> => {
+    const response = await apiClient.post<{ success: boolean; data: StyleLook }>(`${globals.aiUrl}restyle`, {
+      pallete,
+      style,
+      designSeed,
+      keepPalette: false,
+    });
+    if (!response.data.success) throw new Error('Restyle failed');
+    return response.data.data;
   },
 
   /**

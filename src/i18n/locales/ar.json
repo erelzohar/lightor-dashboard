@@ -1617,6 +1617,8 @@
       "hiddenNote": "هذا القسم مخفي في موقعك. يظهر هنا باهتًا لتتمكن من إعادته."
     },
     "theme": {
+      "tryStyle": "اضغط على نمط لترى موقعك به",
+      "styleFailed": "تعذّر تغيير النمط. حاول مرة أخرى.",
       "preset": "نمط الموقع",
       "pickPreset": "اختر نمطًا",
       "presetHint": "اختيار نمط يستبدل التصميم كله.",
@@ -1630,6 +1632,11 @@
       "mode": "الوضع"
     },
     "chat": {
+      "picturesOnly": "ضع هذه الصور في الموقع",
+      "addImages": "إضافة صور - حتى {{count}}",
+      "removeImage": "إزالة الصورة {{name}}",
+      "dropImages": "أفلت هنا - حتى {{count}} صور",
+      "imagesLimit": "حتى {{count}} صور - JPG أو PNG أو WebP",
       "title": "Lighty - تغييرات في الموقع كله",
       "placeholder": "ما الذي يتغير في الموقع؟ اكتب إلى Lighty…",
       "changed": "تم تغيير: {{list}}",
