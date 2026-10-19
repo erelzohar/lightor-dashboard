@@ -1,11 +1,10 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
-import { useHideOnScroll } from '../../hooks/useHideOnScroll';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
 import { navTile, TAB_ITEM, TAB_IDLE, TAB_ACTIVE, TAB_RING } from './navTiles';
@@ -63,11 +62,9 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
-  // Scrolling down, it slides away; up, or on another page, it is back (LT-342).
-  const { pathname } = useLocation();
-  // Never away while its menu is open: the menu stands on it; nor while a
-  // page edits through it.
-  const scrolledAway = useHideOnScroll(pathname) && !menuOpen && !editing;
+  // LT-414: it no longer slides away on a scroll down (LT-342). Any
+  // scroller counted, a page scrolling itself on load included, so the bar
+  // went untappable while it still showed.
   // A page with unsaved work (the site editor) is asked about first (LT-267).
   const { guardLinkClick } = useLeaveGuard();
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
@@ -102,6 +99,26 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   const activeClasses = TAB_ACTIVE;
   const ring = TAB_RING;
 
+  // LT-414: a tap on the bar between items, on a rounded item's corner or on
+  // the bar's own edge lands on no item; it goes to the item under that x.
+  const tapNearestItem = (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as Element;
+    if (target.closest('a,button,input,select,textarea,label,[role=dialog]')) return;
+    const row = event.currentTarget.querySelector<HTMLElement>('[data-tab-row]');
+    if (!row) return;
+    const box = row.getBoundingClientRect();
+    if (event.clientY < box.top - 8 || event.clientY > box.bottom + 8) return;
+    const items = Array.from(row.querySelectorAll<HTMLElement>('a,button'));
+    let best: HTMLElement | undefined;
+    let bestDistance = Infinity;
+    for (const item of items) {
+      const r = item.getBoundingClientRect();
+      const distance = event.clientX < r.left ? r.left - event.clientX : event.clientX > r.right ? event.clientX - r.right : 0;
+      if (distance < bestDistance) { best = item; bestDistance = distance; }
+    }
+    best?.click();
+  };
+
   return (
     <>
     {/* LT-352: the page dims under the open menu, the floating Lighty (z 50)
@@ -131,22 +148,21 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // clearing 4.5rem + the inset still clear it. Stock colours with alpha
       // (white, slate): the theme's own are bare CSS variables, and an
       // opacity modifier on them emits nothing.
-      data-hidden={scrolledAway || undefined}
       // LT-378: "More" grows this same bar upwards with the pages it lacks,
       // so open it is opaque, with no backdrop blur on the large layer it
       // becomes (WebKit stutters, LT-328).
+      onClick={tapNearestItem}
       className={cn(
         'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex flex-col p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
         menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : editing ? 'z-40 bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
-        'transition-transform duration-300 ease-out',
-        scrolledAway && 'translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom))] pointer-events-none'
       )}
     >
       <AnimatePresence initial={false}>{menuOpen && menu}</AnimatePresence>
       {/* The editing page's panel (LT-380); out of sight, not out of the
           tree, while "More" is open, so what is typed in it stays. */}
       {editing && <div ref={panelRef} hidden={menuOpen} data-testid="phone-bar-panel" />}
-      <div className={cn('flex items-stretch gap-0.5', editing && keyboardOpen && 'hidden')}>
+      {/* No gaps between the items: a tap between two lands on nothing (LT-414). */}
+      <div data-tab-row className={cn('flex items-stretch', editing && keyboardOpen && 'hidden')}>
       {editing && <div ref={rowRef} className="contents" data-testid="phone-bar-row" />}
       {!editing && tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink

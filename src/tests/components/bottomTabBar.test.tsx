@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import BottomTabBar from '../../components/layout/BottomTabBar';
 
 vi.mock('react-i18next', () => ({
@@ -133,8 +133,9 @@ describe('BottomTabBar', () => {
     expect(home.querySelector('.bg-gradient-to-br.from-violet-400')).not.toBeNull();
   });
 
-  // LT-342: on a phone the bar steps aside while the owner scrolls down.
-  it('hides while scrolling down, inside any scroller, and comes back on a scroll up or near the top', () => {
+  // LT-414: it used to step aside on a scroll down (LT-342); any scroller
+  // counted, so a page scrolling itself left it showing but untappable.
+  it('stays in place and tappable whatever scrolls', () => {
     render(
       <MemoryRouter>
         <div data-testid="scroller" />
@@ -143,21 +144,42 @@ describe('BottomTabBar', () => {
     );
     const bar = screen.getByTestId('bottom-tab-bar');
     const scroller = screen.getByTestId('scroller');
-    const scrollTo = (top: number) => {
+    for (const top of [100, 160, 400]) {
       Object.defineProperty(scroller, 'scrollTop', { value: top, configurable: true });
       act(() => { fireEvent.scroll(scroller); });
-    };
-    scrollTo(100);
-    scrollTo(160); // down
-    expect(bar).toHaveAttribute('data-hidden', 'true');
-    expect(bar.className).toContain('translate-y-');
-    scrollTo(162); // a jitter changes nothing
-    expect(bar).toHaveAttribute('data-hidden', 'true');
-    scrollTo(120); // up
+    }
     expect(bar).not.toHaveAttribute('data-hidden');
-    scrollTo(300);
-    expect(bar).toHaveAttribute('data-hidden', 'true');
-    scrollTo(10); // near the top
-    expect(bar).not.toHaveAttribute('data-hidden');
+    expect(bar.className).not.toContain('translate-y-');
+    expect(bar.className).not.toContain('pointer-events-none');
+    // No gaps between the items for a tap to fall into.
+    const row = screen.getByText('common.dashboard').closest('a')!.parentElement!;
+    expect(row.className).not.toMatch(/\bgap-/);
+  });
+
+  // LT-414: a tap on a rounded item's corner, between items or on the bar's
+  // edge goes to the item under that x, not to nothing.
+  it('sends a tap off the items to the item under it', () => {
+    const Where = () => <span data-testid="where">{useLocation().pathname}</span>;
+    render(
+      <MemoryRouter initialEntries={['/lighty']}>
+        <BottomTabBar onMore={vi.fn()} />
+        <Where />
+      </MemoryRouter>
+    );
+    const bar = screen.getByTestId('bottom-tab-bar');
+    const row = bar.querySelector('[data-tab-row]') as HTMLElement;
+    const rect = (left: number, right: number, top = 700, bottom = 750) =>
+      ({ left, right, top, bottom, x: left, y: top, width: right - left, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
+    row.getBoundingClientRect = () => rect(10, 380);
+    // RTL: the first item is on the right.
+    Array.from(row.querySelectorAll<HTMLElement>('a,button')).forEach((item, i) => {
+      item.getBoundingClientRect = () => rect(306 - i * 74, 380 - i * 74);
+    });
+    fireEvent.click(bar, { clientX: 320, clientY: 752 }); // under the first item, on the bar's edge
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/$/);
+    fireEvent.click(row, { clientX: 250, clientY: 702 }); // a corner of the second
+    expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
+    fireEvent.click(bar, { clientX: 250, clientY: 600 }); // above the row: the menu's or a panel's
+    expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
   });
 });
