@@ -3,7 +3,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallba
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronLeft, ChevronRight, X, Clock, User, Phone,
+  ChevronLeft, ChevronRight, X, Clock, User, Phone, Contact,
   Check, XCircle, ChevronDown, CalendarDays, CalendarClock,
 } from 'lucide-react';
 import {
@@ -24,12 +24,13 @@ import { fetchAppointments, updateAppointmentStatus } from '../../store/slices/a
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors, type DragStartEvent } from '@dnd-kit/core';
 import { getEventCoordinates } from '@dnd-kit/utilities';
 import { moveAppointment, swapAppointments } from '../../services/appointmentsApi';
-import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
+import { apiErrorStatus, fetchCustomers, isApiErrorCode } from '../../services/customersApi';
 import { dropVerdict, edgeAt, isDraggable, minutesOfDay, startAtMinutes, type DropVerdict } from '../../utils/calendarDrag';
 import { buildScale, markHours } from '../../utils/calendarScale';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { formatPhoneForDisplay, telHref } from '../../utils/phone';
+import { formatPhoneForDisplay, israeliPhoneKind, telHref, toE164, whatsAppHref } from '../../utils/phone';
+import CustomerDetailDrawer from '../customers/CustomerDetailDrawer';
 import {
   Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus, withListedSessions,
 } from '../../utils/sessions';
@@ -143,6 +144,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [nowMinutes,  setNowMinutes]            = useState(nowMinutesOfDay);
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
   const [selectedAppt,setSelectedAppt]          = useState<Appointment | null>(null);
+  // The customer card opened from a booking's card (LT-413), and its lookup.
+  const [customerCardId, setCustomerCardId]     = useState<string | null>(null);
+  const [findingCustomer, setFindingCustomer]   = useState(false);
   const [popupPos,    setPopupPos]              = useState<{ x: number; y: number } | null>(null);
   // The clicked event block and the details card: the card is placed from
   // both MEASURED rects, and re-placed on every scroll (LT-244).
@@ -622,6 +626,29 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     } finally {
       setDropSaving(false);
       setPendingDrop(null);
+    }
+  };
+
+  // A booking's customer is the business's customer with its number (LT-413):
+  // found by the number, opened in the customers' own drawer.
+  const openCustomerOf = async (appt: Appointment) => {
+    if (findingCustomer) return;
+    const e164 = toE164(appt.phone);
+    const digits = (e164 ?? appt.phone).replace(/\D/g, '');
+    setFindingCustomer(true);
+    try {
+      const { data } = await fetchCustomers({ search: digits, limit: 20 });
+      const match = data.find((c) => (e164 && toE164(c.phone) === e164) || c.phoneNormalized === appt.phoneNormalized);
+      if (!match) {
+        toast(t('appointments.card.noCustomer'));
+        return;
+      }
+      setSelectedAppt(null);
+      setCustomerCardId(match._id);
+    } catch {
+      toast.error(t('appointments.card.customerFailed'));
+    } finally {
+      setFindingCustomer(false);
     }
   };
 
@@ -1492,10 +1519,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 )}
               </div>
 
-              {/* Client */}
+              {/* Client, and their card (LT-413) */}
               <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
                 <User size={14} className="text-gray-400 shrink-0" />
-                <span className="text-sm text-gray-600 dark:text-gray-300 truncate">{selectedAppt.name}</span>
+                <span className="flex-1 min-w-0 text-sm text-gray-600 dark:text-gray-300 truncate">{selectedAppt.name}</span>
+                <button type="button"
+                  onClick={e => { e.stopPropagation(); void openCustomerOf(selectedAppt); }}
+                  disabled={findingCustomer}
+                  aria-busy={findingCustomer || undefined}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 bg-violet-50 dark:bg-violet-500/15 text-primary dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/25 disabled:opacity-60 transition-colors">
+                  <Contact size={12} aria-hidden="true" />
+                  {t('appointments.card.customer')}
+                </button>
               </div>
 
               {/* Phone */}
@@ -1507,6 +1542,18 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                   <Phone size={11} />
                   <span dir="ltr">{formatPhoneForDisplay(selectedAppt.phone)}</span>
                 </a>
+                {/* WhatsApp too (LT-413), but not to a landline. */}
+                {israeliPhoneKind(selectedAppt.phone) !== 'landline' && (
+                  <a href={whatsAppHref(selectedAppt.phone)}
+                    target="_blank" rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/30 transition-colors shrink-0">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                    WhatsApp
+                  </a>
+                )}
               </div>
 
               {/* Booking answers (LT-178) — 308px wide, so these wrap rather than truncate. */}
@@ -1569,6 +1616,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       )}
 
       <MoveAppointmentModal appointment={moving} onClose={() => setMoving(null)} />
+      {/* The booking's customer, opened from its card (LT-413). */}
+      <CustomerDetailDrawer
+        customerId={customerCardId}
+        onClose={() => setCustomerCardId(null)}
+        onChanged={() => { if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 })); }}
+      />
       <DropConfirm pending={pendingDrop} saving={dropSaving} onConfirm={confirmDrop} onClose={() => setPendingDrop(null)} />
     </div>
   );

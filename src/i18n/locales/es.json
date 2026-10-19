@@ -423,7 +423,12 @@
       "rangeInvalid": "Puedes exportar hasta un año cada vez",
       "upgradeToast": "Exportar citas es parte de Plus"
     },
-    "loading": "Cargando citas…"
+    "loading": "Cargando citas…",
+    "card": {
+      "customer": "Ficha del cliente",
+      "noCustomer": "Este cliente aún no tiene ficha",
+      "customerFailed": "No se pudo abrir la ficha del cliente"
+    }
   },
   "login": {
     "title": "Iniciar sesión",

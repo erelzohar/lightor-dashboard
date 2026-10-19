@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within, act, cleanup } from '@testing-library/react';
 import toast from 'react-hot-toast';
 import AppointmentCalendar from '../../components/appointments/AppointmentCalendar';
 import SessionParticipants from '../../components/appointments/SessionParticipants';
@@ -30,8 +30,16 @@ vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn((args: unknown) => ({ type: 'status', args })),
   fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
 }));
-vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
+vi.mock('../../components/customers/CustomerDetailDrawer', () => ({
+  default: ({ customerId }: { customerId: string | null }) => (customerId ? <div data-testid="customer-drawer">{customerId}</div> : null),
+}));
+const { fetchCustomers } = vi.hoisted(() => ({ fetchCustomers: vi.fn() }));
+vi.mock('../../services/customersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/customersApi')>()),
+  fetchCustomers,
+}));
 vi.mock('../../lib/haptics', () => ({ lightTick: vi.fn(), impact: vi.fn() }));
 
 const HOUR = 3_600_000;
@@ -172,5 +180,43 @@ describe("the booking card, from one booking to another (LT-412)", () => {
     expect(() => fireEvent.click(within(grid).getAllByText('Noa Levi')[0])).not.toThrow();
     // The card now shows the second booking.
     expect(screen.getAllByText('Noa Levi').length).toBeGreaterThan(1);
+  });
+});
+
+/**
+ * LT-413 - Erel: the calendar's booking card had no way to the customer and
+ * no WhatsApp button.
+ */
+describe("the booking card's customer and WhatsApp (LT-413)", () => {
+  const openCard = (b: Appointment) => {
+    const { container } = render(<AppointmentCalendar appointments={[b]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
+    const grid = container.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
+    fireEvent.click(within(grid).getAllByText(b.name)[0]);
+  };
+
+  it('offers WhatsApp to a mobile, and none to a landline', () => {
+    openCard(booking('a1', 'Dana Cohen'));
+    expect(screen.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', 'https://wa.me/972500000001');
+    cleanup();
+    openCard({ ...booking('a2', 'Noa Levi'), phone: '03-6123456' });
+    expect(screen.queryByRole('link', { name: 'WhatsApp' })).toBeNull();
+  });
+
+  it("opens the customer with the booking's number, and says so when there is none", async () => {
+    fetchCustomers.mockResolvedValueOnce({ data: [
+      { _id: 'c-other', phone: '+972500000009', phoneNormalized: '+972500000009' },
+      { _id: 'c-dana', phone: '0500000001', phoneNormalized: '+972500000001' },
+    ] });
+    openCard(booking('a1', 'Dana Cohen'));
+    fireEvent.click(screen.getByText('appointments.card.customer'));
+    expect(await screen.findByTestId('customer-drawer')).toHaveTextContent('c-dana');
+    expect(fetchCustomers).toHaveBeenCalledWith(expect.objectContaining({ search: '972500000001' }));
+
+    cleanup();
+    fetchCustomers.mockResolvedValueOnce({ data: [] });
+    openCard(booking('a3', 'Rina'));
+    fireEvent.click(screen.getByText('appointments.card.customer'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('appointments.card.noCustomer'));
+    expect(screen.queryByTestId('customer-drawer')).toBeNull();
   });
 });

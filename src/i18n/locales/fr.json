@@ -423,7 +423,12 @@
       "rangeInvalid": "Vous pouvez exporter jusqu’à un an à la fois",
       "upgradeToast": "L’export des rendez-vous fait partie de Plus"
     },
-    "loading": "Chargement des rendez-vous…"
+    "loading": "Chargement des rendez-vous…",
+    "card": {
+      "customer": "Fiche client",
+      "noCustomer": "Ce client n'a pas encore de fiche",
+      "customerFailed": "Impossible d'ouvrir la fiche client"
+    }
   },
   "login": {
     "title": "Connexion",

@@ -423,7 +423,12 @@
       "rangeInvalid": "You can export up to a year at a time",
       "upgradeToast": "Exporting appointments is part of Plus"
     },
-    "loading": "Loading appointments…"
+    "loading": "Loading appointments…",
+    "card": {
+      "customer": "Customer card",
+      "noCustomer": "This customer has no card yet",
+      "customerFailed": "Could not open the customer card"
+    }
   },
   "login": {
     "title": "Login",
