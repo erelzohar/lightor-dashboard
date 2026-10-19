@@ -1222,7 +1222,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                             }}
                             data-booking-id={movable ? appt._id : undefined}
                             className={`
-                              rounded-xl cursor-pointer overflow-hidden select-none${swapTarget ? ' ring-2 ring-amber-400' : ''}
+                              flex flex-col rounded-xl cursor-pointer overflow-hidden select-none${swapTarget ? ' ring-2 ring-amber-400' : ''}
                               border-s-[3px] ${pal.border}
                               ${empty ? 'bg-white/90 dark:bg-gray-800/90 border border-dashed border-gray-300 dark:border-gray-600' : pal.bg}
                               px-2.5 py-2 shadow-sm hover:shadow-md transition-shadow duration-150
@@ -1240,6 +1240,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                                 {seats ? `${going.length}/${seats}` : going.length}
                               </span>
                             )}
+                            {/* LT-420: the details sit in the middle of a long block
+                                (a two-hour one read empty below its top lines).
+                                Auto margins, not justify-center: in a block too
+                                short for them they are 0, so the text stays at
+                                the top instead of being cut on both sides. */}
+                            <div className="my-auto w-full min-w-0" data-testid="session-block-body">
                             {/* The name takes its own direction (LT-211): an English
                                 name in a Hebrew calendar is cut at its end ("full
                                 body wo…"), not its start. The room for the badge
@@ -1282,6 +1288,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                                 </div>
                               )
                             )}
+                            </div>
                           </motion.div>
                           );
                         };

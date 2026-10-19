@@ -95,3 +95,22 @@ describe('moving a booking from its calendar window', () => {
     expect(screen.queryByText('appointments.move.button')).toBeNull();
   });
 });
+
+/**
+ * LT-420 (Erel, a two-hour block with its text at the top: "it looks empty
+ * and long") - a block's details sit in its middle. Auto margins in a flex
+ * column: in a block too short for them they are 0, so the text stays at
+ * the top rather than being cut. (jsdom lays nothing out; measured in
+ * Chrome: a 176px block 60/60 around its text, a 44px one from its top.)
+ */
+describe("a calendar block's details", () => {
+  it('are centred in the block by auto margins', () => {
+    const { container } = render(<AppointmentCalendar appointments={[booking]} onAppointmentClick={vi.fn()} />);
+    const block = container.querySelector('[data-testid="session-block"]') as HTMLElement;
+    const body = within(block).getByTestId('session-block-body');
+    expect(block.className).toMatch(/\bflex\b/);
+    expect(block.className).toMatch(/\bflex-col\b/);
+    expect(body.className).toMatch(/\bmy-auto\b/);
+    expect(within(body).getByText('Gel manicure')).toBeInTheDocument();
+  });
+});
