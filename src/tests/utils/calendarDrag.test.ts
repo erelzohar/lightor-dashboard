@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dropVerdict, edgeAt, isDraggable, startAtMinutes } from '../../utils/calendarDrag';
+import { dropVerdict, edgeAt, isDraggable, startAtMinutes, swappedStarts } from '../../utils/calendarDrag';
 import { groupSessions } from '../../utils/sessions';
 import type { Appointment, AppointmentType } from '../../types';
 
@@ -110,5 +110,26 @@ describe('what may be picked up (LT-345)', () => {
     expect(isDraggable(booking('a', ahead, { status: 'cancelled' }))).toBe(false);
     expect(isDraggable(booking('a', Date.now() - 48 * HOUR))).toBe(false);
     expect(isDraggable(booking('a', ahead, { type: yoga }))).toBe(false);
+  });
+});
+
+/** LT-422 — two swapped bookings trade places in the span they cover, as the server does. */
+describe('swappedStarts', () => {
+  const MIN = 60_000;
+  const at = (id: string, start: number, minutes: number): Appointment =>
+    ({ ...booking(id, start), type: { ...booking(id, start).type, durationMS: String(minutes * MIN) } as AppointmentType });
+
+  it('of equal lengths, each takes the other\'s start', () => {
+    expect(swappedStarts(at('a', 0, 30), at('b', 120 * MIN, 30))).toEqual({ a: 120 * MIN, b: 0 });
+  });
+
+  it("back to back, the long one opens the span and the short one follows it (Erel's 10:30 and 11:15)", () => {
+    // 45 minutes at 0, two hours at 45: the two hours at 0, the 45 at 120.
+    expect(swappedStarts(at('long', 45 * MIN, 120), at('short', 0, 45))).toEqual({ a: 0, b: 120 * MIN });
+  });
+
+  it('keeps the gap between them, so the span ends where it did', () => {
+    // 30 at 0, 60 at 180: the 60 at 0, the 30 at 60 + 150 = 210, ending at 240 as the 60 did.
+    expect(swappedStarts(at('short', 0, 30), at('hour', 180 * MIN, 60))).toEqual({ a: 210 * MIN, b: 0 });
   });
 });

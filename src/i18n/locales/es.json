@@ -364,6 +364,8 @@
       "swap": "Intercambiar",
       "notifyOne": "El cliente recibirá un mensaje con la nueva hora.",
       "notifyBoth": "Ambos clientes recibirán un mensaje con su nueva hora.",
+      "now": "Ahora",
+      "newTime": "Nuevo horario",
       "outsideHours": "Atención: está fuera de tu horario de atención.",
       "vacation": "Atención: es durante unas vacaciones.",
       "past": "Una cita no puede moverse al pasado",

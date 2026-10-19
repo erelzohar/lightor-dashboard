@@ -144,3 +144,26 @@ export const dropVerdict = ({
   }
   return { kind: 'move', startMs };
 };
+
+/**
+ * Where two swapped bookings start (LT-422), as the server swaps them: they
+ * trade places in the span they cover - the later one starts where the
+ * earlier one did, the earlier one follows it with the gap between them
+ * kept, so it ends where the later one did. Of equal lengths that is each
+ * taking the other's start.
+ */
+export const swappedStarts = (a: Appointment, b: Appointment): { a: number; b: number } => {
+  const aStart = Number(a.timestamp);
+  const bStart = Number(b.timestamp);
+  const aLength = Number(a.type?.durationMS) || 0;
+  const bLength = Number(b.type?.durationMS) || 0;
+  const aIsEarlier = aStart <= bStart;
+  const [earlyStart, earlyLength, lateStart, lateLength] = aIsEarlier
+    ? [aStart, aLength, bStart, bLength]
+    : [bStart, bLength, aStart, aLength];
+  const gap = Math.max(0, lateStart - (earlyStart + earlyLength));
+  const newLate = earlyStart;
+  const newEarly = earlyStart + lateLength + gap;
+  return aIsEarlier ? { a: newEarly, b: newLate } : { a: newLate, b: newEarly };
+};
+

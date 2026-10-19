@@ -364,6 +364,8 @@
       "swap": "Swap",
       "notifyOne": "The customer gets a message with the new time.",
       "notifyBoth": "Both customers get a message with their new time.",
+      "now": "Now",
+      "newTime": "New time",
       "outsideHours": "Note: this is outside your opening hours.",
       "vacation": "Note: this is during a vacation.",
       "past": "An appointment can't move into the past",

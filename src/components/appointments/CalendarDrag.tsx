@@ -6,6 +6,7 @@ import { useDraggable, type CollisionDetection, type DraggableAttributes, type D
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Appointment } from '../../types';
+import { swappedStarts } from '../../utils/calendarDrag';
 
 /**
  * The pieces the calendar drags with (LT-345): a booking block that can be
@@ -67,8 +68,10 @@ export type PendingDrop =
 
 /**
  * Asks before a drop is sent (Erel, LT-345: every time — each sends the
- * customer a message): the booking's old and new time, or the two bookings
- * of a swap and where each goes.
+ * customer a message). LT-422 (Erel: "show the real time, bold and clear"):
+ * each booking as a card - who and what, its time now, and its new day and
+ * hours, from start to end, in bold. A swap's new times are the ones the
+ * server will set (swappedStarts), listed in the order they will run.
  */
 export const DropConfirm: React.FC<{
   pending: PendingDrop | null;
@@ -77,22 +80,36 @@ export const DropConfirm: React.FC<{
   onClose: () => void;
 }> = ({ pending, saving, onConfirm, onClose }) => {
   const { t } = useTranslation();
-  const { language, direction } = useTheme();
-  // Toward the new time, in the reading direction.
-  const arrow = direction === 'rtl' ? '←' : '→';
+  const { language } = useTheme();
   const locale = language === 'he' ? he : undefined;
-  const when = (ms: number) => format(new Date(ms), 'EEEE d/M, HH:mm', { locale });
-  const line = (name: string, from: number, to: number) => (
-    <p className="text-sm text-gray-700 dark:text-gray-200">
-      <span className="font-semibold">{name}</span>: {when(from)} {arrow} {when(to)}
-    </p>
+  const day = (ms: number) => format(new Date(ms), 'EEEE d/M', { locale });
+  // The range keeps its own direction (an RTL page reversed it).
+  const hours = (start: number, length: number) => (
+    <span dir="ltr">{`${format(new Date(start), 'HH:mm')}–${format(new Date(start + length), 'HH:mm')}`}</span>
   );
+  const card = (appointment: Appointment, from: number, to: number) => {
+    const length = Number(appointment.type?.durationMS) || 0;
+    return (
+      <div key={appointment._id} className="rounded-xl bg-gray-50 dark:bg-gray-700/40 px-3 py-2.5 space-y-1" data-testid="drop-card">
+        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+          {appointment.name}
+          {appointment.type?.name && <span className="font-normal text-gray-500 dark:text-gray-400"> · {appointment.type.name}</span>}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {t('appointments.drag.now')}: {day(from)}, {hours(from, length)}
+        </p>
+        <p className="text-sm font-bold text-primary dark:text-violet-300" data-testid="drop-new-time">
+          {t('appointments.drag.newTime')}: {day(to)}, {hours(to, length)}
+        </p>
+      </div>
+    );
+  };
 
   let message: React.ReactNode = null;
   if (pending?.kind === 'move') {
     message = (
       <div className="space-y-2" data-testid="drop-confirm">
-        {line(pending.appointment.name, Number(pending.appointment.timestamp), pending.startMs)}
+        {card(pending.appointment, Number(pending.appointment.timestamp), pending.startMs)}
         {pending.warning && (
           <p className="text-sm text-amber-700 dark:text-amber-300">{t(`appointments.drag.${pending.warning}`)}</p>
         )}
@@ -100,12 +117,14 @@ export const DropConfirm: React.FC<{
       </div>
     );
   } else if (pending?.kind === 'swap') {
-    const a = Number(pending.appointment.timestamp);
-    const b = Number(pending.target.timestamp);
+    const next = swappedStarts(pending.appointment, pending.target);
+    const cards = [
+      { appointment: pending.appointment, to: next.a },
+      { appointment: pending.target, to: next.b },
+    ].sort((x, y) => x.to - y.to);
     message = (
       <div className="space-y-2" data-testid="drop-confirm">
-        {line(pending.appointment.name, a, b)}
-        {line(pending.target.name, b, a)}
+        {cards.map(({ appointment, to }) => card(appointment, Number(appointment.timestamp), to))}
         <p className="text-sm text-gray-500 dark:text-gray-400">{t('appointments.drag.notifyBoth')}</p>
       </div>
     );

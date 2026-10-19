@@ -109,7 +109,10 @@ describe('dragging a booking in the calendar (LT-345)', () => {
 
     expect(await screen.findByText('appointments.drag.moveTitle')).toBeTruthy();
     expect(moveAppointment).not.toHaveBeenCalled();
-    expect(screen.getByTestId('drop-confirm').textContent).toContain('10:00 → ');
+    // LT-422: its time now, and the new one from start to end, in bold.
+    expect(screen.getByTestId('drop-confirm').textContent).toContain('appointments.drag.now');
+    expect(screen.getByTestId('drop-confirm').textContent).toContain('10:00–11:00');
+    expect(screen.getByTestId('drop-new-time').textContent).toContain('11:30–12:30');
     fireEvent.click(screen.getByText('appointments.drag.move'));
     await waitFor(() => expect(moveAppointment).toHaveBeenCalledWith('Dana', String(tomorrowAt(11) + 30 * 60_000)));
   });
@@ -127,6 +130,23 @@ describe('dragging a booking in the calendar (LT-345)', () => {
     expect(await screen.findByText('appointments.drag.swapTitle')).toBeTruthy();
     fireEvent.click(screen.getByText('appointments.drag.swap'));
     await waitFor(() => expect(swapAppointments).toHaveBeenCalledWith('Dana', 'Avi'));
+  });
+
+  // LT-422 (Erel): a 45-minute and a two-hour booking back to back trade
+  // places in the same span, and the confirm says the real new hours.
+  it('says where each of two bookings of different lengths will really be', async () => {
+    const short = { ...booking('Tomer', tomorrowAt(10) + 30 * 60_000), type: { ...service, _id: 's45', name: 'Russian manicure', durationMS: String(45 * 60_000) } };
+    const long = { ...booking('Maya', tomorrowAt(11) + 15 * 60_000), type: { ...service, _id: 's120', name: 'Gel build', durationMS: String(2 * HOUR) } };
+    render(<AppointmentCalendar appointments={[short, long]} onAppointmentClick={vi.fn()} foldFreeHours={false} />);
+
+    await drag('Maya', 0, -HOUR_PX);
+
+    expect(await screen.findByText('appointments.drag.swapTitle')).toBeTruthy();
+    const times = screen.getAllByTestId('drop-new-time').map((el) => el.textContent);
+    // In the order they will run: Maya 10:30-12:30, then Tomer 12:30-13:15.
+    expect(times[0]).toContain('10:30–12:30');
+    expect(times[1]).toContain('12:30–13:15');
+    expect(screen.getAllByTestId('drop-card')[0].textContent).toContain('Maya');
   });
 
   it('refuses a drop partly over another booking, and sends nothing', async () => {
