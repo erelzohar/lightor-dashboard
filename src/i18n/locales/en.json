@@ -31,6 +31,7 @@
     "leaveWithoutSaving": "Leave without saving",
     "stay": "Stay",
     "notVerifiedAlert": "Your website is not live until you verify your email.",
+    "notVerifiedLiveAlert": "Your site is already live. Verify your email to get receipts, password resets and email alerts - two days after signup the dashboard locks until you do.",
     "resendVerification": "Resend email",
     "resendVerificationSent": "Verification email sent!",
     "resendVerificationError": "Failed to resend. Please try again.",

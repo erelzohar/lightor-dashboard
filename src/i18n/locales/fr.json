@@ -31,6 +31,7 @@
     "leaveWithoutSaving": "Quitter sans enregistrer",
     "stay": "Rester",
     "notVerifiedAlert": "Votre site n'est pas en ligne tant que vous n'avez pas vérifié votre e-mail.",
+    "notVerifiedLiveAlert": "Votre site est déjà en ligne. Vérifiez votre e-mail pour recevoir les reçus, la réinitialisation du mot de passe et les alertes par e-mail - deux jours après l'inscription, le tableau de bord se verrouille jusqu'à la vérification.",
     "resendVerification": "Renvoyer l'e-mail",
     "resendVerificationSent": "E-mail de vérification envoyé !",
     "resendVerificationError": "Échec de l'envoi. Veuillez réessayer.",

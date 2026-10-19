@@ -128,9 +128,11 @@ const Dashboard: React.FC = () => {
   const leadsPerDay = leadStats?.perDay.some((d) => d.count > 0) ? leadStats.perDay : null;
   const leadsTopic = leadStats && hasTopics(leadStats.topic) ? leadStats.topic : null;
 
-  // The share card (LT-274) once the site is live: the owner's email is
-  // verified and the site has its address.
-  const shareSubDomain = auth.user?.isVerified ? webConfig?.subDomain?.trim() : undefined;
+  // LT-410: the site is live once the owner proved the email or the phone
+  // (the phone code at signup); the email can still be waiting.
+  const siteLive = !!auth.user?.isVerified || !!auth.user?.phoneVerifiedAt;
+  // The share card (LT-274) once the site is live and has its address.
+  const shareSubDomain = siteLive ? webConfig?.subDomain?.trim() : undefined;
 
   const setupSteps = [
     { key: 'businessName', label: t('onboarding.step_businessName'), done: !!(webConfig?.businessName?.trim()), icon: Briefcase, tab: '/settings' },
@@ -394,7 +396,7 @@ const Dashboard: React.FC = () => {
                     {t('common.notVerifiedTitle')}
                   </h3>
                   <p className="text-red-600 dark:text-red-400 mt-0.5 text-xs">
-                    {t('common.notVerifiedAlert')}
+                    {t(siteLive ? 'common.notVerifiedLiveAlert' : 'common.notVerifiedAlert')}
                   </p>
                 </div>
               </div>

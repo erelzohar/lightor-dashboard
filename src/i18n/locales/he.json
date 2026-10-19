@@ -31,6 +31,7 @@
     "leaveWithoutSaving": "לצאת בלי לשמור",
     "stay": "להישאר",
     "notVerifiedAlert": "האתר שלך לא יהיה זמין עד שתוודא את כתובת האימייל שלך.",
+    "notVerifiedLiveAlert": "האתר שלך כבר באוויר. אמת את האימייל כדי לקבל קבלות, איפוס סיסמה והתראות במייל - יומיים אחרי ההרשמה לוח הבקרה ננעל עד שתאמת.",
     "resendVerification": "שלח מחדש",
     "resendVerificationSent": "אימייל אימות נשלח!",
     "resendVerificationError": "שליחה נכשלה. נסה שוב.",

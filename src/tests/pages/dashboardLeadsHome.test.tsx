@@ -23,7 +23,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', language: 'en', darkMode: false }),
 }));
 const user = vi.hoisted(() => ({
-  _id: 'u1', name: 'Dana', isVerified: true, boardingStatus: 'active',
+  _id: 'u1', name: 'Dana', isVerified: true, phoneVerifiedAt: undefined as string | undefined, boardingStatus: 'active',
   subscription: { status: 'free' }, webConfig_id: 'wc1',
 }));
 vi.mock('../../contexts/AuthContext', () => ({
@@ -95,6 +95,7 @@ const appointment = {
 beforeEach(() => {
   navigate.mockReset();
   user.isVerified = true;
+  user.phoneVerifiedAt = undefined;
   state.webConfig.data = config('lead');
   state.appointments.appointments = [];
   vi.mocked(fetchLeads).mockReset().mockResolvedValue(leadsPage(12) as never);
@@ -311,6 +312,20 @@ describe('Share card on the home page', () => {
 
     expect(screen.getByText('common.notVerifiedTitle')).toBeInTheDocument();
     expect(screen.queryByTestId('share-site-card')).not.toBeInTheDocument();
+  });
+
+  // LT-410: the phone code at signup makes the site live; the email can wait.
+  it('shows for an owner who proved the phone though not the email yet, with the softer banner', async () => {
+    user.isVerified = false;
+    user.phoneVerifiedAt = '2026-10-19T09:00:00.000Z';
+    state.webConfig.data = config('book');
+    state.appointments.appointments = [appointment];
+    render(<Dashboard />);
+    await act(async () => {});
+
+    expect(screen.getByText('common.notVerifiedLiveAlert')).toBeInTheDocument();
+    expect(screen.queryByText('common.notVerifiedAlert')).not.toBeInTheDocument();
+    expect(screen.getByTestId('share-site-card')).toBeInTheDocument();
   });
 
   it('is hidden while the site has no address', async () => {

@@ -31,6 +31,7 @@
     "leaveWithoutSaving": "Salir sin guardar",
     "stay": "Quedarme",
     "notVerifiedAlert": "Tu sitio no estará activo hasta que verifiques tu correo electrónico.",
+    "notVerifiedLiveAlert": "Tu sitio ya está activo. Verifica tu correo para recibir recibos, el restablecimiento de contraseña y los avisos por correo - dos días después del registro, el panel se bloquea hasta que lo verifiques.",
     "resendVerification": "Reenviar correo",
     "resendVerificationSent": "¡Correo de verificación enviado!",
     "resendVerificationError": "No se pudo reenviar. Inténtalo de nuevo.",
