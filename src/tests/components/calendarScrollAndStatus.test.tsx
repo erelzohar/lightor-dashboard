@@ -29,6 +29,7 @@ vi.mock('../../services/appointmentsApi', () => ({ getClassSessions: vi.fn() }))
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn((args: unknown) => ({ type: 'status', args })),
   fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
+  fetchAppointments: vi.fn(() => ({ type: 'noop' })),
 }));
 vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
@@ -149,7 +150,8 @@ describe('status changes wait for the server (LT-315, M2)', () => {
     const onClose = vi.fn();
     const onUpdate = vi.fn();
     render(<AppointmentDetails appointment={booking('a2', 'Noa')} onClose={onClose} onUpdate={onUpdate} />);
-    fireEvent.click(screen.getByTitle('appointments.cancelAppointment'));
+    // A word, not an X (LT-416).
+    fireEvent.click(screen.getByRole('button', { name: 'appointments.cancelAppointment' }));
     fireEvent.click(await screen.findByRole('button', { name: 'appointments.cancelDialog.confirm' }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('appointments.updateError'));
     expect(onClose).not.toHaveBeenCalled();

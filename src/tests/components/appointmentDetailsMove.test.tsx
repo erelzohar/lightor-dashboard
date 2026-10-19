@@ -11,6 +11,9 @@ vi.mock('../../hooks/useAppSelector', () => ({
 }));
 vi.mock('../../store/slices/appointmentsSlice', () => ({ updateAppointmentStatus: vi.fn() }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
+// LT-416: the window opens the booking's customer card too.
+vi.mock('../../components/customers/CustomerDetailDrawer', () => ({ default: (): null => null }));
+vi.mock('../../services/customersApi', () => ({ fetchCustomers: vi.fn() }));
 // The move window (LT-341) as a stand-in: it names its booking and can say "moved".
 vi.mock('../../components/appointments/MoveAppointmentModal', () => ({
   default: ({ appointment, onMoved }: { appointment: Appointment | null; onMoved?: (a: Appointment) => void }) =>

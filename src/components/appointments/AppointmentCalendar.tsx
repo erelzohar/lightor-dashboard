@@ -1,11 +1,8 @@
-import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
-import { hasPrice } from '../../utils/currency';
-import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronLeft, ChevronRight, X, Clock, User, Phone, Contact,
-  Check, XCircle, ChevronDown, CalendarDays, CalendarClock,
+  ChevronLeft, ChevronRight, X, Clock,
+  Check, ChevronDown, CalendarDays,
 } from 'lucide-react';
 import {
   format, addDays, isToday, isTomorrow, isSameDay, getHours, getMinutes,
@@ -21,26 +18,21 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { hoursForDate } from '../../utils/bookingSlots';
-import { fetchAppointments, updateAppointmentStatus } from '../../store/slices/appointmentsSlice';
+import { fetchAppointments } from '../../store/slices/appointmentsSlice';
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors, type DragStartEvent } from '@dnd-kit/core';
 import { getEventCoordinates } from '@dnd-kit/utilities';
 import { moveAppointment, swapAppointments } from '../../services/appointmentsApi';
-import { apiErrorStatus, fetchCustomers, isApiErrorCode } from '../../services/customersApi';
+import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { dropVerdict, edgeAt, isDraggable, minutesOfDay, startAtMinutes, type DropVerdict } from '../../utils/calendarDrag';
 import { buildScale, markHours } from '../../utils/calendarScale';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { formatPhoneForDisplay, israeliPhoneKind, telHref, toE164, whatsAppHref } from '../../utils/phone';
-import CustomerDetailDrawer from '../customers/CustomerDetailDrawer';
 import {
   Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus, withListedSessions,
 } from '../../utils/sessions';
 import SessionParticipants from './SessionParticipants';
-import AnswersList from './AnswersList';
-import MoveAppointmentModal from './MoveAppointmentModal';
+import AppointmentDetails from './AppointmentDetails';
 import { DragBlock, DropConfirm, pointerTracker, type DragHandle, type PendingDrop, type Point } from './CalendarDrag';
-import { useConfirm } from '../../hooks/useConfirm';
-import { cancelBookingQuestion } from './cancelQuestion';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import { useClassSessions, useClassSessionsState } from '../../hooks/useClassSessions';
 import { lightTick } from '../../lib/haptics';
@@ -145,14 +137,6 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [nowMinutes,  setNowMinutes]            = useState(nowMinutesOfDay);
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
   const [selectedAppt,setSelectedAppt]          = useState<Appointment | null>(null);
-  // The customer card opened from a booking's card (LT-413), and its lookup.
-  const [customerCardId, setCustomerCardId]     = useState<string | null>(null);
-  const [findingCustomer, setFindingCustomer]   = useState(false);
-  const [popupPos,    setPopupPos]              = useState<{ x: number; y: number } | null>(null);
-  // The clicked event block and the details card: the card is placed from
-  // both MEASURED rects, and re-placed on every scroll (LT-244).
-  const anchorRef = useRef<HTMLElement | null>(null);
-  const popupRef  = useRef<HTMLDivElement>(null);
   const [activeFilter,setActiveFilter]          = useState<FilterKey>('all');
   const [hiddenTypeIds,setHiddenTypeIds]        = useState<Set<string>>(new Set());
   const [calSecOpen,  setCalSecOpen]            = useState(true);
@@ -199,14 +183,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { direction, language } = useTheme();
   const { t }    = useTranslation();
-  const currency = useCurrencySymbol();
   const dispatch = useAppDispatch();
-  const { confirm, dialog } = useConfirm();
   // The business's own hours (LT-340), to grey out the days it is closed.
   const openingHours = useAppSelector(state => state.webConfig.data);
   // The booking being moved (LT-341); the popup closes under the window.
-  const [moving, setMoving] = useState<Appointment | null>(null);
-  const canMove = (appt: Appointment) => getDisplayStatus(appt) === 'scheduled' && appt.type?.kind !== 'class';
   const { auth } = useAuth();
 
   // ── Dragging a booking (LT-345) ──────────────────────────────────────
@@ -630,86 +610,12 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     }
   };
 
-  // A booking's customer is the business's customer with its number (LT-413):
-  // found by the number, opened in the customers' own drawer.
-  const openCustomerOf = async (appt: Appointment) => {
-    if (findingCustomer) return;
-    const e164 = toE164(appt.phone);
-    const digits = (e164 ?? appt.phone).replace(/\D/g, '');
-    setFindingCustomer(true);
-    try {
-      const { data } = await fetchCustomers({ search: digits, limit: 20 });
-      const match = data.find((c) => (e164 && toE164(c.phone) === e164) || c.phoneNormalized === appt.phoneNormalized);
-      if (!match) {
-        toast(t('appointments.card.noCustomer'));
-        return;
-      }
-      setSelectedAppt(null);
-      setCustomerCardId(match._id);
-    } catch {
-      toast.error(t('appointments.card.customerFailed'));
-    } finally {
-      setFindingCustomer(false);
-    }
-  };
 
   const handleEventClick = (appt: Appointment, e: React.MouseEvent) => {
     e.stopPropagation();
-    anchorRef.current = e.currentTarget as HTMLElement;
     setSelectedAppt(appt);
-    // A first guess so the card can mount; placePopup corrects it from the
-    // card's real size before the browser paints.
-    const rect = anchorRef.current.getBoundingClientRect();
-    setPopupPos({ x: rect.right + 10, y: rect.top });
   };
 
-  // The card sits beside its event block, flipping to the other side when
-  // there is no room, and is clamped into the viewport using its REAL height
-  // (a fixed 380px guess let taller cards — booking answers, buttons — run off
-  // the top or bottom of the screen). Called again on every scroll so it
-  // travels with its appointment; once the block scrolls out of the calendar
-  // the card closes rather than floating next to nothing.
-  const placePopup = useCallback(() => {
-    const anchor = anchorRef.current;
-    const pop = popupRef.current;
-    if (!anchor || !pop) return;
-    const r = anchor.getBoundingClientRect();
-    const box = scrollRef.current?.getBoundingClientRect();
-    if (!anchor.isConnected || (box && (r.bottom <= box.top || r.top >= box.bottom))) {
-      setSelectedAppt(null);
-      return;
-    }
-    const PW = pop.offsetWidth;
-    const PH = pop.offsetHeight;
-    let x = r.right + 10;
-    if (x + PW > window.innerWidth - 8) x = Math.max(8, r.left - PW - 10);
-    const y = Math.min(Math.max(8, r.top), Math.max(8, window.innerHeight - PH - 8));
-    setPopupPos(p => (p && p.x === x && p.y === y ? p : { x, y }));
-  }, []);
-
-  // Placed once per opened booking, before paint (LT-412). Not on its own
-  // position as well: that made every placement a reason to place again, and
-  // tapping one booking and then another looped until React gave up (#185,
-  // "maximum update depth", reported from an iPhone). Scrolls, resizes and
-  // the card's own size changes place it again through the effect below.
-  useLayoutEffect(() => {
-    if (selectedAppt) placePopup();
-  }, [selectedAppt, placePopup]);
-
-  useEffect(() => {
-    if (!selectedAppt) return;
-    // Capture phase: scrolls of the calendar grid and of the page's own
-    // scrolling <main> never bubble to window.
-    window.addEventListener('scroll', placePopup, true);
-    window.addEventListener('resize', placePopup);
-    const ro = popupRef.current && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(placePopup) : null;
-    if (ro && popupRef.current) ro.observe(popupRef.current);
-    return () => {
-      window.removeEventListener('scroll', placePopup, true);
-      window.removeEventListener('resize', placePopup);
-      ro?.disconnect();
-    };
-  }, [selectedAppt, placePopup]);
 
   const handleSessionClick = (session: Session, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -717,33 +623,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     openRoster(session);
   };
 
-  // Success is said only once the server agrees (LT-315): the thunk was not
-  // awaited, so an offline phone or a refused request still read "updated"
-  // and closed, with the customer still booked.
-  const [statusBusy, setStatusBusy] = useState(false);
-  const handleStatus = async (status: 'completed' | 'cancelled') => {
-    if (!selectedAppt || statusBusy) return;
-    if (status === 'cancelled' && !(await confirm(cancelBookingQuestion(t, selectedAppt.timestamp)))) return;
-    setStatusBusy(true);
-    try {
-      await dispatch(updateAppointmentStatus({ id: selectedAppt._id, status })).unwrap();
-      toast.success(t('appointments.updateSuccess'));
-      setSelectedAppt(null);
-    } catch {
-      toast.error(t('appointments.updateError'));
-    } finally {
-      setStatusBusy(false);
-    }
-  };
 
   const initials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  const getStatusBadgeClass = (s: string) => ({
-    scheduled: 'bg-violet-100 text-violet-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    ongoing:   'bg-amber-100 text-amber-700',
-    cancelled: 'bg-rose-100 text-rose-700',
-  }[s] ?? 'bg-gray-100 text-gray-700');
+  // A change made from a booking's details window (its customer's card) - read the bookings again.
+  const refreshAppointments = () => {
+    if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 }));
+  };
 
   // ── Day header label ──────────────────────────────────────────────────
   const DAY_HEADS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1455,179 +1341,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           />
         )}
       </AnimatePresence>
-      {dialog}
 
-      {/* On document.body (LT-244, the LT-204 pattern): a glass card's
-          backdrop-filter is the containing block of anything fixed inside it,
-          so the card's viewport coordinates were off and it moved with the page. */}
-      {createPortal(
-      <AnimatePresence>
-        {selectedAppt && popupPos && (
-          <motion.div
-            ref={popupRef}
-            dir={direction}
-            key="popup"
-            initial={{ opacity: 0, scale: 0.93, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.93 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
-            onClick={e => e.stopPropagation()}
-            style={{ position: 'fixed', top: popupPos.y, left: popupPos.x, zIndex: 9999, width: 308, maxHeight: 'calc(100vh - 16px)' }}
-            className="glass-modal rounded-2xl overflow-hidden overflow-y-auto"
-          >
-            {/* Title row */}
-            <div className="flex items-start justify-between px-5 pt-5 pb-3 gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
-                  {selectedAppt.type.name}
-                </p>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-snug truncate">
-                  {selectedAppt.name}
-                </h3>
-              </div>
-              <button onClick={() => setSelectedAppt(null)}
-                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 shrink-0 transition-colors mt-0.5">
-                <X size={14} />
-              </button>
-            </div>
+      {/* The booking's details: the one window for a booking (LT-416),
+          the list's and the home page's too. */}
+      <AppointmentDetails appointment={selectedAppt} onClose={() => setSelectedAppt(null)} onUpdate={refreshAppointments} />
 
-            {/* Detail rows */}
-            <div className="px-5 pb-4 space-y-2">
-              {/* Date */}
-              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                <CalendarDays size={14} className="text-gray-400 shrink-0" />
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {format(new Date(parseInt(selectedAppt.timestamp)), 'EEEE, d MMMM', { locale })}
-                </span>
-              </div>
-
-              {/* Time range, and the way to move it (LT-341). The two boxes
-                  carried a dropdown's arrow and changed nothing. */}
-              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                <Clock size={14} className="text-gray-400 shrink-0" />
-                <span dir="ltr" className="text-sm text-gray-600 dark:text-gray-300">
-                  {format(new Date(parseInt(selectedAppt.timestamp)), 'HH:mm')} – {format(new Date(parseInt(selectedAppt.timestamp) + Number(selectedAppt.type.durationMS)), 'HH:mm')}
-                </span>
-                {canMove(selectedAppt) && (
-                  <button
-                    type="button"
-                    onClick={() => { setMoving(selectedAppt); setSelectedAppt(null); }}
-                    className="ms-auto flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                  >
-                    <CalendarClock size={12} />
-                    {t('appointments.move.button')}
-                  </button>
-                )}
-              </div>
-
-              {/* Client, and their card (LT-413) */}
-              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                <User size={14} className="text-gray-400 shrink-0" />
-                <span className="flex-1 min-w-0 text-sm text-gray-600 dark:text-gray-300 truncate">{selectedAppt.name}</span>
-                <button type="button"
-                  onClick={e => { e.stopPropagation(); void openCustomerOf(selectedAppt); }}
-                  disabled={findingCustomer}
-                  aria-busy={findingCustomer || undefined}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 bg-violet-50 dark:bg-violet-500/15 text-primary dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/25 disabled:opacity-60 transition-colors">
-                  <Contact size={12} aria-hidden="true" />
-                  {t('appointments.card.customer')}
-                </button>
-              </div>
-
-              {/* Phone */}
-              <div className="flex items-center gap-3 px-3 py-1">
-                <Phone size={14} className="text-gray-400 shrink-0" />
-                <a href={telHref(selectedAppt.phone)}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                  onClick={e => e.stopPropagation()}>
-                  <Phone size={11} />
-                  <span dir="ltr">{formatPhoneForDisplay(selectedAppt.phone)}</span>
-                </a>
-                {/* WhatsApp too (LT-413), but not to a landline. */}
-                {israeliPhoneKind(selectedAppt.phone) !== 'landline' && (
-                  <a href={whatsAppHref(selectedAppt.phone)}
-                    target="_blank" rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/30 transition-colors shrink-0">
-                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                    </svg>
-                    WhatsApp
-                  </a>
-                )}
-              </div>
-
-              {/* Booking answers (LT-178) — 308px wide, so these wrap rather than truncate. */}
-              <AnswersList answers={selectedAppt.answers} />
-            </div>
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 px-5 pb-4">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(getDisplayStatus(selectedAppt))}`}>
-                {t(`appointments.${getDisplayStatus(selectedAppt)}`)}
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                {selectedAppt.type.name}
-              </span>
-              {hasPrice(selectedAppt.type.price) && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">
-                  {currency}{selectedAppt.type.price}
-                </span>
-              )}
-            </div>
-
-            {/* Client avatar row */}
-            <div className="flex items-center justify-between px-5 pb-4">
-              <div className="flex -space-x-2">
-                {[selectedAppt].map((a, i) => {
-                  const pal = getPalette(a);
-                  return (
-                    <div key={i} className={`w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs font-bold ${pal.avatar}`}>
-                      {initials(a.name)}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            {getDisplayStatus(selectedAppt) === 'scheduled' ? (
-              <div className="flex gap-2 px-5 pb-5">
-                <button onClick={() => handleStatus('completed')} disabled={statusBusy}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
-                  style={{ background: '#111827' }}>
-                  <Check size={14} />
-                  {t('appointments.markCompleted')}
-                </button>
-                <button onClick={() => handleStatus('cancelled')} disabled={statusBusy}
-                  title={t('appointments.cancelAppointment')}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors disabled:opacity-60">
-                  <XCircle size={16} className="text-rose-500" />
-                </button>
-              </div>
-            ) : (
-              <div className="px-5 pb-5">
-                <div className={`py-2 rounded-xl text-center text-sm font-medium ${getStatusBadgeClass(getDisplayStatus(selectedAppt))}`}>
-                  {t(`appointments.${getDisplayStatus(selectedAppt)}`)}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>,
-      document.body,
-      )}
-
-      <MoveAppointmentModal appointment={moving} onClose={() => setMoving(null)} />
-      {/* The booking's customer, opened from its card (LT-413); mounted only
-          while open, so a closed calendar carries none of its hooks. */}
-      {customerCardId && (
-        <CustomerDetailDrawer
-          customerId={customerCardId}
-          onClose={() => setCustomerCardId(null)}
-          onChanged={() => { if (auth?.user?._id) dispatch(fetchAppointments({ user_id: auth.user._id, limit: 5000 })); }}
-        />
-      )}
       <DropConfirm pending={pendingDrop} saving={dropSaving} onConfirm={confirmDrop} onClose={() => setPendingDrop(null)} />
     </div>
   );

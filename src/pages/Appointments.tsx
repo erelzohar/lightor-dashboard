@@ -241,7 +241,8 @@ const Appointments: React.FC = () => {
         <AppointmentDetails
           appointment={selectedAppointment}
           onClose={() => setSelectedAppointment(null)}
-          onUpdate={() => { }}
+          // A change in the booking's customer card (LT-416) reads them again.
+          onUpdate={() => { void refresh(); }}
         />
       )}
     </motion.div>

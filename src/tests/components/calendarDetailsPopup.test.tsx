@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import AppointmentCalendar from '../../components/appointments/AppointmentCalendar';
 import { Appointment, AppointmentType } from '../../types';
 
@@ -20,6 +20,7 @@ vi.mock('../../services/appointmentsApi', () => ({ getClassSessions: vi.fn() }))
 vi.mock('../../store/slices/appointmentsSlice', () => ({
   updateAppointmentStatus: vi.fn(() => ({ type: 'noop' })),
   fetchAppointmentTypes: vi.fn(() => ({ type: 'noop' })),
+  fetchAppointments: vi.fn(() => ({ type: 'noop' })),
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../../components/customers/OwnerBookingModal', () => ({ default: (): null => null }));
@@ -31,41 +32,8 @@ vi.mock('../../components/appointments/MoveAppointmentModal', () => ({
 
 // jsdom lays nothing out: the calendar's grid box, the clicked event block
 // and the card's size are stubbed. placePopup only measures those three.
-const layout = vi.hoisted(() => ({
-  box: { top: 0, bottom: 760 },
-  anchor: { top: 700, bottom: 760, left: 100, right: 300 },
-  popupHeight: 600,
-}));
-const rect = (r: { top: number; bottom: number; left?: number; right?: number }) =>
-  ({ ...r, left: r.left ?? 0, right: r.right ?? 1000, x: r.left ?? 0, y: r.top, width: 0, height: r.bottom - r.top, toJSON: () => ({}) }) as DOMRect;
-const isCard = (el: Element) => el.classList.contains('glass-modal');
-const isGrid = (el: Element) => el.classList.contains('min-h-0') && el.classList.contains('overflow-y-auto');
-
-const original = {
-  rect: Element.prototype.getBoundingClientRect,
-  height: Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight'),
-  width: Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth'),
-};
 beforeAll(() => {
   Element.prototype.scrollTo = vi.fn();
-  Element.prototype.getBoundingClientRect = function (this: Element) {
-    return isGrid(this) ? rect(layout.box) : rect(layout.anchor);
-  };
-  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
-    configurable: true,
-    get(this: HTMLElement) { return isCard(this) ? layout.popupHeight : 0; },
-  });
-  Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
-    configurable: true,
-    get(this: HTMLElement) { return isCard(this) ? 308 : 0; },
-  });
-  window.innerHeight = 768;
-  window.innerWidth = 1024;
-});
-afterAll(() => {
-  Element.prototype.getBoundingClientRect = original.rect;
-  if (original.height) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', original.height);
-  if (original.width) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', original.width);
 });
 
 const HOUR = 3_600_000;
@@ -79,60 +47,51 @@ const booking: Appointment = {
 };
 
 /**
- * LT-244 — the details card of a calendar booking was placed once, from a
- * guessed 380px height, inside a glass card whose backdrop-filter traps
- * `position: fixed`. Near the top or bottom of the screen part of it was
- * cut off, and scrolling carried it away from its booking.
+ * LT-416 (Erel: "why isn't it the same component?") - a calendar booking
+ * opens the booking window the list opens: on document.body (LT-244: the
+ * calendar's glass card traps `position: fixed`), centred over a backdrop,
+ * with the customer's card and the price, no initials circle, and a worded
+ * cancel. It used to be a card of its own beside the booking.
  */
-describe('the calendar booking details card', () => {
-  it('lives on document.body, clamped into the viewport by its real height, and follows its booking', async () => {
+describe('the calendar booking details window', () => {
+  it("is the list's window: on document.body, a dialog, no initials, a worded cancel", () => {
     const { container } = render(<AppointmentCalendar appointments={[booking]} onAppointmentClick={vi.fn()} />);
     const grid = container.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
     fireEvent.click(within(grid).getAllByText('Dana Cohen')[0]);
 
-    const card = screen.getByText('appointments.markCompleted').closest('.glass-modal') as HTMLElement;
-    expect(card.parentElement).toBe(document.body);
-    expect(container.contains(card)).toBe(false);
+    const dialog = screen.getByRole('dialog', { name: 'Dana Cohen' });
+    expect(container.contains(dialog)).toBe(false);
+    expect(document.body.contains(dialog)).toBe(true);
+    // Centred by its overlay, not placed beside the booking.
+    expect(dialog.style.top).toBe('');
+    expect(dialog.style.left).toBe('');
+    expect(within(dialog).getByRole('button', { name: 'appointments.card.customer' })).toBeInTheDocument();
+    expect(within(dialog).getByText('₪140')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'appointments.cancelAppointment' })).toBeInTheDocument();
+    // The initials circle ("DC") is gone.
+    expect(within(dialog).queryByText('DC')).toBeNull();
 
-    // Booking low on the screen, card 600px tall: pulled up so all of it shows
-    // (768 - 600 - 8), beside the block (300 + 10).
-    expect(card.style.top).toBe('160px');
-    expect(card.style.left).toBe('310px');
-
-    // The grid scrolls the booking up to y=100: the card goes with it.
-    layout.anchor = { ...layout.anchor, top: 100, bottom: 160 };
-    act(() => { grid.dispatchEvent(new Event('scroll')); });
-    expect(card.style.top).toBe('100px');
-
-    // Scrolled out of the grid entirely: the card closes instead of floating.
-    layout.anchor = { ...layout.anchor, top: -200, bottom: -140 };
-    act(() => { grid.dispatchEvent(new Event('scroll')); });
-    await waitFor(() => expect(screen.queryByText('appointments.markCompleted')).toBeNull());
+    fireEvent.click(within(dialog).getByRole('button', { name: 'appointments.session.close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
 
-/** LT-341 — the owner moves a booking from its card. */
-describe('moving a booking from its calendar card', () => {
+/** LT-341 — the owner moves a booking from its window. */
+describe('moving a booking from its calendar window', () => {
   const open = (appointments: Appointment[]) => {
     const { container } = render(<AppointmentCalendar appointments={appointments} onAppointmentClick={vi.fn()} />);
     const grid = container.querySelector('.min-h-0.overflow-y-auto') as HTMLElement;
     fireEvent.click(within(grid).getAllByText('Dana Cohen')[0]);
   };
 
-  it('opens the move window on the booking and closes the card under it', async () => {
-    layout.anchor = { top: 300, bottom: 360, left: 100, right: 300 };
+  it('opens the move window on the booking', () => {
     open([booking]);
-
     fireEvent.click(screen.getByText('appointments.move.button'));
-
     expect(screen.getByTestId('moving').textContent).toBe('Dana Cohen');
-    await waitFor(() => expect(screen.queryByText('appointments.markCompleted')).toBeNull());
   });
 
   it('offers no move for a booking that is over or cancelled', () => {
-    layout.anchor = { top: 300, bottom: 360, left: 100, right: 300 };
     open([{ ...booking, status: 'cancelled' }]);
-
     expect(screen.queryByText('appointments.move.button')).toBeNull();
   });
 });
