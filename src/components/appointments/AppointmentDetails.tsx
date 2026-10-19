@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { hasPrice } from '../../utils/currency';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, CalendarDays, CalendarClock, Clock, User, Phone, Check, XCircle } from 'lucide-react';
@@ -170,9 +171,11 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
             {appointment.type.name}
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">
-            {currency}{appointment.type.price}
-          </span>
+          {hasPrice(appointment.type.price) && (
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">
+              {currency}{appointment.type.price}
+            </span>
+          )}
         </div>
 
         {/* Action buttons */}

@@ -15,3 +15,10 @@ export const currencyOf = (raw: unknown): Currency => {
 
 /** "₪", "$", "€" or "£" for a stored currency (or none). */
 export const currencySymbol = (raw: unknown): string => SYMBOL[currencyOf(raw)];
+
+/**
+ * LT-415: a service with a price to show. The AI wizard's services arrive
+ * without one (the owner sets it), and a bare currency sign read as a broken
+ * price; "0" is a price - free.
+ */
+export const hasPrice = (price: unknown): boolean => price != null && String(price).trim() !== '';

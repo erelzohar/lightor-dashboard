@@ -136,7 +136,13 @@ const Appointments: React.FC = () => {
       // tab bar's room and scrolls inside, and so does the list (LT-355: it
       // grew past the pane, so the page scrolled and the card inside it too).
       // The page, not the scroller, carries that room, so it renders below.
-      className="flex flex-col gap-4 flex-1 min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8"
+      // LT-415: the list is a column of rows, and on a wide screen it read too
+      // wide - in that view the page is as narrow as Settings (max-w-3xl),
+      // its header included so the title lines up with the rows.
+      className={`flex flex-col gap-4 flex-1 min-h-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8 ${
+        viewMode === 'list' ? 'w-full max-w-3xl mx-auto' : ''
+      }`}
+      data-view={viewMode}
     >
       {/* Page header */}
       <div className="flex items-center justify-between">

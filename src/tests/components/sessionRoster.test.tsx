@@ -138,6 +138,23 @@ describe('the appointments list with a class in it', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  // LT-415: the AI wizard's services arrive without a price - no bare "₪".
+  it("shows a booking's price only when its service has one", () => {
+    const priced: AppointmentType = { _id: 't3', name: 'Beard', webConfig_id: 'w1', price: '50', durationMS: String(HOUR) };
+    const unpriced: AppointmentType = { _id: 't4', name: 'Haircut', webConfig_id: 'w1', price: '', durationMS: String(HOUR) };
+    const { container, unmount } = render(
+      <AppointmentsList appointments={[{ ...attendee('p', 'Priced Client', '+972500000011'), type: priced }]} onAppointmentClick={vi.fn()} />
+    );
+    expect(container.textContent).toContain('₪50');
+    unmount();
+
+    const bare = render(
+      <AppointmentsList appointments={[{ ...attendee('u', 'Unpriced Client', '+972500000012'), type: unpriced }]} onAppointmentClick={vi.fn()} />
+    );
+    expect(bare.getByText('Unpriced Client')).toBeTruthy();
+    expect(bare.container.textContent).not.toContain('₪');
+  });
+
   it("offers one action per person in a class: taking them out of it, the cancel underneath (LT-211)", async () => {
     vi.mocked(updateAppointmentStatus).mockClear();
     render(

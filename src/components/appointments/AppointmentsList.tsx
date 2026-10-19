@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { hasPrice } from '../../utils/currency';
 import React, { useMemo, useState } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -207,9 +208,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                           {Number(appointment.type.durationMS) / 60000} {t('appointments.minutes')}
                         </span>
                       </div>
-                      <span className="font-medium text-primary">
-                        {currency}{appointment.type.price}
-                      </span>
+                      {hasPrice(appointment.type.price) && (
+                        <span className="font-medium text-primary">
+                          {currency}{appointment.type.price}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
