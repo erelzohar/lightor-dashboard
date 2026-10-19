@@ -1822,7 +1822,7 @@
     "appointments": {
       "calendar": {
         "title": "Your calendar",
-        "body": "Tap an appointment to open it. On a computer you can also drag it to another time."
+        "body": "Tap an appointment to open it. You can also drag it to another time."
       },
       "view": {
         "title": "Calendar or list",

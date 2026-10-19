@@ -1822,7 +1822,7 @@
     "appointments": {
       "calendar": {
         "title": "Tu calendario",
-        "body": "Toca una cita para abrirla. En el ordenador también puedes arrastrarla a otra hora."
+        "body": "Toca una cita para abrirla. También puedes arrastrarla a otra hora."
       },
       "view": {
         "title": "Calendario o lista",

@@ -1822,7 +1822,7 @@
     "appointments": {
       "calendar": {
         "title": "Votre agenda",
-        "body": "Touchez un rendez-vous pour l'ouvrir. Sur ordinateur, vous pouvez aussi le glisser vers une autre heure."
+        "body": "Touchez un rendez-vous pour l'ouvrir. Vous pouvez aussi le glisser vers une autre heure."
       },
       "view": {
         "title": "Agenda ou liste",
