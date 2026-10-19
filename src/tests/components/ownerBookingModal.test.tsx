@@ -625,12 +625,16 @@ describe('OwnerBookingModal: a walk-in', () => {
     fireEvent.change(screen.getByLabelText('customers.add.name'), { target: { value: '  Walk In ' } });
     fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '   ' } });
     expect(submitButton()).toBeDisabled();
+    // LT-407: no Israeli number, no booking.
+    fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '12345' } });
+    expect(submitButton()).toBeDisabled();
     fireEvent.change(screen.getByLabelText('customers.add.phone'), { target: { value: '050-123 4567' } });
     expect(submitButton()).not.toBeDisabled();
 
     fireEvent.click(submitButton());
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
-    expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '050-123 4567', type_id: 't1', channelType: 'sms' });
+    // Sent in E.164 (LT-407).
+    expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '+972501234567', type_id: 't1', channelType: 'sms' });
   });
 
   it("opens on the roster's session and asks only who: no service, no calendar, no time (LT-211)", async () => {
@@ -653,7 +657,7 @@ describe('OwnerBookingModal: a walk-in', () => {
     fireEvent.click(submitButton());
 
     await waitFor(() => expect(createAppointment).toHaveBeenCalledTimes(1));
-    expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '0529876543', type_id: 'c1', timestamp: TOMORROW });
+    expect(sentBody()).toMatchObject({ name: 'Walk In', phone: '+972529876543', type_id: 'c1', timestamp: TOMORROW });
   });
 
   it('leaves a preset session that filled meanwhile to the server to refuse, in its words', async () => {

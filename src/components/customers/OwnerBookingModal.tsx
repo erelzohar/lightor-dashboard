@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Input from '../ui/Input';
+import PhoneInput from '../ui/PhoneInput';
 import AddressAutocomplete from './AddressAutocomplete';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
@@ -18,7 +19,7 @@ import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { businessTimeZone, zonedDateOf, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
-import { formatPhoneForDisplay } from '../../utils/phone';
+import { formatPhoneForDisplay, toE164 } from '../../utils/phone';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ChoiceSummary, DayTimes, MonthDays, ServicePicker } from './BookingSteps';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
@@ -266,10 +267,13 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
 
   const walkIn = !customer;
   const bookingName = walkIn ? name.trim() : customer.name;
-  const bookingPhone = walkIn ? phone.trim() : customer.phone;
+  // A walk-in's phone in E.164 (LT-407); a customer's goes as stored.
+  const bookingPhone = walkIn ? toE164(phone) ?? phone.trim() : customer.phone;
   // A preset session is the server's to refuse if it filled meanwhile (CLASS_FULL).
+  // A walk-in's phone is a valid number, Israeli or with its country code (LT-407).
   const ready =
-    !!selectedType && (fixedSession || (isClass ? !!chosenSession : !!time)) && !!bookingName && !!bookingPhone;
+    !!selectedType && (fixedSession || (isClass ? !!chosenSession : !!time)) && !!bookingName && !!bookingPhone &&
+    (!walkIn || !!toE164(phone));
 
   const questions = useMemo(
     () => fieldsForService(webConfig?.bookingFields, typeId).filter((f): f is BookingField & { key: string } => !!f.key),
@@ -537,15 +541,13 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                     maxLength={50}
                     autoComplete="off"
                   />
-                  <Input
+                  <PhoneInput
                     id="booking-phone"
                     label={t('customers.add.phone')}
-                    dir="ltr"
-                    inputMode="tel"
+                    accept="world"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(value) => setPhone(value)}
                     required
-                    maxLength={20}
                     autoComplete="off"
                     helperText={t('customers.add.phoneHint')}
                   />

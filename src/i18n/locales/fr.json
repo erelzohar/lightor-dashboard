@@ -1903,6 +1903,7 @@
     "country": "Israël (+972)",
     "notVerified": "Confirmez ce numéro de mobile avec le code qui lui a été envoyé, puis enregistrez à nouveau.",
     "mismatch": "Le code a été confirmé pour un autre numéro. Enregistrez à nouveau pour recevoir un nouveau code.",
-    "businessCodeHint": "Pour afficher sur votre site un mobile qui n'est pas le vôtre, confirmez-le avec un code."
+    "businessCodeHint": "Pour afficher sur votre site un mobile qui n'est pas le vôtre, confirmez-le avec un code.",
+    "invalidWorld": "Saisissez un numéro valide : israélien, ou avec son indicatif pays (ex. +1)"
   }
 }

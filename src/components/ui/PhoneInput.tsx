@@ -145,7 +145,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const { valid } = checkPhone(value, accept);
     const empty = !significant(text);
     const ownError = (touched || showError) && !valid && (!empty || !!props.required)
-      ? t(accept === 'mobile' ? 'phoneInput.invalidMobile' : 'phoneInput.invalidAny')
+      ? t(accept === 'mobile' ? 'phoneInput.invalidMobile' : accept === 'world' ? 'phoneInput.invalidWorld' : 'phoneInput.invalidAny')
       : null;
     const shownError = error || ownError;
 

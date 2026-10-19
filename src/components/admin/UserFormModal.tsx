@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { UserPlus, UserCog, Dices } from 'lucide-react';
 import Input from '../ui/Input';
+import PhoneInput from '../ui/PhoneInput';
+import { israeliPhoneKind, toE164 } from '../../utils/phone';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import ToggleSwitch from '../ui/ToggleSwitch';
@@ -72,8 +74,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const [phoneTried, setPhoneTried] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // An owner's phone is an Israeli mobile (LT-407: alerts and codes go to it); it may stay empty.
+    if (form.phone.trim() && israeliPhoneKind(form.phone) !== 'mobile') {
+      setPhoneTried(true);
+      return;
+    }
     setSaving(true);
     try {
       if (mode === 'create') {
@@ -81,7 +89,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
           name: form.name.trim(),
           email: form.email.trim(),
           password: form.password,
-          ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+          ...(form.phone.trim() ? { phone: toE164(form.phone) ?? form.phone.trim() } : {}),
           defaultLanguage: form.defaultLanguage,
           channelType: form.channelType,
           isVerified: form.isVerified,
@@ -92,7 +100,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
         const updated = await updateUserInfo(user!._id, {
           name: form.name.trim(),
           email: form.email.trim(),
-          phone: form.phone.trim(),
+          // Left out when empty: the API takes an owner's mobile or nothing (LT-407).
+          ...(form.phone.trim() ? { phone: toE164(form.phone) ?? form.phone.trim() } : {}),
           defaultLanguage: form.defaultLanguage,
           channelType: form.channelType,
         });
@@ -196,11 +205,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Input
+                <PhoneInput
                   label={t('admin.userForm.phone')}
-                  dir="ltr"
+                  accept="mobile"
                   value={form.phone}
-                  onChange={(e) => set('phone', e.target.value)}
+                  onChange={(phone) => set('phone', phone)}
+                  showError={phoneTried && !!form.phone.trim()}
                 />
                 <Select
                   label={t('admin.userForm.language')}

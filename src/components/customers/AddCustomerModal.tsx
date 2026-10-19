@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { UserPlus } from 'lucide-react';
 import Input from '../ui/Input';
+import PhoneInput from '../ui/PhoneInput';
+import { toE164 } from '../../utils/phone';
 import Button from '../ui/Button';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { createCustomer, isApiErrorCode } from '../../services/customersApi';
@@ -29,9 +31,14 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', blockNow: false, notes: '' });
+  // The phone field's own error shows once a save was tried (LT-407).
+  const [tried, setTried] = useState(false);
 
   useEffect(() => {
-    if (open) setForm({ name: '', phone: '', blockNow: false, notes: '' });
+    if (open) {
+      setForm({ name: '', phone: '', blockNow: false, notes: '' });
+      setTried(false);
+    }
   }, [open]);
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
@@ -39,11 +46,17 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // A valid number (LT-407): Israeli, or with its country code for a
+    // business abroad. Only Israeli mobiles get texts.
+    if (!toE164(form.phone)) {
+      setTried(true);
+      return;
+    }
     setSaving(true);
     try {
       const created = await createCustomer({
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        phone: toE164(form.phone) ?? form.phone.trim(),
         isBlocked: form.blockNow,
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       });
@@ -108,15 +121,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
                 required
                 maxLength={50}
               />
-              <Input
+              <PhoneInput
                 label={t('customers.add.phone')}
-                dir="ltr"
-                inputMode="tel"
+                accept="world"
                 value={form.phone}
-                onChange={(e) => set('phone', e.target.value)}
+                onChange={(phone) => set('phone', phone)}
+                showError={tried}
                 required
-                minLength={5}
-                maxLength={20}
                 helperText={t('customers.add.phoneHint')}
               />
               <div>

@@ -40,8 +40,12 @@ export const israeliPhoneKind = (phone: string | null | undefined): PhoneKind | 
   return String(parsed.nationalNumber).startsWith('5') ? 'mobile' : 'landline';
 };
 
-/** Which numbers a field takes: an Israeli mobile only, or any Israeli number (mobile or landline). */
-export type PhoneAccept = 'mobile' | 'any';
+/**
+ * Which numbers a field takes: an Israeli mobile only, any Israeli number
+ * (mobile or landline), or any valid number in the world (LT-407: a
+ * customer of a business abroad; written locally it is read as Israeli).
+ */
+export type PhoneAccept = 'mobile' | 'any' | 'world';
 
 export interface PhoneChangeInfo {
   valid: boolean;
@@ -51,6 +55,7 @@ export interface PhoneChangeInfo {
 /** Whether a value is a number a field taking `accept` takes, and its kind. */
 export const checkPhone = (value: string | null | undefined, accept: PhoneAccept): PhoneChangeInfo => {
   const kind = israeliPhoneKind(value);
+  if (accept === 'world') return { valid: !!toE164(value), kind };
   return { valid: !!kind && (accept === 'any' || kind === 'mobile'), kind };
 };
 

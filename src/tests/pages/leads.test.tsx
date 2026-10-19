@@ -189,12 +189,13 @@ describe('Leads page', () => {
       const dialog = await screen.findByRole('dialog', { name: 'leads.toCustomer.title' });
       const name = within(dialog).getByLabelText('customers.add.name');
       expect(name).toHaveValue('Dana Levi');
-      expect(within(dialog).getByLabelText('customers.add.phone')).toHaveValue('0584006014');
+      // The phone field shows it formatted, and sends it in E.164 (LT-407).
+      expect(within(dialog).getByLabelText('customers.add.phone')).toHaveValue('058-400-6014');
       fireEvent.change(name, { target: { value: 'Dana L' } });
       const calls = vi.mocked(fetchLeads).mock.calls.length;
       fireEvent.click(within(dialog).getByText('leads.toCustomer.addNew'));
 
-      await waitFor(() => expect(addLeadToCustomer).toHaveBeenCalledWith('l1', { name: 'Dana L', phone: '0584006014' }));
+      await waitFor(() => expect(addLeadToCustomer).toHaveBeenCalledWith('l1', { name: 'Dana L', phone: '+972584006014' }));
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'leads.toCustomer.title' })).toBeNull());
       // Read again: other leads from that number now have the customer too.
       expect(vi.mocked(fetchLeads).mock.calls.length).toBeGreaterThan(calls);

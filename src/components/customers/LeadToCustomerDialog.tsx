@@ -5,12 +5,13 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { UserPlus, Search, Check } from 'lucide-react';
 import Input from '../ui/Input';
+import PhoneInput from '../ui/PhoneInput';
 import Button from '../ui/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { addLeadToCustomer, type Lead } from '../../services/leadsApi';
 import { fetchCustomers, isApiErrorCode, type CustomerRow } from '../../services/customersApi';
-import { formatPhoneForDisplay } from '../../utils/phone';
+import { formatPhoneForDisplay, toE164 } from '../../utils/phone';
 import { cn } from '../../lib/utils';
 
 /**
@@ -38,6 +39,8 @@ const LeadToCustomerDialog: React.FC<LeadToCustomerDialogProps> = ({ lead, onClo
   const open = lead !== null;
   const [mode, setMode] = useState<Mode>('new');
   const [form, setForm] = useState({ name: '', phone: '', notes: '' });
+  // The phone field's own error shows once a save was tried (LT-407).
+  const [tried, setTried] = useState(false);
   const [existsId, setExistsId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<CustomerRow[] | null>(null);
@@ -49,6 +52,7 @@ const LeadToCustomerDialog: React.FC<LeadToCustomerDialogProps> = ({ lead, onClo
     if (!lead) return;
     setMode('new');
     setForm({ name: lead.name.slice(0, 50), phone: lead.phone, notes: '' });
+    setTried(false);
     setExistsId(null);
     setSearch('');
     setResults(null);
@@ -80,12 +84,18 @@ const LeadToCustomerDialog: React.FC<LeadToCustomerDialogProps> = ({ lead, onClo
   const addNew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lead) return;
+    // A valid number, Israeli or with its country code (LT-407).
+    if (!toE164(form.phone)) {
+      setTried(true);
+      return;
+    }
     setSaving(true);
     setExistsId(null);
     try {
       const customer = await addLeadToCustomer(lead._id, {
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        // In E.164, also when the lead's own number was kept as it came (LT-407).
+        phone: toE164(form.phone) ?? form.phone.trim(),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       });
       toast.success(t('leads.toCustomer.added'));
@@ -165,18 +175,16 @@ const LeadToCustomerDialog: React.FC<LeadToCustomerDialogProps> = ({ lead, onClo
                     required
                     maxLength={50}
                   />
-                  <Input
+                  <PhoneInput
                     label={t('customers.add.phone')}
-                    dir="ltr"
-                    inputMode="tel"
+                    accept="world"
                     value={form.phone}
-                    onChange={(e) => {
-                      setForm({ ...form, phone: e.target.value });
+                    onChange={(phone) => {
+                      setForm((prev) => ({ ...prev, phone }));
                       setExistsId(null);
                     }}
+                    showError={tried}
                     required
-                    minLength={5}
-                    maxLength={20}
                   />
                   {existsId && (
                     <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 p-3 text-sm text-amber-800 dark:text-amber-200 space-y-2" role="alert">
