@@ -15,4 +15,5 @@ ext {
     cordovaAndroidVersion = '14.0.1'
     // @capacitor-firebase/authentication: link the Google Sign-In SDK (LT-128 §3)
     rgcfaIncludeGoogle = true
+    firebaseCommonVersion = '22.0.1'
 }
