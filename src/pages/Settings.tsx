@@ -527,6 +527,12 @@ const Settings: React.FC = () => {
     await handleSave(token);
   };
 
+  // One copy action for the link row's button and its phone twin (LT-435).
+  const copySiteLink = () => {
+    navigator.clipboard.writeText(`https://${localWebConfig?.subDomain || ''}.lightor.app`);
+    toast.success(t('settings.linkCopied'));
+  };
+
   const handleChange = (section: string, field: string, value: any) => {
     if (!localWebConfig) return;
 
@@ -613,14 +619,16 @@ const Settings: React.FC = () => {
                 )
               }
             >
-              <div className="w-full">
+              {/* As wide as the name field on a computer, not the whole card
+                  (LT-435, Erel: "full width doesn't look good"). */}
+              <div className="w-full max-w-md">
                 <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[0.1875rem] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
                   <input
                     id="settings-subdomain"
                     type="text"
                     aria-labelledby="settings-link-title"
                     aria-describedby="settings-link-desc"
-                    className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-base sm:text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
+                    className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-base sm:text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
                     value={localWebConfig.subDomain || ''}
                     onChange={(e) => {
                       const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
@@ -661,22 +669,28 @@ const Settings: React.FC = () => {
                     }}
                     placeholder="your-site"
                   />
-                  <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[0.9375rem] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
+                  <span className="flex items-center px-2 sm:px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-sm sm:text-[0.9375rem] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
                     .lightor.app
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      const url = `https://${localWebConfig.subDomain || ''}.lightor.app`;
-                      navigator.clipboard.writeText(url);
-                      toast.success(t('settings.linkCopied'));
-                    }}
-                    className="flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
+                    onClick={copySiteLink}
+                    className="hidden sm:flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
                     title={t('settings.copyLink')}
                   >
                     <Copy className="w-4 h-4" />
                   </button>
                 </div>
+                {/* Phones (LT-435): the copy button leaves the row, and the
+                    box gets the room to show the whole link. */}
+                <button
+                  type="button"
+                  onClick={copySiteLink}
+                  className="sm:hidden mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary"
+                >
+                  <Copy className="w-4 h-4" />
+                  {t('settings.copyLink')}
+                </button>
                 <AnimatePresence mode="popLayout">
                   {subdomainError && (
                     <motion.p

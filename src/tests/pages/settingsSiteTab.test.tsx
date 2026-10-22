@@ -379,6 +379,32 @@ describe('Settings: where the site link lives', () => {
     expect(within(sections[1] as HTMLElement).getByText('settings.sections.business')).toBeInTheDocument();
   });
 
+  // LT-435: on a phone the copy button leaves the row so the box can show the
+  // whole link; on a computer the field is as wide as the name field. (jsdom
+  // has no layout: the widths were measured in the browser, these pin the rule.)
+  it('copies the full link from the row on a computer and from under it on a phone', () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    render(<Settings />);
+
+    const field = screen.getByLabelText('settings.yourLink');
+    const box = field.parentElement as HTMLElement;
+    expect(box.parentElement).toHaveClass('max-w-md');
+
+    const [inRow, underRow] = screen.getAllByRole('button', { name: 'settings.copyLink' });
+    expect(box).toContainElement(inRow);
+    expect(inRow).toHaveClass('hidden', 'sm:flex');
+    expect(box).not.toContainElement(underRow);
+    expect(underRow).toHaveClass('sm:hidden');
+    expect(underRow).toHaveTextContent('settings.copyLink');
+
+    fireEvent.click(underRow);
+    fireEvent.click(inRow);
+    expect(writeText).toHaveBeenNthCalledWith(1, 'https://biz.lightor.app');
+    expect(writeText).toHaveBeenNthCalledWith(2, 'https://biz.lightor.app');
+    vi.unstubAllGlobals();
+  });
+
   it('is gone from the Site tab, which opens with its language', () => {
     render(<Settings />);
     openSiteTab();
