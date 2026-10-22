@@ -586,6 +586,125 @@ const Settings: React.FC = () => {
       case 'general':
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            {/* The site's link comes first (LT-434, Erel): the thing an owner
+                shares most. Its title labels the field; the chip says whether
+                a new link is free. */}
+            <SettingsSection
+              icon={Link2}
+              title={t('settings.yourLink')}
+              titleId="settings-link-title"
+              description={t('settings.linkDescription')}
+              descriptionId="settings-link-desc"
+              action={
+                (isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
+                  <span className="text-xs flex items-center gap-1" role="status">
+                    {isCheckingSubdomain ? (
+                      <>
+                        <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
+                        <span className="text-gray-500 dark:text-gray-400">{t('settings.checking')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span className="text-green-600 dark:text-green-400 font-medium">{t('settings.available')}</span>
+                      </>
+                    )}
+                  </span>
+                )
+              }
+            >
+              <div className="w-full">
+                <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[0.1875rem] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
+                  <input
+                    id="settings-subdomain"
+                    type="text"
+                    aria-labelledby="settings-link-title"
+                    aria-describedby="settings-link-desc"
+                    className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-base sm:text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
+                    value={localWebConfig.subDomain || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
+                      handleChange('root', 'subDomain', value);
+
+                      if (debounceTimeoutRef.current) {
+                        clearTimeout(debounceTimeoutRef.current);
+                      }
+
+                      if (value.length < 2 || value.length > 20) {
+                        setSubdomainError(t('settings.linkRange'));
+                        setIsCheckingSubdomain(false);
+                      } else if (value.startsWith('-') || value.endsWith('-')) {
+                        // A DNS label, as the API now insists (LT-315):
+                        // say what is wrong, not "not available".
+                        setSubdomainError(t('settings.subdomainInvalid'));
+                        setIsCheckingSubdomain(false);
+                      } else if (value !== webConfig?.subDomain && value.length >= 2) {
+                        setIsCheckingSubdomain(true);
+                        setSubdomainError(null);
+
+                        debounceTimeoutRef.current = setTimeout(async () => {
+                          try {
+                            const isAvailable = await checkSubdomainAvailability(value);
+                            if (!isAvailable) {
+                              setSubdomainError(t('settings.subdomainNotAvailable'));
+                            }
+                          } catch (error) {
+                            setSubdomainError(t('settings.subdomainCheckError'));
+                          } finally {
+                            setIsCheckingSubdomain(false);
+                          }
+                        }, 500);
+                      } else {
+                        setIsCheckingSubdomain(false);
+                        setSubdomainError(null);
+                      }
+                    }}
+                    placeholder="your-site"
+                  />
+                  <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[0.9375rem] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
+                    .lightor.app
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = `https://${localWebConfig.subDomain || ''}.lightor.app`;
+                      navigator.clipboard.writeText(url);
+                      toast.success(t('settings.linkCopied'));
+                    }}
+                    className="flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
+                    title={t('settings.copyLink')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+                <AnimatePresence mode="popLayout">
+                  {subdomainError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mt-2 text-sm font-medium text-red-500 text-start"
+                    >
+                      {subdomainError}
+                    </motion.p>
+                  )}
+                  {localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-[0.8125rem] text-orange-500 dark:text-orange-400 text-start flex items-start gap-1.5 font-medium bg-orange-50 dark:bg-orange-900/10 p-2.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{t('settings.subdomainChangedWarning')}</span>
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </SettingsSection>
+
             {/* The name of a business, a brand, an event or a project (LT-370): "general", not "the business". */}
             <SettingsSection icon={Info} title={t('settings.sections.business')} description={t('settings.sections.businessDesc')}>
               <div className="max-w-md">
@@ -858,124 +977,10 @@ const Settings: React.FC = () => {
         ];
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <SettingsSection icon={Link2} title={t('settings.sections.siteBasics')} description={t('settings.sections.siteBasicsDesc')}>
+            <SettingsSection icon={Languages} title={t('settings.sections.siteBasics')} description={t('settings.sections.siteBasicsDesc')}>
               {/* One column (LT-334): each item its label and line above a
                   full-width control, a hairline between them. */}
               <div className="divide-y divide-gray-200/70 dark:divide-gray-700/50 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
-              <div className="flex flex-col gap-3">
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <label htmlFor="settings-subdomain" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.yourLink')}</label>
-                    {(isCheckingSubdomain || (localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (localWebConfig.subDomain?.length ?? 0) >= 2)) && (
-                      <span className="text-xs flex items-center gap-1" role="status">
-                        {isCheckingSubdomain ? (
-                          <>
-                            <RefreshCcw className="w-3.5 h-3.5 animate-spin text-primary" />
-                            <span className="text-gray-500 dark:text-gray-400">{t('settings.checking')}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4 text-green-500" />
-                            <span className="text-green-600 dark:text-green-400 font-medium">{t('settings.available')}</span>
-                          </>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-[0.8125rem] text-gray-500 dark:text-gray-400">
-                    {t('settings.linkDescription')}
-                  </p>
-                </div>
-
-                <div className="w-full">
-                  <div dir="ltr" className={`w-full flex items-stretch rounded-xl border ${subdomainError ? 'border-red-300 dark:border-red-500/50 focus-within:border-red-500 focus-within:ring-red-500/20' : 'border-gray-200 dark:border-gray-700/80 focus-within:border-primary focus-within:ring-primary/20'} focus-within:ring-[0.1875rem] transition-all duration-300 bg-white dark:bg-dark-surface shadow-sm overflow-hidden`}>
-                    <input
-                      id="settings-subdomain"
-                      type="text"
-                      className="flex-1 min-w-0 px-4 py-3 bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none text-start text-base sm:text-[0.9375rem] placeholder-gray-400 dark:placeholder-gray-500"
-                      value={localWebConfig.subDomain || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
-                        handleChange('root', 'subDomain', value);
-
-                        if (debounceTimeoutRef.current) {
-                          clearTimeout(debounceTimeoutRef.current);
-                        }
-
-                        if (value.length < 2 || value.length > 20) {
-                          setSubdomainError(t('settings.linkRange'));
-                          setIsCheckingSubdomain(false);
-                        } else if (value.startsWith('-') || value.endsWith('-')) {
-                          // A DNS label, as the API now insists (LT-315):
-                          // say what is wrong, not "not available".
-                          setSubdomainError(t('settings.subdomainInvalid'));
-                          setIsCheckingSubdomain(false);
-                        } else if (value !== webConfig?.subDomain && value.length >= 2) {
-                          setIsCheckingSubdomain(true);
-                          setSubdomainError(null);
-
-                          debounceTimeoutRef.current = setTimeout(async () => {
-                            try {
-                              const isAvailable = await checkSubdomainAvailability(value);
-                              if (!isAvailable) {
-                                setSubdomainError(t('settings.subdomainNotAvailable'));
-                              }
-                            } catch (error) {
-                              setSubdomainError(t('settings.subdomainCheckError'));
-                            } finally {
-                              setIsCheckingSubdomain(false);
-                            }
-                          }, 500);
-                        } else {
-                          setIsCheckingSubdomain(false);
-                          setSubdomainError(null);
-                        }
-                      }}
-                      placeholder="your-site"
-                    />
-                    <span className="flex items-center px-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 text-[0.9375rem] border-s border-gray-200 dark:border-gray-700/80 whitespace-nowrap">
-                      .lightor.app
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = `https://${localWebConfig.subDomain || ''}.lightor.app`;
-                        navigator.clipboard.writeText(url);
-                        toast.success(t('settings.linkCopied'));
-                      }}
-                      className="flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
-                      title={t('settings.copyLink')}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <AnimatePresence mode="popLayout">
-                    {subdomainError && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-2 text-sm font-medium text-red-500 text-start"
-                      >
-                        {subdomainError}
-                      </motion.p>
-                    )}
-                    {localWebConfig.subDomain !== webConfig?.subDomain && !subdomainError && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                        animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <p className="text-[0.8125rem] text-orange-500 dark:text-orange-400 text-start flex items-start gap-1.5 font-medium bg-orange-50 dark:bg-orange-900/10 p-2.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
-                          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                          <span>{t('settings.subdomainChangedWarning')}</span>
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
               <div>
                 <Select
                   label={

@@ -272,8 +272,8 @@
       "addressDesc": "Dónde te encuentran los clientes",
       "contactDesc": "Cómo te contactan los clientes - se muestra en tu sitio",
       "socialDesc": "Enlaces a tus páginas sociales, al pie de tu sitio",
-      "siteBasics": "Enlace e idioma",
-      "siteBasicsDesc": "La dirección de tu sitio y el idioma en que se muestra",
+      "siteBasics": "Idioma y dominio",
+      "siteBasicsDesc": "El idioma en que se muestra tu sitio, y una dirección propia",
       "bookingRules": "Reglas de reserva",
       "bookingRulesDesc": "Hasta cuándo se puede cancelar y con cuánta antelación reservar"
     },

@@ -349,8 +349,7 @@ describe('Settings: the site link (LT-315)', () => {
     const { checkSubdomainAvailability } = await import('../../services/webConfigApi');
     vi.mocked(checkSubdomainAvailability).mockClear();
     render(<Settings />);
-    // The link lives on the Site tab (LT-316).
-    openSiteTab();
+    // The link is the first thing on the General tab, the one that opens (LT-434).
     const input = await screen.findByPlaceholderText('your-site');
     fireEvent.change(input, { target: { value: 'my-biz-' } });
     expect((await screen.findAllByText('settings.subdomainInvalid')).length).toBeGreaterThan(0);
@@ -359,6 +358,34 @@ describe('Settings: the site link (LT-315)', () => {
     expect((await screen.findAllByText('settings.subdomainInvalid')).length).toBeGreaterThan(0);
     await new Promise((resolve) => setTimeout(resolve, 600));
     expect(checkSubdomainAvailability).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * LT-434 (Erel): "your link" is the first setting of the General tab, on the
+ * web and in both apps (one page). The section's title labels the field.
+ */
+describe('Settings: where the site link lives', () => {
+  it('is the first section of the General tab, labelled by its title', () => {
+    const { container } = render(<Settings />);
+
+    const sections = container.querySelectorAll('section');
+    expect(within(sections[0] as HTMLElement).getByRole('heading', { name: 'settings.yourLink' })).toBeInTheDocument();
+    const input = screen.getByLabelText('settings.yourLink');
+    expect(input).toHaveAttribute('placeholder', 'your-site');
+    expect(input).toHaveValue('biz');
+    expect(input).toHaveAccessibleDescription('settings.linkDescription');
+    // Before the business name.
+    expect(within(sections[1] as HTMLElement).getByText('settings.sections.business')).toBeInTheDocument();
+  });
+
+  it('is gone from the Site tab, which opens with its language', () => {
+    render(<Settings />);
+    openSiteTab();
+
+    expect(screen.queryByPlaceholderText('your-site')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'settings.sections.siteBasics' })).toBeInTheDocument();
+    expect(screen.getByText('settings.websiteLanguage')).toBeInTheDocument();
   });
 });
 

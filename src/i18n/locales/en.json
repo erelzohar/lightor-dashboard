@@ -272,8 +272,8 @@
       "addressDesc": "Where customers find you",
       "contactDesc": "How customers reach you - shown on your site",
       "socialDesc": "Links to your social pages, in your site's footer",
-      "siteBasics": "Link and language",
-      "siteBasicsDesc": "Your site's address and the language it shows in",
+      "siteBasics": "Language and domain",
+      "siteBasicsDesc": "The language your site shows in, and an address of your own",
       "bookingRules": "Booking rules",
       "bookingRulesDesc": "How late customers can cancel, and how far ahead they can book"
     },
