@@ -37,6 +37,9 @@ const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;
  */
 const LightyPage: React.FC = () => {
   const { t } = useTranslation();
+  // Every page names the window (LT-444): without this the tab kept the
+  // previous page's title. "Lighty" is a name, the same in every language.
+  document.title = 'Lighty';
   const navigate = useNavigate();
   const location = useLocation();
   const keyboardOpen = useVirtualKeyboard();

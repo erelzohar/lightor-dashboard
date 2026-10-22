@@ -119,11 +119,16 @@ const AdminLogs: React.FC = () => {
     {
       key: 'message',
       label: t('admin.logs.columns.message'),
+      // DataTable cells don't wrap (`whitespace-nowrap` on every td, and it
+      // outranks a column's `whitespace-normal` in the CSS). A one-line message
+      // made the table wider than a phone, and in RTL its start sat off screen
+      // (LT-444): the content wraps, and long tokens (hosts, JSON) may break
+      // anywhere.
       render: (row) => (
-        <div className="min-w-0">
-          <p className="text-sm text-gray-800 dark:text-gray-100 break-words">{row.message}</p>
+        <div className="min-w-0 whitespace-normal">
+          <p className="text-sm text-gray-800 dark:text-gray-100 [overflow-wrap:anywhere]">{row.message}</p>
           {Object.keys(row.meta).length > 0 && (
-            <p className="text-[11px] text-gray-400 truncate" dir="ltr">{JSON.stringify(row.meta)}</p>
+            <p className="text-[11px] text-gray-400 line-clamp-2 [overflow-wrap:anywhere]" dir="ltr">{JSON.stringify(row.meta)}</p>
           )}
         </div>
       ),
@@ -136,7 +141,9 @@ const AdminLogs: React.FC = () => {
         <div className="p-2.5 rounded-xl bg-primary/10">
           <ScrollText size={22} className="text-primary" />
         </div>
-        <div className="flex-1 min-w-0">
+        {/* At least 12rem, so on a phone the two buttons wrap under the title
+            instead of squeezing it to one word a line (LT-444). */}
+        <div className="flex-1 min-w-[12rem]">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">{t('admin.logs.title')}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {active

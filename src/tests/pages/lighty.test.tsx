@@ -51,6 +51,14 @@ describe("Lighty's page (LT-253)", () => {
     lightTick.mockClear();
   });
 
+  // LT-444: the tab kept the previous page's title.
+  it('names the window', async () => {
+    document.title = 'Leads';
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    expect(document.title).toBe('Lighty');
+  });
+
   it('greets with ready questions; one sends, and the answer comes with its link', async () => {
     vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'מחר יש לך **2 תורים**.\n- 10:00 דנה\n- 12:30 מיכל\n[ליומן](/appointments?date=2026-10-13)' });
     renderPage();

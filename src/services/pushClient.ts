@@ -53,8 +53,15 @@ export const registerForPush = async (): Promise<void> => {
   try {
     if (nativePlatform() === 'android') {
       // Android 8+: a channel must exist before the first notification shows.
-      // `importance: 4` = IMPORTANCE_HIGH (heads-up + sound).
-      await FirebaseMessaging.createChannel({ id: 'bookings', name: 'Bookings', importance: 4 });
+      // `importance: 4` = IMPORTANCE_HIGH (heads-up + sound). The name is what
+      // the owner sees in Android's notification settings, so it is in the
+      // app's language; creating it again on each launch renames an existing
+      // channel (LT-444, it was "Bookings" in every language).
+      await FirebaseMessaging.createChannel({
+        id: 'bookings',
+        name: i18n.t('account.notifications.pushChannel'),
+        importance: 4,
+      });
     }
     const { receive } = await FirebaseMessaging.requestPermissions();
     if (receive !== 'granted') return;

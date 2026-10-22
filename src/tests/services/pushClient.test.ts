@@ -17,7 +17,9 @@ vi.mock('../../lib/platform', () => ({
 vi.mock('@capacitor-firebase/messaging', () => ({ FirebaseMessaging: messaging }));
 vi.mock('@capacitor/app', () => ({ App: app }));
 vi.mock('../../services/devicesApi', () => devices);
-vi.mock('../../i18n/config', () => ({ default: { language: 'he' } }));
+vi.mock('../../i18n/config', () => ({
+  default: { language: 'he', t: (key: string) => (key === 'account.notifications.pushChannel' ? 'תורים ולידים' : key) },
+}));
 
 type Listener = (event: unknown) => void;
 const listeners: Record<string, Listener> = {};
@@ -85,11 +87,12 @@ describe('pushClient', () => {
       expect(messaging.createChannel).not.toHaveBeenCalled();
     });
 
-    it('creates the bookings channel on Android', async () => {
+    // LT-444: the name shows in Android's notification settings, in the app's language.
+    it('creates the bookings channel on Android, named in the app language', async () => {
       platform.nativePlatform.mockReturnValue('android');
       const push = await load();
       await push.registerForPush();
-      expect(messaging.createChannel).toHaveBeenCalledWith({ id: 'bookings', name: 'Bookings', importance: 4 });
+      expect(messaging.createChannel).toHaveBeenCalledWith({ id: 'bookings', name: 'תורים ולידים', importance: 4 });
       expect(devices.registerDevice).toHaveBeenCalledWith(expect.objectContaining({ platform: 'android' }));
     });
 

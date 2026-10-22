@@ -698,7 +698,8 @@
         "morningDigest": "Cada mañana, las citas del día",
         "newLead": "Alguien dejó sus datos en tu sitio"
       },
-      "pushNote": "Las notificaciones de la app siguen también estas opciones."
+      "pushNote": "Las notificaciones de la app siguen también estas opciones.",
+      "pushChannel": "Citas y consultas"
     },
     "phoneCode": {
       "sent": "Enviamos un código de 6 dígitos al {{phone}}",

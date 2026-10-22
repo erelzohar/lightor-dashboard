@@ -698,7 +698,8 @@
         "morningDigest": "Every morning, today's appointments",
         "newLead": "Someone left their details on your site"
       },
-      "pushNote": "App notifications follow these choices too."
+      "pushNote": "App notifications follow these choices too.",
+      "pushChannel": "Appointments and inquiries"
     },
     "phoneCode": {
       "sent": "We sent a 6-digit code to {{phone}}",

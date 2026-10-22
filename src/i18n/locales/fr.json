@@ -698,7 +698,8 @@
         "morningDigest": "Chaque matin, les rendez-vous du jour",
         "newLead": "Quelqu’un a laissé ses coordonnées sur votre site"
       },
-      "pushNote": "Les notifications de l’application suivent aussi ces choix."
+      "pushNote": "Les notifications de l’application suivent aussi ces choix.",
+      "pushChannel": "Rendez-vous et demandes"
     },
     "phoneCode": {
       "sent": "Nous avons envoyé un code à 6 chiffres au {{phone}}",

@@ -67,9 +67,13 @@ const siteImagesOf = (config: WebConfig): string[] => {
  * the signup wizard, framed (SiteBuilder, LT-388).
  */
 const SiteEditor: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector((state) => state.webConfig.data);
+  // Every page names the window (LT-444): without this the tab kept the
+  // previous page's title, here and in the builder for a business with no site.
+  document.title = t('siteEditor.title');
 
   useEffect(() => {
     if (auth.user?.webConfig_id && !webConfig) dispatch(fetchWebConfig(auth.user.webConfig_id));
