@@ -4,6 +4,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFirstTime } from "../../hooks/useFirstTime";
 
 export interface DonutChartSegment {
   value: number;
@@ -43,6 +44,8 @@ const DonutChart = React.forwardRef<HTMLDivElement, DonutChartProps>(
   ) => {
     const [hoveredSegment, setHoveredSegment] =
       React.useState<DonutChartSegment | null>(null);
+    // LT-438: the ring draws itself the first time a session, then shows as it is.
+    const drawIn = useFirstTime("donut");
 
     const internalTotalValue = React.useMemo(
       () =>
@@ -115,19 +118,19 @@ const DonutChart = React.forwardRef<HTMLDivElement, DonutChartProps>(
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={-strokeDashoffset}
                   strokeLinecap="round"
-                  initial={{ opacity: 0, strokeDashoffset: circumference }}
+                  initial={drawIn ? { opacity: 0, strokeDashoffset: circumference } : false}
                   animate={{
                     opacity: 1,
                     strokeDashoffset: -strokeDashoffset,
                   }}
-                  transition={{
+                  transition={drawIn ? {
                     opacity: { duration: 0.3, delay: index * animationDelayPerSegment },
                     strokeDashoffset: {
                       duration: animationDuration,
                       delay: index * animationDelayPerSegment,
                       ease: "easeOut",
                     },
-                  }}
+                  } : { duration: 0 }}
                   className={cn(
                     "origin-center transition-transform duration-200",
                     highlightOnHover && "cursor-pointer"

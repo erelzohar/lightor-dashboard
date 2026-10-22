@@ -16,13 +16,13 @@ import {
   SRGBColorSpace,
   Sprite,
   SpriteMaterial,
-  Texture,
   Vector3,
   WebGLRenderer,
 } from 'three';
 import type { AnimationAction, Material, MeshStandardMaterial, Object3D, SkinnedMesh } from 'three';
 import type { Mood } from '../../utils/momentum';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import lightyUrl from '../../assets/lighty.glb?url';
@@ -112,19 +112,33 @@ function drawSparks(ctx: CanvasRenderingContext2D, mood: Mood) {
   }
 }
 
-/**
- * The bolt, lit: an emissive mask made from his own texture's yellow, and a
- * sparks sprite on his body bone at the bolt's middle. Null if the model has
- * no texture to read (the rest of him works the same).
- */
-function wireBolt(model: Object3D) {
+/** What his bolt is on the model: measured once a session (LT-438), the slow part. */
+interface BoltMeasure {
+  /** The emissive mask, white where his texture is the bolt's yellow. */
+  mask: HTMLCanvasElement;
+  /** The bolt's middle in his body bone's space, and the sparks' size in it (null: no bolt pixels). */
+  at: Vector3 | null;
+  sx: number;
+  sy: number;
+}
+
+const firstSkinned = (model: Object3D): SkinnedMesh | null => {
   let mesh: SkinnedMesh | null = null;
   model.traverse((o) => { if ((o as SkinnedMesh).isSkinnedMesh && !mesh) mesh = o as SkinnedMesh; });
-  const skinned = mesh as SkinnedMesh | null;
+  return mesh;
+};
+
+/**
+ * Where the bolt is on him: a mask from his own texture's yellow, and the
+ * middle of the vertices it covers on his body bone. Null if the model has
+ * no texture to read (the rest of him works the same). Reads every vertex
+ * through its bones, so it runs once on the loaded model, not per Lighty.
+ */
+function measureBolt(model: Object3D): BoltMeasure | null {
+  const skinned = firstSkinned(model);
   const spine = model.getObjectByName('Spine01');
   if (!skinned || !spine) return null;
-  const mat = skinned.material as MeshStandardMaterial;
-  const map = mat.map;
+  const map = (skinned.material as MeshStandardMaterial).map;
   const img = map?.image as (CanvasImageSource & { width: number; height: number }) | undefined;
   if (!map || !img?.width) return null;
   const c = document.createElement('canvas');
@@ -143,16 +157,6 @@ function wireBolt(model: Object3D) {
     d[i + 3] = 255;
   }
   ctx.putImageData(px, 0, 0);
-  const mask = new CanvasTexture(c);
-  mask.flipY = map.flipY;
-  mask.colorSpace = SRGBColorSpace;
-  mask.channel = map.channel;
-  mask.wrapS = map.wrapS;
-  mask.wrapT = map.wrapT;
-  mat.emissiveMap = mask;
-  mat.emissive = new Color(BOLT_LIT);
-  mat.emissiveIntensity = 0;
-  mat.needsUpdate = true;
 
   // Where the bolt is on him: the middle of the vertices its yellow covers.
   const uv = skinned.geometry.getAttribute('uv');
@@ -177,7 +181,39 @@ function wireBolt(model: Object3D) {
     hi.max(p);
     n++;
   }
-  if (!n) return { mat, sprite: null, halo: null, sparks: null };
+  if (!n) return { mask: c, at: null, sx: 0, sy: 0 };
+  const centre = sum.divideScalar(n);
+  // Over his front, a little toward the viewer; big enough to reach past the bolt.
+  const at = spine.worldToLocal(centre.clone().add(new Vector3(0, 0, 0.08)));
+  const ws = new Vector3();
+  spine.getWorldScale(ws);
+  // The sparks' square: just past the bolt, so they stay on him (it was 1.7x and they flew off).
+  const size = Math.max(hi.x - lo.x, hi.y - lo.y) * 1.3;
+  return { mask: c, at, sx: size / ws.x, sy: size / ws.y };
+}
+
+/**
+ * The bolt, lit, on one Lighty: the emissive mask on his own material, and
+ * a sparks sprite and a glow on his body bone at the bolt's middle.
+ */
+function wireBolt(model: Object3D, measure: BoltMeasure | null) {
+  const skinned = firstSkinned(model);
+  const spine = model.getObjectByName('Spine01');
+  if (!measure || !skinned || !spine) return null;
+  const mat = skinned.material as MeshStandardMaterial;
+  const map = mat.map;
+  if (!map) return null;
+  const mask = new CanvasTexture(measure.mask);
+  mask.flipY = map.flipY;
+  mask.colorSpace = SRGBColorSpace;
+  mask.channel = map.channel;
+  mask.wrapS = map.wrapS;
+  mask.wrapT = map.wrapT;
+  mat.emissiveMap = mask;
+  mat.emissive = new Color(BOLT_LIT);
+  mat.emissiveIntensity = 0;
+  mat.needsUpdate = true;
+  if (!measure.at) return { mat, sprite: null, halo: null, sparks: null };
 
   const sc = document.createElement('canvas');
   sc.width = sc.height = 256;
@@ -187,16 +223,8 @@ function wireBolt(model: Object3D) {
   sparkTex.colorSpace = SRGBColorSpace;
   const sprite = new Sprite(new SpriteMaterial({ map: sparkTex, transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending }));
   sprite.visible = false;
-  const centre = sum.divideScalar(n);
-  // Over his front, a little toward the viewer; big enough to reach past the bolt.
-  const at = spine.worldToLocal(centre.clone().add(new Vector3(0, 0, 0.08)));
-  const ws = new Vector3();
-  spine.getWorldScale(ws);
-  const bolt = Math.max(hi.x - lo.x, hi.y - lo.y);
-  // The sparks' square: just past the bolt, so they stay on him (it was 1.7x and they flew off).
-  const size = bolt * 1.3;
-  sprite.position.copy(at);
-  sprite.scale.set(size / ws.x, size / ws.y, 1);
+  sprite.position.copy(measure.at);
+  sprite.scale.set(measure.sx, measure.sy, 1);
   // A soft glow behind the sparks, over the bolt.
   const hc = document.createElement('canvas');
   hc.width = hc.height = 64;
@@ -213,13 +241,58 @@ function wireBolt(model: Object3D) {
     haloTex.colorSpace = SRGBColorSpace;
     halo = new Sprite(new SpriteMaterial({ map: haloTex, transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending }));
     halo.visible = false;
-    halo.position.copy(at);
-    halo.scale.set((bolt * 1.3) / ws.x, (bolt * 1.3) / ws.y, 1);
+    halo.position.copy(measure.at);
+    halo.scale.set(measure.sx, measure.sy, 1);
     spine.add(halo);
   }
   spine.add(sprite);
   return { mat, sprite, halo, sparks: { ctx: sctx, tex: sparkTex } };
 }
+
+/**
+ * LT-438: the model is fetched, decoded and measured once a session; every
+ * Lighty (the floating one, his page's) dresses a copy of it. Coming back
+ * from his page or the editor rebuilt him from the file each time - a stall
+ * on every such page switch. A failed load is tried again next time.
+ */
+let source: Promise<{ gltf: GLTF; bolt: BoltMeasure | null }> | null = null;
+export const loadSource = () => {
+  if (!source) {
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    source = loader.loadAsync(lightyUrl).then((gltf) => {
+      let bolt: BoltMeasure | null = null;
+      try {
+        bolt = measureBolt(gltf.scene);
+      } catch {
+        bolt = null; // no glow, the rest of him is the same
+      }
+      // three measures a skinned mesh through every vertex's bones on its
+      // first draw; measured here once, every copy takes the box with it.
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((o) => {
+        const mesh = o as SkinnedMesh;
+        if (!mesh.isSkinnedMesh) return;
+        mesh.skeleton.update();
+        mesh.computeBoundingBox();
+        mesh.computeBoundingSphere();
+      });
+      return { gltf, bolt };
+    });
+    source.catch(() => { source = null; });
+  }
+  return source;
+};
+
+/** A Lighty of his own: shared geometry and textures, his own skeleton and materials (his bolt glows on its own). */
+const copyOf = (model: Object3D): Object3D => {
+  const copy = cloneSkinned(model);
+  copy.traverse((o) => {
+    if (!(o instanceof Mesh)) return;
+    o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
+  });
+  return copy;
+};
 
 interface Lighty3DProps {
   /** LT-385: how the week is going (0 calm .. 3 thrilled) - his bolt and his joy. */
@@ -417,17 +490,16 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady, 
     });
     io.observe(host);
 
-    const loader = new GLTFLoader();
-    loader.setMeshoptDecoder(MeshoptDecoder);
-    loader.load(lightyUrl, (gltf) => {
+    void loadSource().then(({ gltf, bolt: measured }) => {
       if (disposed) return;
-      rig.add(gltf.scene);
-      mixer = new AnimationMixer(gltf.scene);
+      const model = copyOf(gltf.scene);
+      rig.add(model);
+      mixer = new AnimationMixer(model);
       for (const clip of gltf.animations) {
         if (CLIPS.includes(clip.name as Clip)) actions[clip.name as Clip] = mixer.clipAction(clip);
       }
       try {
-        bolt = wireBolt(gltf.scene);
+        bolt = wireBolt(model, measured);
       } catch {
         bolt = null; // no glow, the rest of him is the same
       }
@@ -474,14 +546,13 @@ export default function Lighty3D({ thinking, cheerKey, className = '', onReady, 
         sp.material.map?.dispose();
         sp.material.dispose();
       }
+      // His materials and the bolt's mask are his own; the geometry and the
+      // texture are the session's model (LT-438), freed with this renderer below.
+      bolt?.mat.emissiveMap?.dispose();
       scene.traverse((obj) => {
         if (!(obj instanceof Mesh)) return;
-        obj.geometry.dispose();
         const mats: Material[] = Array.isArray(obj.material) ? obj.material : [obj.material];
-        for (const m of mats) {
-          for (const value of Object.values(m)) if (value instanceof Texture) value.dispose();
-          m.dispose();
-        }
+        for (const m of mats) m.dispose();
       });
       envMap.dispose();
       renderer.dispose();

@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useMemo, useRef } from 'react';
+import { useFirstTime } from '../../hooks/useFirstTime';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 
 /**
@@ -70,6 +71,8 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
   onClick,
 }) => {
   const lineRef = useRef<SVGPathElement>(null);
+  // LT-438: drawn in the first time a session, already drawn after that.
+  const drawIn = useFirstTime('sparkline');
   const areaRef = useRef<SVGPathElement>(null);
   const gradientId = `stats-area-${useId().replace(/:/g, '')}`;
 
@@ -79,6 +82,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
 
   // Draw the line in, then fade the area under it, whenever the data changes.
   useEffect(() => {
+    if (!drawIn) return;
     const line = lineRef.current;
     const area = areaRef.current;
     if (!line || !area || typeof line.getTotalLength !== 'function') return;
@@ -99,7 +103,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
     line.style.strokeDashoffset = '0';
     area.style.transition = 'opacity 0.8s ease-in-out 0.2s';
     area.style.opacity = '1';
-  }, [linePath]);
+  }, [linePath, drawIn]);
 
   // Green up, orange down — the widget's own pair; neutral violet with nothing to compare.
   const stroke = change === null ? '#8b5cf6' : rising ? '#22c55e' : '#f97316';

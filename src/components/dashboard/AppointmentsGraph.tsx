@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { useFirstTime } from '../../hooks/useFirstTime';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, subYears, startOfYear, endOfYear, addMonths, addYears, addWeeks, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
@@ -30,6 +31,8 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
   onTimeRangeChange,
   onCurrentDateChange,
 }) => {
+  // LT-438: the bars grow in the first time a session, then show as they are.
+  const growIn = useFirstTime('appointmentsGraph');
   const { language, direction, darkMode } = useTheme();
   const { t } = useTranslation();
   const currency = useCurrencySymbol();
@@ -343,9 +346,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
                 }}
                 wrapperStyle={{ paddingTop: '8px', fontSize: '1rem' }}
               />
-              <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
-              <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} />
-              <Bar dataKey="cancelled" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} />
+              <Bar dataKey="scheduled" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} isAnimationActive={growIn} />
+              <Bar dataKey="completed" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} maxBarSize={50} isAnimationActive={growIn} />
+              <Bar dataKey="cancelled" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={50} isAnimationActive={growIn} />
             </BarChart>
           )}
         </div>
