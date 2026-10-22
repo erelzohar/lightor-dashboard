@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { motion } from 'framer-motion';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import BottomTabBar, { HOLD_CLICK_WAIT_MS } from '../../components/layout/BottomTabBar';
 
@@ -222,5 +223,19 @@ describe('BottomTabBar', () => {
       act(() => { vi.advanceTimersByTime(HOLD_CLICK_WAIT_MS * 2); });
       expect(clicks).not.toHaveBeenCalled();
     });
+  });
+
+  // LT-441: "More"'s pages are a sheet sliding from behind the row; the bar
+  // stays raised and opaque until it is gone, then goes back to frosted glass.
+  it('keeps the bar raised while its sheet slides away, then drops it', async () => {
+    const Menu = <motion.div key="m" data-testid="sheet" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.05 } }} />;
+    const view = render(<MemoryRouter><BottomTabBar onMore={vi.fn()} menuOpen menu={Menu} /></MemoryRouter>);
+    const bar = screen.getByTestId('bottom-tab-bar');
+    expect(bar.className).toContain('z-[56]');
+    view.rerender(<MemoryRouter><BottomTabBar onMore={vi.fn()} menuOpen={false} menu={Menu} /></MemoryRouter>);
+    expect(bar.className).toContain('z-[56]'); // the sheet is still on its way out
+    await waitFor(() => expect(screen.queryByTestId('sheet')).toBeNull());
+    await waitFor(() => expect(bar.className).toContain('z-40'));
+    expect(bar.className).toContain('backdrop-blur-xl');
   });
 });

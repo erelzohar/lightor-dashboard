@@ -51,16 +51,25 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
   }, []);
 
   return (
+    // LT-441: a sheet that slides up from behind the bar's row, moved by
+    // transform alone. It grew the bar by animating its height (LT-378):
+    // a layout and a repaint of the whole bar and its shadow on every frame,
+    // which stutters on phones. The bar keeps its size now; the box above it
+    // clips the sheet at the bar's top band, where the row is drawn over it.
+    <div className="absolute -inset-x-3 bottom-[calc(100%-1.75rem)] px-3 pt-8 overflow-hidden pointer-events-none" data-testid="phone-menu-clip">
     <motion.div
       id="phone-menu"
       role="region"
       aria-label={t('sidebar.menu')}
       data-testid="phone-menu"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ height: { type: 'spring', stiffness: 420, damping: 38 }, opacity: { duration: 0.15 } }}
-      className="overflow-hidden"
+      // A whole transform string, not \`y\`: framer hands it to the browser's
+      // own animation (WAAPI), so it runs off the main thread even while a
+      // page is being built under it.
+      initial={{ transform: 'translateY(100%)' }}
+      animate={{ transform: 'translateY(0%)' }}
+      exit={{ transform: 'translateY(100%)' }}
+      transition={{ type: 'spring', stiffness: 420, damping: 38 }}
+      className="pointer-events-auto -mx-px px-1 pt-1 rounded-t-[1.75rem] border border-b-0 border-white/70 dark:border-white/10 bg-white dark:bg-slate-900 shadow-[0_-10px_30px_-14px_rgba(76,29,149,0.3)] will-change-transform"
     >
       {/* Capped under the status bar: an operator's admin pages scroll here. */}
       <div
@@ -153,6 +162,9 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
       </div>
       {/* Where the bar's own row starts. */}
       <div className="mx-2 mt-1 mb-1 border-t border-gray-100 dark:border-white/10" aria-hidden="true" />
+      {/* The part behind the bar's top band (its corner radius). */}
+      <div className="h-7" aria-hidden="true" />
     </motion.div>
+    </div>
   );
 };

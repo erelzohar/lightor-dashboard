@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, X } from 'lucide-react';
@@ -75,6 +75,12 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   // LT-419: a touch on a link held a little longer than a tap gets no click
   // from iOS (held longer still, Safari's link preview took it, which
   // `-webkit-touch-callout: none` turns off).
+  // LT-441: the bar stays raised and opaque until the menu's sheet has slid
+  // away - dropped at once, the sheet slid down under the floating Lighty
+  // and the fading dim, and white over the frosted bar.
+  const [sheetOut, setSheetOut] = useState(menuOpen);
+  if (menuOpen && !sheetOut) setSheetOut(true);
+  const raised = menuOpen || sheetOut;
   const press = useRef<{ item: HTMLAnchorElement; x: number; y: number; clicked: boolean } | null>(null);
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
   // Customers, and on a leads site Services, are under "More".
@@ -101,7 +107,11 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
 
   // While typing the bar gets out of the way; an editing page keeps its
   // panel (the field being typed in is in it) and only loses the row.
-  if (keyboardOpen && !editing) return null;
+  if (keyboardOpen && !editing) {
+    // Gone with its sheet mid-slide: nothing is left to wait for.
+    if (sheetOut && !menuOpen) setSheetOut(false);
+    return null;
+  }
 
   const itemClasses = TAB_ITEM;
   const idleClasses = TAB_IDLE;
@@ -178,8 +188,9 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       // opacity modifier on them emits nothing.
       // LT-419: no link preview on a held tab ([-webkit-touch-callout:none]).
       // LT-378: "More" grows this same bar upwards with the pages it lacks,
-      // so open it is opaque, with no backdrop blur on the large layer it
-      // becomes (WebKit stutters, LT-328).
+      // so open it is opaque, with no backdrop blur (WebKit stutters,
+      // LT-328). LT-441: the pages are a sheet sliding up from behind the
+      // row; the bar itself keeps its size.
       onClick={tapNearestItem}
       onClickCapture={onClickCapture}
       onPointerDown={onPointerDown}
@@ -188,15 +199,16 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
       className={cn(
         'md:hidden fixed inset-x-3 bottom-[calc(0.5rem+env(safe-area-inset-bottom)/2)] flex flex-col p-1 rounded-[1.75rem] border border-white/70 dark:border-white/10 shadow-[0_10px_30px_-8px_rgba(76,29,149,0.35)]',
         '[-webkit-touch-callout:none]',
-        menuOpen ? 'z-[56] bg-white dark:bg-slate-900' : editing ? 'z-40 bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
+        raised ? 'z-[56] bg-white dark:bg-slate-900' : editing ? 'z-40 bg-white dark:bg-slate-900' : 'z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
       )}
     >
-      <AnimatePresence initial={false}>{menuOpen && menu}</AnimatePresence>
+      <AnimatePresence initial={false} onExitComplete={() => setSheetOut(false)}>{menuOpen && menu}</AnimatePresence>
       {/* The editing page's panel (LT-380); out of sight, not out of the
           tree, while "More" is open, so what is typed in it stays. */}
       {editing && <div ref={panelRef} hidden={menuOpen} data-testid="phone-bar-panel" />}
       {/* No gaps between the items: a tap between two lands on nothing (LT-414). */}
-      <div data-tab-row className={cn('flex items-stretch', editing && keyboardOpen && 'hidden')}>
+      {/* Over the menu's sheet where it tucks behind the bar (LT-441). */}
+      <div data-tab-row className={cn('relative z-10 flex items-stretch', editing && keyboardOpen && 'hidden')}>
       {editing && <div ref={rowRef} className="contents" data-testid="phone-bar-row" />}
       {!editing && tabs.map(({ path, Icon, label, dot }: { path: string; Icon: typeof Inbox; label: string; dot?: boolean }) => (
         <NavLink
