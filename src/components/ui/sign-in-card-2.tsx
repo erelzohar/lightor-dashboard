@@ -36,8 +36,8 @@ interface SignInCardProps {
 }
 
 export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLogin, isLoading = false, error, hideRememberMe = false, hideSocial = false }: SignInCardProps) {
-  // LT-375: the beams that travel round the card stand still when the device
-  // asks for less motion (iOS Reduce Motion in the app).
+  // The beams go round the card once when it opens (LT-433) and not at all
+  // when the device asks for less motion (LT-375, iOS Reduce Motion).
   const reduceMotion = useReducedMotion();
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
@@ -63,46 +63,41 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
     >
       <div className="relative">
         <div className="relative group">
-          {/* Card glow animation */}
-          <motion.div
-            className="absolute -inset-[1px] rounded-2xl opacity-0 transition-opacity duration-700"
-            animate={{
-              boxShadow: [
-                '0 0 10px 2px rgba(255,255,255,0.03)',
-                '0 0 15px 5px rgba(255,255,255,0.05)',
-                '0 0 10px 2px rgba(255,255,255,0.03)',
-              ],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
+          {/* Card glow. Nothing on this card moves forever (LT-433): it sits
+              behind the glass card's backdrop blur, so any endless motion
+              redrew the blur every frame (~45% CPU idle in the Android
+              emulator, and an ANR on a 2 GB one). */}
+          <div
+            className="absolute -inset-[1px] rounded-2xl opacity-30"
+            style={{ boxShadow: '0 0 15px 5px rgba(255,255,255,0.05)' }}
           />
 
-          {/* Traveling light beams */}
+          {/* Light beams: one lap round the card as it opens, then still. */}
           {!reduceMotion && <div className="absolute -inset-[1px] rounded-2xl overflow-hidden" aria-hidden="true">
             <motion.div
               className="absolute top-0 left-0 h-[3px] w-[50%] bg-gradient-to-r from-transparent via-white to-transparent opacity-70"
               animate={{ left: ['-50%', '100%'], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ left: { duration: 2.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1 }, opacity: { duration: 1.2, repeat: Infinity, repeatType: 'mirror' } }}
+              transition={{ duration: 2.5, ease: 'easeInOut' }}
             />
             <motion.div
               className="absolute top-0 right-0 h-[50%] w-[3px] bg-gradient-to-b from-transparent via-white to-transparent opacity-70"
               animate={{ top: ['-50%', '100%'], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ top: { duration: 2.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1, delay: 0.6 }, opacity: { duration: 1.2, repeat: Infinity, repeatType: 'mirror', delay: 0.6 } }}
+              transition={{ duration: 2.5, ease: 'easeInOut', delay: 0.6 }}
             />
             <motion.div
               className="absolute bottom-0 right-0 h-[3px] w-[50%] bg-gradient-to-r from-transparent via-white to-transparent opacity-70"
               animate={{ right: ['-50%', '100%'], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ right: { duration: 2.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1, delay: 1.2 }, opacity: { duration: 1.2, repeat: Infinity, repeatType: 'mirror', delay: 1.2 } }}
+              transition={{ duration: 2.5, ease: 'easeInOut', delay: 1.2 }}
             />
             <motion.div
               className="absolute bottom-0 left-0 h-[50%] w-[3px] bg-gradient-to-b from-transparent via-white to-transparent opacity-70"
               animate={{ bottom: ['-50%', '100%'], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ bottom: { duration: 2.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1, delay: 1.8 }, opacity: { duration: 1.2, repeat: Infinity, repeatType: 'mirror', delay: 1.8 } }}
+              transition={{ duration: 2.5, ease: 'easeInOut', delay: 1.8 }}
             />
-            <motion.div className="absolute top-0 left-0 h-[5px] w-[5px] rounded-full bg-white/40 blur-[1px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2, repeat: Infinity, repeatType: 'mirror' }} />
-            <motion.div className="absolute top-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.4, repeat: Infinity, repeatType: 'mirror', delay: 0.5 }} />
-            <motion.div className="absolute bottom-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.2, repeat: Infinity, repeatType: 'mirror', delay: 1 }} />
-            <motion.div className="absolute bottom-0 left-0 h-[5px] w-[5px] rounded-full bg-white/40 blur-[1px]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 2.3, repeat: Infinity, repeatType: 'mirror', delay: 1.5 }} />
+            <div className="absolute top-0 left-0 h-[5px] w-[5px] rounded-full bg-white/40 blur-[1px] opacity-30" />
+            <div className="absolute top-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px] opacity-30" />
+            <div className="absolute bottom-0 right-0 h-[8px] w-[8px] rounded-full bg-white/60 blur-[2px] opacity-30" />
+            <div className="absolute bottom-0 left-0 h-[5px] w-[5px] rounded-full bg-white/40 blur-[1px] opacity-30" />
           </div>}
 
           {/* Card border glow */}
@@ -270,12 +265,15 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
               >
                 <div className="absolute inset-0 bg-white/10 rounded-lg blur-lg opacity-0 group-hover/button:opacity-70 transition-opacity duration-300" />
                 <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -z-10"
-                    animate={{ x: ['-100%', '100%'] }}
-                    transition={{ duration: 1.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1 }}
-                    style={{ opacity: isLoading ? 1 : 0, transition: 'opacity 0.3s ease' }}
-                  />
+                  {/* Shimmer only while signing in (LT-433): hidden, it still
+                      ran forever. */}
+                  {isLoading && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -z-10"
+                      animate={{ x: ['-100%', '100%'] }}
+                      transition={{ duration: 1.5, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1 }}
+                    />
+                  )}
                   <AnimatePresence mode="wait">
                     {isLoading ? (
                       <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center">
@@ -300,13 +298,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
               {/* Divider */}
               <div className="relative mt-2 mb-5 flex items-center">
                 <div className="flex-grow border-t border-white/5"></div>
-                <motion.span
-                  className="mx-3 text-xs text-white/40"
-                  animate={{ opacity: [0.7, 0.9, 0.7] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                >
+                <span className="mx-3 text-xs text-white/40 opacity-80">
                   {t('login.or')}
-                </motion.span>
+                </span>
                 <div className="flex-grow border-t border-white/5"></div>
               </div>
 
