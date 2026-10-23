@@ -4,7 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "app.lightor.dashboard",
-      "sha256_cert_fingerprints": ["REPLACE_WITH_RELEASE_SHA256"]
+      "sha256_cert_fingerprints": [
+        "DB:BD:E3:5A:59:14:E4:79:2D:BF:5D:19:E5:68:49:D1:F6:3A:2B:FE:AE:7B:AB:2C:FF:8B:E2:9E:AB:E0:EF:A9",
+        "E1:ED:DF:E1:33:07:ED:72:D6:F4:BA:E8:51:01:2F:C7:5E:61:2F:59:40:E5:66:5C:4B:16:67:98:1D:7F:74:BF"
+      ]
     }
   }
 ]
