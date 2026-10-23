@@ -25,7 +25,7 @@ const COPY = {
 
 type Lang = keyof typeof COPY;
 const RTL: ReadonlySet<Lang> = new Set<Lang>(['he', 'ar']);
-const SUPPORT_EMAIL = 'lightorapp@gmail.com';
+const SUPPORT_EMAIL = 'support@lightor.app';
 
 const pickLanguage = (): Lang => {
   const raw = (document.documentElement.lang || navigator.language || 'en').slice(0, 2).toLowerCase();

@@ -12,6 +12,7 @@ import {
   SiteReportRow,
 } from '../../services/adminApi';
 import { siteUrlOf } from '../../utils/siteUrl';
+import { resolveImage } from '../../utils/images';
 
 type Filter = 'new' | 'handled' | '';
 
@@ -102,6 +103,18 @@ const AdminReports: React.FC = () => {
       key: 'site',
       label: t('admin.reports.columns.site'),
       render: (row) => {
+        // LT-448: an owner's report is about the dashboard, at a dashboard page.
+        if (row.source === 'owner') {
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="inline-flex w-fit px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-[11px] font-semibold">
+                {t('admin.reports.fromOwner')}
+              </span>
+              <span dir="ltr" className="text-xs text-gray-500">{row.pageUrl || '/'}</span>
+              {row.subDomain && <span dir="ltr" className="text-xs text-gray-400">{row.subDomain}</span>}
+            </div>
+          );
+        }
         const href = reportLink(row);
         return href ? (
           <a
@@ -129,6 +142,17 @@ const AdminReports: React.FC = () => {
             <p className="mt-1 text-xs text-gray-500">
               {t('admin.reports.contact')}: <span dir="ltr">{row.contact}</span>
             </p>
+          )}
+          {row.email && (
+            <p className="mt-1 text-xs text-gray-500">
+              {t('admin.reports.answer')}: <a href={`mailto:${row.email}`} dir="ltr" className="text-primary hover:underline">{row.email}</a>
+            </p>
+          )}
+          {row.imageName && (
+            <a href={resolveImage(row.imageName)} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+              {t('admin.reports.screenshot')}
+              <ExternalLink size={11} />
+            </a>
           )}
         </div>
       ),

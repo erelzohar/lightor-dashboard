@@ -445,7 +445,14 @@ export const clearLogFile = async (
 /** LT-302: a visitor's report of a problem with a business's site, sent through the site's Lighty. */
 export interface SiteReportRow {
   _id: string;
-  subDomain: string;
+  /** LT-448: an owner's report from the dashboard, or a visitor's from the site (older rows: none, a visitor). */
+  source?: 'visitor' | 'owner';
+  /** An owner with no site yet has none. */
+  subDomain?: string;
+  /** An owner's report: their email, to answer them. */
+  email?: string;
+  /** An owner's report: the screenshot's image name. */
+  imageName?: string;
   message: string;
   contact?: string;
   pageUrl?: string;

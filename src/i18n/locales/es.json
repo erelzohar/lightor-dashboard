@@ -1287,6 +1287,9 @@
       }
     },
     "reports": {
+      "fromOwner": "Dueño, desde el panel",
+      "answer": "Responder a",
+      "screenshot": "La captura",
       "title": "Informes de sitios",
       "subtitle": "Problemas que los visitantes informaron mediante Lighty en los sitios de los negocios: nos llegan solo a nosotros, nunca al dueño",
       "open": "{{count}} abiertos",
@@ -1937,5 +1940,23 @@
     "mismatch": "El código se confirmó para otro número. Vuelve a guardar para recibir un código nuevo.",
     "businessCodeHint": "Para mostrar en tu sitio un móvil que no es el tuyo, confírmalo con un código.",
     "invalidWorld": "Introduce un número válido: israelí, o con el prefijo del país (p. ej. +1)"
+  },
+  "support": {
+    "report": {
+      "open": "Informar un problema",
+      "title": "Informar un problema",
+      "intro": "¿Algo no funciona como debería? Cuéntanos y lo revisaremos.",
+      "label": "¿Qué pasó?",
+      "placeholder": "Qué intentabas hacer y qué pasó en su lugar",
+      "addShot": "Adjuntar una captura de pantalla (opcional)",
+      "removeShot": "Quitar la captura",
+      "note": "Con el informe se envían la página en la que estás y tu navegador, y te responderemos por correo.",
+      "orEmail": "También puedes escribirnos:",
+      "send": "Enviar",
+      "sent": "¡Gracias! Tu informe se envió y te responderemos por correo.",
+      "tooMany": "Hoy enviaste muchos informes. También puedes escribir a support@lightor.app",
+      "failed": "No pudimos enviarlo. Inténtalo de nuevo o escribe a {{email}}",
+      "close": "Cerrar"
+    }
   }
 }

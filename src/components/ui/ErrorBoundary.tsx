@@ -67,14 +67,14 @@ class ErrorBoundaryClass extends Component<
         description: 'If the problem persists, please contact support at',
         stackTrace: 'Stack trace',
         reload: 'Reload',
-        supportEmail: 'lightorapp@gmail.com'
+        supportEmail: 'support@lightor.app'
       },
       he: {
         title: 'משהו השתבש...',
         description: 'אם הבעיה נמשכת, אנא צור קשר עם התמיכה בכתובת',
         stackTrace: 'מעקב שגיאה',
         reload: 'טעינה מחדש',
-        supportEmail: 'lightorapp@gmail.com'
+        supportEmail: 'support@lightor.app'
       }
     };
 

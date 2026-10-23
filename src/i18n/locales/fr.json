@@ -1287,6 +1287,9 @@
       }
     },
     "reports": {
+      "fromOwner": "Propriétaire, depuis le tableau de bord",
+      "answer": "Répondre à",
+      "screenshot": "La capture",
       "title": "Signalements des sites",
       "subtitle": "Problèmes signalés par les visiteurs via Lighty sur les sites des entreprises - ils n'arrivent qu'à nous, jamais au propriétaire",
       "open": "{{count}} ouverts",
@@ -1937,5 +1940,23 @@
     "mismatch": "Le code a été confirmé pour un autre numéro. Enregistrez à nouveau pour recevoir un nouveau code.",
     "businessCodeHint": "Pour afficher sur votre site un mobile qui n'est pas le vôtre, confirmez-le avec un code.",
     "invalidWorld": "Saisissez un numéro valide : israélien, ou avec son indicatif pays (ex. +1)"
+  },
+  "support": {
+    "report": {
+      "open": "Signaler un problème",
+      "title": "Signaler un problème",
+      "intro": "Quelque chose ne fonctionne pas comme prévu ? Dites-le-nous et nous regarderons.",
+      "label": "Que s’est-il passé ?",
+      "placeholder": "Ce que vous essayiez de faire, et ce qui s’est passé à la place",
+      "addShot": "Joindre une capture d’écran (facultatif)",
+      "removeShot": "Retirer la capture",
+      "note": "La page où vous êtes et votre navigateur sont envoyés avec le signalement, et nous vous répondrons par e-mail.",
+      "orEmail": "Vous pouvez aussi nous écrire :",
+      "send": "Envoyer",
+      "sent": "Merci ! Votre signalement a été envoyé, nous vous répondrons par e-mail.",
+      "tooMany": "Vous avez envoyé beaucoup de signalements aujourd’hui. Vous pouvez aussi écrire à support@lightor.app",
+      "failed": "Impossible de l’envoyer. Réessayez, ou écrivez à {{email}}",
+      "close": "Fermer"
+    }
   }
 }

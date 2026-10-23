@@ -101,5 +101,15 @@ describe('Admin site reports', () => {
     await waitFor(() => expect(fetchSiteReports).toHaveBeenLastCalledWith({ page: 1, limit: 20, status: 'new' }));
     expect(await screen.findByText('first page')).toBeTruthy();
   });
-});
 
+  // LT-448: an owner's report from the dashboard.
+  it("shows an owner's report as from the dashboard, with the email to answer and the screenshot", async () => {
+    vi.mocked(fetchSiteReports).mockResolvedValue(page([report({ source: 'owner', subDomain: undefined, contact: undefined, pageUrl: '/appointments', email: 'owner@example.com', imageName: 'shot.webp', message: 'The calendar is blank' })], 1));
+    render(<AdminReports />);
+    expect(await screen.findByText('The calendar is blank')).toBeTruthy();
+    expect(screen.getByText('admin.reports.fromOwner')).toBeTruthy();
+    expect(screen.getByText('/appointments')).toBeTruthy();
+    expect(screen.getByText('owner@example.com').closest('a')?.getAttribute('href')).toBe('mailto:owner@example.com');
+    expect(screen.getByText('admin.reports.screenshot').closest('a')?.getAttribute('href')).toMatch(/\/api\/images\/shot\.webp$/);
+  });
+});

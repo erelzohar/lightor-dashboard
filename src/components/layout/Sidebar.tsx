@@ -20,6 +20,7 @@ import {
   ScrollText,
   Inbox,
   Flag,
+  LifeBuoy,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
@@ -35,6 +36,7 @@ import { isLeadsSite } from '../../utils/siteMode';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
 import { navTile } from './navTiles';
+import { openReportProblem } from '../support/ReportProblem';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -162,6 +164,23 @@ const SidebarFooter: React.FC = () => {
               <bdi>{auth.user.email}</bdi>
             </span>
           )}
+        </motion.span>
+      </button>
+
+      {/* LT-448: tell Lightor about a problem. */}
+      <button
+        onClick={openReportProblem}
+        aria-label={t('support.report.open')}
+        className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl text-gray-500 hover:bg-white hover:text-violet-600 dark:hover:bg-gray-700/50 transition-colors"
+      >
+        <span className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+          <LifeBuoy className={iconClasses} />
+        </span>
+        <motion.span
+          animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
+          className="text-sm whitespace-pre"
+        >
+          {t('support.report.open')}
         </motion.span>
       </button>
 

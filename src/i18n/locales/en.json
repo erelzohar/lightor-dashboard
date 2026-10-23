@@ -1287,6 +1287,9 @@
       }
     },
     "reports": {
+      "fromOwner": "Owner, from the dashboard",
+      "answer": "Answer at",
+      "screenshot": "The screenshot",
       "title": "Site reports",
       "subtitle": "Problems visitors reported through Lighty on businesses' sites - they reach us only, never the owner",
       "open": "{{count}} open",
@@ -1937,5 +1940,23 @@
     "mismatch": "The code was confirmed for another number. Save again for a new code.",
     "businessCodeHint": "To show a mobile number that is not yours on your site, confirm it with a code.",
     "invalidWorld": "Enter a valid phone number: an Israeli one, or with its country code (e.g. +1)"
+  },
+  "support": {
+    "report": {
+      "open": "Report a problem",
+      "title": "Report a problem",
+      "intro": "Something not working as it should? Tell us and we will look into it.",
+      "label": "What happened?",
+      "placeholder": "What you were trying to do, and what happened instead",
+      "addShot": "Attach a screenshot (optional)",
+      "removeShot": "Remove the screenshot",
+      "note": "The page you are on and your browser are sent with the report, and we will answer you by email.",
+      "orEmail": "You can also write to us:",
+      "send": "Send",
+      "sent": "Thanks! Your report was sent, and we will answer you by email.",
+      "tooMany": "You have sent many reports today. You can also write to support@lightor.app",
+      "failed": "We could not send it. Try again, or write to {{email}}",
+      "close": "Close"
+    }
   }
 }

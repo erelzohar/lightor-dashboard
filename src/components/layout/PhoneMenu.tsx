@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Moon, Sun, type Inbox } from 'lucide-react';
+import { LifeBuoy, LogOut, Moon, Sun, type Inbox } from 'lucide-react';
+import { openReportProblem } from '../support/ReportProblem';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
@@ -160,6 +161,18 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
           </section>
         ))}
       </div>
+      {/* LT-448: tell Lightor about a problem. */}
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          openReportProblem();
+        }}
+        className="mx-1 mt-1 flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+      >
+        <LifeBuoy className="h-4 w-4 text-violet-500" aria-hidden="true" />
+        {t('support.report.open')}
+      </button>
       {/* Where the bar's own row starts. */}
       <div className="mx-2 mt-1 mb-1 border-t border-gray-100 dark:border-white/10" aria-hidden="true" />
       {/* The part behind the bar's top band (its corner radius). */}

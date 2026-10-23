@@ -4,6 +4,9 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import { useEffect } from 'react';
 import { PhoneBarProvider, usePhoneBar } from '../../contexts/PhoneBarContext';
+import { openReportProblem } from '../../components/support/ReportProblem';
+
+vi.mock('../../components/support/ReportProblem', () => ({ openReportProblem: vi.fn() }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -158,5 +161,16 @@ describe('the phone menu (LT-352, LT-378)', () => {
     renderAt('/');
     fireEvent.click(more());
     expect(within(within(menu()!).getByText('common.leads').closest('a')!).getByTestId('menu-badge')).toHaveTextContent('3');
+  });
+
+  // LT-448: the menu and the sidebar offer "report a problem".
+  it('offers "report a problem", closing the menu as it opens it', async () => {
+    renderAt('/');
+    fireEvent.click(more());
+    const item = within(menu()!).getByRole('button', { name: 'support.report.open' });
+    fireEvent.click(item);
+    expect(openReportProblem).toHaveBeenCalled();
+    await gone();
+    expect(screen.getAllByRole('button', { name: 'support.report.open' }).length).toBeGreaterThan(0); // the sidebar's own
   });
 });
