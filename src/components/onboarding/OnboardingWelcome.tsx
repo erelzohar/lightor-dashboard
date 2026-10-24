@@ -79,9 +79,12 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
   const missingSteps = allSteps.filter(s => !s.done);
   const doneCount = allSteps.length - missingSteps.length;
 
+  // LT-450: both cards sit on a plain dim, as dark as the blurred one was. A
+  // full-screen backdrop blur re-blurred the whole page on every frame while
+  // the card and the cards behind it moved in: the phone's stutter.
   if (isLightyMode) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overlay-safe">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe">
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -142,7 +145,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overlay-safe">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe">
       <motion.div
         initial={{ opacity: 0, scale: 0.92, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

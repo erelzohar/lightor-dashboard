@@ -236,4 +236,16 @@ describe('Onboarding checklist by site mode', () => {
     expect(screen.getByText('onboarding.step_serviceTypes')).toBeInTheDocument();
     expect(screen.getByText('onboarding.setupProgress 5/6')).toBeInTheDocument();
   });
+
+  // LT-450: the welcome sits on a plain dim, no full-screen backdrop blur (the phone's stutter).
+  it('puts the welcome card on a plain dim, in both of its forms', () => {
+    state.webConfig.data = completeConfig('book');
+    for (const lighty of [false, true]) {
+      const { container, unmount } = render(<OnboardingWelcome userName="Dana Levi" onGetStarted={vi.fn()} isLoading={false} isLightyMode={lighty} />);
+      const overlay = container.querySelector('.fixed.inset-0.z-50') as HTMLElement;
+      expect(overlay.className).toContain('bg-black/60');
+      expect(overlay.className).not.toMatch(/backdrop-blur/);
+      unmount();
+    }
+  });
 });
