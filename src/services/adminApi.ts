@@ -470,3 +470,34 @@ export const fetchSiteReports = (
 
 export const updateSiteReport = async (id: string, status: 'new' | 'handled'): Promise<SiteReportRow> =>
   (await send<{ data: SiteReportRow }>('patch', `site-reports/${id}`, { status })).data;
+
+// ------------------------------------------------------- categories (LT-453) --
+
+/** A sub-category as the admin sees it: where it came from and how many sites use it. */
+export interface AdminCategoryRow {
+  key: string;
+  main: string;
+  names: Record<'he' | 'en' | 'ar' | 'fr' | 'es', string>;
+  aliases: string[];
+  source: 'seed' | 'ai' | 'admin';
+  sites: number;
+}
+
+export const fetchAdminCategories = async (): Promise<{
+  mains: Array<{ key: string; names: AdminCategoryRow['names'] }>;
+  subs: AdminCategoryRow[];
+}> => (await get<{ data: { mains: Array<{ key: string; names: AdminCategoryRow['names'] }>; subs: AdminCategoryRow[] } }>('categories')).data;
+
+export const updateAdminCategory = async (
+  key: string,
+  change: { main?: string; names?: Partial<AdminCategoryRow['names']> }
+): Promise<void> => {
+  await send('patch', `categories/${encodeURIComponent(key)}`, change);
+};
+
+export const mergeAdminCategory = async (key: string, into: string): Promise<{ sites: number }> =>
+  (await send<{ data: { sites: number } }>('post', `categories/${encodeURIComponent(key)}/merge`, { into })).data;
+
+export const deleteAdminCategory = async (key: string): Promise<void> => {
+  await send('delete', `categories/${encodeURIComponent(key)}`);
+};

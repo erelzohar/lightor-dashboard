@@ -1,7 +1,7 @@
 import { CURRENCIES, currencyOf, currencySymbol } from '../utils/currency';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink, Banknote } from 'lucide-react';
+import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink, Banknote, Tag } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -24,6 +24,7 @@ import globals from '../services/globals';
 import { uploadImage } from '../services/imagesApi';
 import FieldTooltip from '../components/settings/FieldTooltip';
 import CalendarFeedCard from '../components/settings/CalendarFeedCard';
+import CategoryFields from '../components/settings/CategoryFields';
 import GoogleCalendarCard from '../components/settings/GoogleCalendarCard';
 import Select from '../components/ui/Select';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -170,6 +171,11 @@ const Settings: React.FC = () => {
   // The currency (LT-395): absent reads as shekels.
   const currencyChanged =
     !!localWebConfig && !!webConfig && currencyOf(localWebConfig.currency) !== currencyOf(webConfig.currency);
+  // The category and keywords (LT-453): absent, null and empty are the same.
+  const categoryKey = (config: WebConfig | null) => (config?.category?.main ? `${config.category.main}/${config.category.sub ?? ''}` : '');
+  const categoryChanged = !!localWebConfig && !!webConfig && categoryKey(localWebConfig) !== categoryKey(webConfig);
+  const keywordsChanged =
+    !!localWebConfig && !!webConfig && JSON.stringify(localWebConfig.keywords ?? []) !== JSON.stringify(webConfig.keywords ?? []);
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
@@ -202,6 +208,8 @@ const Settings: React.FC = () => {
       hideFromSearchChanged ||
       a11yMenuChanged ||
       currencyChanged ||
+      categoryChanged ||
+      keywordsChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -431,6 +439,9 @@ const Settings: React.FC = () => {
       if (a11yMenuChanged) payload.accessibility = { widgetHidden: a11yMenuHidden(localWebConfig) };
       // The currency only when the owner chose one (LT-395).
       if (currencyChanged) payload.currency = currencyOf(localWebConfig.currency);
+      // The category and keywords only when changed (LT-453); the server checks the keys.
+      if (categoryChanged) payload.category = localWebConfig.category?.main ? localWebConfig.category : null;
+      if (keywordsChanged) payload.keywords = localWebConfig.keywords ?? [];
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -829,6 +840,16 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </div>
+            </SettingsSection>
+
+            {/* LT-453: what the site is, for a directory of sites to come. */}
+            <SettingsSection icon={Tag} title={t('settings.category.title')} description={t('settings.category.desc')}>
+              <CategoryFields
+                category={localWebConfig.category}
+                keywords={localWebConfig.keywords}
+                onCategoryChange={(category) => handleChange('root', 'category', category)}
+                onKeywordsChange={(keywords) => handleChange('root', 'keywords', keywords)}
+              />
             </SettingsSection>
 
             <SettingsSection icon={MapPin} title={t('settings.addressTitle')} description={t('settings.sections.addressDesc')}>

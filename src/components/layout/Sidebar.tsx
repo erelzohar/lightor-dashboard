@@ -20,8 +20,7 @@ import {
   ScrollText,
   Inbox,
   Flag,
-  LifeBuoy,
-} from 'lucide-react';
+  LifeBuoy, Tags } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
 import { usePhoneBar } from '../../contexts/PhoneBarContext';
@@ -290,6 +289,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               { path: '/admin/costs', Icon: Coins, name: t('admin.nav.costs') },
               { path: '/admin/logs', Icon: ScrollText, name: t('admin.nav.logs') },
               { path: '/admin/reports', Icon: Flag, name: t('admin.nav.reports') },
+              { path: '/admin/categories', Icon: Tags, name: t('admin.nav.categories') },
             ],
           },
         ]

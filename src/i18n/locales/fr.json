@@ -280,6 +280,18 @@
     "customDomain": {
       "title": "Connecter un domaine",
       "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr."
+    },
+    "category": {
+      "title": "Catégorie et mots-clés",
+      "desc": "Ce qu'est votre site, pour qu'on le trouve un jour dans une recherche. L'IA l'a choisi en construisant votre site ; vous pouvez le changer.",
+      "main": "Catégorie",
+      "sub": "Sous-catégorie",
+      "choose": "Choisir",
+      "keywords": "Mots-clés",
+      "keywordsPlaceholder": "Tapez un mot et appuyez sur Entrée",
+      "keywordsHelp": "Jusqu'à {{max}} mots ou expressions courtes qu'un client chercherait. Non affichés sur le site.",
+      "removeKeyword": "Retirer {{word}}",
+      "loadFailed": "Impossible de charger les catégories. Essayez d'actualiser."
     }
   },
   "appointmentTypes": {
@@ -984,7 +996,8 @@
       "backToDashboard": "Retour à mon tableau de bord",
       "userDetail": "Détails de l'utilisateur",
       "logs": "Journaux",
-      "reports": "Signalements des sites"
+      "reports": "Signalements des sites",
+      "categories": "Catégories"
     },
     "table": {
       "search": "Rechercher…",
@@ -1312,6 +1325,45 @@
         "new": "Ouverts",
         "handled": "Traités",
         "all": "Tous"
+      }
+    },
+    "categories": {
+      "title": "Catégories",
+      "subtitle": "Les sous-catégories des sites. L'IA en ajoute une, nommée en cinq langues, quand aucune ne convient ; ici, vous corrigez un nom ou une traduction, fusionnez un doublon ou supprimez une catégorie inutilisée.",
+      "columns": {
+        "name": "Nom",
+        "main": "Catégorie principale",
+        "sites": "Sites",
+        "actions": "Actions"
+      },
+      "fromAi": "IA",
+      "allMains": "Toutes les catégories",
+      "onlyAi": "Seulement celles ajoutées par l'IA",
+      "empty": "Aucune catégorie",
+      "edit": "Modifier {{name}}",
+      "merge": "Fusionner {{name}} dans une autre catégorie",
+      "delete": "Supprimer {{name}}",
+      "inUse": "Des sites l'utilisent - fusionnez-la plutôt",
+      "editTitle": "Modifier la catégorie",
+      "save": "Enregistrer",
+      "saved": "Catégorie enregistrée",
+      "mergeTitle": "Fusionner « {{name}} »",
+      "mergeBody": "Ses sites ({{count}}) passent dans la catégorie choisie, puis elle est supprimée. L'IA y placera désormais ce type de site.",
+      "mergeInto": "Fusionner dans",
+      "choose": "Choisir",
+      "mergeConfirm": "Fusionner",
+      "merged": "Catégories fusionnées",
+      "deleteTitle": "Supprimer « {{name}} » ?",
+      "deleteBody": "Aucun site ne l'utilise. Elle peut être supprimée.",
+      "deleteConfirm": "Supprimer",
+      "deleted": "Catégorie supprimée",
+      "failed": "Cela n'a pas fonctionné. Réessayez.",
+      "lang": {
+        "he": "Hébreu",
+        "en": "Anglais",
+        "ar": "Arabe",
+        "fr": "Français",
+        "es": "Espagnol"
       }
     }
   },

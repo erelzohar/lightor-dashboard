@@ -280,6 +280,18 @@
     "customDomain": {
       "title": "Connect a domain",
       "desc": "Connect your own address to the site, like www.mybusiness.com."
+    },
+    "category": {
+      "title": "Category and keywords",
+      "desc": "What your site is, so it can be found in search one day. The AI chose this when it built your site; you can change it.",
+      "main": "Category",
+      "sub": "Sub-category",
+      "choose": "Choose",
+      "keywords": "Keywords",
+      "keywordsPlaceholder": "Type a word and press Enter",
+      "keywordsHelp": "Up to {{max}} words or short phrases a customer would search for. Not shown on the site.",
+      "removeKeyword": "Remove {{word}}",
+      "loadFailed": "We could not load the categories. Try refreshing."
     }
   },
   "appointmentTypes": {
@@ -984,7 +996,8 @@
       "backToDashboard": "Back to my dashboard",
       "userDetail": "User details",
       "logs": "Logs",
-      "reports": "Site reports"
+      "reports": "Site reports",
+      "categories": "Categories"
     },
     "table": {
       "search": "Search…",
@@ -1312,6 +1325,45 @@
         "new": "Open",
         "handled": "Handled",
         "all": "All"
+      }
+    },
+    "categories": {
+      "title": "Categories",
+      "subtitle": "The sub-categories sites are placed in. The AI adds one, named in five languages, when none fits; here you fix a name or a translation, merge a duplicate, or delete one no site uses.",
+      "columns": {
+        "name": "Name",
+        "main": "Main category",
+        "sites": "Sites",
+        "actions": "Actions"
+      },
+      "fromAi": "AI",
+      "allMains": "All categories",
+      "onlyAi": "Only those the AI added",
+      "empty": "No categories",
+      "edit": "Edit {{name}}",
+      "merge": "Merge {{name}} into another category",
+      "delete": "Delete {{name}}",
+      "inUse": "Sites use it - merge it into another category instead",
+      "editTitle": "Edit category",
+      "save": "Save",
+      "saved": "Category saved",
+      "mergeTitle": "Merge \"{{name}}\"",
+      "mergeBody": "Its sites ({{count}}) move to the category you choose, and it is deleted. The AI will place such sites in the one you chose from now on.",
+      "mergeInto": "Merge into",
+      "choose": "Choose",
+      "mergeConfirm": "Merge",
+      "merged": "Categories merged",
+      "deleteTitle": "Delete \"{{name}}\"?",
+      "deleteBody": "No site uses it. It can be deleted.",
+      "deleteConfirm": "Delete",
+      "deleted": "Category deleted",
+      "failed": "That did not work. Try again.",
+      "lang": {
+        "he": "Hebrew",
+        "en": "English",
+        "ar": "Arabic",
+        "fr": "French",
+        "es": "Spanish"
       }
     }
   },

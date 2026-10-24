@@ -280,6 +280,18 @@
     "customDomain": {
       "title": "Conectar un dominio",
       "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com."
+    },
+    "category": {
+      "title": "Categoría y palabras clave",
+      "desc": "Qué es tu sitio, para que algún día lo encuentren en una búsqueda. La IA lo eligió al construir tu sitio; puedes cambiarlo.",
+      "main": "Categoría",
+      "sub": "Subcategoría",
+      "choose": "Elegir",
+      "keywords": "Palabras clave",
+      "keywordsPlaceholder": "Escribe una palabra y pulsa Enter",
+      "keywordsHelp": "Hasta {{max}} palabras o frases cortas que buscaría un cliente. No se muestran en el sitio.",
+      "removeKeyword": "Quitar {{word}}",
+      "loadFailed": "No pudimos cargar las categorías. Intenta actualizar."
     }
   },
   "appointmentTypes": {
@@ -984,7 +996,8 @@
       "backToDashboard": "Volver a mi panel",
       "userDetail": "Detalles del usuario",
       "logs": "Registros",
-      "reports": "Informes de sitios"
+      "reports": "Informes de sitios",
+      "categories": "Categorías"
     },
     "table": {
       "search": "Buscar…",
@@ -1312,6 +1325,45 @@
         "new": "Abiertos",
         "handled": "Resueltos",
         "all": "Todos"
+      }
+    },
+    "categories": {
+      "title": "Categorías",
+      "subtitle": "Las subcategorías de los sitios. La IA añade una, con su nombre en cinco idiomas, cuando ninguna encaja; aquí corriges un nombre o una traducción, fusionas un duplicado o borras una que ningún sitio usa.",
+      "columns": {
+        "name": "Nombre",
+        "main": "Categoría principal",
+        "sites": "Sitios",
+        "actions": "Acciones"
+      },
+      "fromAi": "IA",
+      "allMains": "Todas las categorías",
+      "onlyAi": "Solo las que añadió la IA",
+      "empty": "No hay categorías",
+      "edit": "Editar {{name}}",
+      "merge": "Fusionar {{name}} en otra categoría",
+      "delete": "Borrar {{name}}",
+      "inUse": "La usan sitios - fusiónala en otra",
+      "editTitle": "Editar categoría",
+      "save": "Guardar",
+      "saved": "Categoría guardada",
+      "mergeTitle": "Fusionar «{{name}}»",
+      "mergeBody": "Sus sitios ({{count}}) pasan a la categoría que elijas y se borra. La IA pondrá esos sitios en la elegida a partir de ahora.",
+      "mergeInto": "Fusionar en",
+      "choose": "Elegir",
+      "mergeConfirm": "Fusionar",
+      "merged": "Categorías fusionadas",
+      "deleteTitle": "¿Borrar «{{name}}»?",
+      "deleteBody": "Ningún sitio la usa. Se puede borrar.",
+      "deleteConfirm": "Borrar",
+      "deleted": "Categoría borrada",
+      "failed": "No funcionó. Inténtalo de nuevo.",
+      "lang": {
+        "he": "Hebreo",
+        "en": "Inglés",
+        "ar": "Árabe",
+        "fr": "Francés",
+        "es": "Español"
       }
     }
   },

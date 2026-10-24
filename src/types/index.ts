@@ -196,6 +196,12 @@ export interface AppointmentAnswer {
   lng?: number;
 }
 
+/** LT-453: a site's category, as keys (names come from GET /api/categories). */
+export interface SiteCategory {
+  main: string;
+  sub?: string;
+}
+
 export interface WebConfig {
   _id: string;
   user_id: string;
@@ -244,6 +250,10 @@ export interface WebConfig {
   timeZone?: string;
   /** LT-395: the money its prices and income are in; none on older sites (shekels). Read through utils/currency. */
   currency?: 'ILS' | 'USD' | 'EUR' | 'GBP';
+  /** LT-453: what the site is - a main category and a sub-category's key (services/categoriesApi). */
+  category?: SiteCategory | null;
+  /** LT-453: a few search terms in the site's language. */
+  keywords?: string[];
   defaultLanguage: string;
   workingDays: (string | null)[];
   /** Per-date special hours (max 50); absent on configs saved before LT-057. */

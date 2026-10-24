@@ -35,6 +35,7 @@ import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminCosts from './pages/admin/AdminCosts';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminReports from './pages/admin/AdminReports';
+import AdminCategories from './pages/admin/AdminCategories';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
@@ -104,6 +105,7 @@ function App() {
                       <Route path="costs" element={<AdminCosts />} />
                       <Route path="logs" element={<AdminLogs />} />
                       <Route path="reports" element={<AdminReports />} />
+                      <Route path="categories" element={<AdminCategories />} />
                     </Route>
                   </Route>
                   <Route path="/dashboard/*" element={<LegacyDashboardRedirect />} />
