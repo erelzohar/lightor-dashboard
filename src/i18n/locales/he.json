@@ -686,19 +686,7 @@
       "cancellation": "ביטול תור",
       "reschedule": "שינוי מועד או פרטים",
       "morningDigest": "סיכום בוקר",
-      "saved": "ההעדפות נשמרו",
-      "saveFailed": "השמירה נכשלה",
       "newLead": "ליד חדש",
-      "channel": "ערוץ",
-      "channels": {
-        "email": "אימייל",
-        "sms": "SMS",
-        "whatsapp": "WhatsApp"
-      },
-      "sendsTo": "יישלח אל",
-      "plusOnly": "SMS ו-WhatsApp זמינים במסלול Plus.",
-      "needsPhone": "כדי לקבל SMS או WhatsApp צריך מספר טלפון בפרטי החשבון.",
-      "events": "לקבל התראה על",
       "hints": {
         "newBooking": "לקוח קבע תור באתר",
         "cancellation": "לקוח ביטל תור דרך הקישור שקיבל",
@@ -706,10 +694,51 @@
         "morningDigest": "כל בוקר, התורים של היום",
         "newLead": "מישהו השאיר פרטים באתר"
       },
-      "pushNote": "גם ההתראות באפליקציה מגיעות לפי הבחירות האלה.",
-      "phoneScope": "ב-{{channel}} יגיעו רק סיכום הבוקר, לידים חדשים, וביטול או שינוי של תור ב-24 השעות הקרובות. כל השאר מגיע במייל.",
-      "appInsteadOfEmail": "יש לך את האפליקציה עם התראות פעילות? תורים חדשים, ביטולים ושינויים יגיעו רק אליה, בלי מייל.",
-      "pushChannel": "תורים ולידים"
+      "saved": "ההעדפות נשמרו",
+      "saveFailed": "השמירה נכשלה",
+      "pushChannel": "תורים ולידים",
+      "summaryTitle": "מה מגיע ואיפה",
+      "summary": {
+        "app": "באפליקציה: {{items}}",
+        "email": "במייל: {{items}}",
+        "whatsapp": "בוואטסאפ: {{items}}",
+        "allOff": "כל ההתראות כבויות"
+      },
+      "items": {
+        "bookings": "תורים",
+        "newBooking": "תורים חדשים",
+        "cancellation": "ביטולים",
+        "reschedule": "שינויים",
+        "lastMinute": "ביטולים ושינויים ברגע האחרון",
+        "lastMinuteCancellation": "ביטולים ברגע האחרון",
+        "lastMinuteReschedule": "שינויים ברגע האחרון",
+        "morningDigest": "סיכום בוקר",
+        "newLead": "פניות"
+      },
+      "groups": {
+        "bookings": "תורים",
+        "bookingsHint": "תור חדש, ביטול, שינוי מועד או פרטים",
+        "leads": "פניות מהאתר"
+      },
+      "chips": {
+        "app": "באפליקציה",
+        "email": "במייל",
+        "whatsapp": "בוואטסאפ"
+      },
+      "lastMinute": "וואטסאפ על ביטול או שינוי ברגע האחרון",
+      "lastMinuteHint": "רק לתור שמתחיל ב-24 השעות הקרובות",
+      "eachKind": "להגדיר כל סוג בנפרד",
+      "sameForAll": "אותו דבר לכל התורים",
+      "safetyNet": "אם האפליקציה לא מחוברת, יגיע במייל.",
+      "phoneLine": "וואטסאפ נשלח אל {{phone}}. אם לא עובר, נשלח SMS.",
+      "appState": {
+        "connected": "האפליקציה מחוברת",
+        "notConnected": "האפליקציה לא מחוברת",
+        "permissionOff": "ההתראות כבויות בטלפון"
+      },
+      "appDefaultNotice": "מעכשיו עדכונים על תורים יגיעו לכאן, בלי מייל. אפשר להפעיל מייל בהגדרות.",
+      "needsPhone": "כדי לקבל וואטסאפ צריך מספר טלפון בפרטי החשבון.",
+      "plusOnly": "וואטסאפ זמין במסלול Plus."
     },
     "phoneCode": {
       "sent": "שלחנו קוד בן 6 ספרות ל-{{phone}}",

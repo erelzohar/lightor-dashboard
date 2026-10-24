@@ -18,6 +18,8 @@ vi.mock('../../lib/platform', () => ({
 vi.mock('@capacitor-firebase/messaging', () => ({ FirebaseMessaging: messaging }));
 vi.mock('@capacitor/app', () => ({ App: app }));
 vi.mock('../../services/devicesApi', () => devices);
+const toast = vi.fn();
+vi.mock('react-hot-toast', () => ({ default: (...args: unknown[]) => toast(...args) }));
 vi.mock('../../i18n/config', () => ({
   default: { language: 'he', t: (key: string) => (key === 'account.notifications.pushChannel' ? 'תורים ולידים' : key) },
 }));
@@ -60,7 +62,7 @@ describe('pushClient', () => {
       appListeners[name] = fn;
       return { remove: vi.fn() };
     });
-    devices.registerDevice.mockResolvedValue(undefined);
+    devices.registerDevice.mockResolvedValue({ appDefault: false });
     devices.unregisterDevice.mockResolvedValue(undefined);
   });
 
@@ -170,6 +172,27 @@ describe('pushClient', () => {
       expect(devices.registerDevice).toHaveBeenCalledTimes(2);
       expect(push.getPushToken()).toBe('fcm-1');
     });
+  });
+
+  // LT-455: the account's first phone with the app turned its booking emails off.
+  it('tells the owner once when the server turned the booking emails off', async () => {
+    devices.registerDevice.mockResolvedValueOnce({ appDefault: true });
+    const push = await load();
+    await push.registerForPush();
+    expect(toast).toHaveBeenCalledWith('account.notifications.appDefaultNotice', { duration: 8000 });
+
+    toast.mockClear();
+    listeners.tokenReceived({ token: 'fcm-2' });
+    await flush();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('reads whether this phone lets the app notify, and nothing on the web', async () => {
+    messaging.checkPermissions.mockResolvedValue({ receive: 'denied' });
+    const push = await load();
+    expect(await push.pushPermission()).toBe('denied');
+    platform.isNativeApp.mockReturnValue(false);
+    expect(await push.pushPermission()).toBeNull();
   });
 
   describe('a return to the app', () => {

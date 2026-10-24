@@ -15,9 +15,14 @@ export interface RegisterDeviceBody {
   appVersion?: string;
 }
 
-export const registerDevice = async (body: RegisterDeviceBody): Promise<void> => {
+/**
+ * `appDefault` (LT-455): this was the account's first phone with the app,
+ * so the server just turned the booking emails off.
+ */
+export const registerDevice = async (body: RegisterDeviceBody): Promise<{ appDefault: boolean }> => {
   const response = await apiClient.post(globals.devicesUrl, body);
   if (!response.data?.success) throw new Error('Device registration failed');
+  return { appDefault: response.data.appDefault === true };
 };
 
 export const unregisterDevice = async (token: string): Promise<void> => {

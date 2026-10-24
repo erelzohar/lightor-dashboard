@@ -686,19 +686,7 @@
       "cancellation": "Cancelación",
       "reschedule": "Cambio de horario o datos",
       "morningDigest": "Resumen matutino",
-      "saved": "Preferencias guardadas",
-      "saveFailed": "No se pudo guardar",
       "newLead": "Nueva consulta",
-      "channel": "Canal",
-      "channels": {
-        "email": "Correo",
-        "sms": "SMS",
-        "whatsapp": "WhatsApp"
-      },
-      "sendsTo": "Se envía a",
-      "plusOnly": "SMS y WhatsApp vienen con el plan Plus.",
-      "needsPhone": "SMS y WhatsApp necesitan un número de teléfono en los datos de tu cuenta.",
-      "events": "Avisarme cuando",
       "hints": {
         "newBooking": "Un cliente reservó en tu sitio",
         "cancellation": "Un cliente canceló desde su enlace",
@@ -706,10 +694,51 @@
         "morningDigest": "Cada mañana, las citas del día",
         "newLead": "Alguien dejó sus datos en tu sitio"
       },
-      "pushNote": "Las notificaciones de la app siguen también estas opciones.",
-      "phoneScope": "Por {{channel}} recibes solo el resumen matutino, las consultas nuevas y la cancelación o el cambio de una cita en las próximas 24 horas. Todo lo demás llega por correo.",
-      "appInsteadOfEmail": "¿Tienes la app con las notificaciones activadas? Las reservas nuevas, cancelaciones y cambios llegan solo a la app, sin correo.",
-      "pushChannel": "Citas y consultas"
+      "saved": "Preferencias guardadas",
+      "saveFailed": "No se pudo guardar",
+      "pushChannel": "Citas y consultas",
+      "summaryTitle": "Qué te llega y dónde",
+      "summary": {
+        "app": "En la app: {{items}}",
+        "email": "Por correo: {{items}}",
+        "whatsapp": "Por WhatsApp: {{items}}",
+        "allOff": "Todas las notificaciones están desactivadas"
+      },
+      "items": {
+        "bookings": "Reservas",
+        "newBooking": "Reservas nuevas",
+        "cancellation": "Cancelaciones",
+        "reschedule": "Cambios",
+        "lastMinute": "Cancelaciones y cambios de última hora",
+        "lastMinuteCancellation": "Cancelaciones de última hora",
+        "lastMinuteReschedule": "Cambios de última hora",
+        "morningDigest": "Resumen matutino",
+        "newLead": "Consultas"
+      },
+      "groups": {
+        "bookings": "Reservas",
+        "bookingsHint": "Reserva nueva, cancelación, cambio de horario o de datos",
+        "leads": "Consultas desde tu sitio"
+      },
+      "chips": {
+        "app": "En la app",
+        "email": "Por correo",
+        "whatsapp": "Por WhatsApp"
+      },
+      "lastMinute": "WhatsApp para cancelaciones y cambios de última hora",
+      "lastMinuteHint": "Solo para una cita que empieza en las próximas 24 horas",
+      "eachKind": "Configurar cada tipo por separado",
+      "sameForAll": "Lo mismo para todas las reservas",
+      "safetyNet": "Si la app no está conectada, llega por correo.",
+      "phoneLine": "El WhatsApp se envía al {{phone}}. Si no llega, se envía un SMS.",
+      "appState": {
+        "connected": "App conectada",
+        "notConnected": "App no conectada",
+        "permissionOff": "Las notificaciones están desactivadas en este teléfono"
+      },
+      "appDefaultNotice": "Desde ahora las novedades de reservas llegan aquí, sin correo. Puedes volver a activar el correo en Ajustes.",
+      "needsPhone": "Añade un número de teléfono en los datos de la cuenta para recibir WhatsApp.",
+      "plusOnly": "WhatsApp está disponible en el plan Plus."
     },
     "phoneCode": {
       "sent": "Enviamos un código de 6 dígitos al {{phone}}",

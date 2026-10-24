@@ -1,5 +1,6 @@
 import { App } from '@capacitor/app';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import toast from 'react-hot-toast';
 import i18n from '../i18n/config';
 import { isNativeApp, nativePlatform } from '../lib/platform';
 import { registerDevice, unregisterDevice } from './devicesApi';
@@ -65,13 +66,16 @@ const postToken = async (token: string): Promise<void> => {
   currentToken = token;
   storeToken(token);
   try {
-    await registerDevice({
+    const registered = await registerDevice({
       token,
       platform: nativePlatform(),
       locale: i18n.language,
       appVersion: await appVersion(),
     });
     lastPostAt = Date.now();
+    // The account's first phone with the app: its booking emails just
+    // turned off (LT-455), and the owner hears it once, here.
+    if (registered?.appDefault) toast(i18n.t('account.notifications.appDefaultNotice'), { duration: 8000 });
   } catch {
     // The next launch re-registers; a missed upsert is not worth a toast.
   }
@@ -178,6 +182,20 @@ export const bindNotificationTaps = async (navigate: (url: string) => void): Pro
     });
   } catch {
     // Same reasoning as registerForPush.
+  }
+};
+
+/**
+ * Whether this phone lets the app show notifications (LT-455), for the
+ * Account page; null on the web or when the plugin cannot say.
+ */
+export const pushPermission = async (): Promise<string | null> => {
+  if (!isNativeApp()) return null;
+  try {
+    const { receive } = await FirebaseMessaging.checkPermissions();
+    return receive;
+  } catch {
+    return null;
   }
 };
 

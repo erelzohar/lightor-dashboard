@@ -323,6 +323,16 @@ export interface User {
    */
   notificationPrefs?: NotificationPrefs;
   /**
+   * Where the owner hears about each event (LT-455), as the server resolves
+   * it: what they set, and for anything unset what their older settings
+   * meant. Read only; the Account page writes `notifyBy`.
+   */
+  notifyChannels?: NotifyChannels;
+  /** A partial write for `PUT /api/users/:id` (LT-455); the server keeps every channel not sent. */
+  notifyBy?: Partial<Record<NotifyEvent, Partial<EventChannels>>>;
+  /** From /auth/me (LT-455): a phone with the app registered for push in the last 14 days. */
+  appConnected?: boolean;
+  /**
    * Lighty's page tours (LT-389): the tours done and the off switch. Absent
    * until the first tour is finished; every tour shows once until then.
    */
@@ -331,6 +341,21 @@ export interface User {
 
 /** The owner's own alerts (LT-213). SMS and WhatsApp are Plus channels. */
 export type OwnerChannel = 'email' | 'sms' | 'whatsapp';
+
+/** The events with a row on the Account page (LT-455); a customer's edit rides on reschedule. */
+export type NotifyEvent = 'newBooking' | 'cancellation' | 'reschedule' | 'morningDigest' | 'newLead';
+
+/**
+ * Where one event goes (LT-455): the app, email, and the phone (WhatsApp,
+ * SMS when it does not get through). A new booking never has the phone.
+ */
+export interface EventChannels {
+  app: boolean;
+  email: boolean;
+  phone: boolean;
+}
+
+export type NotifyChannels = Record<NotifyEvent, EventChannels>;
 
 export interface NotificationPrefs {
   newBooking: boolean;
