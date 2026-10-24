@@ -84,11 +84,11 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
   // the card and the cards behind it moved in: the phone's stutter.
   if (isLightyMode) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe">
+      <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className="glass-modal rounded-3xl w-full max-w-md overflow-hidden"
         >
           {/* Lighty gradient header */}
@@ -97,7 +97,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
             <motion.div
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 22 }}
               className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 mb-4 relative z-10"
             >
               <Wand2 size={32} className="text-white" />
@@ -140,16 +140,16 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
             </Button>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe">
+    <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         className="glass-modal rounded-3xl w-full max-w-md overflow-hidden"
       >
         {/* Header gradient banner */}
@@ -157,7 +157,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 22 }}
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 mb-4"
           >
             <Sparkles size={32} className="text-white" />
@@ -225,7 +225,7 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
           </Button>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 

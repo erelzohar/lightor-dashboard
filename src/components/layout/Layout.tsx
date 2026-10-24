@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import { PhoneBarProvider } from '../../contexts/PhoneBarContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -31,7 +31,6 @@ const FULL_BLEED_ROUTES = ['/design', '/lighty', '/appointments'];
 const Layout: React.FC = () => {
   const { pathname } = useLocation();
   const fullBleed = FULL_BLEED_ROUTES.includes(pathname);
-  const [welcomeLoading, setWelcomeLoading] = useState(false);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const { t } = useTranslation();
@@ -106,21 +105,20 @@ const Layout: React.FC = () => {
   // restricted users (exact match, no prefix bug), which is the half that
   // works. Re-add a real guard here deliberately if the restriction is wanted.
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = () => {
     if (isRestricted) {
       // No webConfig yet — just navigate to AI builder, don't advance status
       setWelcomeDismissed(true);
       navigate('/design');
       return;
     }
-    // Has existing webConfig — advance status and go to dashboard
-    setWelcomeLoading(true);
-    try {
-      await updateUser({ boardingStatus: 'onboarded' });
-      navigate('/');
-    } finally {
-      setWelcomeLoading(false);
-    }
+    // Has existing webConfig — advance status and go to dashboard. LT-454:
+    // the card goes at once and the status is saved behind it; it waited for
+    // the server with a spinner first. If the save fails, the card is back
+    // next time - nothing else depends on it.
+    setWelcomeDismissed(true);
+    navigate('/');
+    void updateUser({ boardingStatus: 'onboarded' }).catch(() => {});
   };
 
   return (
@@ -153,14 +151,18 @@ const Layout: React.FC = () => {
         }}
       />
 
-      {boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && (
-        <OnboardingWelcome
-          userName={auth.user?.name || ''}
-          onGetStarted={handleGetStarted}
-          isLoading={welcomeLoading}
-          isLightyMode={isRestricted}
-        />
-      )}
+      {/* LT-454: it fades out (0.15s) as it goes. */}
+      <AnimatePresence>
+        {boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && (
+          <OnboardingWelcome
+            key="welcome"
+            userName={auth.user?.name || ''}
+            onGetStarted={handleGetStarted}
+            isLoading={false}
+            isLightyMode={isRestricted}
+          />
+        )}
+      </AnimatePresence>
 
       {/* LT-253: Lighty, a tap away — not over his own page, nor over the
           site editor, where he already sits in the panel. LT-269: on the home

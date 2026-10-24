@@ -99,9 +99,9 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
     area.style.transition = 'none';
     area.style.opacity = '0';
     line.getBoundingClientRect(); // apply the start state before transitioning
-    line.style.transition = 'stroke-dashoffset 0.8s ease-in-out';
+    line.style.transition = 'stroke-dashoffset 0.5s ease-in-out'; // LT-454: was 0.8s
     line.style.strokeDashoffset = '0';
-    area.style.transition = 'opacity 0.8s ease-in-out 0.2s';
+    area.style.transition = 'opacity 0.45s ease-in-out 0.1s';
     area.style.opacity = '1';
   }, [linePath, drawIn]);
 
