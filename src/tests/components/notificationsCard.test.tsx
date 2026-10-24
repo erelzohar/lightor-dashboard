@@ -177,6 +177,10 @@ describe('NotificationsCard', () => {
     await screen.findByTestId('notification-prefs');
     expect(screen.getAllByRole('switch')).toHaveLength(5);
     expect(screen.queryByText('account.notifications.pushNote')).not.toBeInTheDocument();
+    // LT-452: the app replacing the booking emails is said on the web too.
+    expect(screen.getByTestId('notification-app-instead-of-email')).toHaveTextContent(
+      'account.notifications.appInsteadOfEmail'
+    );
   });
 
   it('says in the app that push follows the same switches', async () => {
@@ -219,6 +223,23 @@ describe('NotificationsCard', () => {
       await waitFor(() => expect(updateUserInfo).toHaveBeenCalledWith('u1', { channelType: 'whatsapp' }));
       await waitFor(() => expect(channelButton('channels.whatsapp')).toHaveAttribute('aria-checked', 'true'));
       expect(screen.getByTestId('notification-channel-hint')).toHaveTextContent('050-1234567');
+    });
+
+    // LT-452: the phone carries only what the owner has to act on, and says so.
+    it('says what the phone carries once SMS or WhatsApp is picked', async () => {
+      onTheWeb();
+      vi.mocked(getCurrentUser).mockResolvedValue(user());
+      vi.mocked(updateUserInfo).mockImplementation(async (_id, data) => user(data));
+      await renderCard();
+      await screen.findByTestId('notification-channel');
+      await waitFor(() => expect(fetchMyEntitlements).toHaveBeenCalled());
+      expect(screen.queryByTestId('notification-phone-scope')).not.toBeInTheDocument();
+
+      fireEvent.click(channelButton('channels.sms'));
+
+      await waitFor(() =>
+        expect(screen.getByTestId('notification-phone-scope')).toHaveTextContent('account.notifications.phoneScope')
+      );
     });
 
     it('keeps the old channel when the save fails', async () => {

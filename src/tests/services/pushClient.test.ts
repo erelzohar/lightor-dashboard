@@ -3,11 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const platform = { isNativeApp: vi.fn(() => true), nativePlatform: vi.fn(() => 'ios' as 'ios' | 'android' | 'web') };
 const messaging = {
   requestPermissions: vi.fn(),
+  checkPermissions: vi.fn(),
   getToken: vi.fn(),
   addListener: vi.fn(),
   createChannel: vi.fn(),
 };
-const app = { getInfo: vi.fn() };
+const app = { getInfo: vi.fn(), addListener: vi.fn() };
 const devices = { registerDevice: vi.fn(), unregisterDevice: vi.fn() };
 
 vi.mock('../../lib/platform', () => ({
@@ -23,6 +24,7 @@ vi.mock('../../i18n/config', () => ({
 
 type Listener = (event: unknown) => void;
 const listeners: Record<string, Listener> = {};
+const appListeners: Record<string, () => void> = {};
 
 // The client keeps the token and the listener flag at module level, so each
 // test gets a fresh module.
@@ -41,9 +43,12 @@ describe('pushClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     for (const k of Object.keys(listeners)) delete listeners[k];
+    for (const k of Object.keys(appListeners)) delete appListeners[k];
+    localStorage.clear();
     platform.isNativeApp.mockReturnValue(true);
     platform.nativePlatform.mockReturnValue('ios');
     messaging.requestPermissions.mockResolvedValue({ receive: 'granted' });
+    messaging.checkPermissions.mockResolvedValue({ receive: 'granted' });
     messaging.getToken.mockResolvedValue({ token: 'fcm-1' });
     messaging.createChannel.mockResolvedValue(undefined);
     messaging.addListener.mockImplementation(async (name: string, fn: Listener) => {
@@ -51,6 +56,10 @@ describe('pushClient', () => {
       return { remove: vi.fn() };
     });
     app.getInfo.mockResolvedValue({ name: 'Lightor', id: 'app.lightor.dashboard', build: '7', version: '1.2.3' });
+    app.addListener.mockImplementation(async (name: string, fn: () => void) => {
+      appListeners[name] = fn;
+      return { remove: vi.fn() };
+    });
     devices.registerDevice.mockResolvedValue(undefined);
     devices.unregisterDevice.mockResolvedValue(undefined);
   });
@@ -120,6 +129,74 @@ describe('pushClient', () => {
       devices.registerDevice.mockRejectedValue(new Error('500'));
       const push = await load();
       await expect(push.registerForPush()).resolves.toBeUndefined();
+    });
+  });
+
+  // LT-452: the server lets the app stand in for the booking emails only while
+  // the phone keeps opening it with its notifications on.
+  describe('a phone whose notifications go off', () => {
+    it('is taken off the server on the next launch, by the token kept from before', async () => {
+      await (await load()).registerForPush();
+      expect(localStorage.getItem('lightor.pushToken')).toBe('fcm-1');
+
+      messaging.requestPermissions.mockResolvedValue({ receive: 'denied' });
+      await (await load()).registerForPush();
+      expect(devices.unregisterDevice).toHaveBeenCalledWith('fcm-1');
+      expect(localStorage.getItem('lightor.pushToken')).toBeNull();
+    });
+
+    it('keeps the token for another try when the DELETE fails', async () => {
+      await (await load()).registerForPush();
+      messaging.requestPermissions.mockResolvedValue({ receive: 'denied' });
+      devices.unregisterDevice.mockRejectedValue(new Error('offline'));
+      await (await load()).registerForPush();
+      expect(localStorage.getItem('lightor.pushToken')).toBe('fcm-1');
+    });
+
+    it('is taken off on a return to the app, and comes back once they are on again', async () => {
+      const push = await load();
+      await push.registerForPush();
+      expect(app.addListener).toHaveBeenCalledTimes(1);
+
+      messaging.checkPermissions.mockResolvedValue({ receive: 'denied' });
+      appListeners.resume();
+      await flush();
+      expect(devices.unregisterDevice).toHaveBeenCalledWith('fcm-1');
+      expect(push.getPushToken()).toBeNull();
+
+      messaging.checkPermissions.mockResolvedValue({ receive: 'granted' });
+      appListeners.resume();
+      await flush();
+      expect(devices.registerDevice).toHaveBeenCalledTimes(2);
+      expect(push.getPushToken()).toBe('fcm-1');
+    });
+  });
+
+  describe('a return to the app', () => {
+    it('re-registers after 12 hours, not before, and not after logout', async () => {
+      const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+      try {
+        const push = await load();
+        await push.registerForPush();
+
+        now.mockReturnValue(1_000_000 + 11 * 3_600_000);
+        appListeners.resume();
+        await flush();
+        expect(devices.registerDevice).toHaveBeenCalledTimes(1);
+
+        now.mockReturnValue(1_000_000 + 12 * 3_600_000);
+        appListeners.resume();
+        await flush();
+        expect(devices.registerDevice).toHaveBeenCalledTimes(2);
+
+        await push.unregisterPush();
+        now.mockReturnValue(1_000_000 + 30 * 3_600_000);
+        appListeners.resume();
+        await flush();
+        expect(devices.registerDevice).toHaveBeenCalledTimes(2);
+      } finally {
+        now.mockRestore();
+      }
     });
   });
 

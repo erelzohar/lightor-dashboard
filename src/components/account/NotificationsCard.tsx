@@ -161,6 +161,12 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
           <span className="block mt-1">{t('account.notifications.plusOnly')}</span>
         )}
         {phoneLocked && <span className="block mt-1">{t('account.notifications.needsPhone')}</span>}
+        {/* LT-452: the phone carries only what the owner has to act on. */}
+        {channel !== 'email' && (
+          <span className="block mt-1" data-testid="notification-phone-scope">
+            {t('account.notifications.phoneScope', { channel: t(`account.notifications.channels.${channel}`) })}
+          </span>
+        )}
       </p>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mt-6 mb-1">
@@ -188,6 +194,9 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
       {isNativeApp() && (
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">{t('account.notifications.pushNote')}</p>
       )}
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3" data-testid="notification-app-instead-of-email">
+        {t('account.notifications.appInsteadOfEmail')}
+      </p>
     </Card>
   );
 };

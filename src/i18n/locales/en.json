@@ -219,8 +219,8 @@
       "labelRequired": "Write the question (up to 40 characters)",
       "optionsInvalid": "A list needs 2 to 10 different options, up to 30 characters each",
       "limitReached": "You have reached the maximum of 8 questions",
-      "important": "Show in the new-booking message",
-      "importantHint": "The answer also appears in the SMS or WhatsApp you get for a new booking",
+      "important": "Show in the new-booking notification",
+      "importantHint": "The answer also appears in the app notification you get for a new booking",
       "remember": "Remember for the customer's next booking",
       "rememberHint": "Next time the customer can reuse this answer without typing it again, after verifying their phone"
     },
@@ -699,6 +699,8 @@
         "newLead": "Someone left their details on your site"
       },
       "pushNote": "App notifications follow these choices too.",
+      "phoneScope": "By {{channel}} you get only the morning digest, new inquiries, and a cancellation or change of an appointment in the next 24 hours. Everything else comes by email.",
+      "appInsteadOfEmail": "Have the app with notifications on? New bookings, cancellations and changes go only to the app, with no email.",
       "pushChannel": "Appointments and inquiries"
     },
     "phoneCode": {

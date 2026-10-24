@@ -219,8 +219,8 @@
       "labelRequired": "Escribe la pregunta (hasta 40 caracteres)",
       "optionsInvalid": "Una lista necesita de 2 a 10 opciones distintas, de hasta 30 caracteres cada una",
       "limitReached": "Has llegado al máximo de 8 preguntas",
-      "important": "Mostrar en el mensaje de nueva reserva",
-      "importantHint": "La respuesta también aparece en el SMS o WhatsApp que recibes por una nueva reserva",
+      "important": "Mostrar en la notificación de nueva reserva",
+      "importantHint": "La respuesta también aparece en la notificación de la app que recibes por una nueva reserva",
       "remember": "Recordar para la próxima reserva del cliente",
       "rememberHint": "La próxima vez el cliente podrá reutilizar esta respuesta sin escribirla de nuevo, tras verificar su teléfono"
     },
@@ -699,6 +699,8 @@
         "newLead": "Alguien dejó sus datos en tu sitio"
       },
       "pushNote": "Las notificaciones de la app siguen también estas opciones.",
+      "phoneScope": "Por {{channel}} recibes solo el resumen matutino, las consultas nuevas y la cancelación o el cambio de una cita en las próximas 24 horas. Todo lo demás llega por correo.",
+      "appInsteadOfEmail": "¿Tienes la app con las notificaciones activadas? Las reservas nuevas, cancelaciones y cambios llegan solo a la app, sin correo.",
       "pushChannel": "Citas y consultas"
     },
     "phoneCode": {

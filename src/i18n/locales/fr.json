@@ -219,8 +219,8 @@
       "labelRequired": "Écrivez la question (40 caractères maximum)",
       "optionsInvalid": "Une liste doit avoir de 2 à 10 options différentes, de 30 caractères maximum chacune",
       "limitReached": "Vous avez atteint le maximum de 8 questions",
-      "important": "Afficher dans le message de nouvelle réservation",
-      "importantHint": "La réponse apparaît aussi dans le SMS ou le WhatsApp reçu pour une nouvelle réservation",
+      "important": "Afficher dans la notification de nouvelle réservation",
+      "importantHint": "La réponse apparaît aussi dans la notification de l’application reçue pour une nouvelle réservation",
       "remember": "Retenir pour la prochaine réservation du client",
       "rememberHint": "La prochaine fois, le client pourra réutiliser cette réponse sans la retaper, après vérification de son téléphone"
     },
@@ -699,6 +699,8 @@
         "newLead": "Quelqu’un a laissé ses coordonnées sur votre site"
       },
       "pushNote": "Les notifications de l’application suivent aussi ces choix.",
+      "phoneScope": "Par {{channel}}, vous recevez seulement le résumé du matin, les nouvelles demandes, et l’annulation ou la modification d’un rendez-vous dans les prochaines 24 heures. Tout le reste arrive par e-mail.",
+      "appInsteadOfEmail": "Vous avez l’application avec les notifications activées ? Les nouvelles réservations, annulations et modifications arrivent seulement dans l’application, sans e-mail.",
       "pushChannel": "Rendez-vous et demandes"
     },
     "phoneCode": {

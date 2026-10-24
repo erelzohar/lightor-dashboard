@@ -17,9 +17,40 @@ import { registerDevice, unregisterDevice } from './devicesApi';
  * verified account, never on launch: the permission prompt lands on someone
  * who already sees their appointments, which is when "notify me about
  * bookings" makes sense.
+ *
+ * The app stands in for the owner's booking emails while the phone keeps
+ * opening it and its notifications are on (LT-452, the server's
+ * APP_FRESH_DAYS). So every launch, and a return to the app after
+ * REFRESH_EVERY_MS, re-registers the token, and notifications turned off in
+ * the phone's settings take the phone off the server: FCM would still take
+ * every send to it without an error. The token is kept in localStorage for
+ * that, since a phone whose notifications are off is never handed one again.
  */
 let currentToken: string | null = null;
 let listening = false;
+let active = false;
+let lastPostAt = 0;
+let resumeBound = false;
+
+const TOKEN_KEY = 'lightor.pushToken';
+const REFRESH_EVERY_MS = 12 * 60 * 60 * 1000;
+
+const storedToken = (): string | null => {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const storeToken = (token: string | null): void => {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // Storage refused: logout still has currentToken.
+  }
+};
 
 const appVersion = async (): Promise<string | undefined> => {
   try {
@@ -32,6 +63,7 @@ const appVersion = async (): Promise<string | undefined> => {
 
 const postToken = async (token: string): Promise<void> => {
   currentToken = token;
+  storeToken(token);
   try {
     await registerDevice({
       token,
@@ -39,17 +71,56 @@ const postToken = async (token: string): Promise<void> => {
       locale: i18n.language,
       appVersion: await appVersion(),
     });
+    lastPostAt = Date.now();
   } catch {
     // The next launch re-registers; a missed upsert is not worth a toast.
   }
 };
 
+/** Take this phone off the server; kept for the next launch if the DELETE fails. */
+const forgetToken = async (): Promise<void> => {
+  const token = currentToken ?? storedToken();
+  currentToken = null;
+  if (!token) return;
+  try {
+    await unregisterDevice(token);
+    storeToken(null);
+  } catch {
+    // Tried again on the next launch or return to the app.
+  }
+};
+
+/** Back in the app: notifications turned off since, or a registration grown old. */
+const onResume = async (): Promise<void> => {
+  if (!active) return;
+  try {
+    const { receive } = await FirebaseMessaging.checkPermissions();
+    if (receive !== 'granted') {
+      await forgetToken();
+      return;
+    }
+  } catch {
+    return;
+  }
+  if (!currentToken || Date.now() - lastPostAt >= REFRESH_EVERY_MS) await registerForPush();
+};
+
 /**
  * Ask for permission, register the FCM token with the API, and keep it fresh
- * on `tokenReceived`. Idempotent — the listener is attached once per app run.
+ * on `tokenReceived` and on a return to the app. Idempotent — the listeners
+ * are attached once per app run.
  */
 export const registerForPush = async (): Promise<void> => {
   if (!isNativeApp()) return;
+  active = true;
+  try {
+    if (!resumeBound) {
+      resumeBound = true;
+      await App.addListener('resume', () => void onResume());
+    }
+  } catch {
+    // Without the listener the next launch refreshes instead.
+  }
   try {
     if (nativePlatform() === 'android') {
       // Android 8+: a channel must exist before the first notification shows.
@@ -64,7 +135,10 @@ export const registerForPush = async (): Promise<void> => {
       });
     }
     const { receive } = await FirebaseMessaging.requestPermissions();
-    if (receive !== 'granted') return;
+    if (receive !== 'granted') {
+      await forgetToken();
+      return;
+    }
 
     if (!listening) {
       listening = true;
@@ -115,8 +189,10 @@ export const getPushToken = (): string | null => currentToken;
  * Called BEFORE the session is cleared so the DELETE still carries the Bearer.
  */
 export const unregisterPush = async (): Promise<void> => {
-  const token = currentToken;
+  const token = currentToken ?? storedToken();
   currentToken = null;
+  active = false;
+  storeToken(null);
   if (!isNativeApp() || !token) return;
   try {
     await unregisterDevice(token);
