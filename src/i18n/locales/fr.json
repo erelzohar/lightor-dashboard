@@ -282,15 +282,11 @@
       "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr."
     },
     "category": {
-      "title": "Catégorie et mots-clés",
+      "title": "Catégorie",
       "desc": "Ce qu'est votre site, pour qu'on le trouve un jour dans une recherche. L'IA l'a choisi en construisant votre site ; vous pouvez le changer.",
       "main": "Catégorie",
       "sub": "Sous-catégorie",
       "choose": "Choisir",
-      "keywords": "Mots-clés",
-      "keywordsPlaceholder": "Tapez un mot et appuyez sur Entrée",
-      "keywordsHelp": "Jusqu'à {{max}} mots ou expressions courtes qu'un client chercherait. Non affichés sur le site.",
-      "removeKeyword": "Retirer {{word}}",
       "loadFailed": "Impossible de charger les catégories. Essayez d'actualiser."
     }
   },

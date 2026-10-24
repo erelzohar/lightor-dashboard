@@ -171,11 +171,9 @@ const Settings: React.FC = () => {
   // The currency (LT-395): absent reads as shekels.
   const currencyChanged =
     !!localWebConfig && !!webConfig && currencyOf(localWebConfig.currency) !== currencyOf(webConfig.currency);
-  // The category and keywords (LT-453): absent, null and empty are the same.
+  // The category (LT-453): absent and null are the same. The keywords are the AI's, not the owner's.
   const categoryKey = (config: WebConfig | null) => (config?.category?.main ? `${config.category.main}/${config.category.sub ?? ''}` : '');
   const categoryChanged = !!localWebConfig && !!webConfig && categoryKey(localWebConfig) !== categoryKey(webConfig);
-  const keywordsChanged =
-    !!localWebConfig && !!webConfig && JSON.stringify(localWebConfig.keywords ?? []) !== JSON.stringify(webConfig.keywords ?? []);
   // Hidden from search engines (LT-208): absent and false are the same.
   const hideFromSearchChanged =
     !!localWebConfig && !!webConfig && !!localWebConfig.hideFromSearch !== !!webConfig.hideFromSearch;
@@ -209,7 +207,6 @@ const Settings: React.FC = () => {
       a11yMenuChanged ||
       currencyChanged ||
       categoryChanged ||
-      keywordsChanged ||
       JSON.stringify(localWebConfig.businessName) !== JSON.stringify(webConfig.businessName) ||
       JSON.stringify(localWebConfig.defaultLanguage) !== JSON.stringify(webConfig.defaultLanguage) ||
       JSON.stringify(localWebConfig.subDomain) !== JSON.stringify(webConfig.subDomain) ||
@@ -439,9 +436,8 @@ const Settings: React.FC = () => {
       if (a11yMenuChanged) payload.accessibility = { widgetHidden: a11yMenuHidden(localWebConfig) };
       // The currency only when the owner chose one (LT-395).
       if (currencyChanged) payload.currency = currencyOf(localWebConfig.currency);
-      // The category and keywords only when changed (LT-453); the server checks the keys.
+      // The category only when changed (LT-453); the server checks the keys.
       if (categoryChanged) payload.category = localWebConfig.category?.main ? localWebConfig.category : null;
-      if (keywordsChanged) payload.keywords = localWebConfig.keywords ?? [];
       if (imgResponse) {
         payload.logoImageName = imgResponse.imageName;
       } else if (logoInputMode === 'url' && logoUrlValue && logoUrlValue.startsWith('http')) {
@@ -846,9 +842,7 @@ const Settings: React.FC = () => {
             <SettingsSection icon={Tag} title={t('settings.category.title')} description={t('settings.category.desc')}>
               <CategoryFields
                 category={localWebConfig.category}
-                keywords={localWebConfig.keywords}
                 onCategoryChange={(category) => handleChange('root', 'category', category)}
-                onKeywordsChange={(keywords) => handleChange('root', 'keywords', keywords)}
               />
             </SettingsSection>
 

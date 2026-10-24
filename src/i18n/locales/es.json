@@ -282,15 +282,11 @@
       "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com."
     },
     "category": {
-      "title": "Categoría y palabras clave",
+      "title": "Categoría",
       "desc": "Qué es tu sitio, para que algún día lo encuentren en una búsqueda. La IA lo eligió al construir tu sitio; puedes cambiarlo.",
       "main": "Categoría",
       "sub": "Subcategoría",
       "choose": "Elegir",
-      "keywords": "Palabras clave",
-      "keywordsPlaceholder": "Escribe una palabra y pulsa Enter",
-      "keywordsHelp": "Hasta {{max}} palabras o frases cortas que buscaría un cliente. No se muestran en el sitio.",
-      "removeKeyword": "Quitar {{word}}",
       "loadFailed": "No pudimos cargar las categorías. Intenta actualizar."
     }
   },

@@ -125,16 +125,20 @@ beforeEach(() => {
 });
 
 /**
- * LT-453: the site's category and keywords in Settings > General - what the
- * AI chose at the build, changed here, sent only when changed.
+ * LT-453: the site's category in Settings > General - what the AI chose at
+ * the build, changed here, sent only when changed. The keywords are the
+ * AI's: the owner neither sees nor sends them (Erel).
  */
-describe('Settings: the category and keywords', () => {
-  it("shows the build's choice, offers only the main category's sub-categories, and saves both", async () => {
+describe('Settings: the category', () => {
+  it("shows the build's choice, offers only the main category's sub-categories, and saves it", async () => {
     state.webConfig.data = { ...baseConfig(), category: { main: 'beauty', sub: 'nails' }, keywords: ['gel'] } as WebConfig;
     render(<Settings />);
 
     await waitFor(async () => expect(await findTrigger('settings.category.sub')).toHaveTextContent('Nails'));
     expect(screen.queryByText('common.save')).toBeNull();
+    // No keyword field for the owner.
+    expect(screen.queryByText('settings.category.keywords')).toBeNull();
+    expect(screen.queryByDisplayValue('gel')).toBeNull();
 
     choose(trigger('settings.category.main'), 'fitness');
     // A new main clears the sub-category; only its own are offered.
@@ -142,20 +146,13 @@ describe('Settings: the category and keywords', () => {
     expect(() => choose(trigger('settings.category.sub'), 'nails')).toThrow();
     choose(trigger('settings.category.sub'), 'pilates');
 
-    const input = screen.getByLabelText('settings.category.keywords');
-    fireEvent.change(input, { target: { value: 'reformer' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
-    fireEvent.change(input, { target: { value: 'Gel' } });
-    fireEvent.keyDown(input, { key: 'Enter' }); // the same word again: ignored
-    // The first chip is "gel" (the build's), the second the one just added.
-    fireEvent.click(screen.getAllByRole('button', { name: 'settings.category.removeKeyword' })[0]);
-
     fireEvent.click(await screen.findByText('common.save'));
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
-    expect(sentPayload()).toMatchObject({ category: { main: 'fitness', sub: 'pilates' }, keywords: ['reformer'] });
+    expect(sentPayload()).toMatchObject({ category: { main: 'fitness', sub: 'pilates' } });
+    expect(sentPayload()).not.toHaveProperty('keywords');
   });
 
-  it('sends neither when untouched', async () => {
+  it('sends no category when untouched', async () => {
     state.webConfig.data = { ...baseConfig(), category: { main: 'beauty', sub: 'nails' }, keywords: ['gel'] } as WebConfig;
     render(<Settings />);
     await findTrigger('settings.category.sub');

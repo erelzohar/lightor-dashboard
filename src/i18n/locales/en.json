@@ -282,15 +282,11 @@
       "desc": "Connect your own address to the site, like www.mybusiness.com."
     },
     "category": {
-      "title": "Category and keywords",
+      "title": "Category",
       "desc": "What your site is, so it can be found in search one day. The AI chose this when it built your site; you can change it.",
       "main": "Category",
       "sub": "Sub-category",
       "choose": "Choose",
-      "keywords": "Keywords",
-      "keywordsPlaceholder": "Type a word and press Enter",
-      "keywordsHelp": "Up to {{max}} words or short phrases a customer would search for. Not shown on the site.",
-      "removeKeyword": "Remove {{word}}",
       "loadFailed": "We could not load the categories. Try refreshing."
     }
   },
