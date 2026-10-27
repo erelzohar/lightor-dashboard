@@ -11,6 +11,7 @@ import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import PageTour from '../tour/PageTour';
+import AccountBanners from './AccountBanners';
 import { ReportProblemHost } from '../support/ReportProblem';
 import { useDeepLinkLeaveGuard } from '../../hooks/useAppUrlOpen';
 import { bindNotificationTaps } from '../../services/pushClient';
@@ -224,6 +225,10 @@ const Layout: React.FC = () => {
                 : 'min-h-full pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-8'
             }`}
           >
+            {/* LT-458: a failed payment, or a free month's bookings used up.
+                Not on the Account page, which says it beside the subscription,
+                nor over the pages that size themselves off this box. */}
+            {!fullBleed && pathname !== '/account' && <AccountBanners go={leaveTo} />}
             <Outlet />
           </div>
         </motion.main>

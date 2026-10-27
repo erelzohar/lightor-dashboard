@@ -888,7 +888,6 @@
     "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
     "pilotLine": "Prueba gratuita: todas las funciones Plus son gratis hasta el {{date}}.",
     "pilotSubscribeNote": "Tu prueba termina el {{date}}. Si te suscribes ahora, el primer cobro será recién el {{date}}; hasta entonces puedes cancelar sin pagar.",
-    "pilotUpgradeLater": "Una semana antes de que termine te lo recordaremos y podrás elegir si continuar.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
     "upgrade": "Mejorar",
@@ -924,7 +923,7 @@
     "refundPolicy": "Política de cancelación y reembolso",
     "portalUnavailable": "No se pudo abrir la gestión de pagos. Inténtalo de nuevo en unos minutos.",
     "portalNoAccount": "Esta cuenta todavía no tiene pagos.",
-    "pastDueDesc": "Tu último pago no se pudo completar. Actualiza tu método de pago para recuperar todas las funciones Plus.",
+    "pastDueDesc": "Tu último pago no se pudo completar. Hasta que se complete, tu sitio no recibe reservas ni consultas y los recordatorios a tus clientes están en pausa. Actualiza tu método de pago y, en cuanto se complete, todo se reanuda.",
     "updatePaymentMethod": "Actualizar método de pago",
     "usageMeter": "{{used}}/{{cap}} citas este mes",
     "usageNearCap": "Acercándose al límite",
@@ -943,7 +942,18 @@
     },
     "complimentary": "Cuenta de administrador: todas las funciones de Plus, siempre, sin pagar.",
     "freePeriodUsed": "El período gratuito ya se usó con el número, el correo o la cuenta de Google de esta cuenta.",
-    "freePeriodPending": "Verifica tu teléfono en los datos de la cuenta para obtener 60 días de Lightor+."
+    "freePeriodPending": "Verifica tu teléfono en los datos de la cuenta para obtener 60 días de Lightor+.",
+    "pastDueDescNative": "Tu último pago no se pudo completar. Hasta que se complete, tu sitio no recibe reservas ni consultas y los recordatorios a tus clientes están en pausa.",
+    "bookingsMeter": "{{used}}/{{included}} reservas en este período",
+    "bookingsMeterFree": "{{used}}/{{included}} reservas este mes de tu prueba gratuita",
+    "bookingsNearIncluded": "Cerca de las reservas incluidas",
+    "bookingsExtraCount": "Reservas adicionales: {{n}}",
+    "bookingsExtraPrice": "Cada reserva por encima de {{included}} cuesta {{price}} y se suma a tu factura.",
+    "bookingsResets": "El conteo vuelve a empezar el {{date}}.",
+    "bookingsFreeFull": "Mes completo",
+    "bookingsFreeFullDesc": "Tu sitio no recibe reservas nuevas. Elige un plan y añade una tarjeta para reabrirlas ya - no se cobra nada antes del {{date}}.",
+    "bookingsFreeFullNative": "Tu sitio no recibe reservas nuevas hasta el {{date}}.",
+    "planBookingTerms": "Incluye {{included}} reservas al mes y luego {{price}} por cada reserva adicional."
   },
   "danger": {
     "title": "Zona de peligro",
@@ -2036,6 +2046,19 @@
       "tooMany": "Hoy enviaste muchos informes. También puedes escribir a support@lightor.app",
       "failed": "No pudimos enviarlo. Inténtalo de nuevo o escribe a {{email}}",
       "close": "Cerrar"
+    }
+  },
+  "accountBanner": {
+    "paymentFailed": {
+      "title": "El pago de tu suscripción no se pudo completar",
+      "body": "Hasta que se complete, tu sitio no recibe reservas ni consultas y los recordatorios a tus clientes están en pausa.",
+      "cta": "Actualizar método de pago"
+    },
+    "freeMonthFull": {
+      "title": "Se usaron las {{included}} reservas del mes",
+      "body": "Tu sitio no recibe reservas nuevas. Añade una tarjeta para reabrirlas ya - no se cobra nada antes del {{date}}.",
+      "bodyApp": "Tu sitio no recibe reservas nuevas hasta el {{date}}.",
+      "cta": "Añadir una tarjeta"
     }
   }
 }

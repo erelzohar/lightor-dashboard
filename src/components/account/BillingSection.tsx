@@ -19,7 +19,6 @@ import {
   CheckoutTransaction,
 } from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
-import { upgradeIsOpen } from '../../lib/upgradeWindow';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
@@ -97,11 +96,12 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     fetchMyEntitlements().then((data) => {
       if (cancelled) return;
       setEntitlements(data);
-      // Paddle is not even loaded while the free 60 days are the system's own
-      // (LT-290): the plans open in their last week. Nor for an account whose
-      // Plus is not bought (LT-310). Nor when the account's plan could not be
-      // read (LT-315): unknown is not "open", so nothing is offered.
-      if (data && !data.complimentary && canOfferPurchases() && upgradeIsOpen(data.pilot)) {
+      // The plans are on offer all through the free days (LT-458; before it
+      // only in their last week, LT-290): a card added early starts a trial
+      // of the days left. Not for an account whose Plus is not bought
+      // (LT-310), nor when the account's plan could not be read (LT-315):
+      // unknown is not "open", so nothing is offered.
+      if (data && !data.complimentary && canOfferPurchases()) {
         fetchUpgradePlans()
           // A failure to load Paddle reads as no plans: "unavailable", never
           // a spinner that turns forever (LT-315).
@@ -138,8 +138,15 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const dateLocale =
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const pilotDate = pilot ? new Date(pilot.until).toLocaleDateString(dateLocale) : null;
-  // LT-290: nothing to buy until the grant's last week.
-  const plansOpen = upgradeIsOpen(pilot);
+  // LT-458: the bookings this period - a subscriber's 500 (what is over them
+  // is charged, nothing closes) or a free-period month's 200 (then the site
+  // stops taking bookings until a card is added).
+  const bookings = entitlements?.bookings ?? null;
+  const bookingsRatio = bookings && bookings.included > 0 ? Math.min(bookings.used / bookings.included, 1) : 0;
+  const extraBookings = bookings ? Math.max(0, bookings.used - bookings.included) : 0;
+  const freeMonthFull = bookings?.kind === 'freePeriod' && bookings.used >= bookings.included;
+  const bookingsPeriodEnd = bookings ? new Date(bookings.periodEnd).toLocaleDateString(dateLocale) : null;
+  const bookingTerms = entitlements?.bookingTerms;
 
   // Payment confirmed on Paddle's side; now chase the webhook. Each round
   // re-reads /auth/me — the badge flips through context state the moment the
@@ -304,6 +311,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       return `${amount} ${currency}`;
     }
   };
+  const termsLine = (included: number, agorot: number) =>
+    t('billing.planBookingTerms', { included, price: money(agorot / 100, 'ILS') });
   const firstChargeDate = checkout?.transaction.firstChargeAt
     ? new Date(checkout.transaction.firstChargeAt).toLocaleDateString(dateLocale)
     : null;
@@ -415,6 +424,55 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
           </div>
         </div>
       )}
+
+      {/* The bookings made this period, cancelled ones included (LT-458). A
+          leads site takes none (LT-199). */}
+      {bookings && !leadsSite && (
+        <div className="space-y-1.5" data-testid="bookings-meter">
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <span className="text-gray-700 dark:text-gray-200 font-medium">
+              {t(bookings.kind === 'plus' ? 'billing.bookingsMeter' : 'billing.bookingsMeterFree', {
+                used: bookings.used,
+                included: bookings.included,
+              })}
+            </span>
+            {bookingsRatio >= 0.8 && (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 text-end">
+                {bookings.kind === 'freePeriod'
+                  ? freeMonthFull ? t('billing.bookingsFreeFull') : t('billing.usageNearCap')
+                  : extraBookings > 0
+                    ? t('billing.bookingsExtraCount', { n: extraBookings })
+                    : t('billing.bookingsNearIncluded')}
+              </span>
+            )}
+          </div>
+          <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                freeMonthFull ? 'bg-red-500' : bookingsRatio >= 0.8 ? 'bg-amber-500' : 'bg-primary'
+              }`}
+              style={{ width: `${Math.round(bookingsRatio * 100)}%` }}
+            />
+          </div>
+          {bookings.kind === 'plus' ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {bookings.extraAgorot !== null &&
+                `${t('billing.bookingsExtraPrice', {
+                  included: bookings.included,
+                  price: money(bookings.extraAgorot / 100, 'ILS'),
+                })} `}
+              {t('billing.bookingsResets', { date: bookingsPeriodEnd })}
+            </p>
+          ) : freeMonthFull ? (
+            // Adding a card is a call to buy, so the app states the fact only (LT-130).
+            <p className="text-xs text-red-600 dark:text-red-400" data-testid="free-month-full">
+              {canSell
+                ? t('billing.bookingsFreeFullDesc', { date: pilotDate })
+                : t('billing.bookingsFreeFullNative', { date: bookingsPeriodEnd })}
+            </p>
+          ) : null}
+        </div>
+      )}
     </>
   );
 
@@ -451,6 +509,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                       })
                     : t('billing.cancelScheduledDescNoDate')}
                 </p>
+                {meters}
                 {canSell && (
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -478,6 +537,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     </p>
                   )}
                 </div>
+                {/* LT-458: the bookings beside the subscription (Erel: only here). */}
+                {meters}
                 {manageButton && <div>{manageButton}</div>}
                 {canSell && (
                   <button
@@ -491,17 +552,21 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </>
             )}
           </div>
-        ) : status === 'past_due' && canSell ? (
+        ) : status === 'past_due' ? (
           <>
-            {/* A renewal Paddle could not collect (LT-265): the account is on
-                the free plan's limits until the payment method is fixed. The
-                app keeps the free-plan line below (LT-130). */}
-            <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+            {/* A renewal Paddle could not collect (LT-265): until it is paid
+                the site takes no bookings or inquiries and the customers'
+                reminders stop (LT-458). The app states it without the way to
+                pay (LT-130). */}
+            <div
+              className="flex items-start gap-2 rounded-lg border border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-200"
+              data-testid="billing-past-due"
+            >
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-              <p>{t('billing.pastDueDesc')}</p>
+              <p>{t(canSell ? 'billing.pastDueDesc' : 'billing.pastDueDescNative')}</p>
             </div>
             {meters}
-            <div className="flex flex-wrap items-center gap-2">
+            {canSell && <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="primary"
                 onClick={() => void openPortal('updatePaymentMethod')}
@@ -511,7 +576,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {portalOpening === 'updatePaymentMethod' ? t('billing.opening') : t('billing.updatePaymentMethod')}
               </Button>
               {manageButton}
-            </div>
+            </div>}
           </>
         ) : (
           <>
@@ -533,16 +598,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             {!pilotDate && auth.user?.freePeriod?.state === 'pending' && (
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.freePeriodPending')}</p>
             )}
-            {/* Before the grant's last week there is nothing to choose yet (LT-290). */}
-            {pilotDate && canSell && !plansOpen && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.pilotUpgradeLater')}</p>
-            )}
-
             {meters}
 
-            {/* On sale in the grant's last week (LT-290): the server starts such
-                a subscription with its first charge at the grant's end. */}
-            {!canSell || !plansOpen ? null : awaitingWebhook ? (
+            {/* On sale all through the free days (LT-458): the server starts
+                such a subscription with its first charge at the grant's end. */}
+            {!canSell ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />
                 {t('billing.processingHint')}
@@ -602,6 +662,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                               {money(checkoutData.recurring_totals.total, checkoutData.currency_code)}
                             </span>
                           </div>
+                        )}
+                        {bookingTerms?.extraAgorot != null && (
+                          <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="checkout-booking-terms">
+                            {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
+                          </p>
                         )}
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {firstChargeDate
@@ -667,6 +732,12 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     </div>
                   ))}
                 </div>
+                {/* What the plan includes, and what a booking over it costs (LT-458). */}
+                {bookingTerms?.extraAgorot != null && (
+                  <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="plan-booking-terms">
+                    {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
+                  </p>
+                )}
                 {/* Paddle asks for the seller's own refund terms beside the plans (LT-265). */}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   <a

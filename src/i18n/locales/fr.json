@@ -888,7 +888,6 @@
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
     "pilotLine": "Essai gratuit : toutes les fonctionnalités Plus sont gratuites jusqu’au {{date}}.",
     "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
-    "pilotUpgradeLater": "Une semaine avant la fin, nous vous le rappellerons et vous pourrez choisir de continuer.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
     "upgrade": "Améliorer",
@@ -924,7 +923,7 @@
     "refundPolicy": "Politique d'annulation et de remboursement",
     "portalUnavailable": "Impossible d’ouvrir la gestion des paiements. Réessayez dans quelques minutes.",
     "portalNoAccount": "Aucun paiement n’est encore associé à ce compte.",
-    "pastDueDesc": "Votre dernier paiement n’a pas abouti. Mettez à jour votre moyen de paiement pour retrouver toutes les fonctionnalités Plus.",
+    "pastDueDesc": "Votre dernier paiement n’a pas abouti. D’ici là, votre site ne prend ni réservations ni demandes et les rappels à vos clients sont suspendus. Mettez à jour votre moyen de paiement : dès que le paiement passe, tout reprend.",
     "updatePaymentMethod": "Mettre à jour le moyen de paiement",
     "usageMeter": "{{used}}/{{cap}} rendez-vous ce mois-ci",
     "usageNearCap": "Approche de la limite",
@@ -943,7 +942,18 @@
     },
     "complimentary": "Compte administrateur : toutes les fonctionnalités Plus, toujours, sans frais.",
     "freePeriodUsed": "La période gratuite a déjà été utilisée avec le numéro, l’e-mail ou le compte Google de ce compte.",
-    "freePeriodPending": "Vérifiez votre numéro dans les détails du compte pour obtenir 60 jours de Lightor+."
+    "freePeriodPending": "Vérifiez votre numéro dans les détails du compte pour obtenir 60 jours de Lightor+.",
+    "pastDueDescNative": "Votre dernier paiement n’a pas abouti. D’ici là, votre site ne prend ni réservations ni demandes et les rappels à vos clients sont suspendus.",
+    "bookingsMeter": "{{used}}/{{included}} réservations sur cette période",
+    "bookingsMeterFree": "{{used}}/{{included}} réservations ce mois-ci de votre essai gratuit",
+    "bookingsNearIncluded": "Bientôt au bout des réservations incluses",
+    "bookingsExtraCount": "Réservations en plus : {{n}}",
+    "bookingsExtraPrice": "Chaque réservation au-delà de {{included}} coûte {{price}}, ajoutée à votre facture.",
+    "bookingsResets": "Le compteur repart de zéro le {{date}}.",
+    "bookingsFreeFull": "Mois complet",
+    "bookingsFreeFullDesc": "Votre site ne prend plus de réservations. Choisissez une offre et ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
+    "bookingsFreeFullNative": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
+    "planBookingTerms": "Inclut {{included}} réservations par mois, puis {{price}} par réservation en plus."
   },
   "danger": {
     "title": "Zone de danger",
@@ -2036,6 +2046,19 @@
       "tooMany": "Vous avez envoyé beaucoup de signalements aujourd’hui. Vous pouvez aussi écrire à support@lightor.app",
       "failed": "Impossible de l’envoyer. Réessayez, ou écrivez à {{email}}",
       "close": "Fermer"
+    }
+  },
+  "accountBanner": {
+    "paymentFailed": {
+      "title": "Le paiement de votre abonnement n’a pas abouti",
+      "body": "D’ici là, votre site ne prend ni réservations ni demandes et les rappels à vos clients sont suspendus.",
+      "cta": "Mettre à jour le paiement"
+    },
+    "freeMonthFull": {
+      "title": "Les {{included}} réservations du mois sont utilisées",
+      "body": "Votre site ne prend plus de réservations. Ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
+      "bodyApp": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
+      "cta": "Ajouter une carte"
     }
   }
 }

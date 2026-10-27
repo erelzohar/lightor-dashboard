@@ -54,8 +54,12 @@ const Dashboard: React.FC = () => {
       cancelled = true;
     };
   }, []);
+  // A failed payment reads as the free plan, but it is not an upgrade the
+  // owner needs: the layout's banner asks them to pay (LT-458).
   const onFreePlan =
-    entitlements !== undefined && (entitlements?.plan ?? auth.user?.subscription?.status) === 'free';
+    entitlements !== undefined &&
+    auth.user?.subscription?.status !== 'past_due' &&
+    (entitlements?.plan ?? auth.user?.subscription?.status) === 'free';
   // The grant's last week (LT-290): the owner is told when the free period
   // ends; on the web with the way to the plans, in the app as a fact only.
   const trialEnding = entitlements?.pilot && upgradeIsOpen(entitlements.pilot) ? entitlements.pilot : null;

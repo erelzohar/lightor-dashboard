@@ -161,25 +161,13 @@ describe('BillingSection pilot grant', () => {
   });
 
   /**
-   * LT-290: the free period is the system's own — nothing to buy, and Paddle
-   * not even loaded, until its last week.
+   * LT-265 + LT-458: an owner may subscribe at any point in the free days
+   * (before LT-458 only in their last week, LT-290); the first charge comes
+   * when the free period ends. So the plans are on offer, under a line saying
+   * when the first charge is - whatever `upgradeFrom` says.
    */
-  it('offers nothing before the last week, saying a reminder will come', async () => {
-    entitlementsState.data = pilotEntitlements(false);
-    render(<BillingSection />);
-    expect(await screen.findByText('billing.pilotUpgradeLater')).toBeInTheDocument();
-    expect(screen.queryByText('billing.pilotSubscribeNote')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'billing.subscribe' })).not.toBeInTheDocument();
-    expect(fetchUpgradePlans).not.toHaveBeenCalled();
-  });
-
-  /**
-   * LT-265 + LT-290: in the last week an owner may subscribe; the first charge
-   * comes when the free period ends. So the plans are on offer, under a line
-   * saying when the first charge is.
-   */
-  it('offers the plans on the web in the last week, saying when the first charge comes', async () => {
-    entitlementsState.data = pilotEntitlements(true);
+  it.each([false, true])('offers the plans on the web all through the free days (last week: %s)', async (lastWeek) => {
+    entitlementsState.data = pilotEntitlements(lastWeek);
     render(<BillingSection />);
     expect(await screen.findByText('billing.pilotSubscribeNote')).toBeInTheDocument();
     expect(t).toHaveBeenCalledWith('billing.pilotSubscribeNote', {
@@ -430,7 +418,10 @@ describe('BillingSection payment management', () => {
     inApp();
     authState.subscription = { status: 'past_due', customerId: 'ctm_1' };
     const { unmount } = render(<BillingSection />);
-    expect(await screen.findByText('billing.freeDescNative')).toBeInTheDocument();
+    // LT-458: what a failed payment stops is a fact about the account, so
+    // the app says it too - without the way to pay.
+    expect(await screen.findByText('billing.pastDueDescNative')).toBeInTheDocument();
+    expect(screen.queryByText('billing.freeDescNative')).not.toBeInTheDocument();
     expect(screen.queryByText('billing.pastDueDesc')).not.toBeInTheDocument();
     expect(screen.queryByText('billing.updatePaymentMethod')).not.toBeInTheDocument();
     expect(screen.queryByText('billing.manageBilling')).not.toBeInTheDocument();
@@ -493,3 +484,94 @@ describe('BillingSection when something fails to load', () => {
   });
 });
 
+
+/**
+ * LT-458: the bookings made this period, beside the subscription and only
+ * there. A subscriber's 500 never close the site (what is over them is
+ * charged); a free-period month's 200 do, until a card is added.
+ */
+describe('BillingSection bookings meter', () => {
+  const meter = (b: Record<string, unknown>) => ({
+    kind: 'plus', used: 120, included: 500,
+    periodStart: '2026-10-05T10:00:00.000Z', periodEnd: '2026-11-05T10:00:00.000Z', extraAgorot: 35, ...b,
+  });
+  const plus = (b: Record<string, unknown>): Record<string, unknown> => ({
+    plan: 'plus', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 }, pilot: null,
+    bookings: meter(b),
+  });
+  const freePeriod = (used: number): Record<string, unknown> => ({
+    plan: 'plus', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 },
+    pilot: { until: '2026-11-21T10:00:00.000Z', upgradeFrom: '2026-11-14T10:00:00.000Z' },
+    bookings: meter({ kind: 'freePeriod', used, included: 200, extraAgorot: null }),
+  });
+
+  it('shows a subscriber the period, the price of an extra booking and when the count restarts', async () => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1', nextBillDate: '2026-11-05' };
+    entitlementsState.data = plus({});
+    render(<BillingSection />);
+    expect(await screen.findByTestId('bookings-meter')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.bookingsMeter', { used: 120, included: 500 });
+    expect(t).toHaveBeenCalledWith('billing.bookingsExtraPrice', { included: 500, price: expect.stringContaining('0.35') });
+    expect(t).toHaveBeenCalledWith('billing.bookingsResets', { date: new Date('2026-11-05T10:00:00.000Z').toLocaleDateString('en-GB') });
+    expect(screen.queryByText('billing.bookingsNearIncluded')).not.toBeInTheDocument();
+  });
+
+  it('counts the extra bookings past the 500, and names no price while nothing is charged', async () => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1' };
+    entitlementsState.data = plus({ used: 530, extraAgorot: null });
+    t.mockClear();
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.bookingsExtraCount')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.bookingsExtraCount', { n: 30 });
+    expect(t).not.toHaveBeenCalledWith('billing.bookingsExtraPrice', expect.anything());
+  });
+
+  it('a full free month asks for a card on the web, under the plans', async () => {
+    entitlementsState.data = freePeriod(200);
+    render(<BillingSection />);
+    expect(await screen.findByTestId('free-month-full')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.bookingsMeterFree', { used: 200, included: 200 });
+    expect(t).toHaveBeenCalledWith('billing.bookingsFreeFullDesc', { date: new Date('2026-11-21T10:00:00.000Z').toLocaleDateString('en-GB') });
+    expect(screen.getByText('billing.bookingsFreeFull')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'billing.subscribe' })).toBeInTheDocument();
+  });
+
+  it('in the app a full free month is a fact: closed until the next month', async () => {
+    inApp();
+    entitlementsState.data = freePeriod(200);
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.bookingsFreeFullNative')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.bookingsFreeFullNative', { date: new Date('2026-11-05T10:00:00.000Z').toLocaleDateString('en-GB') });
+    expect(screen.queryByText('billing.bookingsFreeFullDesc')).not.toBeInTheDocument();
+    expect(fetchUpgradePlans).not.toHaveBeenCalled();
+  });
+
+  it('a free month under 200 says nothing more; a leads site has no bookings meter', async () => {
+    entitlementsState.data = freePeriod(40);
+    const { unmount } = render(<BillingSection />);
+    expect(await screen.findByTestId('bookings-meter')).toBeInTheDocument();
+    expect(screen.queryByTestId('free-month-full')).not.toBeInTheDocument();
+    unmount();
+
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByText('billing.pilotLine')).toBeInTheDocument();
+    expect(screen.queryByTestId('bookings-meter')).not.toBeInTheDocument();
+  });
+});
+
+/** LT-458: beside the plans, what Lightor+ includes and what an extra booking costs. */
+describe('BillingSection plan terms', () => {
+  it('names the included bookings and the extra booking`s price under the plans', async () => {
+    entitlementsState.data = { ...freeEntitlements(), bookingTerms: { included: 500, extraAgorot: 35 } };
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plan-booking-terms')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.planBookingTerms', { included: 500, price: expect.stringContaining('0.35') });
+  });
+
+  it('says nothing about a price while nothing is charged', async () => {
+    entitlementsState.data = { ...freeEntitlements(), bookingTerms: { included: 500, extraAgorot: null } };
+    render(<BillingSection />);
+    expect(await screen.findByText('billing.upgrade')).toBeInTheDocument();
+    expect(screen.queryByTestId('plan-booking-terms')).not.toBeInTheDocument();
+  });
+});

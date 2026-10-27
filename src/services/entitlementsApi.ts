@@ -53,6 +53,32 @@ export interface MyEntitlements {
    * offered or managed for it. Optional so an older API still parses.
    */
   complimentary?: boolean;
+  /**
+   * LT-458: the bookings made this period, cancelled ones included - a
+   * subscriber's month of 500, or a free-period month of 200 (at 200 the
+   * site stops taking bookings until a card is added). Null on the free
+   * plan, whose own cap is `limits.monthlyAppointments`. `extraAgorot`: what
+   * a booking over the 500 costs; null when nothing is charged for it.
+   * Optional so an older API still parses.
+   */
+  bookings?: BookingsMeter | null;
+  /**
+   * LT-458: what Lightor+ includes, said beside the plans on offer:
+   * `included` bookings a month, then `extraAgorot` each (null while nothing
+   * is charged for them). Optional so an older API still parses.
+   */
+  bookingTerms?: { included: number; extraAgorot: number | null };
+  /** LT-458: Paddle is retrying a failed payment - no bookings, inquiries or reminders until it is paid. */
+  paymentFailed?: boolean;
+}
+
+export interface BookingsMeter {
+  kind: 'plus' | 'freePeriod';
+  used: number;
+  included: number;
+  periodStart: string;
+  periodEnd: string;
+  extraAgorot: number | null;
 }
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {
