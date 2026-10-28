@@ -62,7 +62,7 @@ describe('pushClient', () => {
       appListeners[name] = fn;
       return { remove: vi.fn() };
     });
-    devices.registerDevice.mockResolvedValue({ appDefault: false });
+    devices.registerDevice.mockResolvedValue(undefined);
     devices.unregisterDevice.mockResolvedValue(undefined);
   });
 
@@ -174,16 +174,13 @@ describe('pushClient', () => {
     });
   });
 
-  // LT-455: the account's first phone with the app turned its booking emails off.
-  it('tells the owner once when the server turned the booking emails off', async () => {
-    devices.registerDevice.mockResolvedValueOnce({ appDefault: true });
+  // LT-478 (Erel): the first phone turning the booking emails off (LT-455)
+  // no longer pops a toast.
+  it('says nothing on screen when the server turned the booking emails off', async () => {
+    devices.registerDevice.mockResolvedValueOnce(undefined);
     const push = await load();
     await push.registerForPush();
-    expect(toast).toHaveBeenCalledWith('account.notifications.appDefaultNotice', { duration: 8000 });
-
-    toast.mockClear();
-    listeners.tokenReceived({ token: 'fcm-2' });
-    await flush();
+    expect(devices.registerDevice).toHaveBeenCalledTimes(1);
     expect(toast).not.toHaveBeenCalled();
   });
 

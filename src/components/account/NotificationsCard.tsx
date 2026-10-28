@@ -279,7 +279,9 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
           t('account.notifications.groups.bookingsHint'),
           <>
             {showEachKind ? (
-              <div className="space-y-3" data-testid="notification-each-kind">
+              // Eases in once when the owner opens it (LT-478); not when it
+              // is open from the start because the kinds already differ.
+              <div className={cn('space-y-3', eachKind && 'notif-each-kind-in')} data-testid="notification-each-kind">
                 {BOOKING_EVENTS.map((event) => (
                   <div key={event}>
                     <p className="text-sm text-light-text dark:text-dark-text mb-1.5">{t(`account.notifications.${event}`)}</p>
@@ -289,6 +291,20 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
               </div>
             ) : (
               chips(BOOKING_EVENTS, ['app', 'email'], 'notification-bookings')
+            )}
+            {/* Right under the chips it splits (LT-478, Erel: at the bottom
+                of the group it looked unrelated to them). */}
+            {!bookingsDiffer && (
+              <button
+                type="button"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
+                aria-expanded={showEachKind}
+                onClick={() => setEachKind((open) => !open)}
+                data-testid="notification-each-kind-toggle"
+              >
+                {t(showEachKind ? 'account.notifications.sameForAll' : 'account.notifications.eachKind')}
+                <ChevronDown size={14} aria-hidden className={cn('transition-transform', showEachKind && 'rotate-180')} />
+              </button>
             )}
             {phoneShown && (
               <div className="flex items-center justify-between gap-4 mt-4">
@@ -308,18 +324,6 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-3" data-testid="notification-safety-net">
                 {t('account.notifications.safetyNet')}
               </p>
-            )}
-            {!bookingsDiffer && (
-              <button
-                type="button"
-                className="mt-3 inline-flex items-center gap-1 text-xs text-primary"
-                aria-expanded={showEachKind}
-                onClick={() => setEachKind((open) => !open)}
-                data-testid="notification-each-kind-toggle"
-              >
-                {t(showEachKind ? 'account.notifications.sameForAll' : 'account.notifications.eachKind')}
-                <ChevronDown size={14} aria-hidden className={cn('transition-transform', showEachKind && 'rotate-180')} />
-              </button>
             )}
           </>,
           'notification-group-bookings'

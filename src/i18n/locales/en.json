@@ -152,6 +152,7 @@
     "subdomainCheckError": "Error checking availability",
     "subdomainChangedWarning": "Note: Changing the link means your previous link will no longer be available.",
     "copyLink": "Copy link",
+    "openSite": "Open in browser",
     "linkCopied": "Link copied!",
     "businessName": "Name shown on the site",
     "businessNameHint": "A business, a brand, an event or a project",
@@ -741,7 +742,6 @@
         "notConnected": "App not connected",
         "permissionOff": "Notifications are off on this phone"
       },
-      "appDefaultNotice": "From now on booking updates come here, without email. You can turn email back on in Settings.",
       "needsPhone": "Add a phone number in your account details to get WhatsApp.",
       "plusOnly": "WhatsApp is available on the Plus plan."
     },

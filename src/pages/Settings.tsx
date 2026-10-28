@@ -540,6 +540,11 @@ const Settings: React.FC = () => {
     toast.success(t('settings.linkCopied'));
   };
 
+  // Opens the saved link, not one still being typed (LT-478). A `_blank`
+  // link leaves the app for the phone's browser: Capacitor hands it to
+  // Safari / the default browser, and tenant sites are no App Links.
+  const savedSiteUrl = webConfig?.subDomain ? `https://${webConfig.subDomain}.lightor.app` : null;
+
   const handleChange = (section: string, field: string, value: any) => {
     if (!localWebConfig) return;
 
@@ -687,17 +692,44 @@ const Settings: React.FC = () => {
                   >
                     <Copy className="w-4 h-4" />
                   </button>
+                  {savedSiteUrl && (
+                    <a
+                      href={savedSiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hidden sm:flex items-center justify-center px-4 text-primary hover:bg-primary/5 dark:hover:bg-primary/10 border-s border-gray-200 dark:border-gray-700/80 transition-colors"
+                      aria-label={t('settings.openSite')}
+                      title={t('settings.openSite')}
+                      data-testid="settings-open-site"
+                    >
+                      <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
-                {/* Phones (LT-435): the copy button leaves the row, and the
-                    box gets the room to show the whole link. */}
-                <button
-                  type="button"
-                  onClick={copySiteLink}
-                  className="sm:hidden mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary"
-                >
-                  <Copy className="w-4 h-4" />
-                  {t('settings.copyLink')}
-                </button>
+                {/* Phones (LT-435): the copy and open buttons leave the row,
+                    and the box gets the room to show the whole link. */}
+                <div className="sm:hidden mt-2 flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <button
+                    type="button"
+                    onClick={copySiteLink}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {t('settings.copyLink')}
+                  </button>
+                  {savedSiteUrl && (
+                    <a
+                      href={savedSiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-primary"
+                      data-testid="settings-open-site-phone"
+                    >
+                      <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                      {t('settings.openSite')}
+                    </a>
+                  )}
+                </div>
                 <AnimatePresence mode="popLayout">
                   {subdomainError && (
                     <motion.p

@@ -1,6 +1,5 @@
 import { App } from '@capacitor/app';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
-import toast from 'react-hot-toast';
 import i18n from '../i18n/config';
 import { isNativeApp, nativePlatform } from '../lib/platform';
 import { registerDevice, unregisterDevice } from './devicesApi';
@@ -66,16 +65,16 @@ const postToken = async (token: string): Promise<void> => {
   currentToken = token;
   storeToken(token);
   try {
-    const registered = await registerDevice({
+    // The server may answer `appDefault` (LT-455: the account's first phone
+    // turned the booking emails off). The app no longer pops a toast about
+    // it (LT-478, Erel); the Account page shows where alerts go.
+    await registerDevice({
       token,
       platform: nativePlatform(),
       locale: i18n.language,
       appVersion: await appVersion(),
     });
     lastPostAt = Date.now();
-    // The account's first phone with the app: its booking emails just
-    // turned off (LT-455), and the owner hears it once, here.
-    if (registered?.appDefault) toast(i18n.t('account.notifications.appDefaultNotice'), { duration: 8000 });
   } catch {
     // The next launch re-registers; a missed upsert is not worth a toast.
   }

@@ -196,6 +196,31 @@ describe('NotificationsCard', () => {
     expect(screen.queryByTestId('notification-each-kind-toggle')).not.toBeInTheDocument();
   });
 
+  // LT-478 (Erel): at the bottom of the group, under the WhatsApp switch, the
+  // toggle looked unrelated to the chips it splits.
+  it('puts "each kind separately" right under the bookings chips, and eases the list in once on opening', async () => {
+    const current = channelsOf();
+    vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: current }));
+    await renderCard();
+
+    const toggle = screen.getByTestId('notification-each-kind-toggle');
+    expect(toggle.previousElementSibling).toContainElement(chip('notification-bookings-email'));
+    const lastMinute = screen.getByRole('switch', { name: 'account.notifications.lastMinute' });
+    expect(toggle.compareDocumentPosition(lastMinute) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(toggle);
+    const list = screen.getByTestId('notification-each-kind');
+    expect(toggle.previousElementSibling).toBe(list);
+    expect(list).toHaveClass('notif-each-kind-in');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('shows the kinds apart without the opening animation when they already differ', async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: channelsOf({ newBooking: on(true, false) }) }));
+    await renderCard();
+    expect(screen.getByTestId('notification-each-kind')).not.toHaveClass('notif-each-kind-in');
+  });
+
   it('keeps the old value when the save fails', async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: channelsOf() }));
     vi.mocked(updateUserInfo).mockRejectedValue(new Error('500'));

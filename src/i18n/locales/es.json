@@ -152,6 +152,7 @@
     "subdomainCheckError": "Error al comprobar la disponibilidad",
     "subdomainChangedWarning": "Nota: cambiar el enlace hará que tu enlace anterior deje de estar disponible.",
     "copyLink": "Copiar enlace",
+    "openSite": "Abrir en el navegador",
     "linkCopied": "¡Enlace copiado!",
     "businessName": "Nombre que aparece en el sitio",
     "businessNameHint": "Un negocio, una marca, un evento o un proyecto",
@@ -741,7 +742,6 @@
         "notConnected": "App no conectada",
         "permissionOff": "Las notificaciones están desactivadas en este teléfono"
       },
-      "appDefaultNotice": "Desde ahora las novedades de reservas llegan aquí, sin correo. Puedes volver a activar el correo en Ajustes.",
       "needsPhone": "Añade un número de teléfono en los datos de la cuenta para recibir WhatsApp.",
       "plusOnly": "WhatsApp está disponible en el plan Plus."
     },

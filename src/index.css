@@ -345,6 +345,18 @@ html[dir="rtl"] body {
   .cal-slide-in { animation: none; }
 }
 
+/* LT-478: the bookings' "set each kind separately" list eases in once as it
+   opens. Opacity and a short slide only (no size transition, LT-351); the
+   base style is the end state and `backwards` only holds the start frame, so
+   nothing is pinned at the last frame (LT-401). */
+@keyframes notif-each-kind-in {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+.notif-each-kind-in { animation: notif-each-kind-in 200ms ease-out backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .notif-each-kind-in { animation: none; }
+}
+
 /* Lighty's greeting bubble leaves after a few seconds (LT-283). Its own
    keyframes: popIn fills `forwards`, which would pin the opacity a plain
    transition tries to change. */

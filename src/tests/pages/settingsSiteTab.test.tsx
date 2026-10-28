@@ -395,7 +395,7 @@ describe('Settings: where the site link lives', () => {
     expect(box).toContainElement(inRow);
     expect(inRow).toHaveClass('hidden', 'sm:flex');
     expect(box).not.toContainElement(underRow);
-    expect(underRow).toHaveClass('sm:hidden');
+    expect(underRow.parentElement).toHaveClass('sm:hidden');
     expect(underRow).toHaveTextContent('settings.copyLink');
 
     fireEvent.click(underRow);
@@ -403,6 +403,30 @@ describe('Settings: where the site link lives', () => {
     expect(writeText).toHaveBeenNthCalledWith(1, 'https://biz.lightor.app');
     expect(writeText).toHaveBeenNthCalledWith(2, 'https://biz.lightor.app');
     vi.unstubAllGlobals();
+  });
+
+  // LT-478 (Erel): a button beside the link opens the site in the browser -
+  // the saved link, not one still being typed. A `_blank` link is what leaves
+  // the app for the phone's browser.
+  it('opens the saved site in the browser, from the row on a computer and from under it on a phone', () => {
+    render(<Settings />);
+    const box = screen.getByLabelText('settings.yourLink').parentElement as HTMLElement;
+
+    const [inRow, underRow] = screen.getAllByRole('link', { name: 'settings.openSite' });
+    expect(box).toContainElement(inRow);
+    expect(inRow).toHaveClass('hidden', 'sm:flex');
+    expect(box).not.toContainElement(underRow);
+    expect(underRow.parentElement).toHaveClass('sm:hidden');
+    for (const link of [inRow, underRow]) {
+      expect(link).toHaveAttribute('href', 'https://biz.lightor.app');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+
+    fireEvent.change(screen.getByPlaceholderText('your-site'), { target: { value: 'newbiz' } });
+    for (const link of screen.getAllByRole('link', { name: 'settings.openSite' })) {
+      expect(link).toHaveAttribute('href', 'https://biz.lightor.app');
+    }
   });
 
   it('is gone from the Site tab, which opens with its language', () => {
