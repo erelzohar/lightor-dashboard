@@ -79,7 +79,33 @@ export interface BookingsMeter {
   periodStart: string;
   periodEnd: string;
   extraAgorot: number | null;
+  /** LT-465, a subscriber's period only; absent on an older API. */
+  extras?: ExtrasSwitch;
 }
+
+/**
+ * The owner's switch for the bookings over the 500 (LT-465): `chosen` is the
+ * switch, `on` whether extras are taken now, `blockedBy` why they cannot be
+ * turned on, `closed` whether online booking stopped at the 500.
+ */
+export interface ExtrasSwitch {
+  chosen: boolean;
+  on: boolean;
+  blockedBy: 'billingOff' | 'notSubscribed' | 'paymentFailed' | 'cancelScheduled' | null;
+  changedAt: string | null;
+  closed: boolean;
+}
+
+/** Turn the extras on or off (LT-465); the meter as it is now. Throws, unlike the read above. */
+export const setExtraBookings = async (autoCharge: boolean): Promise<BookingsMeter | null> => {
+  const token = localStorage.getItem('lightor');
+  const response = await apiClient.patch(
+    `${globals.entitlementsUrl}extra-bookings`,
+    { autoCharge },
+    { withCredentials: true, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) }
+  );
+  return (response.data?.data?.bookings as BookingsMeter | null) ?? null;
+};
 
 export const fetchMyEntitlements = async (): Promise<MyEntitlements | null> => {
   // LT-009: the cookie authenticates; the Bearer is a pre-cookie shim (2027-02).

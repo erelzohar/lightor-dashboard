@@ -16,6 +16,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { fetchAppointments, fetchAppointmentTypes } from '../../store/slices/appointmentsSlice';
 import { createAppointment, getAvailability, type Availability } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
+import { canOfferPurchases } from '../../lib/platform';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { businessTimeZone, zonedDateOf, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
@@ -350,7 +351,20 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
       const refusal = Object.keys(CLASS_REFUSALS).find((code) => isApiErrorCode(error, code));
       // Refused for its time: back to the day's times, read again — unless
       // the time was the roster's own session, which is all there is.
-      if (refusal) {
+      if (isApiErrorCode(error, 'BOOKINGS_CAP_REACHED')) {
+        // The plan's bookings are used (LT-465): a subscriber's 500 with the
+        // extras off says how to reopen, on the web (LT-130); the free plan's
+        // month (or the worker's recount, which says no more) points to the
+        // Account page.
+        const reason = (error as { response?: { data?: { details?: { reason?: string } } } })?.response?.data?.details?.reason;
+        toast.error(
+          t(
+            reason === 'includedUsed'
+              ? canOfferPurchases() ? 'customers.booking.includedUsed' : 'customers.booking.includedUsedNative'
+              : 'customers.booking.capReached'
+          )
+        );
+      } else if (refusal) {
         toast.error(t(CLASS_REFUSALS[refusal]));
         setAvailabilityVersion((version) => version + 1);
         if (!fixedSession) setStep('time');

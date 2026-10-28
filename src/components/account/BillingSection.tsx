@@ -18,7 +18,9 @@ import {
   PortalLinks,
   CheckoutTransaction,
 } from '../../services/paddleApi';
-import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
+import { fetchMyEntitlements, MyEntitlements, BookingsMeter } from '../../services/entitlementsApi';
+import ExtraBookingsSwitch from './ExtraBookingsSwitch';
+import PlanCompare from './PlanCompare';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
@@ -138,10 +140,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const dateLocale =
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const pilotDate = pilot ? new Date(pilot.until).toLocaleDateString(dateLocale) : null;
-  // LT-458: the bookings this period - a subscriber's 500 (what is over them
-  // is charged, nothing closes) or a free-period month's 200 (then the site
-  // stops taking bookings until a card is added).
+  // LT-458: the bookings this period - a subscriber's 500 (past them the
+  // owner's switch decides, LT-465: extras billed, or booking closed until
+  // the next period) or a free-period month's 200 (then the site stops
+  // taking bookings until a card is added).
   const bookings = entitlements?.bookings ?? null;
+  const extras = bookings?.kind === 'plus' ? bookings.extras : undefined;
+  const includedClosed = extras?.closed === true;
   const bookingsRatio = bookings && bookings.included > 0 ? Math.min(bookings.used / bookings.included, 1) : 0;
   const extraBookings = bookings ? Math.max(0, bookings.used - bookings.included) : 0;
   const freeMonthFull = bookings?.kind === 'freePeriod' && bookings.used >= bookings.included;
@@ -313,6 +318,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   };
   const termsLine = (included: number, agorot: number) =>
     t('billing.planBookingTerms', { included, price: money(agorot / 100, 'ILS') });
+  // What one extra booking costs (LT-465), for the switch and the plans.
+  const extraPrice = money((bookings?.extraAgorot ?? bookingTerms?.extraAgorot ?? 35) / 100, 'ILS');
+  const meterChanged = (next: BookingsMeter) =>
+    setEntitlements((current) => (current ? { ...current, bookings: next } : current));
   const firstChargeDate = checkout?.transaction.firstChargeAt
     ? new Date(checkout.transaction.firstChargeAt).toLocaleDateString(dateLocale)
     : null;
@@ -440,29 +449,42 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 text-end">
                 {bookings.kind === 'freePeriod'
                   ? freeMonthFull ? t('billing.bookingsFreeFull') : t('billing.usageNearCap')
-                  : extraBookings > 0
-                    ? t('billing.bookingsExtraCount', { n: extraBookings })
-                    : t('billing.bookingsNearIncluded')}
+                  : includedClosed
+                    ? t('billing.extras.closedShort')
+                    : extraBookings > 0
+                      ? t('billing.bookingsExtraCount', { n: extraBookings })
+                      : t('billing.bookingsNearIncluded')}
               </span>
             )}
           </div>
           <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                freeMonthFull ? 'bg-red-500' : bookingsRatio >= 0.8 ? 'bg-amber-500' : 'bg-primary'
+                freeMonthFull || includedClosed ? 'bg-red-500' : bookingsRatio >= 0.8 ? 'bg-amber-500' : 'bg-primary'
               }`}
               style={{ width: `${Math.round(bookingsRatio * 100)}%` }}
             />
           </div>
           {bookings.kind === 'plus' ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {bookings.extraAgorot !== null &&
-                `${t('billing.bookingsExtraPrice', {
-                  included: bookings.included,
-                  price: money(bookings.extraAgorot / 100, 'ILS'),
-                })} `}
-              {t('billing.bookingsResets', { date: bookingsPeriodEnd })}
-            </p>
+            <>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {/* With the switch (LT-465) the price is said beside it. */}
+                {bookings.extraAgorot !== null && !extras &&
+                  `${t('billing.bookingsExtraPrice', {
+                    included: bookings.included,
+                    price: money(bookings.extraAgorot / 100, 'ILS'),
+                  })} `}
+                {t('billing.bookingsResets', { date: bookingsPeriodEnd })}
+              </p>
+              <ExtraBookingsSwitch
+                bookings={bookings}
+                price={extraPrice}
+                periodEnd={bookingsPeriodEnd}
+                dateLocale={dateLocale}
+                canSell={canSell}
+                onChanged={meterChanged}
+              />
+            </>
           ) : freeMonthFull ? (
             // Adding a card is a call to buy, so the app states the fact only (LT-130).
             <p className="text-xs text-red-600 dark:text-red-400" data-testid="free-month-full">
@@ -539,6 +561,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 </div>
                 {/* LT-458: the bookings beside the subscription (Erel: only here). */}
                 {meters}
+                {/* What the plan includes (LT-465), in place of "no monthly limits". */}
+                <PlanCompare mode="plus" price={extraPrice} />
                 {manageButton && <div>{manageButton}</div>}
                 {canSell && (
                   <button
@@ -751,6 +775,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 </p>
               </div>
             )}
+
+            {/* Free and Lightor+ side by side (LT-465): web only, as the plans
+                are, and said even when Paddle's prices could not be read. */}
+            {canSell && !checkout && <PlanCompare mode="compare" price={extraPrice} />}
 
             {/* A plan that ended still has its invoices (LT-265). */}
             {manageButton && <div>{manageButton}</div>}

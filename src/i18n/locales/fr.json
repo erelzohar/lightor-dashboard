@@ -887,7 +887,7 @@
     "statusActive": "Actif",
     "statusPastDue": "Problème de paiement",
     "statusCanceled": "Annulé",
-    "activeDesc": "Votre abonnement est actif - sans limites mensuelles.",
+    "activeDesc": "Votre abonnement est actif.",
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
@@ -958,7 +958,95 @@
     "bookingsFreeFull": "Mois complet",
     "bookingsFreeFullDesc": "Votre site ne prend plus de réservations. Choisissez une offre et ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
     "bookingsFreeFullNative": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
-    "planBookingTerms": "Inclut {{included}} réservations par mois, puis {{price}} par réservation en plus."
+    "planBookingTerms": "Inclut {{included}} réservations par mois. Au-delà, si vous activez les réservations supplémentaires, {{price}} chacune, facturées automatiquement. Sinon, à {{included}} votre site cesse de prendre des réservations jusqu'au mois suivant.",
+    "extras": {
+      "label": "Facturation automatique des réservations supplémentaires",
+      "offShort": "Désactivée",
+      "onDesc": "Activée : au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûte {{price}} et s'ajoute automatiquement à votre facture. Votre site continue de prendre des réservations.",
+      "offDesc": "Désactivée : à {{included}} réservations par période, votre site cesse de prendre des réservations jusqu'au début de la période suivante. Activée, chaque réservation supplémentaire coûte {{price}}, ajoutée automatiquement à votre facture.",
+      "offDescNative": "Désactivée : à {{included}} réservations par période, votre site cesse de prendre des réservations jusqu'au début de la période suivante.",
+      "heldByCancel": "Votre abonnement ne sera pas renouvelé : aucune réservation au-delà de {{included}} jusqu'à la fin de la période.",
+      "closedShort": "Réservations de la période épuisées",
+      "closedDesc": "Votre site ne prend plus de réservations jusqu'au {{date}}. Pour rouvrir tout de suite, activez les réservations supplémentaires.",
+      "closedDescNative": "Votre site ne prend plus de réservations jusqu'au {{date}}.",
+      "onSince": "Activée le {{date}}",
+      "offSince": "Désactivée le {{date}}",
+      "confirmOnTitle": "Activer les réservations supplémentaires ?",
+      "confirmOnBody": "Au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûtera {{price}}, ajoutée automatiquement à votre facture. Vous pouvez la désactiver à tout moment.",
+      "confirmOn": "Activer",
+      "confirmOffTitle": "Désactiver les réservations supplémentaires ?",
+      "confirmOffBody": "Votre site cesse de prendre des réservations tout de suite, jusqu'au {{date}}.",
+      "confirmOffBodyExtra": "Votre site cesse de prendre des réservations tout de suite, jusqu'au {{date}}. Les réservations supplémentaires déjà faites cette période ({{n}}) sont facturées normalement.",
+      "confirmOff": "Désactiver",
+      "turnedOn": "Réservations supplémentaires activées",
+      "turnedOff": "Réservations supplémentaires désactivées",
+      "cancelScheduled": "Votre abonnement ne sera pas renouvelé : impossible d'activer les réservations supplémentaires.",
+      "failed": "Enregistrement impossible. Réessayez."
+    },
+    "compare": {
+      "title": "Gratuit et Lightor+ comparés",
+      "feature": "Fonction",
+      "free": "Gratuit",
+      "includesTitle": "Votre abonnement comprend :",
+      "freeDays": "Les 60 premiers jours : tout Lightor+, gratuitement.",
+      "rows": {
+        "bookings": {
+          "label": "Réservations",
+          "free": "30 par mois",
+          "plus": "500 par période, puis {{price}} chacune si vous activez les réservations supplémentaires"
+        },
+        "inquiries": {
+          "label": "Demandes depuis le site",
+          "free": "15 par mois",
+          "plus": "Illimitées"
+        },
+        "services": {
+          "label": "Services",
+          "free": "Jusqu'à 3",
+          "plus": "Illimités"
+        },
+        "texts": {
+          "label": "Messages aux clients",
+          "free": "Confirmation et rappel du matin",
+          "plus": "Confirmation, rappel du matin et rappel une heure avant"
+        },
+        "siteLighty": {
+          "label": "Lighty sur votre site",
+          "free": "Non",
+          "plus": "Répond à vos visiteurs"
+        },
+        "rebuilds": {
+          "label": "Refaire le site avec l'IA",
+          "free": "3 par mois",
+          "plus": "20 par mois"
+        },
+        "pictures": {
+          "label": "Images IA",
+          "free": "5 par mois",
+          "plus": "40 par mois"
+        },
+        "editing": {
+          "label": "Modifier avec Lighty",
+          "free": "De base",
+          "plus": "Environ 6 fois plus"
+        },
+        "insights": {
+          "label": "Analyses et export des clients",
+          "free": "Non",
+          "plus": "Oui"
+        },
+        "badge": {
+          "label": "Badge \"Built with Lightor\"",
+          "free": "Affiché",
+          "plus": "Aucun"
+        },
+        "support": {
+          "label": "Assistance",
+          "free": "Standard",
+          "plus": "Prioritaire"
+        }
+      }
+    }
   },
   "danger": {
     "title": "Zone de danger",
@@ -1548,7 +1636,10 @@
       "notASession": "Le cours n'a pas lieu à cette heure - choisissez une séance dans la liste",
       "otherTime": "Une autre heure",
       "otherTimeUse": "Choisir",
-      "otherTimeHint": "N'importe quelle heure, même en dehors des horaires proposés par le site. Une heure qui chevauche une autre réservation est refusée."
+      "otherTimeHint": "N'importe quelle heure, même en dehors des horaires proposés par le site. Une heure qui chevauche une autre réservation est refusée.",
+      "includedUsed": "Les réservations incluses de la période sont utilisées. Pour en prendre d'autres, activez les réservations supplémentaires sur la page Compte.",
+      "includedUsedNative": "Les réservations incluses de la période sont utilisées : pas de nouvelle réservation avant la période suivante.",
+      "capReached": "Vous avez atteint votre limite de réservations pour l'instant : cette réservation ne peut pas être faite. Les détails sont sur la page Compte."
     },
     "errors": {
       "loadFailed": "Impossible de charger les clients",
@@ -2064,6 +2155,12 @@
       "body": "Votre site ne prend plus de réservations. Ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
       "bodyApp": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
       "cta": "Ajouter une carte"
+    },
+    "includedUsed": {
+      "title": "Les {{included}} réservations de la période sont utilisées",
+      "body": "Votre site ne prend plus de réservations jusqu'au {{date}}. Pour rouvrir tout de suite, activez les réservations supplémentaires sur la page Compte.",
+      "bodyApp": "Votre site ne prend plus de réservations jusqu'au {{date}}.",
+      "cta": "Aller au compte"
     }
   }
 }

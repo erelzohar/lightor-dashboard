@@ -887,7 +887,7 @@
     "statusActive": "Active",
     "statusPastDue": "Payment issue",
     "statusCanceled": "Canceled",
-    "activeDesc": "Your subscription is active - no monthly limits.",
+    "activeDesc": "Your subscription is active.",
     "nextBill": "Next billing date:",
     "freeDesc": "You are on the free plan, with monthly limits on appointments and inquiries. Upgrade to lift them.",
     "freeDescNative": "You are on the free plan, with monthly limits on appointments and inquiries.",
@@ -958,7 +958,95 @@
     "bookingsFreeFull": "Month full",
     "bookingsFreeFullDesc": "Your site isn't taking new bookings. Choose a plan and add a card to reopen them now - nothing is charged before {{date}}.",
     "bookingsFreeFullNative": "Your site isn't taking new bookings until {{date}}.",
-    "planBookingTerms": "Includes {{included}} bookings a month, then {{price}} for each extra booking."
+    "planBookingTerms": "Includes {{included}} bookings a month. Past them, if you switch on extra bookings, {{price}} each, charged automatically. Without it, at {{included}} your site stops taking bookings until the next month.",
+    "extras": {
+      "label": "Automatic charge for extra bookings",
+      "offShort": "Off",
+      "onDesc": "On: past {{included}} bookings a period, each extra booking costs {{price}} and is added to your bill automatically. Your site keeps taking bookings.",
+      "offDesc": "Off: at {{included}} bookings a period your site stops taking bookings until the next period starts. Switch it on and each extra booking costs {{price}}, added to your bill automatically.",
+      "offDescNative": "Off: at {{included}} bookings a period your site stops taking bookings until the next period starts.",
+      "heldByCancel": "Your subscription won't renew, so no bookings are taken past {{included}} until the period ends.",
+      "closedShort": "This period's bookings are used",
+      "closedDesc": "Your site takes no new bookings until {{date}}. To reopen now, switch on extra bookings.",
+      "closedDescNative": "Your site takes no new bookings until {{date}}.",
+      "onSince": "Switched on {{date}}",
+      "offSince": "Switched off {{date}}",
+      "confirmOnTitle": "Switch on extra bookings?",
+      "confirmOnBody": "Past {{included}} bookings a period, each extra booking will cost {{price}}, added to your bill automatically. You can switch it off any time.",
+      "confirmOn": "Switch on",
+      "confirmOffTitle": "Switch off extra bookings?",
+      "confirmOffBody": "Your site stops taking bookings right away, until {{date}}.",
+      "confirmOffBodyExtra": "Your site stops taking bookings right away, until {{date}}. The extra bookings already made this period ({{n}}) are billed as usual.",
+      "confirmOff": "Switch off",
+      "turnedOn": "Extra bookings switched on",
+      "turnedOff": "Extra bookings switched off",
+      "cancelScheduled": "Your subscription won't renew, so extra bookings can't be switched on.",
+      "failed": "Couldn't save. Please try again."
+    },
+    "compare": {
+      "title": "Free and Lightor+ compared",
+      "feature": "Feature",
+      "free": "Free",
+      "includesTitle": "Your plan includes:",
+      "freeDays": "The first 60 days: everything in Lightor+, free.",
+      "rows": {
+        "bookings": {
+          "label": "Bookings",
+          "free": "30 a month",
+          "plus": "500 a period, then {{price}} each if you switch on extra bookings"
+        },
+        "inquiries": {
+          "label": "Inquiries from the site",
+          "free": "15 a month",
+          "plus": "Unlimited"
+        },
+        "services": {
+          "label": "Services",
+          "free": "Up to 3",
+          "plus": "Unlimited"
+        },
+        "texts": {
+          "label": "Customer texts",
+          "free": "Confirmation and a morning reminder",
+          "plus": "Confirmation, a morning reminder and one an hour before"
+        },
+        "siteLighty": {
+          "label": "Lighty on your site",
+          "free": "No",
+          "plus": "Answers your visitors"
+        },
+        "rebuilds": {
+          "label": "Rebuild the site with AI",
+          "free": "3 a month",
+          "plus": "20 a month"
+        },
+        "pictures": {
+          "label": "AI pictures",
+          "free": "5 a month",
+          "plus": "40 a month"
+        },
+        "editing": {
+          "label": "Editing with Lighty",
+          "free": "Basic",
+          "plus": "About 6x more"
+        },
+        "insights": {
+          "label": "Customer insights and export",
+          "free": "No",
+          "plus": "Yes"
+        },
+        "badge": {
+          "label": "\"Built with Lightor\" badge",
+          "free": "Shown",
+          "plus": "None"
+        },
+        "support": {
+          "label": "Support",
+          "free": "Standard",
+          "plus": "Priority"
+        }
+      }
+    }
   },
   "danger": {
     "title": "Danger zone",
@@ -1548,7 +1636,10 @@
       "notASession": "The class doesn't run at that time - pick a session from the list",
       "otherTime": "Another time",
       "otherTimeUse": "Use",
-      "otherTimeHint": "Any time you like, even outside the times the site offers. A time that overlaps another booking is refused."
+      "otherTimeHint": "Any time you like, even outside the times the site offers. A time that overlaps another booking is refused.",
+      "includedUsed": "This period's included bookings are used. To book more, switch on extra bookings on the Account page.",
+      "includedUsedNative": "This period's included bookings are used, so no new bookings until the next period.",
+      "capReached": "You've reached your bookings limit for now, so this booking can't be made. Details are on the Account page."
     },
     "errors": {
       "loadFailed": "Could not load customers",
@@ -2064,6 +2155,12 @@
       "body": "Your site isn't taking new bookings. Add a card to reopen them now - nothing is charged before {{date}}.",
       "bodyApp": "Your site isn't taking new bookings until {{date}}.",
       "cta": "Add a card"
+    },
+    "includedUsed": {
+      "title": "This period's {{included}} bookings are used",
+      "body": "Your site takes no new bookings until {{date}}. To reopen now, switch on extra bookings on the Account page.",
+      "bodyApp": "Your site takes no new bookings until {{date}}.",
+      "cta": "Go to Account"
     }
   }
 }
