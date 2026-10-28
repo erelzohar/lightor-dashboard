@@ -8,8 +8,9 @@ import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
-import { LightyBubble, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
+import { LightyBubble, LightyThreadLoading, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
+import { isNativeApp } from '../lib/platform';
 import { lazyOr } from '../lib/lazyOr';
 import { useMomentum } from '../hooks/useMomentum';
 import { LightyTyped } from '../components/lighty/LightyTyped';
@@ -90,9 +91,20 @@ const LightyPage: React.FC = () => {
     if (list) list.scrollTop = list.scrollHeight;
   };
 
+  // In the app the keyboard stayed up over the answer (LT-479, Erel): it goes
+  // down once the message is sent, on any touch screen. A computer keeps the
+  // focus for the next question.
+  const closeKeyboard = () => {
+    const touch = isNativeApp() || window.matchMedia?.('(pointer: coarse)').matches === true;
+    if (touch && document.activeElement === inputRef.current) inputRef.current?.blur();
+  };
+
   const send = async (text: string) => {
     const ask = text.trim();
-    if (!ask || busy) return;
+    // Not before the conversation so far is in (LT-479): it would replace
+    // the message just sent.
+    if (!ask || busy || !loaded) return;
+    closeKeyboard();
     setInput('');
     setError(null);
     setTurns((all) => [...all, { role: 'user', content: ask }]);
@@ -182,6 +194,7 @@ const LightyPage: React.FC = () => {
       </header>
 
       <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto py-4 flex flex-col gap-3" role="log" aria-label={t('lighty.conversation')}>
+        {!loaded && <LightyThreadLoading />}
         {empty && <div className="mt-2">{chips}</div>}
         {turns.map((turn, i) => turn.role === 'user' ? (
           <OwnerBubble key={i}>{turn.content}</OwnerBubble>
@@ -229,7 +242,7 @@ const LightyPage: React.FC = () => {
         />
         <button
           type="submit"
-          disabled={busy || !input.trim()}
+          disabled={busy || !loaded || !input.trim()}
           aria-label={t('lighty.send')}
           className={`w-10 h-10 ${lightySendButton}`}
         >

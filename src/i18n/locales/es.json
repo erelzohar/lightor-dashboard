@@ -1897,6 +1897,7 @@
     "send": "Enviar",
     "newChat": "Nueva conversación",
     "conversation": "Conversación con Lighty",
+    "loadingThread": "Cargando la conversación…",
     "failed": "Lighty no pudo responder esta vez. Inténtalo de nuevo.",
     "budget": "Se agotó el presupuesto de IA de este mes.",
     "usage": "Has usado el {{percent}} % del presupuesto de IA del mes",

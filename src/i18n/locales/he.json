@@ -1897,6 +1897,7 @@
     "send": "שליחה",
     "newChat": "שיחה חדשה",
     "conversation": "השיחה עם Lighty",
+    "loadingThread": "טוען את השיחה…",
     "failed": "Lighty לא הצליח לענות הפעם. נסו שוב.",
     "budget": "נגמר תקציב ה-AI של החודש.",
     "usage": "השתמשת ב-{{percent}}% ממכסת ה-AI החודשית",

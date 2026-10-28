@@ -123,6 +123,36 @@ export const OwnerBubble: React.FC<{ children: React.ReactNode }> = ({ children 
 );
 
 /**
+ * The conversation so far is on its way (LT-479, Erel): a few bubbles in
+ * Lighty's and the owner's colours, pulsing gently, and a line that says so.
+ * Only while it loads; still under reduced motion.
+ */
+export const LightyThreadLoading: React.FC = () => {
+  const { t } = useTranslation();
+  const line = 'h-2.5 rounded-full bg-violet-200/80 dark:bg-violet-800/50';
+  const lightyRow = (widths: string[], bubble: string) => (
+    <div className="flex items-end gap-2" aria-hidden="true">
+      <LightyAvatar size={32} />
+      <div className={`${bubble} space-y-2 rounded-2xl rounded-es-md bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-900/50 px-3 py-3`}>
+        {widths.map((width, i) => <div key={i} className={`${line} ${width}`} />)}
+      </div>
+    </div>
+  );
+  return (
+    <div role="status" data-testid="lighty-thread-loading" className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 motion-safe:animate-pulse">
+        {lightyRow(['w-full', 'w-2/3'], 'w-3/5')}
+        <div className="flex justify-end" aria-hidden="true">
+          <div className="w-2/5 h-9 rounded-2xl rounded-ee-md bg-primary/20" />
+        </div>
+        {lightyRow(['w-full', 'w-full', 'w-1/2'], 'w-3/4')}
+      </div>
+      <p className="text-xs text-center text-gray-400 dark:text-slate-500">{t('lighty.loadingThread')}</p>
+    </div>
+  );
+};
+
+/**
  * Lighty is writing: three dots beside his still face. One animation per
  * screen (LT-258) — the moving Lighty is the 3D one on his page, the
  * editor line's face elsewhere — so the bubble's face keeps still.

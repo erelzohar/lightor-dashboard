@@ -1897,6 +1897,7 @@
     "send": "Send",
     "newChat": "New chat",
     "conversation": "Conversation with Lighty",
+    "loadingThread": "Loading the conversation…",
     "failed": "Lighty couldn't answer this time. Try again.",
     "budget": "This month's AI allowance is used up.",
     "usage": "You've used {{percent}}% of this month's AI allowance",

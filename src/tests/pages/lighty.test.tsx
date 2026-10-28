@@ -6,6 +6,7 @@ import { assistantService } from '../../services/assistantApi';
 import { FloatingAiAssistant } from '../../components/ui/glowing-ai-chat-assistant';
 import { typewriterConfig } from '../../components/lighty/LightyTyped';
 import { LightyText } from '../../components/lighty/LightyChat';
+import { isNativeApp } from '../../lib/platform';
 
 /**
  * LT-253 — Lighty's page: the conversation so far, ready questions, the
@@ -28,6 +29,10 @@ vi.mock('../../hooks/useAppSelector', () => ({
 vi.mock('../../services/assistantApi', () => ({
   assistantService: { chat: vi.fn(), thread: vi.fn(), clear: vi.fn(async () => undefined) },
 }));
+vi.mock('../../lib/platform', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/platform')>()),
+  isNativeApp: vi.fn(() => false),
+}));
 
 const Where = () => {
   const location = useLocation();
@@ -48,6 +53,7 @@ describe("Lighty's page (LT-253)", () => {
     vi.mocked(assistantService.chat).mockReset();
     vi.mocked(assistantService.thread).mockReset().mockResolvedValue([]);
     vi.mocked(assistantService.clear).mockClear();
+    vi.mocked(isNativeApp).mockReturnValue(false);
     lightTick.mockClear();
   });
 
@@ -119,12 +125,56 @@ describe("Lighty's page (LT-253)", () => {
   it('sends with Enter, not with Shift+Enter', async () => {
     vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'Hi' });
     renderPage();
-    const box = await screen.findByRole('textbox', { name: 'lighty.placeholder' });
+    await screen.findByText('lighty.hello');
+    const box = screen.getByRole('textbox', { name: 'lighty.placeholder' });
     fireEvent.change(box, { target: { value: 'line one' } });
     fireEvent.keyDown(box, { key: 'Enter', shiftKey: true });
     expect(assistantService.chat).not.toHaveBeenCalled();
     fireEvent.keyDown(box, { key: 'Enter' });
     expect(assistantService.chat).toHaveBeenCalledWith('line one');
+  });
+  // LT-479 (Erel): a message sent before the thread was in got replaced by it.
+  it('shows a loader while the conversation loads, and sends nothing until it is in', async () => {
+    let arrive: (turns: Awaited<ReturnType<typeof assistantService.thread>>) => void = () => undefined;
+    vi.mocked(assistantService.thread).mockReturnValue(new Promise((resolve) => { arrive = resolve; }));
+    vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'Hi' });
+    renderPage();
+
+    expect(screen.getByRole('status')).toHaveTextContent('lighty.loadingThread');
+    const box = screen.getByRole('textbox', { name: 'lighty.placeholder' });
+    fireEvent.change(box, { target: { value: 'What is on today?' } });
+    expect(screen.getByRole('button', { name: 'lighty.send' })).toBeDisabled();
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(assistantService.chat).not.toHaveBeenCalled();
+
+    await act(async () => arrive([{ role: 'assistant', content: 'Earlier answer' }]));
+    expect(screen.queryByTestId('lighty-thread-loading')).toBeNull();
+    expect(box).toHaveValue('What is on today?');
+    fireEvent.click(screen.getByRole('button', { name: 'lighty.send' }));
+    expect(assistantService.chat).toHaveBeenCalledWith('What is on today?');
+    expect(await screen.findByText('Earlier answer')).toBeInTheDocument();
+    expect(screen.getByText('What is on today?')).toBeInTheDocument();
+  });
+
+  // LT-479 (Erel): in the app the keyboard stayed up and hid the answer.
+  it('closes the keyboard once a message is sent in the app, and keeps the focus on a computer', async () => {
+    vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'Hi' });
+    renderPage();
+    await screen.findByText('lighty.hello');
+    const box = screen.getByRole('textbox', { name: 'lighty.placeholder' });
+
+    box.focus();
+    fireEvent.change(box, { target: { value: 'first' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(document.activeElement).toBe(box);
+    await screen.findByText('Hi');
+
+    vi.mocked(isNativeApp).mockReturnValue(true);
+    box.focus();
+    fireEvent.change(box, { target: { value: 'second' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(assistantService.chat).toHaveBeenLastCalledWith('second');
+    expect(document.activeElement).not.toBe(box);
   });
 });
 
