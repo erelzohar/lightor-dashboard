@@ -20,12 +20,23 @@
             </intent-filter>
 
             <!-- Android App Links (LT-128 §6): verified against
-                 https://dashboard.lightor.app/.well-known/assetlinks.json -->
+                 https://dashboard.lightor.app/.well-known/assetlinks.json
+                 LT-468: only the paths iOS claims (apple-app-site-association,
+                 keep the two lists the same). Any other link, such as the
+                 emailed /account "subscribe" links, opens the browser: the
+                 app sells nothing (LT-130). -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="dashboard.lightor.app" />
+                <data android:path="/" />
+                <data android:path="/verify" />
+                <data android:pathPrefix="/verify/" />
+                <data android:path="/handoff" />
+                <data android:pathPrefix="/appointments" />
+                <data android:pathPrefix="/customers" />
+                <data android:pathPrefix="/leads" />
             </intent-filter>
         </activity>
 

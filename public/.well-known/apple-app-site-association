@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "5TJJV55U2J.app.lightor.dashboard",
-        "paths": ["/verify/*", "/handoff", "/appointments*", "/customers*", "/"]
+        "paths": ["/verify", "/verify/*", "/handoff", "/appointments*", "/customers*", "/leads*", "/"]
       }
     ]
   }

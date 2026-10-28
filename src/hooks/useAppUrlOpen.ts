@@ -11,7 +11,8 @@ import { useLeaveGuard } from '../contexts/LeaveGuardContext';
  * Universal links (iOS) / App Links (Android) for dashboard.lightor.app open
  * the app instead of the browser and arrive as `appUrlOpen` events with the
  * full URL — the verify-email and signup-handoff links from email/SMS, and
- * any /appointments or /customers link. We route the path + query client-side
+ * any /appointments, /customers or /leads link (LT-468: only these paths and
+ * `/`; the rest open the browser). We route the path + query client-side
  * (the fragment is kept too: `/handoff#t=…` carries its token there).
  *
  * The Android hardware/gesture back button is not wired to the WebView's
