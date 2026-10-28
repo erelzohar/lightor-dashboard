@@ -126,6 +126,25 @@ describe('the extra bookings switch', () => {
     expect(screen.getByTestId('extras-closed')).toHaveTextContent('billing.extras.closedDescNative');
   });
 
+  it('the free days with a card (LT-466): the switch can be set, it starts with the first payment, and does not reopen now', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(
+      subscriber(meter(500, { chosen: false, on: false, blockedBy: 'trialing', closed: true })) as never
+    );
+    render(<BillingSection />);
+    expect(await screen.findByTestId('extras-trialing')).toHaveTextContent('billing.extras.heldByTrial');
+    expect(screen.getByRole('switch', { name: 'billing.extras.label' })).toBeInTheDocument();
+    expect(screen.getByTestId('extras-closed')).toHaveTextContent('billing.extras.closedDescNative');
+  });
+
+  it('an extras charge that did not go through (LT-466): says so, and offers no switching on', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(
+      subscriber(meter(500, { chosen: false, on: false, blockedBy: 'chargeFailed', closed: true })) as never
+    );
+    render(<BillingSection />);
+    expect(await screen.findByTestId('extras-charge-failed')).toHaveTextContent('billing.extras.heldByFailedCharge');
+    expect(screen.queryByRole('switch', { name: 'billing.extras.label' })).not.toBeInTheDocument();
+  });
+
   it('nothing to choose with the charge off for everyone', async () => {
     vi.mocked(fetchMyEntitlements).mockResolvedValue(subscriber(meter(10, { blockedBy: 'billingOff' })) as never);
     render(<BillingSection />);
@@ -170,6 +189,17 @@ describe('the 500 banner', () => {
     render(<AccountBanners go={vi.fn()} />);
     expect(await screen.findByText('accountBanner.includedUsed.bodyApp')).toBeInTheDocument();
     expect(screen.queryByText('accountBanner.includedUsed.cta')).not.toBeInTheDocument();
+  });
+
+  it('an extras charge that did not go through (LT-466): asks for the card on the Account page', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(
+      subscriber(meter(500, { chosen: true, on: false, blockedBy: 'chargeFailed', closed: true })) as never
+    );
+    const go = vi.fn();
+    render(<AccountBanners go={go} />);
+    expect(await screen.findByText('accountBanner.includedUsed.bodyChargeFailed')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('accountBanner.includedUsed.cta'));
+    expect(go).toHaveBeenCalledWith('/account');
   });
 
   it('none with the extras on', async () => {

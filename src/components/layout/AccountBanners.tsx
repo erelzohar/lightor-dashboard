@@ -50,6 +50,8 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
   const includedClosed = bookings?.kind === 'plus' && bookings.extras?.closed === true;
   // Switching on is agreeing to pay more: on the web, and only when it can be (LT-465).
   const canReopen = canSell && bookings?.extras?.blockedBy === null;
+  // LT-466: an extras charge did not go through; the card is updated from the Account page.
+  const chargeFailed = bookings?.extras?.blockedBy === 'chargeFailed';
 
   if (paymentFailed) {
     return (
@@ -135,13 +137,18 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
               {t('accountBanner.includedUsed.title', { included: bookings.included })}
             </h2>
             <p className="text-amber-800 dark:text-amber-300 mt-0.5 text-xs">
-              {t(canReopen ? 'accountBanner.includedUsed.body' : 'accountBanner.includedUsed.bodyApp', {
-                date: day(bookings.periodEnd),
-              })}
+              {t(
+                chargeFailed
+                  ? 'accountBanner.includedUsed.bodyChargeFailed'
+                  : canReopen
+                    ? 'accountBanner.includedUsed.body'
+                    : 'accountBanner.includedUsed.bodyApp',
+                { date: day(bookings.periodEnd) }
+              )}
             </p>
           </div>
         </div>
-        {canReopen && (
+        {(canReopen || (chargeFailed && canSell)) && (
           <button
             type="button"
             onClick={() => go('/account')}

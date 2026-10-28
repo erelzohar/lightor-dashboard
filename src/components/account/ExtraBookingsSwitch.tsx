@@ -42,7 +42,10 @@ const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
 
   const included = bookings.included;
   const extra = Math.max(0, bookings.used - included);
-  const canTurnOn = canSell && extras.blockedBy === null;
+  // In the free days with a card the choice can be made; it starts with the first payment (LT-466).
+  const canTurnOn = canSell && (extras.blockedBy === null || extras.blockedBy === 'trialing');
+  // Switching on reopens booking at once only when nothing else holds the extras.
+  const canReopen = canSell && extras.blockedBy === null;
   const changedOn = extras.changedAt ? new Date(extras.changedAt).toLocaleDateString(dateLocale) : null;
 
   const save = async (on: boolean) => {
@@ -55,7 +58,15 @@ const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
     } catch (error) {
       const code = (error as AxiosError<{ code?: string }>)?.response?.data?.code;
       setAsking(null);
-      toast.error(t(code === 'CANCEL_SCHEDULED' ? 'billing.extras.cancelScheduled' : 'billing.extras.failed'));
+      toast.error(
+        t(
+          code === 'CANCEL_SCHEDULED'
+            ? 'billing.extras.cancelScheduled'
+            : code === 'CHARGE_FAILED'
+              ? 'billing.extras.chargeFailed'
+              : 'billing.extras.failed'
+        )
+      );
     } finally {
       setSaving(false);
     }
@@ -85,16 +96,30 @@ const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
       <p className="text-xs text-gray-600 dark:text-gray-300">
         {extras.on
           ? t('billing.extras.onDesc', { included, price })
-          : canTurnOn
-            ? t('billing.extras.offDesc', { included, price })
-            : t('billing.extras.offDescNative', { included })}
+          : extras.chosen
+            // Chosen but held (the free days with a card, a cancel, an unpaid
+            // charge): what was chosen, and the line below says why not yet.
+            ? t('billing.extras.confirmOnBody', { included, price })
+            : canTurnOn
+              ? t('billing.extras.offDesc', { included, price })
+              : t('billing.extras.offDescNative', { included })}
       </p>
       {extras.chosen && extras.blockedBy === 'cancelScheduled' && (
         <p className="text-xs text-amber-700 dark:text-amber-300">{t('billing.extras.heldByCancel', { included })}</p>
       )}
+      {extras.blockedBy === 'trialing' && (
+        <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="extras-trialing">
+          {t('billing.extras.heldByTrial', { included })}
+        </p>
+      )}
+      {extras.blockedBy === 'chargeFailed' && (
+        <p className="text-xs font-medium text-red-600 dark:text-red-400" data-testid="extras-charge-failed">
+          {t('billing.extras.heldByFailedCharge', { included })}
+        </p>
+      )}
       {extras.closed && (
         <p className="text-xs font-medium text-red-600 dark:text-red-400" data-testid="extras-closed">
-          {canTurnOn
+          {canReopen
             ? t('billing.extras.closedDesc', { included, date: periodEnd })
             : t('billing.extras.closedDescNative', { included, date: periodEnd })}
         </p>

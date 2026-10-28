@@ -953,7 +953,7 @@
     "bookingsMeterFree": "{{used}}/{{included}} réservations ce mois-ci de votre essai gratuit",
     "bookingsNearIncluded": "Bientôt au bout des réservations incluses",
     "bookingsExtraCount": "Réservations en plus : {{n}}",
-    "bookingsExtraPrice": "Chaque réservation au-delà de {{included}} coûte {{price}}, ajoutée à votre facture.",
+    "bookingsExtraPrice": "Chaque réservation au-delà de {{included}} coûte {{price}}, facturée à la fin du mois.",
     "bookingsResets": "Le compteur repart de zéro le {{date}}.",
     "bookingsFreeFull": "Mois complet",
     "bookingsFreeFullDesc": "Votre site ne prend plus de réservations. Choisissez une offre et ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
@@ -962,17 +962,19 @@
     "extras": {
       "label": "Facturation automatique des réservations supplémentaires",
       "offShort": "Désactivée",
-      "onDesc": "Activée : au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûte {{price}} et s'ajoute automatiquement à votre facture. Votre site continue de prendre des réservations.",
-      "offDesc": "Désactivée : à {{included}} réservations par période, votre site cesse de prendre des réservations jusqu'au début de la période suivante. Activée, chaque réservation supplémentaire coûte {{price}}, ajoutée automatiquement à votre facture.",
+      "onDesc": "Activée : au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûte {{price}}, facturée à la fin du mois. Votre site continue de prendre des réservations.",
+      "offDesc": "Désactivée : à {{included}} réservations par période, votre site cesse de prendre des réservations jusqu'au début de la période suivante. Activée, chaque réservation supplémentaire coûte {{price}}, facturée à la fin du mois.",
       "offDescNative": "Désactivée : à {{included}} réservations par période, votre site cesse de prendre des réservations jusqu'au début de la période suivante.",
-      "heldByCancel": "Votre abonnement ne sera pas renouvelé : aucune réservation au-delà de {{included}} jusqu'à la fin de la période.",
+      "heldByCancel": "Votre abonnement ne sera pas renouvelé : aucune réservation au-delà de {{included}} jusqu'à la fin de la période. Les réservations supplémentaires déjà faites sont facturées maintenant.",
+      "heldByTrial": "Les réservations supplémentaires commencent avec votre premier paiement, à la fin des jours gratuits. D'ici là, votre site prend jusqu'à {{included}} réservations par mois.",
+      "heldByFailedCharge": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : votre site ne prend aucune réservation au-delà de {{included}} tant qu'il n'est pas réglé. Mettez à jour votre carte dans Paddle ; nous réessayons sous un jour.",
       "closedShort": "Réservations de la période épuisées",
       "closedDesc": "Votre site ne prend plus de réservations jusqu'au {{date}}. Pour rouvrir tout de suite, activez les réservations supplémentaires.",
       "closedDescNative": "Votre site ne prend plus de réservations jusqu'au {{date}}.",
       "onSince": "Activée le {{date}}",
       "offSince": "Désactivée le {{date}}",
       "confirmOnTitle": "Activer les réservations supplémentaires ?",
-      "confirmOnBody": "Au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûtera {{price}}, ajoutée automatiquement à votre facture. Vous pouvez la désactiver à tout moment.",
+      "confirmOnBody": "Au-delà de {{included}} réservations par période, chaque réservation supplémentaire coûtera {{price}}, facturée à la fin du mois (moins de 10 ₪ passe au mois suivant). Vous pouvez la désactiver à tout moment.",
       "confirmOn": "Activer",
       "confirmOffTitle": "Désactiver les réservations supplémentaires ?",
       "confirmOffBody": "Votre site cesse de prendre des réservations tout de suite, jusqu'au {{date}}.",
@@ -981,6 +983,7 @@
       "turnedOn": "Réservations supplémentaires activées",
       "turnedOff": "Réservations supplémentaires désactivées",
       "cancelScheduled": "Votre abonnement ne sera pas renouvelé : impossible d'activer les réservations supplémentaires.",
+      "chargeFailed": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : impossible de les activer tant qu'il n'est pas réglé.",
       "failed": "Enregistrement impossible. Réessayez."
     },
     "compare": {
@@ -2160,6 +2163,7 @@
       "title": "Les {{included}} réservations de la période sont utilisées",
       "body": "Votre site ne prend plus de réservations jusqu'au {{date}}. Pour rouvrir tout de suite, activez les réservations supplémentaires sur la page Compte.",
       "bodyApp": "Votre site ne prend plus de réservations jusqu'au {{date}}.",
+      "bodyChargeFailed": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : votre site ne prend plus de nouvelles réservations pour l'instant. Mettez à jour votre carte sur la page Compte ; nous réessayons sous un jour.",
       "cta": "Aller au compte"
     }
   }

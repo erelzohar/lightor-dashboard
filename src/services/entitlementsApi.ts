@@ -91,7 +91,8 @@ export interface BookingsMeter {
 export interface ExtrasSwitch {
   chosen: boolean;
   on: boolean;
-  blockedBy: 'billingOff' | 'notSubscribed' | 'paymentFailed' | 'cancelScheduled' | null;
+  // LT-466: an unpaid extras charge, and the free days with a card (the choice is kept, it starts with the first payment).
+  blockedBy: 'billingOff' | 'notSubscribed' | 'paymentFailed' | 'chargeFailed' | 'cancelScheduled' | 'trialing' | null;
   changedAt: string | null;
   closed: boolean;
 }

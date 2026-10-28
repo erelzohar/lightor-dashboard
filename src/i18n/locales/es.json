@@ -953,7 +953,7 @@
     "bookingsMeterFree": "{{used}}/{{included}} reservas este mes de tu prueba gratuita",
     "bookingsNearIncluded": "Cerca de las reservas incluidas",
     "bookingsExtraCount": "Reservas adicionales: {{n}}",
-    "bookingsExtraPrice": "Cada reserva por encima de {{included}} cuesta {{price}} y se suma a tu factura.",
+    "bookingsExtraPrice": "Cada reserva pasadas {{included}} cuesta {{price}}, cobrada al terminar el mes.",
     "bookingsResets": "El conteo vuelve a empezar el {{date}}.",
     "bookingsFreeFull": "Mes completo",
     "bookingsFreeFullDesc": "Tu sitio no recibe reservas nuevas. Elige un plan y añade una tarjeta para reabrirlas ya - no se cobra nada antes del {{date}}.",
@@ -962,17 +962,19 @@
     "extras": {
       "label": "Cobro automático de reservas extra",
       "offShort": "Desactivado",
-      "onDesc": "Activado: pasadas {{included}} reservas por periodo, cada reserva extra cuesta {{price}} y se suma a tu factura automáticamente. Tu sitio sigue recibiendo reservas.",
-      "offDesc": "Desactivado: al llegar a {{included}} reservas por periodo, tu sitio deja de recibir reservas hasta que empiece el siguiente. Si lo activas, cada reserva extra cuesta {{price}}, sumada a tu factura automáticamente.",
+      "onDesc": "Activado: pasadas {{included}} reservas por periodo, cada reserva extra cuesta {{price}}, cobrada al terminar el mes. Tu sitio sigue recibiendo reservas.",
+      "offDesc": "Desactivado: al llegar a {{included}} reservas por periodo, tu sitio deja de recibir reservas hasta que empiece el siguiente. Si lo activas, cada reserva extra cuesta {{price}}, cobrada al terminar el mes.",
       "offDescNative": "Desactivado: al llegar a {{included}} reservas por periodo, tu sitio deja de recibir reservas hasta que empiece el siguiente.",
-      "heldByCancel": "Tu suscripción no se renovará, así que no se aceptan reservas más allá de {{included}} hasta que termine el periodo.",
+      "heldByCancel": "Tu suscripción no se renovará, así que no se aceptan reservas más allá de {{included}} hasta que termine el periodo. Las reservas extra ya hechas se cobran ahora.",
+      "heldByTrial": "Las reservas extra empiezan con tu primer pago, al terminar los días gratis. Hasta entonces tu sitio recibe hasta {{included}} reservas al mes.",
+      "heldByFailedCharge": "El último cobro de reservas extra no se pudo hacer, así que tu sitio no recibe reservas más allá de {{included}} hasta que se haga. Actualiza tu tarjeta en Paddle; lo intentamos de nuevo en un día.",
       "closedShort": "Reservas del periodo agotadas",
       "closedDesc": "Tu sitio no recibe reservas nuevas hasta el {{date}}. Para reabrir ya, activa las reservas extra.",
       "closedDescNative": "Tu sitio no recibe reservas nuevas hasta el {{date}}.",
       "onSince": "Activado el {{date}}",
       "offSince": "Desactivado el {{date}}",
       "confirmOnTitle": "¿Activar las reservas extra?",
-      "confirmOnBody": "Pasadas {{included}} reservas por periodo, cada reserva extra costará {{price}}, sumada a tu factura automáticamente. Puedes desactivarlo cuando quieras.",
+      "confirmOnBody": "Pasadas {{included}} reservas por periodo, cada reserva extra costará {{price}}, cobrada al terminar el mes (menos de 10 ₪ pasa al mes siguiente). Puedes desactivarlo cuando quieras.",
       "confirmOn": "Activar",
       "confirmOffTitle": "¿Desactivar las reservas extra?",
       "confirmOffBody": "Tu sitio deja de recibir reservas ahora mismo, hasta el {{date}}.",
@@ -981,6 +983,7 @@
       "turnedOn": "Reservas extra activadas",
       "turnedOff": "Reservas extra desactivadas",
       "cancelScheduled": "Tu suscripción no se renovará, así que no se pueden activar las reservas extra.",
+      "chargeFailed": "El último cobro de reservas extra no se pudo hacer, así que no se pueden activar hasta que se haga.",
       "failed": "No se pudo guardar. Inténtalo de nuevo."
     },
     "compare": {
@@ -2160,6 +2163,7 @@
       "title": "Se usaron las {{included}} reservas del periodo",
       "body": "Tu sitio no recibe reservas nuevas hasta el {{date}}. Para reabrir ya, activa las reservas extra en la página Cuenta.",
       "bodyApp": "Tu sitio no recibe reservas nuevas hasta el {{date}}.",
+      "bodyChargeFailed": "El último cobro de reservas extra no se pudo hacer, así que tu sitio no recibe reservas nuevas por ahora. Actualiza tu tarjeta en la página Cuenta; lo intentamos de nuevo en un día.",
       "cta": "Ir a Cuenta"
     }
   }

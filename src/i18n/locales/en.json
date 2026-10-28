@@ -953,7 +953,7 @@
     "bookingsMeterFree": "{{used}}/{{included}} bookings this month of your free trial",
     "bookingsNearIncluded": "Nearing the included bookings",
     "bookingsExtraCount": "Extra bookings: {{n}}",
-    "bookingsExtraPrice": "Each booking over {{included}} costs {{price}}, added to your bill.",
+    "bookingsExtraPrice": "Each booking over {{included}} costs {{price}}, charged when the month ends.",
     "bookingsResets": "The count starts again on {{date}}.",
     "bookingsFreeFull": "Month full",
     "bookingsFreeFullDesc": "Your site isn't taking new bookings. Choose a plan and add a card to reopen them now - nothing is charged before {{date}}.",
@@ -962,17 +962,19 @@
     "extras": {
       "label": "Automatic charge for extra bookings",
       "offShort": "Off",
-      "onDesc": "On: past {{included}} bookings a period, each extra booking costs {{price}} and is added to your bill automatically. Your site keeps taking bookings.",
-      "offDesc": "Off: at {{included}} bookings a period your site stops taking bookings until the next period starts. Switch it on and each extra booking costs {{price}}, added to your bill automatically.",
+      "onDesc": "On: past {{included}} bookings a period, each extra booking costs {{price}}, charged when the month ends. Your site keeps taking bookings.",
+      "offDesc": "Off: at {{included}} bookings a period your site stops taking bookings until the next period starts. Switch it on and each extra booking costs {{price}}, charged when the month ends.",
       "offDescNative": "Off: at {{included}} bookings a period your site stops taking bookings until the next period starts.",
-      "heldByCancel": "Your subscription won't renew, so no bookings are taken past {{included}} until the period ends.",
+      "heldByCancel": "Your subscription won't renew, so no bookings are taken past {{included}} until the period ends. Extra bookings already made are charged now.",
+      "heldByTrial": "Extra bookings start with your first payment, when the free days end. Until then your site takes up to {{included}} bookings a month.",
+      "heldByFailedCharge": "The last charge for extra bookings didn't go through, so your site takes no bookings past {{included}} until it does. Update your card in Paddle; we try again within a day.",
       "closedShort": "This period's bookings are used",
       "closedDesc": "Your site takes no new bookings until {{date}}. To reopen now, switch on extra bookings.",
       "closedDescNative": "Your site takes no new bookings until {{date}}.",
       "onSince": "Switched on {{date}}",
       "offSince": "Switched off {{date}}",
       "confirmOnTitle": "Switch on extra bookings?",
-      "confirmOnBody": "Past {{included}} bookings a period, each extra booking will cost {{price}}, added to your bill automatically. You can switch it off any time.",
+      "confirmOnBody": "Past {{included}} bookings a period, each extra booking will cost {{price}}, charged when the month ends (under ₪10 moves on to the next month). You can switch it off any time.",
       "confirmOn": "Switch on",
       "confirmOffTitle": "Switch off extra bookings?",
       "confirmOffBody": "Your site stops taking bookings right away, until {{date}}.",
@@ -981,6 +983,7 @@
       "turnedOn": "Extra bookings switched on",
       "turnedOff": "Extra bookings switched off",
       "cancelScheduled": "Your subscription won't renew, so extra bookings can't be switched on.",
+      "chargeFailed": "The last charge for extra bookings didn't go through, so they can't be switched on until it does.",
       "failed": "Couldn't save. Please try again."
     },
     "compare": {
@@ -2160,6 +2163,7 @@
       "title": "This period's {{included}} bookings are used",
       "body": "Your site takes no new bookings until {{date}}. To reopen now, switch on extra bookings on the Account page.",
       "bodyApp": "Your site takes no new bookings until {{date}}.",
+      "bodyChargeFailed": "The last charge for extra bookings didn't go through, so your site takes no new bookings for now. Update your card on the Account page; we try again within a day.",
       "cta": "Go to Account"
     }
   }
