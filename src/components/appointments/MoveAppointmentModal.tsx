@@ -11,7 +11,7 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { fetchAppointments } from '../../store/slices/appointmentsSlice';
 import { getAvailability, moveAppointment, type Availability, type BusySlot } from '../../services/appointmentsApi';
-import { apiErrorStatus } from '../../services/customersApi';
+import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { businessTimeZone, zonedDateOf, zonedTimeLabel, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { dayStatus, freeSlots, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
@@ -177,7 +177,11 @@ const MoveAppointmentModal: React.FC<MoveAppointmentModalProps> = ({ appointment
       onMoved?.(moved);
       onClose();
     } catch (error) {
-      if (apiErrorStatus(error) === 409) {
+      if (isApiErrorCode(error, 'PAST_RECORD')) {
+        // LT-464: a visit recorded after it happened stays in the past.
+        toast.error(t('appointments.move.pastRecord'));
+        onClose();
+      } else if (apiErrorStatus(error) === 409) {
         // Taken meanwhile: back to the day's times, read again.
         toast.error(t('customers.booking.slotTaken'));
         setAvailabilityVersion((version) => version + 1);

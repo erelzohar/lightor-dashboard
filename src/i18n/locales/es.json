@@ -402,7 +402,12 @@
       "notice": "El cliente recibirá un mensaje con la nueva hora.",
       "submit": "Mover la cita",
       "success": "Cita movida",
-      "failed": "No se pudo mover la cita"
+      "failed": "No se pudo mover la cita",
+      "pastRecord": "Esta cita se registró después de ocurrir. Para una nueva hora, añade una cita nueva."
+    },
+    "notNotified": {
+      "dailyTexts": "Guardado. El cliente no recibió mensaje - se agotaron los mensajes a clientes de hoy.",
+      "paymentFailed": "Guardado. El cliente no recibió mensaje, porque falló el pago de la suscripción."
     },
     "cancelAppointment": "Cancelar",
     "cancelDialog": {

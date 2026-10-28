@@ -588,6 +588,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     SWAP_DOES_NOT_FIT: 'appointments.drag.swapDoesNotFit',
     NOT_SWAPPABLE: 'appointments.drag.notSwappable',
     CHANGED_MEANWHILE: 'appointments.drag.changed',
+    // LT-464: a visit recorded after it happened stays in the past.
+    PAST_RECORD: 'appointments.move.pastRecord',
   };
   const confirmDrop = async () => {
     if (!pendingDrop || dropSaving) return;

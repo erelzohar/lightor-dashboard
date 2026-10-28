@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { install401Handler } from './authInterceptor';
+import { installCustomerTextsNotice } from './customerTextsNotice';
 import { getCachedToken } from './nativeSession';
 
 /**
@@ -35,5 +36,8 @@ apiClient.interceptors.request.use((config) => {
 
 // Expired/invalid token → auto-logout in place (see authInterceptor).
 install401Handler(apiClient);
+
+// A saved change whose customer was not texted (LT-464) tells the owner.
+installCustomerTextsNotice(apiClient);
 
 export default apiClient;

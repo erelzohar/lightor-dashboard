@@ -402,7 +402,12 @@
       "notice": "Le client recevra un message avec le nouvel horaire.",
       "submit": "Déplacer le rendez-vous",
       "success": "Rendez-vous déplacé",
-      "failed": "Impossible de déplacer le rendez-vous"
+      "failed": "Impossible de déplacer le rendez-vous",
+      "pastRecord": "Ce rendez-vous a été enregistré après avoir eu lieu. Pour un nouvel horaire, ajoutez un nouveau rendez-vous."
+    },
+    "notNotified": {
+      "dailyTexts": "Enregistré. Le client n'a pas reçu de message - les messages aux clients sont épuisés pour aujourd'hui.",
+      "paymentFailed": "Enregistré. Le client n'a pas reçu de message, car le paiement de l'abonnement a échoué."
     },
     "cancelAppointment": "Annuler",
     "cancelDialog": {

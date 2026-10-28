@@ -402,7 +402,12 @@
       "notice": "The customer gets a message with the new time.",
       "submit": "Move appointment",
       "success": "Appointment moved",
-      "failed": "Couldn't move the appointment"
+      "failed": "Couldn't move the appointment",
+      "pastRecord": "This visit was recorded after it happened. To book a new time, add a new booking."
+    },
+    "notNotified": {
+      "dailyTexts": "Saved. The customer was not texted - today's texts to customers are used up.",
+      "paymentFailed": "Saved. The customer was not texted, because the subscription's payment failed."
     },
     "cancelAppointment": "Cancel",
     "cancelDialog": {
