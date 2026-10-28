@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { type AxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
 import { aiService, type ElementField } from '../../services/aiApi';
+import { isAiBusy } from '../../lib/aiErrors';
 import { LightyAvatar, LightyBubble, LightyTyping, OwnerBubble } from '../lighty/LightyChat';
 import { lightTick } from '../../lib/haptics';
 import { LightyTyped } from '../lighty/LightyTyped';
@@ -53,7 +54,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
       }
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
-      answer = { ask: shown.trim(), answer: t(status === 429 ? 'siteEditor.ai.budget' : 'siteEditor.ai.failed'), tone: 'error' };
+      answer = { ask: shown.trim(), answer: t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'siteEditor.ai.budget' : 'siteEditor.ai.failed'), tone: 'error' };
     }
     setExchanges((all) => [...all, answer].slice(-3));
     setFresh(answer);

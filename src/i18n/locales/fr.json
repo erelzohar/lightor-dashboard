@@ -60,7 +60,8 @@
       "over": "{{name}} au-dessus de {{over}}.",
       "dropped": "{{name}} déposé à la place de {{over}}.",
       "cancelled": "Déplacement annulé."
-    }
+    },
+    "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes."
   },
   "greetings": {
     "morning": "Bonjour",

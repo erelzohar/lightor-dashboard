@@ -9,6 +9,7 @@ import globals from '../../services/globals';
 import { useTranslation } from 'react-i18next';
 import { useConfirm } from '../../hooks/useConfirm';
 import { aiService } from '../../services/aiApi';
+import { isAiBusy } from '../../lib/aiErrors';
 
 /** LT-346: what the owner edits on a picture — its title and its description for screen readers. */
 export interface PortfolioItemEdit { title: string; alt: string }
@@ -244,7 +245,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, siteLang
             setEditAlt(await aiService.describeImage(item.url, siteLanguage));
         } catch (err) {
             const status = (err as AxiosError)?.response?.status;
-            toast.error(t(status === 429 ? 'portfolio.altSuggestBudget' : 'portfolio.altSuggestFailed'));
+            toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'portfolio.altSuggestBudget' : 'portfolio.altSuggestFailed'));
         } finally {
             setSuggesting(false);
         }

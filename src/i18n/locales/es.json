@@ -60,7 +60,8 @@
       "over": "{{name}} sobre {{over}}.",
       "dropped": "{{name}} soltado en el lugar de {{over}}.",
       "cancelled": "Movimiento cancelado."
-    }
+    },
+    "aiBusy": "Un momento: otra solicitud todavía está en curso. Inténtalo de nuevo en unos segundos."
   },
   "greetings": {
     "morning": "Buenos días",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
 import { Palette, RotateCcw } from 'lucide-react';
 import { assistantService, type LightyTurn } from '../services/assistantApi';
+import { isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
@@ -118,7 +119,7 @@ const LightyPage: React.FC = () => {
       setCheer((n) => n + 1);
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
-      setError(t(status === 429 ? 'lighty.budget' : 'lighty.failed'));
+      setError(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'lighty.budget' : 'lighty.failed'));
     } finally {
       setBusy(false);
       void refreshUsage();

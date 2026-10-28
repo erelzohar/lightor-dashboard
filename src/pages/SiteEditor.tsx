@@ -26,6 +26,7 @@ import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
 import { addGalleryPhoto, addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
 import { aiService } from '../services/aiApi';
+import { isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import TextPanel from '../components/siteEditor/TextPanel';
@@ -240,7 +241,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       } catch (err) {
         // The section still comes, with its fields open for the owner.
         const status = (err as AxiosError)?.response?.status;
-        toast.error(t(status === 429 ? 'siteEditor.sections.aiBudget' : 'siteEditor.sections.aiFailed'));
+        toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'siteEditor.sections.aiBudget' : 'siteEditor.sections.aiFailed'));
       } finally {
         setDrafting(null);
       }

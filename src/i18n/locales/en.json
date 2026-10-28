@@ -60,7 +60,8 @@
       "over": "{{name}} is over {{over}}.",
       "dropped": "{{name}} was dropped on {{over}}.",
       "cancelled": "The move was cancelled."
-    }
+    },
+    "aiBusy": "One moment - another AI request is still running. Try again in a few seconds."
   },
   "greetings": {
     "morning": "Good morning",

@@ -89,6 +89,14 @@ describe("Lighty's page (LT-253)", () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/design|{"floatingMessage":"Make the headline warmer"}');
   });
 
+  // LT-482: two of the account's AI requests still running is "one moment", not a spent budget.
+  it('says "one moment" when another AI request is still running', async () => {
+    vi.mocked(assistantService.thread).mockResolvedValue([]);
+    vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 429, data: { code: 'AI_BUSY' } } });
+    renderPage({ lightyMessage: 'When am I free tomorrow?' });
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.aiBusy');
+  });
+
   it("sends the floating Lighty's question at once; says when the budget is spent; starts over", async () => {
     vi.mocked(assistantService.thread).mockResolvedValue([{ role: 'assistant', content: 'Earlier answer' }]);
     vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 429 } });
