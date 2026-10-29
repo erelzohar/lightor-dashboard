@@ -215,6 +215,7 @@ function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: 
             <LightySendIcon />
           </button>
         </form>
+        <AiReviewNote />
       </div>
       {messages.length > 0 && (
         <div ref={listRef} className="flex flex-col gap-2 max-h-72 overflow-y-auto">
@@ -233,7 +234,6 @@ function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: 
         </div>
       )}
       {busy && <LightyTyping />}
-      {messages.length > 0 && <AiReviewNote />}
     </>
   );
 }

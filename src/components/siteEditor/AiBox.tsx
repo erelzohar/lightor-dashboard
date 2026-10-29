@@ -28,10 +28,10 @@ interface Exchange { ask: string; answer: string; tone: 'ok' | 'warn' | 'error' 
  * his answer. LT-256: his line opens the panel and stays at its top while it
  * scrolls, so asking him is never a scroll away.
  */
-/** LT-492: under Lighty's answers in the editor - the owner checks what the AI changed before it goes live. */
+/** LT-492: under Lighty's input in the editor, always - the owner checks what the AI changed before it goes live. */
 export const AiReviewNote: React.FC = () => {
   const { t } = useTranslation();
-  return <p className="ps-10 text-xs text-gray-500 dark:text-slate-400" data-testid="ai-review-note">{t('siteEditor.ai.reviewNote')}</p>;
+  return <p className="mt-2 ps-11 text-xs text-gray-500 dark:text-slate-400" data-testid="ai-review-note">{t('siteEditor.ai.reviewNote')}</p>;
 };
 
 const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
@@ -107,6 +107,7 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
             </button>
           ))}
         </div>
+        <AiReviewNote />
       </div>
       {(exchanges.length > 0 || busy) && (
         <div className="flex flex-col gap-2">
@@ -125,7 +126,6 @@ const AiBox: React.FC<AiBoxProps> = ({ fields, onApply, placeholder }) => {
           ))}
           {busy && asked && <OwnerBubble>{asked}</OwnerBubble>}
           {busy && <LightyTyping />}
-          {exchanges.length > 0 && <AiReviewNote />}
         </div>
       )}
     </>

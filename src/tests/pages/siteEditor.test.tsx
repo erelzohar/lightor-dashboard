@@ -185,8 +185,8 @@ describe('the site editor (LT-249)', () => {
     renderEditor();
     await fromSite({ type: 'LT_READY' });
     await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero', count: 1 });
-    // LT-492: the line asking the owner to check the AI's change shows with its first answer.
-    expect(screen.queryByTestId('ai-review-note')).toBeNull();
+    // LT-492: the line asking the owner to check the AI's change sits under the input, before any answer.
+    expect(within(screen.getByTestId('ai-box')).getByTestId('ai-review-note')).toHaveTextContent('siteEditor.ai.reviewNote');
     fireEvent.click(await screen.findByText('siteEditor.ai.quick.shorter'));
 
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toHaveValue('Short'));
@@ -194,7 +194,6 @@ describe('the site editor (LT-249)', () => {
       { path: 'components.hero.title', value: 'Old title', label: 'siteEditor.fields.heroTitle', maxLength: 120 },
     ]);
     expect(screen.getByRole('status')).toHaveTextContent('Shortened.');
-    expect(screen.getByTestId('ai-review-note')).toHaveTextContent('siteEditor.ai.reviewNote');
   });
 
   it("a section: its layout is the block's variant, and its field list opens a field", async () => {
@@ -573,14 +572,13 @@ describe('the site editor (LT-249)', () => {
       pick(c);
 
       // Pictures alone are a request: put them on the site.
-      expect(screen.queryByTestId('ai-review-note')).toBeNull();
+      expect(within(screen.getByTestId('site-chat')).getByTestId('ai-review-note')).toHaveTextContent('siteEditor.ai.reviewNote'); // LT-492
       fireEvent.click(screen.getByRole('button', { name: 'siteEditor.ai.send' }));
       await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
       const [ask, , sent] = vi.mocked(aiService.editSite).mock.calls[0];
       expect(ask).toBe('siteEditor.chat.picturesOnly');
       expect((sent as File[]).map((f) => f.name)).toEqual(['b.jpg', 'c.webp', 'c.webp']);
       expect(screen.queryByTestId('site-chat-images')).toBeNull();
-      expect(await screen.findByTestId('ai-review-note')).toHaveTextContent('siteEditor.ai.reviewNote'); // LT-492
 
       await waitFor(() => expect(lastConfig().components.hero.heroImageSrc).toBe('https://api.lightor.app/api/images/tmp-ai-1.webp'));
       fireEvent.click(screen.getByText('siteEditor.save'));
