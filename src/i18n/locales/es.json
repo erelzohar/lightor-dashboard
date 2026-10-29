@@ -1781,6 +1781,7 @@
         "fix": "Corrige la redacción, la gramática y la puntuación sin cambiar el sentido"
       },
       "askHere": "¿Qué cambio aquí? Escríbele a Lighty…",
+      "reviewNote": "La IA puede equivocarse. Revisa los cambios antes de «Guardar y publicar».",
       "askSection": "¿Qué cambio en esta sección? Escríbele a Lighty…"
     },
     "image": {

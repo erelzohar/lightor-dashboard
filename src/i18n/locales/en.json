@@ -1781,6 +1781,7 @@
         "fix": "Fix the wording, grammar and punctuation without changing the meaning"
       },
       "askHere": "What should change here? Tell Lighty…",
+      "reviewNote": "AI can make mistakes. Check the changes before \"Save & publish\".",
       "askSection": "What should change in this section? Tell Lighty…"
     },
     "image": {

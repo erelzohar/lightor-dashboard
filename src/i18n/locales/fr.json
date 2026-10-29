@@ -1781,6 +1781,7 @@
         "fix": "Corrige la formulation, la grammaire et la ponctuation sans changer le sens"
       },
       "askHere": "Que changer ici ? Dites-le à Lighty…",
+      "reviewNote": "L'IA peut se tromper. Vérifiez les modifications avant « Enregistrer et publier ».",
       "askSection": "Que changer dans cette section ? Dites-le à Lighty…"
     },
     "image": {

@@ -9,6 +9,7 @@ import { lightTick } from '../../lib/haptics';
 import { LightyTyped } from '../lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 import { addImages, IMAGE_TYPES, MAX_IMAGES } from '../../lib/ownerImages';
+import { AiReviewNote } from './AiBox';
 
 /** A turn in the panel; an owner's may show the pictures it carried (never sent back as history). */
 type Turn = ChatTurn & { images?: string[] };
@@ -232,6 +233,7 @@ function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: 
         </div>
       )}
       {busy && <LightyTyping />}
+      {messages.length > 0 && <AiReviewNote />}
     </>
   );
 }
