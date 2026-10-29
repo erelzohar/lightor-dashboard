@@ -31,6 +31,9 @@ import { tabsListVariants, tabsTriggerVariants } from '../components/ui/segmente
 import Dropdown from '../components/ui/dropdown';
 
 
+// A service is at most 12 hours (LT-484): a longer one never fits a working day.
+const MAX_SERVICE_MINUTES = 12 * 60;
+
 const GLASS: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)',
   backdropFilter: 'blur(12px)',
@@ -186,8 +189,9 @@ const AppointmentTypes: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'durationMinutes') {
-      const minutes = parseInt(value) || 0;
-      setFormData(prev => ({ ...prev, durationMS: (minutes * 60 * 1000).toString() }));
+      // An emptied field stays empty (not 0), so `required` asks for a length.
+      const minutes = parseInt(value);
+      setFormData(prev => ({ ...prev, durationMS: Number.isFinite(minutes) ? (minutes * 60 * 1000).toString() : '' }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -482,9 +486,14 @@ const AppointmentTypes: React.FC = () => {
                           name: 'durationMinutes',
                           type: 'number',
                           min: '5',
+                          max: String(MAX_SERVICE_MINUTES),
                           step: '5',
                           value: getDurationMinutes(),
                           onChange: handleChange,
+                          // LT-484: the field starts at 30, so typing 45 after a
+                          // tap made 3045 minutes. A tap selects the number and
+                          // typing replaces it.
+                          onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select(),
                           required: true,
                           placeholder: t('appointmentTypes.durationPlaceholder'),
                         }}

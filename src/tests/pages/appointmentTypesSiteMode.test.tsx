@@ -322,3 +322,49 @@ describe('Services page - a service with no price', () => {
     expect(input('price')?.value).toBe('');
   });
 });
+
+/**
+ * LT-484 (the hands-on pass): the duration field starts at 30, so a tap and
+ * "45" made 3045 minutes (50 hours), saved with no warning. A tap now selects
+ * the number, an emptied field stays empty, and 12 hours is the most.
+ */
+describe('Services page - the duration field', () => {
+  it('selects its number on a tap, so typing replaces the 30', async () => {
+    renderPage('book');
+    await screen.findByText('appointmentTypes.noServices');
+    fireEvent.click(screen.getByText('appointmentTypes.newService'));
+
+    const field = input('durationMinutes')!;
+    expect(field).toHaveValue(30);
+    const select = vi.spyOn(field, 'select');
+    fireEvent.focus(field);
+    expect(select).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays empty when emptied, and asks for a length instead of saving 0', async () => {
+    renderPage('book');
+    await screen.findByText('appointmentTypes.noServices');
+    fireEvent.click(screen.getByText('appointmentTypes.newService'));
+
+    const field = input('durationMinutes')!;
+    fireEvent.change(field, { target: { value: '' } });
+    expect(field).toHaveValue(null);
+    expect(field).toBeRequired();
+    fireEvent.change(field, { target: { value: '45' } });
+    expect(field).toHaveValue(45);
+  });
+
+  it('allows 5 minutes to 12 hours', async () => {
+    renderPage('book');
+    await screen.findByText('appointmentTypes.noServices');
+    fireEvent.click(screen.getByText('appointmentTypes.newService'));
+
+    const field = input('durationMinutes')!;
+    expect(field).toHaveAttribute('min', '5');
+    expect(field).toHaveAttribute('max', '720');
+    fireEvent.change(field, { target: { value: '3045' } });
+    expect(field.validity.rangeOverflow).toBe(true);
+    fireEvent.change(field, { target: { value: '720' } });
+    expect(field.validity.valid).toBe(true);
+  });
+});
