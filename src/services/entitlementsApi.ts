@@ -26,6 +26,10 @@ export interface PlanLimits {
    * older API, which reads as allowed: the server decides the channel anyway.
    */
   ownerTextAlerts?: boolean;
+  /** LT-489: on the free plan the phone carries the morning digest only. Absent on an older API. */
+  ownerTextDigestOnly?: boolean;
+  /** LT-489: the editor's "create with AI" picture - Plus. Absent on an older API, which reads as allowed. */
+  aiImagesInEditor?: boolean;
 }
 
 export interface MyEntitlements {

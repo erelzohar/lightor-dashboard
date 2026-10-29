@@ -744,7 +744,8 @@
         "permissionOff": "Notifications are off on this phone"
       },
       "needsPhone": "Add a phone number in your account details to get WhatsApp.",
-      "plusOnly": "WhatsApp is available on the Plus plan."
+      "plusOnly": "WhatsApp is available on the Plus plan.",
+      "plusOnlyDigest": "On the free plan WhatsApp sends the morning digest only. Inquiries and last-minute changes by WhatsApp are on the Plus plan."
     },
     "phoneCode": {
       "sent": "We sent a 6-digit code to {{phone}}",
@@ -1026,7 +1027,7 @@
         },
         "pictures": {
           "label": "AI pictures",
-          "free": "5 a month",
+          "free": "5 in the site build",
           "plus": "40 a month"
         },
         "editing": {
@@ -1799,6 +1800,7 @@
       "aiUse": "Use this picture",
       "aiFailed": "The picture could not be created, try again",
       "aiLimit": "This month's AI pictures are used up",
+      "aiPlusOnly": "Creating pictures with AI in the editor is on the Plus plan.",
       "aiHint": "The picture is kept on your site when you save."
     },
     "section": {

@@ -282,6 +282,41 @@ describe('NotificationsCard', () => {
     });
   });
 
+  // LT-489 (Erel 2026-10-29): "רק סיכום בוקר בוואצפ בחינמי".
+  describe('the free plan: WhatsApp for the morning digest only', () => {
+    const digestOnly = () =>
+      ({ plan: 'free', limits: { ownerTextAlerts: true, ownerTextDigestOnly: true }, usage: {} }) as unknown as MyEntitlements;
+    const phoneEverywhere = () =>
+      channelsOf({ cancellation: on(true, true, true), reschedule: on(true, true, true), morningDigest: on(true, false, true), newLead: on(true, false, true) });
+
+    it('on the web: the digest chip works, the lead and last-minute ones are locked, and it says why', async () => {
+      onTheWeb();
+      vi.mocked(fetchMyEntitlements).mockResolvedValue(digestOnly());
+      vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: phoneEverywhere() }));
+      await renderCard();
+
+      await waitFor(() => expect(chip('notification-newLead-phone')).toBeDisabled());
+      expect(pressed('notification-newLead-phone')).toBe('false');
+      expect(chip('notification-morningDigest-phone')).not.toBeDisabled();
+      expect(pressed('notification-morningDigest-phone')).toBe('true');
+      expect(screen.getByRole('switch', { name: 'account.notifications.lastMinute' })).toBeDisabled();
+      expect(screen.getByTestId('notification-digest-only-hint')).toHaveTextContent('account.notifications.plusOnlyDigest');
+      // The summary promises WhatsApp for the digest only.
+      expect(screen.getByTestId('notification-summary-phone')).toHaveTextContent('account.notifications.summary.whatsapp');
+    });
+
+    it('in the app: only the digest offers WhatsApp, with no word about the plans', async () => {
+      vi.mocked(fetchMyEntitlements).mockResolvedValue(digestOnly());
+      vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: phoneEverywhere() }));
+      await renderCard();
+
+      await waitFor(() => expect(screen.queryByTestId('notification-newLead-phone')).not.toBeInTheDocument());
+      expect(chip('notification-morningDigest-phone')).not.toBeDisabled();
+      expect(screen.queryByRole('switch', { name: 'account.notifications.lastMinute' })).not.toBeInTheDocument();
+      expect(screen.queryByTestId('notification-digest-only-hint')).not.toBeInTheDocument();
+    });
+  });
+
   describe('the app', () => {
     it('says on the web whether a phone with the app is connected', async () => {
       onTheWeb();

@@ -100,12 +100,16 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   // Null until the plan is known - and if it never is, the phone stays
   // offered: the server decides what really goes by phone anyway.
   const [textAllowed, setTextAllowed] = useState<boolean | null>(null);
+  // LT-489: on the free plan the phone carries the morning digest only.
+  const [textDigestOnly, setTextDigestOnly] = useState(false);
   const [permission, setPermission] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     fetchMyEntitlements().then((entitlements) => {
-      if (alive) setTextAllowed(entitlements?.limits.ownerTextAlerts ?? null);
+      if (!alive) return;
+      setTextAllowed(entitlements?.limits.ownerTextAlerts ?? null);
+      setTextDigestOnly(entitlements?.limits.ownerTextDigestOnly === true);
     });
     pushPermission().then((state) => {
       if (alive) setPermission(state);
@@ -134,6 +138,10 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   // plans - that would be a call to buy (LT-130, App Store 3.1.1).
   const phoneShown = !planLocked || canOfferPurchases();
   const phoneUsable = !planLocked && Boolean(phone);
+  // The same, for given events: on the free plan only the digest goes by phone (LT-489).
+  const lockedFor = (events: NotifyEvent[]) => planLocked || (textDigestOnly && events.some((event) => event !== 'morningDigest'));
+  const shownFor = (events: NotifyEvent[]) => !lockedFor(events) || canOfferPurchases();
+  const usableFor = (events: NotifyEvent[]) => !lockedFor(events) && Boolean(phone);
 
   const bookingsDiffer = (['app', 'email'] as const).some(
     (channel) => new Set(BOOKING_EVENTS.map((event) => channels(event)[channel])).size > 1
@@ -165,7 +173,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   const bookingItems = (channel: Channel): string[] => {
     if (leadsSite) return [];
     if (channel === 'phone') {
-      const on = CHANGE_EVENTS.filter((event) => channels(event).phone);
+      const on = CHANGE_EVENTS.filter((event) => channels(event).phone && usableFor([event]));
       if (on.length === 2) return [label('lastMinute')];
       return on.map((event) => label(event === 'cancellation' ? 'lastMinuteCancellation' : 'lastMinuteReschedule'));
     }
@@ -174,7 +182,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   };
   const otherItems = (channel: Channel): string[] =>
     (leadsSite ? (['newLead'] as NotifyEvent[]) : (['morningDigest', 'newLead'] as NotifyEvent[]))
-      .filter((event) => channels(event)[channel])
+      .filter((event) => channels(event)[channel] && (channel !== 'phone' || usableFor([event])))
       .map(label);
   const summary = (['app', 'email', 'phone'] as const)
     .filter((channel) => channel !== 'phone' || phoneUsable)
@@ -194,13 +202,13 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   const chips = (events: NotifyEvent[], list: Channel[], testId: string) => (
     <div className="flex flex-wrap gap-2">
       {list
-        .filter((channel) => channel !== 'phone' || phoneShown)
+        .filter((channel) => channel !== 'phone' || shownFor(events))
         .map((channel) => (
           <Chip
             key={channel}
             channel={channel}
-            on={allOn(events, channel) && (channel !== 'phone' || phoneUsable)}
-            disabled={saving || (channel === 'phone' && !phoneUsable)}
+            on={allOn(events, channel) && (channel !== 'phone' || usableFor(events))}
+            disabled={saving || (channel === 'phone' && !usableFor(events))}
             onToggle={() => set(events, channel, !allOn(events, channel))}
             testId={`${testId}-${channel}`}
           />
@@ -225,6 +233,11 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   const phoneHint = phoneShown && !phoneUsable && (
     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2" data-testid="notification-phone-hint">
       {planLocked ? t('account.notifications.plusOnly') : t('account.notifications.needsPhone')}
+    </p>
+  );
+  const digestOnlyHint = textDigestOnly && phoneUsable && canOfferPurchases() && (
+    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2" data-testid="notification-digest-only-hint">
+      {t('account.notifications.plusOnlyDigest')}
     </p>
   );
 
@@ -306,15 +319,15 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
                 <ChevronDown size={14} aria-hidden className={cn('transition-transform', showEachKind && 'rotate-180')} />
               </button>
             )}
-            {phoneShown && (
+            {shownFor(CHANGE_EVENTS) && (
               <div className="flex items-center justify-between gap-4 mt-4">
                 <div className="min-w-0">
                   <p className="text-sm text-light-text dark:text-dark-text">{t('account.notifications.lastMinute')}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('account.notifications.lastMinuteHint')}</p>
                 </div>
                 <ToggleSwitch
-                  checked={lastMinute && phoneUsable}
-                  disabled={saving || !phoneUsable}
+                  checked={lastMinute && usableFor(CHANGE_EVENTS)}
+                  disabled={saving || !usableFor(CHANGE_EVENTS)}
                   ariaLabel={t('account.notifications.lastMinute')}
                   onChange={(value) => set(CHANGE_EVENTS, 'phone', value)}
                 />
@@ -347,6 +360,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
       )}
 
       {phoneHint}
+      {digestOnlyHint}
       {anyPhone && (
         <p className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200/60 dark:border-gray-700/60 pt-3" data-testid="notification-phone-line">
           {/* The number isolated left to right inside a right-to-left line. */}

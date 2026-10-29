@@ -744,7 +744,8 @@
         "permissionOff": "Les notifications sont désactivées sur ce téléphone"
       },
       "needsPhone": "Ajoutez un numéro de téléphone dans les détails du compte pour recevoir WhatsApp.",
-      "plusOnly": "WhatsApp est disponible avec le forfait Plus."
+      "plusOnly": "WhatsApp est disponible avec le forfait Plus.",
+      "plusOnlyDigest": "Avec le forfait gratuit, WhatsApp n'envoie que le résumé du matin. Les demandes et les modifications de dernière minute par WhatsApp sont disponibles avec le forfait Plus."
     },
     "phoneCode": {
       "sent": "Nous avons envoyé un code à 6 chiffres au {{phone}}",
@@ -1026,7 +1027,7 @@
         },
         "pictures": {
           "label": "Images IA",
-          "free": "5 par mois",
+          "free": "5 à la création du site",
           "plus": "40 par mois"
         },
         "editing": {
@@ -1799,6 +1800,7 @@
       "aiUse": "Utiliser cette image",
       "aiFailed": "L'image n'a pas pu être créée, réessayez",
       "aiLimit": "Les images IA du mois sont épuisées",
+      "aiPlusOnly": "La création d'images par IA dans l'éditeur est disponible avec le forfait Plus.",
       "aiHint": "L'image est conservée sur votre site quand vous enregistrez."
     },
     "section": {

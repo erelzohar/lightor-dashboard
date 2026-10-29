@@ -744,7 +744,8 @@
         "permissionOff": "Las notificaciones están desactivadas en este teléfono"
       },
       "needsPhone": "Añade un número de teléfono en los datos de la cuenta para recibir WhatsApp.",
-      "plusOnly": "WhatsApp está disponible en el plan Plus."
+      "plusOnly": "WhatsApp está disponible en el plan Plus.",
+      "plusOnlyDigest": "En el plan gratuito, WhatsApp solo envía el resumen matutino. Las consultas y los cambios de última hora por WhatsApp están disponibles en el plan Plus."
     },
     "phoneCode": {
       "sent": "Enviamos un código de 6 dígitos al {{phone}}",
@@ -1026,7 +1027,7 @@
         },
         "pictures": {
           "label": "Imágenes con IA",
-          "free": "5 al mes",
+          "free": "5 al crear el sitio",
           "plus": "40 al mes"
         },
         "editing": {
@@ -1799,6 +1800,7 @@
       "aiUse": "Usar esta imagen",
       "aiFailed": "No se pudo crear la imagen, inténtalo de nuevo",
       "aiLimit": "Se agotaron las imágenes con IA de este mes",
+      "aiPlusOnly": "Crear imágenes con IA en el editor está disponible en el plan Plus.",
       "aiHint": "La imagen se guarda en tu sitio al guardar."
     },
     "section": {
