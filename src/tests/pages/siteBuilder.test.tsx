@@ -88,4 +88,27 @@ describe('SiteBuilder', () => {
     await waitFor(() => expect(fetchWebConfig).toHaveBeenCalledWith('wc-1'));
     expect(dispatchMock).toHaveBeenCalledWith({ type: 'webConfig/fetch', id: 'wc-1' });
   });
+
+  // LT-485 (Erel's iPhone): the room kept for the tab bar stayed while the
+  // keyboard was up (the bar hides then), a black band right above the keys.
+  it('keeps room for the tab bar, but not while the keyboard is up', () => {
+    const viewport = { height: 800, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    const had = Object.getOwnPropertyDescriptor(window, 'visualViewport');
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+    try {
+      const { unmount } = render(<SiteBuilder />);
+      expect(screen.getByTestId('site-builder').className).toContain('pb-[calc(4.5rem+env(safe-area-inset-bottom))]');
+      unmount();
+
+      viewport.height = 420;
+      render(<SiteBuilder />);
+      const page = screen.getByTestId('site-builder');
+      expect(page.className).not.toContain('pb-[calc(4.5rem');
+      expect(page.className).toContain('pb-0');
+    } finally {
+      if (had) Object.defineProperty(window, 'visualViewport', had);
+      else delete (window as { visualViewport?: unknown }).visualViewport;
+    }
+  });
 });

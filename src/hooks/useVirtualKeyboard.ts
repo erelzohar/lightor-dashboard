@@ -9,6 +9,12 @@ import { useEffect, useState } from 'react';
  * the field. A visual viewport at least a quarter shorter than the window
  * is the keyboard; nothing else in this app shrinks it that much. Browsers
  * without `visualViewport` (jsdom, very old WebViews) report "closed".
+ *
+ * LT-485: newer iOS Safari shrinks the window with the keyboard too, so the
+ * window was never a quarter taller and the keyboard never "opened" (the room
+ * kept for the tab bar stayed, a black band above the keys). The measure is
+ * the tallest height seen at this width instead; turning the phone starts it
+ * again.
  */
 export const useVirtualKeyboard = (): boolean => {
   const [open, setOpen] = useState(false);
@@ -16,7 +22,16 @@ export const useVirtualKeyboard = (): boolean => {
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const onResize = () => setOpen(vv.height < window.innerHeight * 0.75);
+    let width = window.innerWidth;
+    let tallest = 0;
+    const onResize = () => {
+      if (window.innerWidth !== width) {
+        width = window.innerWidth;
+        tallest = 0;
+      }
+      tallest = Math.max(tallest, window.innerHeight, vv.height);
+      setOpen(vv.height < tallest * 0.75);
+    };
     vv.addEventListener('resize', onResize);
     onResize();
     return () => vv.removeEventListener('resize', onResize);

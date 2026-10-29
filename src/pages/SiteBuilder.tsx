@@ -6,6 +6,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { fetchWebConfig } from '../store/slices/webConfigSlice';
 import { builderPass } from '../services/authApi';
 import globals from '../services/globals';
+import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 
 /**
  * LT-388 — a business with no site yet builds it here with the signup wizard
@@ -27,6 +28,9 @@ const SiteBuilder: React.FC = () => {
   const { auth, refreshUser } = useAuth();
   const dispatch = useAppDispatch();
   const frameRef = useRef<HTMLIFrameElement>(null);
+  // The tab bar hides while the keyboard is up, so its room goes too (LT-485):
+  // left in, it was a black band right above the keys.
+  const keyboardOpen = useVirtualKeyboard();
   const [loaded, setLoaded] = useState(false);
   // Fixed once: a new address would reload the frame and lose the site built so far.
   const [src] = useState(
@@ -71,7 +75,7 @@ const SiteBuilder: React.FC = () => {
     // Edge to edge like the editor it hands over to; on a phone it stops above
     // the tab bar, which floats over the bottom and would cover the wizard's box.
     <div
-      className="relative flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-black pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0"
+      className={`relative flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-black ${keyboardOpen ? 'pb-0' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0`}
       data-testid="site-builder"
     >
       <iframe

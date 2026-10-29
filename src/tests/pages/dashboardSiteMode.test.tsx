@@ -248,4 +248,16 @@ describe('Onboarding checklist by site mode', () => {
       unmount();
     }
   });
+
+  // LT-485 (Erel): Lighty himself at the top of the card, not a magic wand.
+  it("puts Lighty's picture at the top of the card for an account with no site", () => {
+    state.webConfig.data = null as never;
+    const { container } = render(<OnboardingWelcome userName="Dana Levi" onGetStarted={vi.fn()} isLoading={false} isLightyMode />);
+    const header = container.querySelector('.bg-gradient-to-br') as HTMLElement;
+    const lighty = header.querySelector('img');
+    expect(lighty).toHaveAttribute('src', '/lighty-welcome.png');
+    // Decorative: the greeting under it says the words.
+    expect(lighty).toHaveAttribute('alt', '');
+    expect(header.querySelector('svg')).toBeNull();
+  });
 });

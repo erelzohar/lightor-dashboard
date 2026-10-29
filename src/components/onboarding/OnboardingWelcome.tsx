@@ -94,14 +94,17 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
           {/* Lighty gradient header */}
           <div className="bg-gradient-to-br from-violet-600 via-primary to-fuchsia-600 p-8 text-white text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-            <motion.div
+            {/* Lighty himself says hello (LT-485, Erel: his picture, not a wand). */}
+            <motion.img
+              src="/lighty-welcome.png"
+              alt=""
+              aria-hidden="true"
+              draggable={false}
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 22 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 mb-4 relative z-10"
-            >
-              <Wand2 size={32} className="text-white" />
-            </motion.div>
+              className="block mx-auto w-28 h-28 object-contain drop-shadow-lg mb-2 relative z-10 select-none"
+            />
             <h1 className="text-2xl font-bold mb-1 relative z-10">
               {t('onboarding.lightyWelcomeTitle', { name: firstName })}
             </h1>

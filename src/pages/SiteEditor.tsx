@@ -21,7 +21,7 @@ import { removedStoredImages, unreferencedImages } from '../utils/aiReconcile';
 import { useDraft, type DraftUpdate } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
 import { switchFade, useDeviceSwitch } from '../hooks/useDeviceSwitch';
-import { PhoneScreenMarks, PhoneSurround, phoneBox } from '../components/siteEditor/phoneShell';
+import { PhoneSurround, phoneBox } from '../components/siteEditor/phoneShell';
 import { getAt, patchBlock, removeAt, setAt } from '../utils/editorPaths';
 import { fieldInfo, galleryItemPath, sectionFieldsFromConfig } from '../utils/editorFields';
 import { addGalleryPhoto, addSection, availabilityOf, cleanForSave, moveBlockTo, rowsOf, withBlocks, type SectionRow } from '../utils/siteSections';
@@ -639,7 +639,6 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
                 title={t('siteEditor.previewTitle')}
                 className="absolute inset-0 w-full h-full border-0 block"
               />
-              {device === 'phone' && <PhoneScreenMarks />}
             </div>
             {!bridge.ready && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-slate-900/70" role="status">

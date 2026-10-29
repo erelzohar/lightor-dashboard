@@ -504,8 +504,8 @@
     "allDoneBtn": "סיימתי! סגור לוח",
     "lightyWelcomeTitle": "ברוך הבא, {{name}}!",
     "lightyWelcomeSubtitle": "בואו נבנה את האתר שלך עם Lighty",
-    "lightyWelcomeDescription": "Lighty הוא העוזר ה-AI שלך שבונה אתר מקצועי בשניות - רק תאר את העסק, האירוע או הרעיון שלך.",
-    "lightyAssistantName": "Lighty - העוזר ה-AI שלך",
+    "lightyWelcomeDescription": "Lighty הוא העוזר AI שלך שבונה אתר מקצועי בשניות - רק תאר את העסק, האירוע או הרעיון שלך.",
+    "lightyAssistantName": "Lighty - העוזר AI שלך",
     "lightyAssistantDesc": "ספר ל-Lighty על העסק, האירוע או הרעיון שלך, והוא ייצור לך אתר מוכן לפרסום.",
     "lightyGetStarted": "בנה עם Lighty"
   },

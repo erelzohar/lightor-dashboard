@@ -106,6 +106,17 @@ describe('the site editor (LT-249)', () => {
   const posted = (type: string) => toSite.mock.calls.filter(([m]) => (m as { type: string }).type === type);
   const lastPosted = (type: string) => { const all = posted(type); return all[all.length - 1]; };
 
+  // LT-485 (Erel): the phone's home bar, drawn over the site, hid what it has
+  // at its bottom. The phone preview lays nothing over the site.
+  it('draws nothing over the site in the phone preview', async () => {
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'siteEditor.phone' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'siteEditor.phone' })).toHaveAttribute('aria-pressed', 'true'));
+    await act(() => new Promise((done) => setTimeout(done, 500)));
+    const screenBox = iframe().parentElement as HTMLElement;
+    expect([...screenBox.children].filter((el) => el !== iframe())).toHaveLength(0);
+  });
+
   // LT-444: the tab kept the previous page's title.
   it('names the window', () => {
     document.title = 'Gallery';
