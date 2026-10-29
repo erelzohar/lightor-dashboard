@@ -39,6 +39,7 @@ import AdminCategories from './pages/admin/AdminCategories';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
 import Handoff from './pages/Handoff';
+import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AppUrlOpenListener from './components/routing/AppUrlOpenListener';
@@ -74,6 +75,7 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/handoff" element={<Handoff />} />
+                  <Route path="/signup" element={<Signup />} />
                   {/* LT-315: signed-out pages — the emailed link lands on the second. */}
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password/:token" element={<ResetPassword />} />

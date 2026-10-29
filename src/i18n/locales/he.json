@@ -1976,6 +1976,11 @@
     "eyedropper": "דגימת צבע מהמסך",
     "close": "סגירה"
   },
+  "signup": {
+    "frameTitle": "הרשמה ל-Lightor",
+    "back": "חזרה לכניסה",
+    "loading": "טוען..."
+  },
   "siteBuilder": {
     "frameTitle": "בניית האתר עם Lighty",
     "loading": "טוענים את Lighty..."

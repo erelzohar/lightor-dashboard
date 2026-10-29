@@ -30,11 +30,13 @@ describe('sign-in card "Register here"', () => {
     expect(screen.getByText('login.registerHere').closest('a')).toHaveAttribute('href', 'https://register.lightor.app');
   });
 
-  it('is not shown inside the app', () => {
+  // LT-486: inside the app it is the app's own signup page, which frames the
+  // signup form alone - still never a link to the register site.
+  it("inside the app, goes to the app's own signup page", () => {
     (window as unknown as { Capacitor: unknown }).Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
     renderCard();
-    expect(screen.queryByText('login.registerHere')).toBeNull();
-    expect(screen.queryByText('login.noAccount', { exact: false })).toBeNull();
+    expect(screen.getByText('login.registerHere').closest('a')).toHaveAttribute('href', '/signup');
+    expect(screen.getByText('login.noAccount', { exact: false })).toBeInTheDocument();
     expect(document.querySelector('a[href*="register.lightor.app"]')).toBeNull();
   });
 });

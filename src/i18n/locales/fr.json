@@ -1976,6 +1976,11 @@
     "eyedropper": "Prélever une couleur à l'écran",
     "close": "Fermer"
   },
+  "signup": {
+    "frameTitle": "Inscription à Lightor",
+    "back": "Retour à la connexion",
+    "loading": "Chargement..."
+  },
   "siteBuilder": {
     "frameTitle": "Créez votre site avec Lighty",
     "loading": "Chargement de Lighty..."

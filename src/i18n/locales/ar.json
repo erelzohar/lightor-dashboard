@@ -1976,6 +1976,11 @@
     "eyedropper": "التقاط لون من الشاشة",
     "close": "إغلاق"
   },
+  "signup": {
+    "frameTitle": "التسجيل في Lightor",
+    "back": "العودة إلى تسجيل الدخول",
+    "loading": "جارٍ التحميل..."
+  },
   "siteBuilder": {
     "frameTitle": "أنشئ موقعك مع Lighty",
     "loading": "جارٍ تحميل Lighty..."

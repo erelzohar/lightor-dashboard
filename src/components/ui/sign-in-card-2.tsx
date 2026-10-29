@@ -364,10 +364,11 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 </>
               )}
 
-              {/* Register link. Not in the app (LT-233): register.lightor.app
-                  shows the plans with live prices and checkout, and a link to
-                  it is the steering App Store guideline 3.1.1 forbids. */}
-              {canOfferPurchases() && (
+              {/* Register link. In the app (LT-486) the app's own signup page:
+                  register.lightor.app shows the plans with live prices and
+                  checkout, and a link to it is the steering App Store
+                  guideline 3.1.1 forbids (LT-233); the app's page frames only
+                  its signup form, with no prices. */}
               <motion.p
                 className="text-center text-xs text-white/60 mt-4"
                 initial={{ opacity: 0 }}
@@ -375,19 +376,27 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 transition={{ delay: 0.5 }}
               >
                 {t('login.noAccount')}{' '}
-                <a
-                  href="https://register.lightor.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative inline-block group/signup"
-                >
-                  <span className="relative z-10 text-white group-hover/signup:text-white/70 transition-colors duration-300 font-medium">
-                    {t('login.registerHere')}
-                  </span>
-                  <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signup:w-full transition-all duration-300" />
-                </a>
+                {canOfferPurchases() ? (
+                  <a
+                    href="https://register.lightor.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative inline-block group/signup"
+                  >
+                    <span className="relative z-10 text-white group-hover/signup:text-white/70 transition-colors duration-300 font-medium">
+                      {t('login.registerHere')}
+                    </span>
+                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signup:w-full transition-all duration-300" />
+                  </a>
+                ) : (
+                  <Link to="/signup" className="relative inline-block group/signup">
+                    <span className="relative z-10 text-white group-hover/signup:text-white/70 transition-colors duration-300 font-medium">
+                      {t('login.registerHere')}
+                    </span>
+                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signup:w-full transition-all duration-300" />
+                  </Link>
+                )}
               </motion.p>
-              )}
             </form>
           </div>
         </div>
