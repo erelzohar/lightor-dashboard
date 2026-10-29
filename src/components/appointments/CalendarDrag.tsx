@@ -72,6 +72,8 @@ export type PendingDrop =
  * each booking as a card - who and what, its time now, and its new day and
  * hours, from start to end, in bold. A swap's new times are the ones the
  * server will set (swappedStarts), listed in the order they will run.
+ * LT-497 (Erel: "it looks crooked, centre it"): everything on the middle
+ * line, the cards as wide as the dialog.
  */
 export const DropConfirm: React.FC<{
   pending: PendingDrop | null;
@@ -138,6 +140,7 @@ export const DropConfirm: React.FC<{
       confirmLabel={t(pending?.kind === 'swap' ? 'appointments.drag.swap' : 'appointments.drag.move')}
       cancelLabel={t('customers.block.cancel')}
       loading={saving}
+      centered
       onConfirm={onConfirm}
       onClose={onClose}
     />

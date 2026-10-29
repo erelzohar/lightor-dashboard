@@ -113,6 +113,9 @@ describe('dragging a booking in the calendar (LT-345)', () => {
     expect(screen.getByTestId('drop-confirm').textContent).toContain('appointments.drag.now');
     expect(screen.getByTestId('drop-confirm').textContent).toContain('10:00–11:00');
     expect(screen.getByTestId('drop-new-time').textContent).toContain('11:30–12:30');
+    // LT-497: on the dialog's middle line, the buttons too.
+    expect(screen.getByTestId('drop-confirm').closest('.text-center')).toBeTruthy();
+    expect(screen.getByText('appointments.drag.move').closest('.justify-center')).toBeTruthy();
     fireEvent.click(screen.getByText('appointments.drag.move'));
     await waitFor(() => expect(moveAppointment).toHaveBeenCalledWith('Dana', String(tomorrowAt(11) + 30 * 60_000)));
   });

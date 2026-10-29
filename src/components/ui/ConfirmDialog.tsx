@@ -28,6 +28,8 @@ interface ConfirmDialogProps {
   confirmText?: string;
   confirmTextLabel?: string;
   loading?: boolean;
+  /** Title, message and buttons on the dialog's middle line (LT-497). */
+  centered?: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -42,6 +44,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmText,
   confirmTextLabel,
   loading = false,
+  centered = false,
   onConfirm,
   onClose,
 }) => {
@@ -142,7 +145,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                   <AlertTriangle size={20} className="text-red-500" />
                 </div>
               )}
-              <div className="min-w-0">
+              <div className={centered ? 'min-w-0 flex-1 text-center' : 'min-w-0'}>
                 <h3 id={titleId} className="text-lg font-bold text-gray-900 dark:text-dark-text">{title}</h3>
                 <div className="text-sm text-gray-600 dark:text-gray-300 mt-1.5">{message}</div>
               </div>
@@ -164,7 +167,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               </div>
             )}
 
-            <div className="flex justify-end gap-2 mt-6">
+            <div className={`flex ${centered ? 'justify-center' : 'justify-end'} gap-2 mt-6`}>
               <Button variant="ghost" size="sm" onClick={onClose} disabled={loading}>
                 {cancelLabel ?? t('admin.actions.cancel')}
               </Button>
