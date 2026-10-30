@@ -815,8 +815,8 @@
   "dashboard": {
     "trialEnding": {
       "title": "Votre période gratuite se termine le {{date}}",
-      "body": "Pour garder toutes les fonctionnalités, vous pouvez vous abonner maintenant. Le premier prélèvement aura lieu seulement le {{date}}.",
-      "bodyApp": "D'ici là, toutes les fonctionnalités Plus sont à vous.",
+      "body": "Pour rester sur Plus, vous pouvez vous abonner maintenant. Le premier prélèvement aura lieu seulement le {{date}}.",
+      "bodyApp": "D'ici là, Plus est à vous, avec le rappel du matin seulement et un budget IA réduit.",
       "cta": "Choisir une formule"
     },
     "emptyTitle": "Bienvenue sur Lightor !",
@@ -893,7 +893,7 @@
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
-    "pilotLine": "Essai gratuit : toutes les fonctionnalités Plus sont gratuites jusqu’au {{date}}.",
+    "pilotLine": "Essai gratuit : Plus est offert jusqu’au {{date}}, avec le rappel du matin seulement et un budget IA réduit.",
     "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
@@ -993,11 +993,11 @@
       "feature": "Fonction",
       "free": "Gratuit",
       "includesTitle": "Votre abonnement comprend :",
-      "freeDays": "Les 60 premiers jours : tout Lightor+, gratuitement.",
+      "freeDays": "Les 60 premiers jours : Lightor+ offert, avec le rappel du matin seulement et un budget IA réduit.",
       "rows": {
         "bookings": {
           "label": "Réservations",
-          "free": "30 par mois",
+          "free": "15 par mois",
           "plus": "500 par période, puis {{price}} chacune si vous activez les réservations supplémentaires"
         },
         "inquiries": {
@@ -1012,7 +1012,7 @@
         },
         "texts": {
           "label": "Messages aux clients",
-          "free": "Confirmation et rappel du matin",
+          "free": "Confirmation seulement",
           "plus": "Confirmation, rappel du matin et rappel une heure avant"
         },
         "siteLighty": {
@@ -1033,7 +1033,7 @@
         "editing": {
           "label": "Modifier avec Lighty",
           "free": "De base",
-          "plus": "Environ 6 fois plus"
+          "plus": "Environ 2,5 fois plus"
         },
         "insights": {
           "label": "Analyses et export des clients",

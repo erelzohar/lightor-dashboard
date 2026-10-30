@@ -815,8 +815,8 @@
   "dashboard": {
     "trialEnding": {
       "title": "Tu periodo gratuito termina el {{date}}",
-      "body": "Para mantener todas las funciones puedes suscribirte ahora. El primer cobro será recién el {{date}}.",
-      "bodyApp": "Hasta entonces todas las funciones Plus son tuyas.",
+      "body": "Para seguir con Plus puedes suscribirte ahora. El primer cobro será recién el {{date}}.",
+      "bodyApp": "Hasta entonces Plus es tuyo, solo con el recordatorio matutino y un presupuesto de IA más pequeño.",
       "cta": "Elegir un plan"
     },
     "emptyTitle": "¡Bienvenido a Lightor!",
@@ -893,7 +893,7 @@
     "nextBill": "Próxima fecha de facturación:",
     "freeDesc": "Estás en el plan gratuito, con límites mensuales de citas y consultas. Mejora tu plan para quitarlos.",
     "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
-    "pilotLine": "Prueba gratuita: todas las funciones Plus son gratis hasta el {{date}}.",
+    "pilotLine": "Prueba gratuita: Plus es gratis hasta el {{date}}, solo con el recordatorio matutino y un presupuesto de IA más pequeño.",
     "pilotSubscribeNote": "Tu prueba termina el {{date}}. Si te suscribes ahora, el primer cobro será recién el {{date}}; hasta entonces puedes cancelar sin pagar.",
     "loadingPlans": "Cargando planes...",
     "plansUnavailable": "Los planes no están disponibles ahora mismo. Inténtalo de nuevo más tarde.",
@@ -993,11 +993,11 @@
       "feature": "Función",
       "free": "Gratis",
       "includesTitle": "Tu plan incluye:",
-      "freeDays": "Los primeros 60 días: todo Lightor+, gratis.",
+      "freeDays": "Los primeros 60 días: Lightor+ gratis, solo con el recordatorio matutino y un presupuesto de IA más pequeño.",
       "rows": {
         "bookings": {
           "label": "Reservas",
-          "free": "30 al mes",
+          "free": "15 al mes",
           "plus": "500 por periodo, y luego {{price}} cada una si activas las reservas extra"
         },
         "inquiries": {
@@ -1012,7 +1012,7 @@
         },
         "texts": {
           "label": "Mensajes a clientes",
-          "free": "Confirmación y recordatorio por la mañana",
+          "free": "Solo confirmación",
           "plus": "Confirmación, recordatorio por la mañana y otro una hora antes"
         },
         "siteLighty": {
@@ -1033,7 +1033,7 @@
         "editing": {
           "label": "Editar con Lighty",
           "free": "Básica",
-          "plus": "Unas 6 veces más"
+          "plus": "Unas 2,5 veces más"
         },
         "insights": {
           "label": "Análisis y exportación de clientes",
