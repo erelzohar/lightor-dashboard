@@ -816,7 +816,7 @@
     "trialEnding": {
       "title": "Votre période gratuite se termine le {{date}}",
       "body": "Pour rester sur Plus, vous pouvez vous abonner maintenant. Le premier prélèvement aura lieu seulement le {{date}}.",
-      "bodyApp": "D'ici là, Plus est à vous, avec le rappel du matin seulement et un budget IA réduit.",
+      "bodyApp": "D'ici là, Plus est à vous, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
       "cta": "Choisir une formule"
     },
     "emptyTitle": "Bienvenue sur Lightor !",
@@ -893,7 +893,7 @@
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
-    "pilotLine": "Essai gratuit : Plus est offert jusqu’au {{date}}, avec le rappel du matin seulement et un budget IA réduit.",
+    "pilotLine": "Essai gratuit : Plus est offert jusqu’au {{date}}, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
     "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
@@ -993,7 +993,7 @@
       "feature": "Fonction",
       "free": "Gratuit",
       "includesTitle": "Votre abonnement comprend :",
-      "freeDays": "Les 60 premiers jours : Lightor+ offert, avec le rappel du matin seulement et un budget IA réduit.",
+      "freeDays": "Les 60 premiers jours : Lightor+ offert, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
       "rows": {
         "bookings": {
           "label": "Réservations",
