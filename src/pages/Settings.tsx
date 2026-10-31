@@ -10,6 +10,7 @@ import Input from '../components/ui/Input';
 import PhoneInput from '../components/ui/PhoneInput';
 import Button from '../components/ui/Button';
 import { formatPhoneForDisplay, israeliPhoneKind, samePhone, toE164 } from '../utils/phone';
+import { copyText } from '../utils/copyText';
 import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 import WebConfigTabs from '../components/settings/WebConfigTabs';
 import toast from 'react-hot-toast';
@@ -535,9 +536,9 @@ const Settings: React.FC = () => {
   };
 
   // One copy action for the link row's button and its phone twin (LT-435).
-  const copySiteLink = () => {
-    navigator.clipboard.writeText(`https://${localWebConfig?.subDomain || ''}.lightor.app`);
-    toast.success(t('settings.linkCopied'));
+  const copySiteLink = async () => {
+    if (await copyText(`https://${localWebConfig?.subDomain || ''}.lightor.app`)) toast.success(t('settings.linkCopied'));
+    else toast.error(t('settings.calendar.copyFailed'));
   };
 
   // Opens the saved link, not one still being typed (LT-478). A `_blank`

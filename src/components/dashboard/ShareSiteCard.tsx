@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Copy, Download, Loader2, Megaphone, MessageCircle, QrCode, X } from 'lucide-react';
 import { isNativeApp } from '../../lib/platform';
+import { copyText } from '../../utils/copyText';
 import { pop } from '../ui/pop-button';
 
 interface ShareSiteCardProps {
@@ -18,34 +19,6 @@ interface ShareSiteCardProps {
 
 /** The live site's address: every site sits on its own subdomain. */
 const siteHost = (subDomain: string) => `${subDomain}.lightor.app`;
-
-/** navigator.clipboard where the page may use it, else the old select-and-copy. */
-export const copyText = async (text: string): Promise<boolean> => {
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    /* refused, or not a secure context: try the old way */
-  }
-  const area = document.createElement('textarea');
-  area.value = text;
-  area.setAttribute('readonly', '');
-  // Off to the side, and selectable although the body is user-select: none.
-  area.style.cssText = 'position:fixed;top:0;opacity:0;-webkit-user-select:text;user-select:text';
-  document.body.appendChild(area);
-  area.select();
-  area.setSelectionRange(0, text.length); // iOS selects nothing with select() alone
-  let copied = false;
-  try {
-    copied = document.execCommand('copy');
-  } catch {
-    copied = false;
-  }
-  area.remove();
-  return copied;
-};
 
 /**
  * "How to bring more inquiries / bookings" (LT-274), at the foot of both

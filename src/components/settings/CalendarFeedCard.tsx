@@ -10,6 +10,7 @@ import {
   fetchCalendarFeedUrl,
   regenerateCalendarFeedUrl,
 } from '../../services/calendarApi';
+import { copyText } from '../../utils/copyText';
 
 /**
  * "Sync to your calendar" (LT-044): shows the owner's private ICS feed URL,
@@ -33,11 +34,10 @@ const CalendarFeedCard: React.FC = () => {
 
   const handleCopy = async () => {
     if (!feedUrl) return;
-    try {
-      await navigator.clipboard.writeText(feedUrl);
+    if (await copyText(feedUrl)) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } else {
       toast.error(t('settings.calendar.copyFailed'));
     }
   };

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import toast from 'react-hot-toast';
 import Settings from '../../pages/Settings';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import type { WebConfig } from '../../types';
@@ -382,7 +383,7 @@ describe('Settings: where the site link lives', () => {
   // LT-435: on a phone the copy button leaves the row so the box can show the
   // whole link; on a computer the field is as wide as the name field. (jsdom
   // has no layout: the widths were measured in the browser, these pin the rule.)
-  it('copies the full link from the row on a computer and from under it on a phone', () => {
+  it('copies the full link from the row on a computer and from under it on a phone', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     render(<Settings />);
@@ -402,6 +403,31 @@ describe('Settings: where the site link lives', () => {
     fireEvent.click(inRow);
     expect(writeText).toHaveBeenNthCalledWith(1, 'https://biz.lightor.app');
     expect(writeText).toHaveBeenNthCalledWith(2, 'https://biz.lightor.app');
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('settings.linkCopied'));
+    vi.unstubAllGlobals();
+  });
+
+  // LT-501: an Android WebView refused the copy, the page said "copied" anyway
+  // and the refusal went out as an unhandled error.
+  it('falls back when the clipboard refuses, and says so when nothing was copied', async () => {
+    const refused = Object.assign(new Error('Write permission denied.'), { name: 'NotAllowedError' });
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText: vi.fn(() => Promise.reject(refused)) } });
+    const execCommand = vi.fn(() => true);
+    document.execCommand = execCommand;
+    vi.mocked(toast.success).mockClear();
+    vi.mocked(toast.error).mockClear();
+    render(<Settings />);
+    const [, underRow] = screen.getAllByRole('button', { name: 'settings.copyLink' });
+
+    fireEvent.click(underRow);
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('settings.linkCopied'));
+    expect(execCommand).toHaveBeenCalledWith('copy');
+
+    vi.mocked(toast.success).mockClear();
+    execCommand.mockReturnValue(false);
+    fireEvent.click(underRow);
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('settings.calendar.copyFailed'));
+    expect(toast.success).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 
