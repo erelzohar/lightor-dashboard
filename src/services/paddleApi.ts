@@ -60,7 +60,12 @@ export async function getPaddle(): Promise<Paddle | undefined> {
   return paddleInstance;
 }
 
+/** LT-504: the two paid plans. Their names are ours, not Paddle's product names. */
+export type PaidPlan = 'plus' | 'pro';
+export const PLAN_NAMES: Record<PaidPlan, string> = { plus: 'Lightor+', pro: 'Lightor Pro' };
+
 export interface UpgradePlan {
+  plan: PaidPlan;
   priceId: string;
   /** Pre-formatted by Paddle — currency, symbol and decimals included. */
   formatted: string;
@@ -74,10 +79,14 @@ export interface UpgradePlan {
  * server's to say, per checkout — see `createCheckout`.
  */
 export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
-  const priceIds = [
-    import.meta.env.VITE_PADDLE_PRICE_ID_BASIC as string | undefined,
-    import.meta.env.VITE_PADDLE_PRICE_ID_ANNUAL as string | undefined,
-  ].filter((id): id is string => Boolean(id));
+  const planOf = new Map<string, PaidPlan>();
+  for (const id of [import.meta.env.VITE_PADDLE_PRICE_ID_PLUS_MONTHLY, import.meta.env.VITE_PADDLE_PRICE_ID_PLUS_YEARLY]) {
+    if (id) planOf.set(id as string, 'plus');
+  }
+  for (const id of [import.meta.env.VITE_PADDLE_PRICE_ID_BASIC, import.meta.env.VITE_PADDLE_PRICE_ID_ANNUAL]) {
+    if (id) planOf.set(id as string, 'pro');
+  }
+  const priceIds = [...planOf.keys()];
 
   const paddle = await getPaddle();
   if (!paddle || priceIds.length === 0) return [];
@@ -88,6 +97,7 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
     });
 
     return response.data.details.lineItems.map((li) => ({
+      plan: planOf.get(li.price.id) ?? 'pro',
       priceId: li.price.id,
       formatted: li.formattedUnitTotals.total,
       productName: li.product.name,
@@ -225,6 +235,29 @@ export async function cancelSubscription(): Promise<{ activeUntil: string | null
   const response = await paddlePost('subscription/cancel');
   if (!response.data?.success) throw new Error('Cancellation failed');
   return { activeUntil: response.data.data?.activeUntil ?? null };
+}
+
+export interface PlanChange {
+  /** Charged today, in major units. */
+  chargedNow: number;
+  /** The new plan's regular charge, in major units. */
+  recurring: number;
+  /** The next charge, in major units: less than `recurring` after a move down. */
+  nextCharge: number;
+  currency: string | null;
+  nextBilledAt: string | null;
+}
+
+/** LT-504: what moving to the other plan would cost; changes nothing. */
+export async function previewPlanChange(plan: PaidPlan): Promise<PlanChange> {
+  const response = await paddlePost('subscription/plan/preview', { plan });
+  return response.data.data;
+}
+
+/** LT-504: move to the other plan. The webhook records it, as with a checkout. */
+export async function changePlan(plan: PaidPlan): Promise<void> {
+  const response = await paddlePost('subscription/plan', { plan });
+  if (!response.data?.success) throw new Error('Plan change failed');
 }
 
 /**

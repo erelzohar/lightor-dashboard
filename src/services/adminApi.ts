@@ -136,7 +136,7 @@ export interface AdminUserDetail {
     /** What the site converts to (LT-199); absent on an older API or config = 'book'. */
     conversion?: 'book' | 'lead';
   } | null;
-  plan: 'free' | 'plus';
+  plan: 'free' | 'plus' | 'pro';
   limits: PlanLimits;
   usage: {
     appointmentsThisMonth: number;

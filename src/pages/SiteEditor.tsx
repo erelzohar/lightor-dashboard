@@ -152,7 +152,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const [plus, setPlus] = useState(false);
   useEffect(() => {
     let live = true;
-    void fetchMyEntitlements().then((e) => { if (live) setPlus(e?.plan === 'plus'); });
+    void fetchMyEntitlements().then((e) => { if (live) setPlus(!!e && e.plan !== 'free'); });
     return () => { live = false; };
   }, []);
   const previewConfig = useMemo(() => (plus ? { ...draft.value, assistant: true } : draft.value), [draft.value, plus]);

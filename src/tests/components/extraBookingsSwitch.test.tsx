@@ -16,6 +16,9 @@ vi.mock('../../contexts/AuthContext', () => ({
   }),
 }));
 vi.mock('../../services/paddleApi', () => ({
+  PLAN_NAMES: { plus: 'Lightor+', pro: 'Lightor Pro' },
+  previewPlanChange: vi.fn(),
+  changePlan: vi.fn(),
   fetchUpgradePlans: vi.fn(() => Promise.resolve([{ priceId: 'p1', productName: 'Lightor+', formatted: '₪119', interval: 'month' }])),
   createCheckout: vi.fn(),
   openInlineCheckout: vi.fn(),
@@ -42,7 +45,7 @@ const meter = (used: number, extras: Partial<ExtrasSwitch> = {}): BookingsMeter 
   extras: { chosen: false, on: false, blockedBy: null, changedAt: null, closed: used >= 500, ...extras },
 });
 const subscriber = (bookings: BookingsMeter): Record<string, unknown> => ({
-  plan: 'plus', limits: { monthlyAppointments: null as number | null }, usage: {}, pilot: null as null, bookings,
+  plan: 'pro', limits: { monthlyAppointments: null as number | null }, usage: {}, pilot: null as null, bookings,
   bookingTerms: { included: 500, extraAgorot: 35 }, paymentFailed: false,
 });
 

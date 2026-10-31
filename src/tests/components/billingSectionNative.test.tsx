@@ -3,6 +3,8 @@ import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import toast from 'react-hot-toast';
 import BillingSection from '../../components/account/BillingSection';
 import {
+  changePlan,
+  previewPlanChange,
   fetchUpgradePlans,
   createCheckout,
   openInlineCheckout,
@@ -29,8 +31,11 @@ vi.mock('../../contexts/AuthContext', () => ({
 // The embedded checkout's events (LT-303): the test plays Paddle.
 const checkoutEvents = vi.hoisted(() => ({ emit: (() => {}) as (event: { name: string; data?: unknown }) => void }));
 vi.mock('../../services/paddleApi', () => ({
+  PLAN_NAMES: { plus: 'Lightor+', pro: 'Lightor Pro' },
+  previewPlanChange: vi.fn(),
+  changePlan: vi.fn(),
   fetchUpgradePlans: vi.fn(() =>
-    Promise.resolve([{ priceId: 'p1', productName: 'Plus', formatted: '₪49', interval: 'month' }])
+    Promise.resolve([{ plan: 'pro', priceId: 'p1', productName: 'Plus', formatted: '₪49', interval: 'month' }])
   ),
   createCheckout: vi.fn(),
   openInlineCheckout: vi.fn(() => Promise.resolve(true)),
@@ -131,7 +136,7 @@ describe('BillingSection pilot grant', () => {
   const PILOT_UNTIL = '2026-11-21T10:00:00.000Z';
   // LT-290: the plans open a week before the grant ends; `open` puts today in that week.
   const pilotEntitlements = (open = false): Record<string, unknown> => ({
-    plan: 'plus',
+    plan: 'pro',
     limits: { monthlyAppointments: null },
     usage: { appointmentsThisMonth: 12 },
     pilot: {
@@ -440,13 +445,13 @@ describe('BillingSection payment management', () => {
  * record left from the sandbox days.
  */
 describe('BillingSection for the admin account', () => {
-  it('shows Plus and nothing to buy, cancel or manage', async () => {
-    entitlementsState.data = { ...freeEntitlements(), plan: 'plus', complimentary: true, limits: { monthlyAppointments: null } };
+  it('shows Pro and nothing to buy, cancel or manage', async () => {
+    entitlementsState.data = { ...freeEntitlements(), plan: 'pro', complimentary: true, limits: { monthlyAppointments: null } };
     authState.subscription = { status: 'active', subscriptionId: 'sub_old', customerId: 'ctm_old' };
     render(<BillingSection />);
 
     expect(await screen.findByTestId('billing-complimentary')).toHaveTextContent('billing.complimentary');
-    expect(screen.getByText('Plus')).toBeInTheDocument();
+    expect(screen.getByText('Pro')).toBeInTheDocument();
     expect(fetchUpgradePlans).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'billing.upgrade' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'billing.subscribe' })).toBeNull();
@@ -496,7 +501,7 @@ describe('BillingSection bookings meter', () => {
     periodStart: '2026-10-05T10:00:00.000Z', periodEnd: '2026-11-05T10:00:00.000Z', extraAgorot: 35, ...b,
   });
   const plus = (b: Record<string, unknown>): Record<string, unknown> => ({
-    plan: 'plus', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 }, pilot: null,
+    plan: 'pro', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 }, pilot: null,
     bookings: meter(b),
   });
   const freePeriod = (used: number): Record<string, unknown> => ({
@@ -573,5 +578,95 @@ describe('BillingSection plan terms', () => {
     render(<BillingSection />);
     expect(await screen.findByText('billing.upgrade')).toBeInTheDocument();
     expect(screen.queryByTestId('plan-booking-terms')).not.toBeInTheDocument();
+  });
+});
+
+/** LT-504: two paid plans, and the move between them. */
+describe('BillingSection with two plans', () => {
+  const paid = (plan: string, bookings: Record<string, unknown> = {}): Record<string, unknown> => ({
+    plan,
+    limits: { monthlyAppointments: null },
+    usage: { appointmentsThisMonth: 0 },
+    pilot: null,
+    bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35 },
+    bookings: {
+      kind: 'plus',
+      used: 40,
+      included: plan === 'plus' ? 200 : 500,
+      periodStart: '2026-10-05T10:00:00.000Z',
+      periodEnd: '2026-11-05T10:00:00.000Z',
+      extraAgorot: plan === 'plus' ? null : 35,
+      ...bookings,
+    },
+  });
+  const change = { chargedNow: 15.5, recurring: 119, nextCharge: 119, currency: 'ILS', nextBilledAt: '2026-11-05T10:00:00.000Z' };
+
+  beforeEach(() => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1', subscriptionId: 'sub_1', nextBillDate: '2026-11-05' };
+    vi.mocked(previewPlanChange).mockReset();
+    vi.mocked(changePlan).mockReset();
+  });
+
+  it('offers both plans with what each includes', async () => {
+    authState.subscription = { status: 'free' };
+    entitlementsState.data = { ...paid('free'), bookings: null };
+    vi.mocked(fetchUpgradePlans).mockResolvedValueOnce([
+      { plan: 'plus', priceId: 'p_plus', productName: 'Paddle name', formatted: '₪89', interval: 'month' },
+      { plan: 'pro', priceId: 'p_pro', productName: 'Paddle name', formatted: '₪119', interval: 'month' },
+    ]);
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plan-booking-terms-plus')).toHaveTextContent('Lightor+');
+    expect(t).toHaveBeenCalledWith('billing.planBookingTermsPlus', { included: 200 });
+    expect(screen.getByTestId('plan-booking-terms')).toHaveTextContent('Lightor Pro');
+    expect(screen.queryByText('Paddle name')).toBeNull();
+  });
+
+  it('says the plan, moves up with Paddle`s numbers first, and waits for the webhook', async () => {
+    entitlementsState.data = paid('plus');
+    vi.mocked(previewPlanChange).mockResolvedValue(change);
+    vi.mocked(changePlan).mockResolvedValue();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('billing-plan')).toHaveTextContent('Lightor+');
+    fireEvent.click(await screen.findByTestId('plan-change'));
+    expect(previewPlanChange).toHaveBeenCalledWith('pro');
+    expect(await screen.findByTestId('plan-change-now')).toHaveTextContent('15.50');
+    expect(screen.getByTestId('plan-change-recurring')).toHaveTextContent('119');
+    expect(screen.getByText('billing.change.noteUp')).toBeInTheDocument();
+    expect(changePlan).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'billing.change.confirm' }));
+    await waitFor(() => expect(changePlan).toHaveBeenCalledWith('pro'));
+  });
+
+  it('tells the owner when a move down must wait for the next period', async () => {
+    entitlementsState.data = paid('pro', { used: 240 });
+    vi.mocked(previewPlanChange).mockRejectedValue({ response: { status: 409, data: { code: 'OVER_PLUS_BOOKINGS' } } });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByTestId('plan-change'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.change.overBookings', expect.anything()));
+    expect(screen.queryByTestId('plan-change-modal')).toBeNull();
+  });
+
+  it('says a declined card left the plan as it was', async () => {
+    entitlementsState.data = paid('plus');
+    vi.mocked(previewPlanChange).mockResolvedValue(change);
+    vi.mocked(changePlan).mockRejectedValue({ response: { status: 402, data: { code: 'PLAN_CHANGE_PAYMENT_FAILED' } } });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByTestId('plan-change'));
+    fireEvent.click(await screen.findByRole('button', { name: 'billing.change.confirm' }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.change.paymentFailed', expect.anything()));
+    expect(screen.queryByTestId('plan-change-modal')).toBeNull();
+  });
+
+  it('closes a full Lightor+ month, with the way out on the web and the fact alone in the app', async () => {
+    entitlementsState.data = paid('plus', { used: 200 });
+    const { unmount } = render(<BillingSection />);
+    expect(await screen.findByTestId('plus-month-full')).toHaveTextContent('billing.plusFullDesc');
+    expect(screen.queryByText('billing.bookingsExtraCount')).toBeNull();
+    unmount();
+
+    inApp();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plus-month-full')).toHaveTextContent('billing.extras.closedDescNative');
+    expect(screen.queryByTestId('plan-change')).toBeNull();
   });
 });

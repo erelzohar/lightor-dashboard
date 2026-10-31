@@ -1,12 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { PLAN_NAMES, type PaidPlan } from '../../services/paddleApi';
 
 /**
- * Free and Lightor+ side by side (LT-465, Erel 2026-10-28), the same rows as
- * the register's pricing, lightor.app and the terms. The numbers are the
- * server's own limits (entitlements.ts): change both together.
- *  - `compare`: both plans, beside the plans on offer (web only, LT-130);
- *  - `plus`: what a subscriber's plan includes, a statement about the
+ * The plans side by side (LT-465, Erel 2026-10-28; three since LT-504), the
+ * same rows as the register's pricing, lightor.app and the terms. The numbers
+ * are the server's own limits (entitlements.ts): change both together.
+ *  - `compare`: the plans, beside the ones on offer (web only, LT-130);
+ *  - `includes`: what a subscriber's plan includes, a statement about the
  *    account (in the app too).
  */
 export const PLAN_ROWS = [
@@ -23,17 +24,21 @@ export const PLAN_ROWS = [
   'support',
 ] as const;
 
+type PlanColumn = 'free' | PaidPlan;
+
 interface PlanCompareProps {
-  mode: 'compare' | 'plus';
+  mode: 'compare' | 'includes';
+  /** The subscriber's plan, for `includes`. */
+  plan?: PaidPlan;
   /** What one extra booking costs, written in the page's language. */
   price: string;
 }
 
-const PlanCompare: React.FC<PlanCompareProps> = ({ mode, price }) => {
+const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price }) => {
   const { t } = useTranslation();
-  const cell = (row: (typeof PLAN_ROWS)[number], plan: 'free' | 'plus') => t(`billing.compare.rows.${row}.${plan}`, { price });
+  const cell = (row: (typeof PLAN_ROWS)[number], column: PlanColumn) => t(`billing.compare.rows.${row}.${column}`, { price });
 
-  if (mode === 'plus') {
+  if (mode === 'includes') {
     return (
       <div className="space-y-1" data-testid="plan-includes">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t('billing.compare.includesTitle')}</p>
@@ -44,7 +49,7 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, price }) => {
             // <bdi> would turn "Lighty ..." left to right.
             <li key={row}>
               <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
-              <span className="[unicode-bidi:isolate]">{cell(row, 'plus')}</span>
+              <span className="[unicode-bidi:isolate]">{cell(row, plan)}</span>
             </li>
           ))}
         </ul>
@@ -55,8 +60,8 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, price }) => {
   return (
     <div className="space-y-2" data-testid="plan-compare">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{t('billing.compare.title')}</h3>
-      <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="w-full text-xs">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table className="w-full min-w-[32rem] text-xs">
           <thead className="bg-gray-50 dark:bg-gray-800/60 text-gray-700 dark:text-gray-200">
             <tr>
               <th scope="col" className="p-2 text-start font-medium">
@@ -64,7 +69,10 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, price }) => {
               </th>
               <th scope="col" className="p-2 text-start font-semibold">{t('billing.compare.free')}</th>
               <th scope="col" className="p-2 text-start font-semibold">
-                <bdi>Lightor+</bdi>
+                <bdi>{PLAN_NAMES.plus}</bdi>
+              </th>
+              <th scope="col" className="p-2 text-start font-semibold">
+                <bdi>{PLAN_NAMES.pro}</bdi>
               </th>
             </tr>
           </thead>
@@ -76,6 +84,7 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, price }) => {
                 </th>
                 <td className="p-2 align-top">{cell(row, 'free')}</td>
                 <td className="p-2 align-top">{cell(row, 'plus')}</td>
+                <td className="p-2 align-top">{cell(row, 'pro')}</td>
               </tr>
             ))}
           </tbody>

@@ -831,7 +831,7 @@
     "trialEnding": {
       "title": "Votre période gratuite se termine le {{date}}",
       "body": "Pour rester sur Plus, vous pouvez vous abonner maintenant. Le premier prélèvement aura lieu seulement le {{date}}.",
-      "bodyApp": "D'ici là, Plus est à vous, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
+      "bodyApp": "D'ici là, Lightor+ est à vous.",
       "cta": "Choisir une formule"
     },
     "emptyTitle": "Bienvenue sur Lightor !",
@@ -908,7 +908,7 @@
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
-    "pilotLine": "Essai gratuit : Plus est offert jusqu’au {{date}}, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
+    "pilotLine": "Essai gratuit : Lightor+ est offert jusqu’au {{date}}.",
     "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
     "loadingPlans": "Chargement des forfaits...",
     "plansUnavailable": "Les forfaits sont indisponibles pour le moment. Veuillez réessayer plus tard.",
@@ -962,7 +962,7 @@
       "renews_year": "Renouvelé chaque année. Résiliable à tout moment.",
       "loading": "Chargement des détails du paiement…"
     },
-    "complimentary": "Compte administrateur : toutes les fonctionnalités Plus, toujours, sans frais.",
+    "complimentary": "Compte administrateur : tout Lightor Pro, toujours, sans paiement.",
     "freePeriodUsed": "La période gratuite a déjà été utilisée avec le numéro, l’e-mail ou le compte Google de ce compte.",
     "freePeriodPending": "Vérifiez votre numéro dans les détails du compte pour obtenir 60 jours de Lightor+.",
     "pastDueDescNative": "Votre dernier paiement n’a pas abouti. D’ici là, votre site ne prend ni réservations ni demandes et les rappels à vos clients sont suspendus.",
@@ -973,7 +973,7 @@
     "bookingsExtraPrice": "Chaque réservation au-delà de {{included}} coûte {{price}}, facturée à la fin du mois.",
     "bookingsResets": "Le compteur repart de zéro le {{date}}.",
     "bookingsFreeFull": "Mois complet",
-    "bookingsFreeFullDesc": "Votre site ne prend plus de réservations. Choisissez une offre et ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
+    "bookingsFreeFullDesc": "Votre site ne prend plus de réservations. Passer à Lightor Pro les rouvre maintenant : aucun prélèvement avant le {{date}}.",
     "bookingsFreeFullNative": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
     "planBookingTerms": "Inclut {{included}} réservations par mois. Au-delà, si vous activez les réservations supplémentaires, {{price}} chacune, facturées automatiquement. Sinon, à {{included}} votre site cesse de prendre des réservations jusqu'au mois suivant.",
     "extras": {
@@ -1008,64 +1008,94 @@
       "feature": "Fonction",
       "free": "Gratuit",
       "includesTitle": "Votre abonnement comprend :",
-      "freeDays": "Les 60 premiers jours : Lightor+ offert, avec le rappel du matin seulement, un budget IA réduit et 10 images IA par mois.",
+      "freeDays": "Les 60 premiers jours : Lightor+ offert.",
       "rows": {
         "bookings": {
           "label": "Réservations",
           "free": "15 par mois",
-          "plus": "500 par période, puis {{price}} chacune si vous activez les réservations supplémentaires"
+          "plus": "Jusqu’à 200 par période",
+          "pro": "500 par période, puis {{price}} chacune si vous activez les réservations supplémentaires"
         },
         "inquiries": {
           "label": "Demandes depuis le site",
           "free": "15 par mois",
-          "plus": "Illimitées"
+          "plus": "Illimitées",
+          "pro": "Illimitées"
         },
         "services": {
           "label": "Services",
           "free": "Jusqu'à 3",
-          "plus": "Illimités"
+          "plus": "Illimités",
+          "pro": "Illimités"
         },
         "texts": {
           "label": "Messages aux clients",
           "free": "Confirmation seulement",
-          "plus": "Confirmation, rappel du matin et rappel une heure avant"
+          "plus": "Confirmation et rappel du matin",
+          "pro": "Confirmation, rappel du matin et rappel une heure avant"
         },
         "siteLighty": {
           "label": "Lighty sur votre site",
           "free": "Non",
-          "plus": "Répond à vos visiteurs"
+          "plus": "Répond à vos visiteurs",
+          "pro": "Répond à vos visiteurs"
         },
         "rebuilds": {
           "label": "Refaire le site avec l'IA",
           "free": "3 par mois",
-          "plus": "20 par mois"
+          "plus": "20 par mois",
+          "pro": "20 par mois"
         },
         "pictures": {
           "label": "Images IA",
           "free": "5 à la création du site",
-          "plus": "40 par mois"
+          "plus": "10 par mois",
+          "pro": "40 par mois"
         },
         "editing": {
           "label": "Modifier avec Lighty",
           "free": "De base",
-          "plus": "Environ 6 fois plus"
+          "plus": "Environ 2,5 fois plus",
+          "pro": "Environ 6 fois plus"
         },
         "insights": {
           "label": "Analyses et export des clients",
           "free": "Non",
-          "plus": "Oui"
+          "plus": "Oui",
+          "pro": "Oui"
         },
         "badge": {
           "label": "Badge \"Built with Lightor\"",
           "free": "Affiché",
-          "plus": "Aucun"
+          "plus": "Aucun",
+          "pro": "Aucun"
         },
         "support": {
           "label": "Assistance",
           "free": "Standard",
-          "plus": "Prioritaire"
+          "plus": "Prioritaire",
+          "pro": "Prioritaire"
         }
       }
+    },
+    "planBookingTermsPlus": "Comprend jusqu’à {{included}} réservations par mois. À {{included}}, votre site cesse de prendre des réservations jusqu’au mois suivant.",
+    "activePlan": "Votre formule :",
+    "plusFullDesc": "Votre site ne prend plus de réservations jusqu’au {{date}}. Passer à Lightor Pro les rouvre maintenant.",
+    "change": {
+      "to": "Passer à {{plan}}",
+      "title": "Passer à",
+      "chargedNow": "Prélevé aujourd’hui",
+      "nextCharge": "Prélevé le {{date}}",
+      "recurring": "Prélèvement habituel",
+      "noteUp": "Le changement est immédiat : 500 réservations par période, le rappel une heure avant et un budget IA plus grand.",
+      "noteFree": "Rien n’est prélevé maintenant et le changement est immédiat. Le premier prélèvement sera celui de la nouvelle formule.",
+      "noteDown": "Le changement est immédiat. Le reste de cette période sera crédité sur votre prochain prélèvement.",
+      "confirm": "Changer",
+      "keep": "Garder ma formule",
+      "moved": "Vous êtes maintenant sur {{plan}}",
+      "paymentFailed": "Le prélèvement pour le changement n’a pas abouti, votre formule reste la même. Mettez à jour votre moyen de paiement et réessayez.",
+      "overBookings": "Cette période compte déjà {{n}} réservations ou plus : vous pourrez passer à Lightor+ à partir de la prochaine période.",
+      "failed": "Nous n’avons pas pu changer votre formule. Réessayez ou contactez le support."
     }
   },
   "danger": {
@@ -2180,16 +2210,17 @@
     },
     "freeMonthFull": {
       "title": "Les {{included}} réservations du mois sont utilisées",
-      "body": "Votre site ne prend plus de réservations. Ajoutez une carte pour les rouvrir tout de suite - rien n’est débité avant le {{date}}.",
+      "body": "Votre site ne prend plus de réservations. Passer à Lightor Pro les rouvre maintenant : aucun prélèvement avant le {{date}}.",
       "bodyApp": "Votre site ne prend plus de réservations jusqu’au {{date}}.",
-      "cta": "Ajouter une carte"
+      "cta": "Passer à Lightor Pro"
     },
     "includedUsed": {
       "title": "Les {{included}} réservations de la période sont utilisées",
       "body": "Votre site ne prend plus de réservations jusqu'au {{date}}. Pour rouvrir tout de suite, activez les réservations supplémentaires sur la page Compte.",
       "bodyApp": "Votre site ne prend plus de réservations jusqu'au {{date}}.",
       "bodyChargeFailed": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : votre site ne prend plus de nouvelles réservations pour l'instant. Mettez à jour votre carte sur la page Compte ; nous réessayons sous un jour.",
-      "cta": "Aller au compte"
+      "cta": "Aller au compte",
+      "bodyPlus": "Votre site ne prend plus de réservations jusqu’au {{date}}. Pour les rouvrir maintenant, passez à Lightor Pro sur la page Compte."
     }
   }
 }

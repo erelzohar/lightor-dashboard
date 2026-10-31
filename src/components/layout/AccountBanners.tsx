@@ -47,7 +47,9 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
     : status === 'past_due' && auth.user?.role !== 'admin';
   const bookings = entitlements?.bookings;
   const freeMonthFull = bookings?.kind === 'freePeriod' && bookings.used >= bookings.included;
-  const includedClosed = bookings?.kind === 'plus' && bookings.extras?.closed === true;
+  // LT-504: Lightor+ has no extras; its period closes at the 200.
+  const plusClosed = entitlements?.plan === 'plus' && bookings?.kind === 'plus' && bookings.used >= bookings.included;
+  const includedClosed = (bookings?.kind === 'plus' && bookings.extras?.closed === true) || plusClosed;
   // Switching on is agreeing to pay more: on the web, and only when it can be (LT-465).
   const canReopen = canSell && bookings?.extras?.blockedBy === null;
   // LT-466: an extras charge did not go through; the card is updated from the Account page.
@@ -140,6 +142,8 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
               {t(
                 chargeFailed
                   ? 'accountBanner.includedUsed.bodyChargeFailed'
+                  : plusClosed
+                    ? canSell ? 'accountBanner.includedUsed.bodyPlus' : 'accountBanner.includedUsed.bodyApp'
                   : canReopen
                     ? 'accountBanner.includedUsed.body'
                     : 'accountBanner.includedUsed.bodyApp',
@@ -148,7 +152,7 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
             </p>
           </div>
         </div>
-        {(canReopen || (chargeFailed && canSell)) && (
+        {(canReopen || (chargeFailed && canSell) || (plusClosed && canSell)) && (
           <button
             type="button"
             onClick={() => go('/account')}

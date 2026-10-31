@@ -17,9 +17,15 @@ import {
   UpgradePlan,
   PortalLinks,
   CheckoutTransaction,
+  changePlan,
+  previewPlanChange,
+  PLAN_NAMES,
+  type PaidPlan,
+  type PlanChange,
 } from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements, BookingsMeter } from '../../services/entitlementsApi';
 import ExtraBookingsSwitch from './ExtraBookingsSwitch';
+import PlanChangeModal from './PlanChangeModal';
 import PlanCompare from './PlanCompare';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -74,6 +80,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const [checkout, setCheckout] = useState<{ plan: UpgradePlan; transaction: CheckoutTransaction } | null>(null);
   const [checkoutData, setCheckoutData] = useState<CheckoutEventsData | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // LT-504: the move to the other plan, once Paddle has said what it costs.
+  const [planMove, setPlanMove] = useState<{ plan: PaidPlan; change: PlanChange } | null>(null);
+  const [planMoving, setPlanMoving] = useState(false);
 
   const status = auth.user?.subscription?.status ?? 'free';
   const isPaid = status === 'active';
@@ -146,7 +155,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   // taking bookings until a card is added).
   const bookings = entitlements?.bookings ?? null;
   const extras = bookings?.kind === 'plus' ? bookings.extras : undefined;
-  const includedClosed = extras?.closed === true;
+  // LT-504: Lightor+ has no extras; its period closes at the 200.
+  const onPlus = entitlements?.plan === 'plus' && isPaid;
+  const plusFull = onPlus && bookings?.kind === 'plus' && bookings.used >= bookings.included;
+  const includedClosed = extras?.closed === true || plusFull;
   const bookingsRatio = bookings && bookings.included > 0 ? Math.min(bookings.used / bookings.included, 1) : 0;
   const extraBookings = bookings ? Math.max(0, bookings.used - bookings.included) : 0;
   const freeMonthFull = bookings?.kind === 'freePeriod' && bookings.used >= bookings.included;
@@ -162,6 +174,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       if (user?.subscription?.status === 'active') {
         setAwaitingWebhook(false);
         toast.success(t('billing.activated'), { duration: 6000 });
+        void fetchMyEntitlements().then((data) => { if (data) setEntitlements(data); });
         return;
       }
       if (tries + 1 >= POLL_MAX_TRIES) {
@@ -205,6 +218,63 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       }
       pollUntilResumed(tries + 1);
     }, POLL_INTERVAL_MS);
+  };
+
+  // LT-504: the same chase for a move between the plans.
+  const pollUntilPlan = (plan: PaidPlan, tries: number) => {
+    pollTimer.current = setTimeout(async () => {
+      const data = await fetchMyEntitlements();
+      if (data?.plan === plan) {
+        setEntitlements(data);
+        setPlanMove(null);
+        setPlanMoving(false);
+        toast.success(t('billing.change.moved', { plan: PLAN_NAMES[plan] }), { duration: 6000 });
+        return;
+      }
+      if (tries + 1 >= POLL_MAX_TRIES) {
+        setPlanMove(null);
+        setPlanMoving(false);
+        toast(t('billing.stillProcessing'), { icon: '⏳', duration: 8000 });
+        return;
+      }
+      pollUntilPlan(plan, tries + 1);
+    }, POLL_INTERVAL_MS);
+  };
+
+  const planMoveError = (error: unknown) => {
+    const response = (error as AxiosError<{ code?: string }>)?.response;
+    if (response?.data?.code === 'OVER_PLUS_BOOKINGS') {
+      toast.error(t('billing.change.overBookings', { n: bookingTerms?.plusIncluded ?? 200 }), { duration: 8000 });
+    } else if (response?.data?.code === 'PLAN_CHANGE_PAYMENT_FAILED') {
+      toast.error(t('billing.change.paymentFailed'), { duration: 8000 });
+    } else {
+      toast.error(t('billing.change.failed'));
+    }
+  };
+
+  // Paddle says first what the move costs today, and the owner confirms.
+  const askPlanMove = async (plan: PaidPlan) => {
+    setPlanMoving(true);
+    try {
+      setPlanMove({ plan, change: await previewPlanChange(plan) });
+    } catch (error) {
+      planMoveError(error);
+    } finally {
+      setPlanMoving(false);
+    }
+  };
+
+  const confirmPlanMove = async () => {
+    if (!planMove) return;
+    setPlanMoving(true);
+    try {
+      await changePlan(planMove.plan);
+      pollUntilPlan(planMove.plan, 0);
+    } catch (error) {
+      setPlanMove(null);
+      setPlanMoving(false);
+      planMoveError(error);
+    }
   };
 
   const handleResumeSubscription = async () => {
@@ -320,6 +390,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     t('billing.planBookingTerms', { included, price: money(agorot / 100, 'ILS') });
   // What one extra booking costs (LT-465), for the switch and the plans.
   const extraPrice = money((bookings?.extraAgorot ?? bookingTerms?.extraAgorot ?? 35) / 100, 'ILS');
+  const plusTermsLine = t('billing.planBookingTermsPlus', { included: bookingTerms?.plusIncluded ?? 200 });
+  const currentPlan = entitlements && entitlements.plan !== 'free' ? entitlements.plan : null;
+  const otherPlan: PaidPlan = currentPlan === 'plus' ? 'pro' : 'plus';
   const meterChanged = (next: BookingsMeter) =>
     setEntitlements((current) => (current ? { ...current, bookings: next } : current));
   const firstChargeDate = checkout?.transaction.firstChargeAt
@@ -451,7 +524,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   ? freeMonthFull ? t('billing.bookingsFreeFull') : t('billing.usageNearCap')
                   : includedClosed
                     ? t('billing.extras.closedShort')
-                    : extraBookings > 0
+                    : extraBookings > 0 && !onPlus
                       ? t('billing.bookingsExtraCount', { n: extraBookings })
                       : t('billing.bookingsNearIncluded')}
               </span>
@@ -476,6 +549,12 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   })} `}
                 {t('billing.bookingsResets', { date: bookingsPeriodEnd })}
               </p>
+              {plusFull && (
+                // Moving to Pro is a call to buy, so the app states the fact only (LT-130).
+                <p className="text-xs text-red-600 dark:text-red-400" data-testid="plus-month-full">
+                  {t(canSell ? 'billing.plusFullDesc' : 'billing.extras.closedDescNative', { date: bookingsPeriodEnd })}
+                </p>
+              )}
               <ExtraBookingsSwitch
                 bookings={bookings}
                 price={extraPrice}
@@ -509,7 +588,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             </h2>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${complimentary ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : badgeClasses}`}>
-            {complimentary ? <bdi>Plus</bdi> : (statusLabel[status] ?? status)}
+            {complimentary ? <bdi>Pro</bdi> : (statusLabel[status] ?? status)}
           </span>
         </div>
 
@@ -552,6 +631,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     <Check size={16} className="text-green-600 shrink-0" />
                     {t('billing.activeDesc')}
                   </p>
+                  {currentPlan && (
+                    <p data-testid="billing-plan">
+                      {t('billing.activePlan')} <bdi className="font-medium">{PLAN_NAMES[currentPlan]}</bdi>
+                    </p>
+                  )}
                   {nextBillDate && (
                     <p>
                       {t('billing.nextBill')}{' '}
@@ -562,7 +646,21 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* LT-458: the bookings beside the subscription (Erel: only here). */}
                 {meters}
                 {/* What the plan includes (LT-465), in place of "no monthly limits". */}
-                <PlanCompare mode="plus" price={extraPrice} />
+                {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} />}
+                {/* LT-504: to the other plan, on the web only (LT-130). */}
+                {canSell && currentPlan && (
+                  <div>
+                    <Button
+                      variant={currentPlan === 'plus' ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => void askPlanMove(otherPlan)}
+                      disabled={planMoving}
+                      data-testid="plan-change"
+                    >
+                      {planMoving ? t('billing.opening') : t('billing.change.to', { plan: PLAN_NAMES[otherPlan] })}
+                    </Button>
+                  </div>
+                )}
                 {manageButton && <div>{manageButton}</div>}
                 {canSell && (
                   <button
@@ -661,7 +759,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   >
                     <div className="font-medium text-gray-900 dark:text-white">
                       {/* "Lightor+" beside Hebrew reads "+Lightor" without an isolate. */}
-                      <bdi>{checkout.plan.productName}</bdi>
+                      <bdi>{PLAN_NAMES[checkout.plan.plan]}</bdi>
                       {checkout.plan.interval && (
                         <span className="font-normal text-gray-500 dark:text-gray-400">
                           {' · '}
@@ -687,7 +785,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                             </span>
                           </div>
                         )}
-                        {bookingTerms?.extraAgorot != null && (
+                        {checkout.plan.plan === 'plus' ? (
+                          <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="checkout-booking-terms">
+                            {plusTermsLine}
+                          </p>
+                        ) : bookingTerms?.extraAgorot != null && (
                           <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="checkout-booking-terms">
                             {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
                           </p>
@@ -731,7 +833,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                       className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2"
                     >
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        <bdi>{plan.productName}</bdi>
+                        <bdi>{PLAN_NAMES[plan.plan]}</bdi>
                       </span>
                       <span className="text-2xl font-bold text-gray-900 dark:text-white">
                         {plan.formatted}
@@ -757,9 +859,14 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   ))}
                 </div>
                 {/* What the plan includes, and what a booking over it costs (LT-458). */}
+                {plans.some((plan) => plan.plan === 'plus') && (
+                  <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="plan-booking-terms-plus">
+                    <bdi>{PLAN_NAMES.plus}</bdi>: {plusTermsLine}
+                  </p>
+                )}
                 {bookingTerms?.extraAgorot != null && (
                   <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="plan-booking-terms">
-                    {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
+                    <bdi>{PLAN_NAMES.pro}</bdi>: {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
                   </p>
                 )}
                 {/* Paddle asks for the seller's own refund terms beside the plans (LT-265). */}
@@ -776,8 +883,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </div>
             )}
 
-            {/* Free and Lightor+ side by side (LT-465): web only, as the plans
-                are, and said even when Paddle's prices could not be read. */}
+            {/* The plans side by side (LT-465): web only, as the plans are,
+                and said even when Paddle's prices could not be read. */}
             {canSell && !checkout && <PlanCompare mode="compare" price={extraPrice} />}
 
             {/* A plan that ended still has its invoices (LT-265). */}
@@ -785,6 +892,18 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
           </>
         )}
       </div>
+
+      {planMove && (
+        <PlanChangeModal
+          plan={planMove.plan}
+          change={planMove.change}
+                    money={money}
+          dateLocale={dateLocale}
+          moving={planMoving}
+          onConfirm={() => void confirmPlanMove()}
+          onClose={() => setPlanMove(null)}
+        />
+      )}
 
       {cancelModalOpen && (
         <div

@@ -34,7 +34,7 @@ export interface PlanLimits {
 
 export interface MyEntitlements {
   /** The resolved plan: under the pilot grant 'plus' with a free subscription. */
-  plan: 'free' | 'plus';
+  plan: 'free' | 'plus' | 'pro';
   limits: PlanLimits;
   usage: {
     appointmentsThisMonth: number;
@@ -71,7 +71,7 @@ export interface MyEntitlements {
    * `included` bookings a month, then `extraAgorot` each (null while nothing
    * is charged for them). Optional so an older API still parses.
    */
-  bookingTerms?: { included: number; extraAgorot: number | null };
+  bookingTerms?: { included: number; plusIncluded?: number; extraAgorot: number | null };
   /** LT-458: Paddle is retrying a failed payment - no bookings, inquiries or reminders until it is paid. */
   paymentFailed?: boolean;
 }
