@@ -238,26 +238,11 @@ describe('Onboarding checklist by site mode', () => {
   });
 
   // LT-450: the welcome sits on a plain dim, no full-screen backdrop blur (the phone's stutter).
-  it('puts the welcome card on a plain dim, in both of its forms', () => {
+  it('puts the welcome card on a plain dim', () => {
     state.webConfig.data = completeConfig('book');
-    for (const lighty of [false, true]) {
-      const { container, unmount } = render(<OnboardingWelcome userName="Dana Levi" onGetStarted={vi.fn()} isLoading={false} isLightyMode={lighty} />);
-      const overlay = container.querySelector('.fixed.inset-0.z-50') as HTMLElement;
-      expect(overlay.className).toContain('bg-black/60');
-      expect(overlay.className).not.toMatch(/backdrop-blur/);
-      unmount();
-    }
-  });
-
-  // LT-485 (Erel): Lighty himself at the top of the card, not a magic wand.
-  it("puts Lighty's picture at the top of the card for an account with no site", () => {
-    state.webConfig.data = null as never;
-    const { container } = render(<OnboardingWelcome userName="Dana Levi" onGetStarted={vi.fn()} isLoading={false} isLightyMode />);
-    const header = container.querySelector('.bg-gradient-to-br') as HTMLElement;
-    const lighty = header.querySelector('img');
-    expect(lighty).toHaveAttribute('src', '/lighty-welcome.png');
-    // Decorative: the greeting under it says the words.
-    expect(lighty).toHaveAttribute('alt', '');
-    expect(header.querySelector('svg')).toBeNull();
+    const { container } = render(<OnboardingWelcome userName="Dana Levi" onGetStarted={vi.fn()} isLoading={false} />);
+    const overlay = container.querySelector('.fixed.inset-0.z-50') as HTMLElement;
+    expect(overlay.className).toContain('bg-black/60');
+    expect(overlay.className).not.toMatch(/backdrop-blur/);
   });
 });

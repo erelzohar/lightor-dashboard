@@ -26,9 +26,12 @@ const gateErrorKey = (error: unknown): string => {
  * meets is this step, the signup's own (LT-360): the number, a code by SMS or
  * on WhatsApp, a new code after 30 seconds. No way past it but the code, or
  * logging out. The save proves the phone and decides the free period, and
- * the Layout then moves on to the welcome card.
+ * the Layout then opens the site builder.
+ *
+ * LT-502: `onLater` adds a "later" for the iOS app, where App Review may refuse
+ * a required phone after Sign in with Apple. It holds for this launch.
  */
-const PhoneGate: React.FC = () => {
+const PhoneGate: React.FC<{ onLater?: () => void }> = ({ onLater }) => {
   const { t } = useTranslation();
   const { logout, updateUser } = useAuth();
   const { language } = useTheme();
@@ -210,7 +213,12 @@ const PhoneGate: React.FC = () => {
           </form>
         )}
 
-        <div className="text-center">
+        <div className="flex items-center justify-center gap-5">
+          {onLater && (
+            <button type="button" onClick={onLater} disabled={busy} className="py-1 text-sm font-semibold text-gray-600 dark:text-gray-300 disabled:opacity-50">
+              {t('onboarding.phoneGate.later')}
+            </button>
+          )}
           <button type="button" onClick={logout} disabled={busy} className="py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-50">
             {t('onboarding.phoneGate.logout')}
           </button>

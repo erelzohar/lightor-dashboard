@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import Sidebar from './Sidebar';
 import { PhoneBarProvider } from '../../contexts/PhoneBarContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -10,6 +11,8 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import PhoneGate from '../onboarding/PhoneGate';
+import BuildingBar from '../onboarding/BuildingBar';
+import { nativePlatform } from '../../lib/platform';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import PageTour from '../tour/PageTour';
 import AccountBanners from './AccountBanners';
@@ -35,6 +38,7 @@ const Layout: React.FC = () => {
   const fullBleed = FULL_BLEED_ROUTES.includes(pathname);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [phoneLater, setPhoneLater] = useState(false);
   const { t } = useTranslation();
 
   const { direction } = useTheme();
@@ -99,29 +103,36 @@ const Layout: React.FC = () => {
 
   // LT-500: an account made by Apple or Google sign-in proves its phone before
   // anything else. Only before a site exists: older accounts keep their card.
-  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending';
+  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending' && !phoneLater;
 
-  // No route guard for restricted users: the one that used to sit here never
-  // fired. Its allow-list was ['/dashboard', '/dashboard/ai'] tested with
-  // `pathname.startsWith(p + '/')`, and every page in this Layout lived under
-  // /dashboard — so everything matched the first entry and nothing was ever
-  // redirected. Rewriting it for the LT-087 root paths would have switched it
-  // on for the first time and locked new accounts out of pages they can reach
-  // today, so it went instead. Sidebar still hides the nav entries for
-  // restricted users (exact match, no prefix bug), which is the half that
-  // works. Re-add a real guard here deliberately if the restriction is wanted.
+  // LT-502: with no site there is one thing to do: build it. The builder opens
+  // at once, with no card and no navbar until a site is saved; the only other
+  // page is the account's, where it can be deleted (BuildingBar). Hidden from
+  // the first frame, before the check for a site has answered.
+  const hideNav = boardingStatus === 'new' && (!webConfigChecked || isRestricted);
+  const offBuilder = isRestricted && pathname !== '/design' && pathname !== '/account';
 
-  const handleGetStarted = () => {
-    if (isRestricted) {
-      // No webConfig yet — just navigate to AI builder, don't advance status
-      setWelcomeDismissed(true);
-      navigate('/design');
-      return;
+  // The card waits for accounts that arrive with a site, not for one just built here.
+  useEffect(() => {
+    if (isRestricted) setWelcomeDismissed(true);
+  }, [isRestricted]);
+
+  // The card used to say this: the phone just proven had its free period already.
+  const askedPhone = useRef(false);
+  const freePeriodState = auth.user?.freePeriod?.state;
+  useEffect(() => {
+    if (needsPhone) askedPhone.current = true;
+    else if (askedPhone.current && freePeriodState === 'withheld') {
+      askedPhone.current = false;
+      toast(t('billing.freePeriodUsed'));
     }
-    // Has existing webConfig — advance status and go to dashboard. LT-454:
-    // the card goes at once and the status is saved behind it; it waited for
-    // the server with a spinner first. If the save fails, the card is back
-    // next time - nothing else depends on it.
+  }, [needsPhone, freePeriodState, t]);
+
+  // No webConfig-less account reaches this card (LT-502). Advance the status and
+  // go to the dashboard. LT-454: the card goes at once and the status is saved
+  // behind it; it waited for the server with a spinner first. If the save
+  // fails, the card is back next time - nothing else depends on it.
+  const handleGetStarted = () => {
     setWelcomeDismissed(true);
     navigate('/');
     void updateUser({ boardingStatus: 'onboarded' }).catch(() => {});
@@ -160,14 +171,13 @@ const Layout: React.FC = () => {
       {/* LT-454: it fades out (0.15s) as it goes. LT-500: the phone comes first. */}
       <AnimatePresence mode="wait">
         {needsPhone ? (
-          <PhoneGate key="phone" />
-        ) : boardingStatus === 'new' && !welcomeDismissed && webConfigChecked ? (
+          <PhoneGate key="phone" onLater={nativePlatform() === 'ios' ? () => setPhoneLater(true) : undefined} />
+        ) : boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && !isRestricted ? (
           <OnboardingWelcome
             key="welcome"
             userName={auth.user?.name || ''}
             onGetStarted={handleGetStarted}
             isLoading={false}
-            isLightyMode={isRestricted}
           />
         ) : null}
       </AnimatePresence>
@@ -177,7 +187,7 @@ const Layout: React.FC = () => {
           page he also says the greeting the page used to print at its top, so
           there he shows for every owner (not only active, verified ones) —
           except under the first-run welcome overlay. */}
-      {pathname !== '/design' && pathname !== '/lighty' && auth.user && (
+      {pathname !== '/design' && pathname !== '/lighty' && auth.user && !hideNav && (
         (auth.user.isVerified && auth.user.boardingStatus === 'active') ||
         (pathname === '/' && !(boardingStatus === 'new' && !welcomeDismissed))
       ) && (
@@ -191,7 +201,7 @@ const Layout: React.FC = () => {
         />
       )}
 
-      <Sidebar isRestricted={isRestricted} />
+      {!hideNav && <Sidebar isRestricted={isRestricted} />}
 
       {/* Lighty's page tours (LT-389): not while the account is still being
           set up, nor under the first-run welcome. */}
@@ -201,6 +211,7 @@ const Layout: React.FC = () => {
       <PageTour enabled={!!auth.user && !isRestricted && !(boardingStatus === 'new' && !welcomeDismissed)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
+        {isRestricted && !needsPhone && <BuildingBar />}
         <motion.main
           // data-scroll-root: PullToRefresh listens on this scroller. The
           // phone bottom padding clears the fixed BottomTabBar (h≈3.5rem) plus
@@ -236,7 +247,8 @@ const Layout: React.FC = () => {
                 Not on the Account page, which says it beside the subscription,
                 nor over the pages that size themselves off this box. */}
             {!fullBleed && pathname !== '/account' && <AccountBanners go={leaveTo} />}
-            <Outlet />
+            {/* Behind the phone step nothing runs: the builder takes the proven phone when it opens. */}
+            {needsPhone ? null : offBuilder ? <Navigate to="/design" replace /> : <Outlet />}
           </div>
         </motion.main>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Sparkles, MapPin, Phone, ArrowRight, Wand2,
+  Sparkles, MapPin, Phone, ArrowRight,
   Briefcase, Clock, Image, Tag, CheckCircle2, Info,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -16,10 +16,9 @@ interface Props {
   userName: string;
   onGetStarted: () => void;
   isLoading: boolean;
-  isLightyMode?: boolean;
 }
 
-const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading, isLightyMode = false }) => {
+const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading }) => {
   const { t } = useTranslation();
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
@@ -33,11 +32,11 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
 
   // Fetch appointment types if not loaded yet (needed for accurate progress)
   useEffect(() => {
-    if (isLightyMode || leadsSite) return;
+    if (leadsSite) return;
     if (appointmentTypes.length === 0 && auth.user?.webConfig_id) {
       dispatch(fetchAppointmentTypes({ webConfig_id: auth.user.webConfig_id }));
     }
-  }, [auth.user?.webConfig_id, isLightyMode, leadsSite]);
+  }, [auth.user?.webConfig_id, leadsSite]);
 
   const allSteps = [
     {
@@ -79,79 +78,9 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
   const missingSteps = allSteps.filter(s => !s.done);
   const doneCount = allSteps.length - missingSteps.length;
 
-  // LT-450: both cards sit on a plain dim, as dark as the blurred one was. A
+  // LT-450: the card sits on a plain dim, as dark as the blurred one was. A
   // full-screen backdrop blur re-blurred the whole page on every frame while
   // the card and the cards behind it moved in: the phone's stutter.
-  if (isLightyMode) {
-    return (
-      <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-modal rounded-3xl w-full max-w-md overflow-hidden"
-        >
-          {/* Lighty gradient header */}
-          <div className="bg-gradient-to-br from-violet-600 via-primary to-fuchsia-600 p-8 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-            {/* Lighty himself says hello (LT-485, Erel: his picture, not a wand). */}
-            <motion.img
-              src="/lighty-welcome.png"
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 22 }}
-              className="block mx-auto w-28 h-28 object-contain drop-shadow-lg mb-2 relative z-10 select-none"
-            />
-            <h1 className="text-2xl font-bold mb-1 relative z-10">
-              {t('onboarding.lightyWelcomeTitle', { name: firstName })}
-            </h1>
-            <p className="text-white/80 text-sm relative z-10">
-              {t('onboarding.lightyWelcomeSubtitle')}
-            </p>
-          </div>
-
-          {/* Body */}
-          <div className="p-8">
-            <p className="text-light-text dark:text-dark-text text-sm mb-6">
-              {t('onboarding.lightyWelcomeDescription')}
-            </p>
-
-            <div className="mb-8 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 p-4 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-800/40 flex items-center justify-center shrink-0 mt-0.5">
-                <Sparkles size={16} className="text-violet-600 dark:text-violet-400" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-violet-800 dark:text-violet-300 mb-0.5">
-                  {t('onboarding.lightyAssistantName')}
-                </p>
-                <p className="text-xs text-violet-600 dark:text-violet-400 leading-relaxed">
-                  {t('onboarding.lightyAssistantDesc')}
-                </p>
-              </div>
-            </div>
-
-            {/* LT-500: the phone just proven had its free period already. */}
-            {auth.user?.freePeriod?.state === 'withheld' && (
-              <p className="-mt-4 mb-6 text-xs text-gray-500 dark:text-gray-400" data-testid="free-period-used">{t('billing.freePeriodUsed')}</p>
-            )}
-
-            <Button
-              fullWidth
-              onClick={onGetStarted}
-              isLoading={isLoading}
-              rightIcon={<Wand2 size={18} />}
-            >
-              {t('onboarding.lightyGetStarted')}
-            </Button>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  }
-
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overlay-safe" exit={{ opacity: 0, transition: { duration: 0.15 } }}>
       <motion.div

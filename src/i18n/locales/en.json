@@ -502,13 +502,8 @@
     "showDetails": "Show setup details",
     "hideDetails": "Hide details",
     "allDoneBtn": "All set! Close panel",
-    "lightyWelcomeTitle": "Welcome, {{name}}!",
-    "lightyWelcomeSubtitle": "Let's build your website with Lighty",
-    "lightyWelcomeDescription": "Lighty is your AI assistant that builds your professional website in seconds - just describe your business, event or idea.",
-    "lightyAssistantName": "Lighty - your AI assistant",
-    "lightyAssistantDesc": "Tell Lighty about your business, event or idea and it will generate a complete website for you, ready to go live.",
-    "lightyGetStarted": "Build with Lighty",
     "phoneGate": {
+      "later": "Later",
       "title": "Verify your mobile",
       "body": "Before we build your site, let's verify your mobile number with a code.",
       "label": "Mobile number",
@@ -521,6 +516,11 @@
       "sentAgain": "A new code is on its way",
       "expired": "The code has expired. Ask for a new one.",
       "tooManyTries": "Too many tries. Ask for a new code.",
+      "logout": "Log out"
+    },
+    "buildingBar": {
+      "account": "My account",
+      "back": "Build my site",
       "logout": "Log out"
     }
   },

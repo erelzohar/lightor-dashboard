@@ -502,13 +502,8 @@
     "showDetails": "عرض تفاصيل الإعداد",
     "hideDetails": "إخفاء التفاصيل",
     "allDoneBtn": "كل شيء جاهز! إغلاق اللوحة",
-    "lightyWelcomeTitle": "مرحبًا، {{name}}!",
-    "lightyWelcomeSubtitle": "لنبنِ موقعك مع Lighty",
-    "lightyWelcomeDescription": "Lighty هو مساعدك بالذكاء الاصطناعي الذي يبني موقعك الاحترافي في ثوانٍ - فقط صِف نشاطك أو حدثك أو فكرتك.",
-    "lightyAssistantName": "Lighty - مساعدك بالذكاء الاصطناعي",
-    "lightyAssistantDesc": "أخبر Lighty عن نشاطك أو حدثك أو فكرتك وسينشئ لك موقعًا كاملًا جاهزًا للنشر.",
-    "lightyGetStarted": "ابنِ مع Lighty",
     "phoneGate": {
+      "later": "لاحقًا",
       "title": "تأكيد رقم الجوال",
       "body": "قبل بناء موقعك، سنؤكد رقم جوالك برمز.",
       "label": "رقم الجوال",
@@ -521,6 +516,11 @@
       "sentAgain": "رمز جديد في الطريق",
       "expired": "انتهت صلاحية الرمز. اطلب رمزًا جديدًا.",
       "tooManyTries": "محاولات كثيرة جدًا. اطلب رمزًا جديدًا.",
+      "logout": "تسجيل الخروج"
+    },
+    "buildingBar": {
+      "account": "حسابي",
+      "back": "بناء الموقع",
       "logout": "تسجيل الخروج"
     }
   },

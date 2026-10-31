@@ -502,13 +502,8 @@
     "showDetails": "Afficher les détails de configuration",
     "hideDetails": "Masquer les détails",
     "allDoneBtn": "Tout est prêt ! Fermer le panneau",
-    "lightyWelcomeTitle": "Bienvenue, {{name}} !",
-    "lightyWelcomeSubtitle": "Construisons votre site avec Lighty",
-    "lightyWelcomeDescription": "Lighty est votre assistant IA qui crée votre site professionnel en quelques secondes - décrivez simplement votre entreprise, votre événement ou votre idée.",
-    "lightyAssistantName": "Lighty - votre assistant IA",
-    "lightyAssistantDesc": "Parlez à Lighty de votre entreprise, de votre événement ou de votre idée et il générera un site complet pour vous, prêt à être mis en ligne.",
-    "lightyGetStarted": "Construire avec Lighty",
     "phoneGate": {
+      "later": "Plus tard",
       "title": "Vérifiez votre mobile",
       "body": "Avant de créer votre site, vérifions votre numéro de mobile avec un code.",
       "label": "Numéro de mobile",
@@ -521,6 +516,11 @@
       "sentAgain": "Un nouveau code arrive",
       "expired": "Le code a expiré. Demandez-en un nouveau.",
       "tooManyTries": "Trop de tentatives. Demandez un nouveau code.",
+      "logout": "Se déconnecter"
+    },
+    "buildingBar": {
+      "account": "Mon compte",
+      "back": "Créer mon site",
       "logout": "Se déconnecter"
     }
   },

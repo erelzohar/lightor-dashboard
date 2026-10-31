@@ -502,13 +502,8 @@
     "showDetails": "הצג פרטי ההגדרה",
     "hideDetails": "הסתר פרטים",
     "allDoneBtn": "סיימתי! סגור לוח",
-    "lightyWelcomeTitle": "ברוך הבא, {{name}}!",
-    "lightyWelcomeSubtitle": "בואו נבנה את האתר שלך עם Lighty",
-    "lightyWelcomeDescription": "Lighty הוא העוזר AI שלך שבונה אתר מקצועי בשניות - רק תאר את העסק, האירוע או הרעיון שלך.",
-    "lightyAssistantName": "Lighty - העוזר AI שלך",
-    "lightyAssistantDesc": "ספר ל-Lighty על העסק, האירוע או הרעיון שלך, והוא ייצור לך אתר מוכן לפרסום.",
-    "lightyGetStarted": "בנה עם Lighty",
     "phoneGate": {
+      "later": "אחר כך",
       "title": "מאמתים את הנייד",
       "body": "לפני שבונים את האתר, נאמת את מספר הנייד שלכם בקוד.",
       "label": "מספר נייד",
@@ -521,6 +516,11 @@
       "sentAgain": "קוד חדש בדרך",
       "expired": "הקוד פג תוקף. בקשו קוד חדש.",
       "tooManyTries": "יותר מדי ניסיונות. בקשו קוד חדש.",
+      "logout": "התנתקות"
+    },
+    "buildingBar": {
+      "account": "החשבון שלי",
+      "back": "בניית האתר",
       "logout": "התנתקות"
     }
   },

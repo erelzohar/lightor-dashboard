@@ -89,4 +89,12 @@ describe('PhoneGate', () => {
     fireEvent.click(screen.getByText('onboarding.phoneGate.logout'));
     expect(logout).toHaveBeenCalled();
   });
+
+  // LT-502: the iOS app only, which the Layout decides.
+  it('offers "later" when it is given one', () => {
+    const onLater = vi.fn();
+    render(<PhoneGate onLater={onLater} />);
+    fireEvent.click(screen.getByText('onboarding.phoneGate.later'));
+    expect(onLater).toHaveBeenCalled();
+  });
 });
