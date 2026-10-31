@@ -507,7 +507,22 @@
     "lightyWelcomeDescription": "Lighty is your AI assistant that builds your professional website in seconds - just describe your business, event or idea.",
     "lightyAssistantName": "Lighty - your AI assistant",
     "lightyAssistantDesc": "Tell Lighty about your business, event or idea and it will generate a complete website for you, ready to go live.",
-    "lightyGetStarted": "Build with Lighty"
+    "lightyGetStarted": "Build with Lighty",
+    "phoneGate": {
+      "title": "Verify your mobile",
+      "body": "Before we build your site, let's verify your mobile number with a code.",
+      "label": "Mobile number",
+      "send": "Send a code",
+      "confirm": "Confirm and continue",
+      "changePhone": "Change number",
+      "resendIn": "You can send again in {{s}}s",
+      "resend": "Send again",
+      "whatsapp": "Send on WhatsApp",
+      "sentAgain": "A new code is on its way",
+      "expired": "The code has expired. Ask for a new one.",
+      "tooManyTries": "Too many tries. Ask for a new code.",
+      "logout": "Log out"
+    }
   },
   "aiBuilder": {
     "title": "Lighty - AI Assistant",

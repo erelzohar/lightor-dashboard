@@ -133,6 +133,11 @@ const OnboardingWelcome: React.FC<Props> = ({ userName, onGetStarted, isLoading,
               </div>
             </div>
 
+            {/* LT-500: the phone just proven had its free period already. */}
+            {auth.user?.freePeriod?.state === 'withheld' && (
+              <p className="-mt-4 mb-6 text-xs text-gray-500 dark:text-gray-400" data-testid="free-period-used">{t('billing.freePeriodUsed')}</p>
+            )}
+
             <Button
               fullWidth
               onClick={onGetStarted}

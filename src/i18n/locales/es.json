@@ -507,7 +507,22 @@
     "lightyWelcomeDescription": "Lighty es tu asistente de IA que crea tu sitio profesional en segundos - solo describe tu negocio, tu evento o tu idea.",
     "lightyAssistantName": "Lighty - tu asistente de IA",
     "lightyAssistantDesc": "Cuéntale a Lighty sobre tu negocio, tu evento o tu idea y generará un sitio completo para ti, listo para publicar.",
-    "lightyGetStarted": "Construir con Lighty"
+    "lightyGetStarted": "Construir con Lighty",
+    "phoneGate": {
+      "title": "Verifica tu móvil",
+      "body": "Antes de crear tu sitio, verificaremos tu número de móvil con un código.",
+      "label": "Número de móvil",
+      "send": "Enviar un código",
+      "confirm": "Confirmar y continuar",
+      "changePhone": "Cambiar número",
+      "resendIn": "Podrás reenviar en {{s}} s",
+      "resend": "Reenviar",
+      "whatsapp": "Enviar por WhatsApp",
+      "sentAgain": "Un código nuevo está en camino",
+      "expired": "El código ha caducado. Pide uno nuevo.",
+      "tooManyTries": "Demasiados intentos. Pide un código nuevo.",
+      "logout": "Cerrar sesión"
+    }
   },
   "aiBuilder": {
     "title": "Lighty - Asistente de IA",

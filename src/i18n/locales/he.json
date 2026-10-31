@@ -507,7 +507,22 @@
     "lightyWelcomeDescription": "Lighty הוא העוזר AI שלך שבונה אתר מקצועי בשניות - רק תאר את העסק, האירוע או הרעיון שלך.",
     "lightyAssistantName": "Lighty - העוזר AI שלך",
     "lightyAssistantDesc": "ספר ל-Lighty על העסק, האירוע או הרעיון שלך, והוא ייצור לך אתר מוכן לפרסום.",
-    "lightyGetStarted": "בנה עם Lighty"
+    "lightyGetStarted": "בנה עם Lighty",
+    "phoneGate": {
+      "title": "מאמתים את הנייד",
+      "body": "לפני שבונים את האתר, נאמת את מספר הנייד שלכם בקוד.",
+      "label": "מספר נייד",
+      "send": "שליחת קוד",
+      "confirm": "אישור והמשך",
+      "changePhone": "החלפת מספר",
+      "resendIn": "אפשר לשלוח שוב בעוד {{s}} שניות",
+      "resend": "שליחה חוזרת",
+      "whatsapp": "שליחה בוואטסאפ",
+      "sentAgain": "קוד חדש בדרך",
+      "expired": "הקוד פג תוקף. בקשו קוד חדש.",
+      "tooManyTries": "יותר מדי ניסיונות. בקשו קוד חדש.",
+      "logout": "התנתקות"
+    }
   },
   "aiBuilder": {
     "title": "Lighty - עוזר AI",

@@ -9,6 +9,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
+import PhoneGate from '../onboarding/PhoneGate';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import PageTour from '../tour/PageTour';
 import AccountBanners from './AccountBanners';
@@ -96,6 +97,10 @@ const Layout: React.FC = () => {
   const isRestricted =
     boardingStatus === 'new' && webConfigChecked && !webConfigData?.businessName;
 
+  // LT-500: an account made by Apple or Google sign-in proves its phone before
+  // anything else. Only before a site exists: older accounts keep their card.
+  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending';
+
   // No route guard for restricted users: the one that used to sit here never
   // fired. Its allow-list was ['/dashboard', '/dashboard/ai'] tested with
   // `pathname.startsWith(p + '/')`, and every page in this Layout lived under
@@ -152,9 +157,11 @@ const Layout: React.FC = () => {
         }}
       />
 
-      {/* LT-454: it fades out (0.15s) as it goes. */}
-      <AnimatePresence>
-        {boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && (
+      {/* LT-454: it fades out (0.15s) as it goes. LT-500: the phone comes first. */}
+      <AnimatePresence mode="wait">
+        {needsPhone ? (
+          <PhoneGate key="phone" />
+        ) : boardingStatus === 'new' && !welcomeDismissed && webConfigChecked ? (
           <OnboardingWelcome
             key="welcome"
             userName={auth.user?.name || ''}
@@ -162,7 +169,7 @@ const Layout: React.FC = () => {
             isLoading={false}
             isLightyMode={isRestricted}
           />
-        )}
+        ) : null}
       </AnimatePresence>
 
       {/* LT-253: Lighty, a tap away — not over his own page, nor over the
