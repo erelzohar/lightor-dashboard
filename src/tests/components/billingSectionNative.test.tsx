@@ -725,6 +725,16 @@ describe('BillingSection with two plans', () => {
       expect(screen.getByTestId('plan-compare')).not.toHaveTextContent('billing.compare.rows.bookings.label');
     });
 
+    it('says the badge in one sentence on each card', async () => {
+      fourPrices();
+      render(<BillingSection />);
+      expect(await screen.findByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.badge.free');
+      for (const card of ['pricing-card-plus', 'pricing-card-pro']) {
+        expect(screen.getByTestId(card)).toHaveTextContent('billing.pricing.badge.paid');
+        expect(screen.getByTestId(card)).not.toHaveTextContent('billing.compare.rows.badge');
+      }
+    });
+
     it('marks Pro as the best value, and no other plan', async () => {
       fourPrices();
       render(<BillingSection />);

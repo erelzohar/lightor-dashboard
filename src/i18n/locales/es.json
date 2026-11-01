@@ -1012,6 +1012,10 @@
       "bestValue": "Mejor valor",
       "current": "Tu plan actual",
       "includes": "Qué incluye:",
+      "badge": {
+        "free": "Insignia \"Built with Lightor\" en tu sitio",
+        "paid": "Sin la insignia \"Built with Lightor\""
+      },
       "desc": {
         "free": "Empieza y mira cómo funciona.",
         "plus": "Todo lo que necesitan la mayoría de los sitios.",

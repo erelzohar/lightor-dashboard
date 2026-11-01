@@ -1012,6 +1012,10 @@
       "bestValue": "الأفضل قيمة",
       "current": "باقتك الحالية",
       "includes": "ما تتضمنه:",
+      "badge": {
+        "free": "شارة \"Built with Lightor\" على موقعك",
+        "paid": "بدون شارة \"Built with Lightor\""
+      },
       "desc": {
         "free": "ابدأ وشاهد كيف يعمل.",
         "plus": "كل ما تحتاجه معظم المواقع.",

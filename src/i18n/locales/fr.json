@@ -1012,6 +1012,10 @@
       "bestValue": "Meilleure offre",
       "current": "Votre forfait actuel",
       "includes": "Ce qui est inclus :",
+      "badge": {
+        "free": "Badge \"Built with Lightor\" sur votre site",
+        "paid": "Sans le badge \"Built with Lightor\""
+      },
       "desc": {
         "free": "Démarrez et voyez comment ça marche.",
         "plus": "Tout ce qu’il faut pour la plupart des sites.",

@@ -203,8 +203,15 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                     </span>
                     {/* Each part isolated, as in the comparison: a label ending in "AI" pulls the rest into its run. */}
                     <span className={highlighted ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
-                      <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
-                      <span className="[unicode-bidi:isolate]">{value}</span>
+                      {row === 'badge' ? (
+                        // One sentence, not "label: value" (Erel 2026-11-01).
+                        t(`billing.pricing.badge.${column === 'free' ? 'free' : 'paid'}`)
+                      ) : (
+                        <>
+                          <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
+                          <span className="[unicode-bidi:isolate]">{value}</span>
+                        </>
+                      )}
                     </span>
                   </li>
                 );

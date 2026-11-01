@@ -1012,6 +1012,10 @@
       "bestValue": "Best value",
       "current": "Your current plan",
       "includes": "What's included:",
+      "badge": {
+        "free": "\"Built with Lightor\" badge on your site",
+        "paid": "No \"Built with Lightor\" badge"
+      },
       "desc": {
         "free": "Get started and see how it works.",
         "plus": "Everything most sites need.",
