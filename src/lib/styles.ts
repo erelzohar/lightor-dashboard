@@ -14,13 +14,14 @@ export const STYLES = [
 export const stylePicture = (style: string, language: string): string =>
   language.startsWith('he') ? `/styles/${style}.webp` : `/styles/en/${style}.webp`;
 
-/** A style's look on a site: its design and palette. */
+/** A style's look on a site: its design and palette, and (LT-538) the site's page arranged in it. */
 export interface StyleLook {
   design: Record<string, unknown>;
   pallete: Record<string, unknown>;
+  blocks?: Record<string, unknown>[];
 }
 
-/** The site in a style's look; the blocks lose their own variants, which would fight it. */
+/** The site in a style's look. Without an arranged page, the blocks lose their own variants, which would fight it. */
 export const withLook = <T>(config: T, look: StyleLook): T => {
   const root = config as unknown as Record<string, unknown>;
   return {
@@ -28,7 +29,7 @@ export const withLook = <T>(config: T, look: StyleLook): T => {
     design: look.design,
     pallete: { ...(root.pallete as Record<string, unknown> | undefined), ...look.pallete },
     ...(Array.isArray(root.blocks)
-      ? { blocks: (root.blocks as Record<string, unknown>[]).map(({ variant: _drop, ...block }) => { void _drop; return block; }) }
+      ? { blocks: look.blocks ?? (root.blocks as Record<string, unknown>[]).map(({ variant: _drop, ...block }) => { void _drop; return block; }) }
       : {}),
   } as unknown as T;
 };

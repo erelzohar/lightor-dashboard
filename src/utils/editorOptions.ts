@@ -172,6 +172,23 @@ export const LAYOUTS: Named = {
   solid: { he: 'מלא', en: 'Solid' },
   transparent: { he: 'שקוף', en: 'Transparent' },
   pill: { he: 'כמוסה', en: 'Pill' },
+  // price list
+  ledger: { he: 'רשימה ממוספרת', en: 'Numbered list' },
+  roman: { he: 'ספרות רומיות', en: 'Roman numerals' },
+  menu: { he: 'תפריט', en: 'Menu' },
+  board: { he: 'לוח גדול', en: 'Big board' },
+  tags: { he: 'תגיות', en: 'Tags' },
+  soft: { he: 'רך', en: 'Soft' },
+  arch: { he: 'קשתות', en: 'Arches' },
+  index: { he: 'אינדקס', en: 'Index' },
+  // booking band and statement
+  slant: { he: 'אלכסון', en: 'Slanted' },
+  quiet: { he: 'שקט', en: 'Quiet' },
+  ticket: { he: 'כרטיס', en: 'Ticket' },
+  display: { he: 'ענק', en: 'Display' },
+  ruled: { he: 'בין קווים', en: 'Ruled' },
+  outline: { he: 'קו מתאר', en: 'Outline' },
+  marker: { he: 'מרקר', en: 'Marker' },
   // small blocks
   rail: { he: 'מסילה', en: 'Rail' },
   offset: { he: 'מוסט', en: 'Offset' },
@@ -223,7 +240,7 @@ export const SECTIONS: Record<string, SectionDef> = {
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },
   services: { label: { he: 'מחירון', en: 'Price list' } },
-  ledger: { label: { he: 'מחירון', en: 'Price list' } },
+  ledger: { label: { he: 'מחירון', en: 'Price list' }, variants: ['ledger', 'roman', 'menu', 'board', 'table', 'tags', 'soft', 'arch', 'index'] },
   priceCards: { label: { he: 'כרטיסי מחיר', en: 'Price cards' } },
   schedule: { label: { he: 'קביעת תור', en: 'Booking' }, variants: SCHEDULE_STYLES, designToken: 'scheduleStyle' },
   contact: { label: { he: 'צור קשר', en: 'Contact' }, variants: CONTACT_LAYOUTS, designToken: 'contactLayout', visibleKey: 'contact' },
@@ -231,10 +248,10 @@ export const SECTIONS: Record<string, SectionDef> = {
   contactButton: { label: { he: 'כפתור יצירת קשר', en: 'Contact button' }, visibleKey: 'contactButton', outsideBlocks: true },
   interlude: { label: { he: 'תמונה מפרידה', en: 'Photo break' }, variants: ['photo', 'split'] },
   'booking-band': { label: { he: 'רצועת הזמנה', en: 'Booking band' } },
-  bookingBand: { label: { he: 'רצועת הזמנה', en: 'Booking band' }, variants: ['plain', 'chips'] },
+  bookingBand: { label: { he: 'רצועת הזמנה', en: 'Booking band' }, variants: ['plain', 'chips', 'poster', 'slant', 'quiet', 'card', 'ticket', 'split'] },
   ticker: { label: { he: 'רצועת שירותים', en: 'Services strip' } },
   announcement: { label: { he: 'הודעה', en: 'Announcement' } },
-  manifesto: { label: { he: 'הצהרה', en: 'Statement' } },
+  manifesto: { label: { he: 'הצהרה', en: 'Statement' }, variants: ['display', 'ruled', 'outline', 'marker', 'soft'] },
   stats: { label: { he: 'מספרים', en: 'Numbers' } },
   pullQuote: { label: { he: 'ציטוט', en: 'Quote' } },
   process: { label: { he: 'שלבים', en: 'Steps' }, variants: ['steps', 'rail', 'grid'] },
@@ -275,7 +292,7 @@ export const SECTION_HINTS: Named = {
 };
 
 /** A block variant that stands for "the default look" — stored as no variant at all. */
-export const DEFAULT_VARIANT: Record<string, string> = { interlude: 'photo', bookingBand: 'plain' };
+export const DEFAULT_VARIANT: Record<string, string> = { interlude: 'photo', bookingBand: 'plain', ledger: 'ledger', manifesto: 'display' };
 
 export const sectionDef = (type: string | null | undefined): SectionDef =>
   (type && SECTIONS[type]) || { label: { he: 'אזור', en: 'Section' } };

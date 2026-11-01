@@ -120,4 +120,11 @@ describe('aiApi conversation history', () => {
     await expect(aiService.restyle({ colorPrimary: '#111111' }, 'serene', 'site-1')).resolves.toEqual(look);
     expect(post).toHaveBeenCalledWith(`${globals.aiUrl}restyle`, { pallete: { colorPrimary: '#111111' }, style: 'serene', designSeed: 'site-1', keepPalette: false });
   });
+
+  it("sends the site's page along, for the style to arrange (LT-538)", async () => {
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue({ data: { success: true, data: { design: {}, pallete: {} } } } as never);
+    const blocks = [{ id: 'b1', type: 'hero' }];
+    await aiService.restyle({ colorPrimary: '#111111' }, 'serene', 'site-1', blocks);
+    expect(post).toHaveBeenCalledWith(`${globals.aiUrl}restyle`, expect.objectContaining({ blocks }));
+  });
 });

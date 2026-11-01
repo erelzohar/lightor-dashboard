@@ -58,7 +58,7 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
     setRestyling(style);
     setStyleFailed(false);
     try {
-      const look = await aiService.restyle(getAt(config, 'pallete') ?? {}, style, seed);
+      const look = await aiService.restyle(getAt(config, 'pallete') ?? {}, style, seed, (config as { blocks?: unknown }).blocks);
       // On the draft as it is by now: the owner may have gone on editing.
       onUpdate((prev) => withLook(prev, look));
     } catch {

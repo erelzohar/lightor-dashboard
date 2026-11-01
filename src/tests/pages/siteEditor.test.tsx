@@ -539,6 +539,15 @@ describe('the site editor (LT-249)', () => {
   describe('the style pictures', () => {
     const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig & { design: Record<string, unknown>; pallete: Record<string, unknown>; blocks: Record<string, unknown>[] } }).config;
 
+    it('take the page the style arranged, when the server sends one (LT-538)', async () => {
+      const blocks = [{ id: 'b2', type: 'faq', variant: 'split' }, { id: 'b1', type: 'hero', variant: 'collage' }];
+      vi.mocked(aiService.restyle).mockReset().mockResolvedValue({ design: { stylePreset: 'serene' }, pallete: {}, blocks });
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      fireEvent.click(await screen.findByRole('radio', { name: /serene|רגוע/ }));
+      await waitFor(() => expect(lastConfig().blocks).toEqual(blocks));
+    });
+
     it("offer the ten styles as pictures, the site's own first, and a tap dresses the site in one", async () => {
       vi.mocked(aiService.restyle).mockReset().mockResolvedValue({ design: { stylePreset: 'serene', headingFont: 'fraunces' }, pallete: { colorLightBg: '#f5f0e8' } });
       renderEditor();
@@ -551,10 +560,10 @@ describe('the site editor (LT-249)', () => {
       expect(cards[1].querySelector('img')).toHaveAttribute('src', '/styles/atelier.webp');
 
       fireEvent.click(screen.getByRole('radio', { name: /serene|רגוע/ }));
-      await waitFor(() => expect(aiService.restyle).toHaveBeenCalledWith(saved.pallete, 'serene', 'wc1'));
+      await waitFor(() => expect(aiService.restyle).toHaveBeenCalledWith(saved.pallete, 'serene', 'wc1', expect.arrayContaining([expect.objectContaining({ id: 'b1', type: 'hero' })])));
       await waitFor(() => expect(lastConfig().design).toEqual({ stylePreset: 'serene', headingFont: 'fraunces' }));
       expect(lastConfig().pallete).toEqual({ colorPrimary: '#d71676', colorPrimaryDark: '#e5609b', colorLightBg: '#f5f0e8' });
-      // The sections give up their own layouts to the style's.
+      // Without an arranged page, the sections give up their own layouts to the style's.
       expect(lastConfig().blocks).toEqual([{ id: 'b1', type: 'hero' }, { id: 'b2', type: 'faq' }]);
     });
 

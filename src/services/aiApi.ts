@@ -122,12 +122,14 @@ export const aiService = {
    * design and palette as a build in that style draws them. No AI, nothing
    * stored; `designSeed` keeps one site's look the same on every try.
    */
-  restyle: async (pallete: unknown, style: string, designSeed: string): Promise<StyleLook> => {
+  restyle: async (pallete: unknown, style: string, designSeed: string, blocks?: unknown): Promise<StyleLook> => {
     const response = await apiClient.post<{ success: boolean; data: StyleLook }>(`${globals.aiUrl}restyle`, {
       pallete,
       style,
       designSeed,
       keepPalette: false,
+      // LT-538: the page itself, for the style to arrange.
+      ...(Array.isArray(blocks) ? { blocks } : {}),
     });
     if (!response.data.success) throw new Error('Restyle failed');
     return response.data.data;
