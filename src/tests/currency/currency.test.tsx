@@ -49,10 +49,11 @@ describe('the business currency (LT-395)', () => {
   });
 
   it("puts the home page's income in dollars for a business in dollars", () => {
-    const now = Date.now();
-    const appt = { _id: 'a1', status: 'completed', timestamp: String(now - 60 * 60 * 1000), type: { _id: 't1', name: 'Gel', price: '45' } };
+    vi.useFakeTimers({ toFake: ['Date'] }).setSystemTime(new Date(2026, 9, 14, 12, 0));
+    const appt = { _id: 'a1', status: 'completed', timestamp: String(Date.now() - 60 * 60 * 1000), type: { _id: 't1', name: 'Gel', price: '45' } };
     render(<Provider store={storeWith('USD')}><IncomeStats appointments={[appt] as never} /></Provider>);
     expect(screen.getAllByText(/^\$45$/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/₪/)).toBeNull();
+    vi.useRealTimers();
   });
 });
