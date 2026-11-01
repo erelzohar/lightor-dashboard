@@ -659,7 +659,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* LT-458: the bookings beside the subscription (Erel: only here). */}
                 {meters}
                 {/* What the plan includes (LT-465), in place of "no monthly limits". */}
-                {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} />}
+                {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
                 {/* LT-504: to the other plan, on the web only (LT-130). */}
                 {canSell && currentPlan && (
                   <div>

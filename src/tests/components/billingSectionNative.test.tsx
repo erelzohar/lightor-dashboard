@@ -740,6 +740,19 @@ describe('BillingSection with two plans', () => {
     });
   });
 
+  it('leaves bookings out of what a leads site`s subscription includes (LT-511)', async () => {
+    entitlementsState.data = paid('plus');
+    const { unmount } = render(<BillingSection />);
+    expect(await screen.findByTestId('plan-includes')).toHaveTextContent('billing.compare.rows.bookings.label');
+    unmount();
+
+    render(<BillingSection leadsSite />);
+    const includes = await screen.findByTestId('plan-includes');
+    expect(includes).toHaveTextContent('billing.compare.rows.inquiries.label');
+    expect(includes).not.toHaveTextContent('billing.compare.rows.bookings.label');
+    expect(includes).not.toHaveTextContent('billing.compare.rows.texts.label');
+  });
+
   it('says the plan, moves up with Paddle`s numbers first, and waits for the webhook', async () => {
     entitlementsState.data = paid('plus');
     vi.mocked(previewPlanChange).mockResolvedValue(change);
