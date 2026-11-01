@@ -82,7 +82,9 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
     }
   };
 
-  const choices = siteImages.filter((name) => name && name !== value);
+  // LT-514: the picture in use stays in its place, marked. Left out, the row
+  // jumped on every pick and it looked as if a picture had gone.
+  const choices = siteImages.filter(Boolean);
 
   return (
     <div className="flex flex-col gap-4" data-testid="image-panel">
@@ -191,7 +193,7 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
         </div>
       )}
       {error && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{t('siteEditor.image.uploadFailed')}</p>}
-      {choices.length > 0 && (
+      {choices.some((name) => name !== value) && (
         <div>
           <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">{t('siteEditor.image.choose')}</p>
           <div className="grid grid-cols-4 gap-2">
@@ -199,9 +201,10 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
               <button
                 key={name}
                 type="button"
-                onClick={() => onChange(name)}
-                className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary focus:border-primary"
+                onClick={() => { if (name !== value) onChange(name); }}
+                className={`aspect-square rounded-lg overflow-hidden border-2 ${name === value ? 'border-primary' : 'border-transparent'} hover:border-primary focus:border-primary`}
                 aria-label={t('siteEditor.image.use')}
+                aria-pressed={name === value}
               >
                 <img src={resolveImage(name)} alt="" className="w-full h-full object-cover" />
               </button>

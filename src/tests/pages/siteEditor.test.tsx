@@ -297,6 +297,27 @@ describe('the site editor (LT-249)', () => {
     expect(lastConfig().blocks?.filter((b) => b.type === 'gallery')).toHaveLength(1);
   });
 
+  it('swapping a picture from the list keeps the one replaced in the list, in its place (LT-514)', async () => {
+    state.webConfig.data = {
+      ...saved,
+      components: { ...saved.components, portfolio: { visible: true, title: 'Work', items: [{ url: 'one.webp' }, { url: 'two.webp' }] } },
+    } as unknown as WebConfig;
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await fromSite({ type: 'LT_SELECT', kind: 'image', path: 'components.hero.heroImageSrc', section: 'b1', sectionType: 'hero', count: 1 });
+    await screen.findByTestId('image-panel');
+    const thumbs = () => screen.getAllByRole('button', { name: 'siteEditor.image.use' });
+    const names = () => thumbs().map((b) => b.querySelector('img')!.getAttribute('src'));
+    const before = names();
+    expect(before.length).toBeGreaterThanOrEqual(3);
+
+    for (const index of [1, 2, 0]) {
+      fireEvent.click(thumbs()[index]);
+      await waitFor(() => expect(thumbs()[index]).toHaveAttribute('aria-pressed', 'true'));
+      expect(names()).toEqual(before);
+    }
+  });
+
   it('a photo added from the editor stays once saved; one added and taken out again goes (LT-320 + LT-315)', async () => {
     vi.mocked(uploadImage).mockReset()
       .mockResolvedValueOnce({ imageName: 'kept.webp' } as Awaited<ReturnType<typeof uploadImage>>)

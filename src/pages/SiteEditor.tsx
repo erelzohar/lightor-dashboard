@@ -49,7 +49,7 @@ import { cn } from '../lib/utils';
 const CLIENT_APP_URL =
   (import.meta.env.VITE_CLIENT_APP_URL as string | undefined) || 'http://localhost:5174';
 
-/** Every picture on the site, once — the ones an image can be swapped for. */
+/** Every picture on the site, once. */
 const siteImagesOf = (config: WebConfig): string[] => {
   const names = [
     config.logoImageName,
@@ -96,6 +96,16 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const draft = useDraft<WebConfig>(saved);
+  // LT-514: what an image can be swapped for: every picture the site has had
+  // in this visit. Only those in the draft right now lost the one just
+  // replaced, one picture per pick, with no way back to it. Pictures deleted
+  // on a save or a discard leave the list.
+  const [seenImages, setSeenImages] = useState(() => siteImagesOf(draft.value));
+  const imagesNow = siteImagesOf(draft.value);
+  if (imagesNow.some((name) => !seenImages.includes(name))) {
+    setSeenImages(Array.from(new Set([...seenImages, ...imagesNow])));
+  }
+  const forgetImages = (names: string[]) => setSeenImages((seen) => seen.filter((name) => !names.includes(name)));
   const baseRef = useRef<WebConfig>(saved);
   const [selection, setSelection] = useState<SiteSelection | null>(null);
   const [pageOpen, setPageOpen] = useState(false);
@@ -283,6 +293,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     const unused = Array.from(uploads.current).filter((name) => !used.includes(name));
     uploads.current = new Set(Array.from(uploads.current).filter((name) => used.includes(name)));
     await Promise.all(unused.map((name) => deleteImage(name).catch(() => undefined)));
+    forgetImages(unused);
   };
 
   const save = async () => {
@@ -329,6 +340,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         draftRef.current
       );
       await Promise.all(removed.map((name) => deleteImage(name).catch(() => undefined)));
+      forgetImages(removed);
       // Edits made while saving count as in use too (LT-315).
       await dropUnusedUploads(stored, draftRef.current);
 
@@ -430,7 +442,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         <ImagePanel
           path={path}
           value={String(getAt(draft.value, path) ?? '')}
-          siteImages={siteImagesOf(draft.value)}
+          siteImages={seenImages}
           onChange={(name) => setField(path, name)}
           onUploaded={(name) => uploads.current.add(name)}
           onRemove={galleryItem ? () => { update((prev) => removeAt(prev, galleryItem)); setSelection(null); } : undefined}
