@@ -1,12 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import AppointmentsGraph from '../../components/dashboard/AppointmentsGraph';
+import GraphRangeControls from '../../components/dashboard/GraphRangeControls';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'he', direction: 'rtl', darkMode: false }) }));
-vi.mock('../../hooks/useCurrencySymbol', () => ({ useCurrencySymbol: () => '₪' }));
-// recharts' ResponsiveContainer measures with it; jsdom has none.
-globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
 
 /**
  * LT-423 (the exploratory pass): in Hebrew the home chart's right arrow went
@@ -18,7 +15,7 @@ describe("the home chart's period buttons", () => {
     const now = new Date(2026, 9, 19);
     const onCurrentDateChange = vi.fn();
     render(
-      <AppointmentsGraph appointments={[]} timeRange="week" currentDate={now} onTimeRangeChange={vi.fn()} onCurrentDateChange={onCurrentDateChange} />
+      <GraphRangeControls timeRange="week" currentDate={now} onTimeRangeChange={vi.fn()} onCurrentDateChange={onCurrentDateChange} />
     );
     const named = screen.getAllByRole('button').filter((b) => /Period|graph\.reset/.test(b.getAttribute('aria-label') ?? ''));
     // In order: the start side (right in Hebrew) first.

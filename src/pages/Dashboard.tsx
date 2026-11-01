@@ -6,6 +6,7 @@ import { Appointment } from '../types';
 import AppointmentDetails from '../components/appointments/AppointmentDetails';
 import IncomeStats from '../components/dashboard/IncomeStats';
 import AppointmentsGraph, { TimeRange } from '../components/dashboard/AppointmentsGraph';
+import GraphRangeControls from '../components/dashboard/GraphRangeControls';
 import DashboardDonutChart from '../components/dashboard/DashboardDonutChart';
 import DashboardAppointmentsList from '../components/dashboard/DashboardAppointmentsList';
 import LeadsSummary from '../components/dashboard/LeadsSummary';
@@ -619,9 +620,18 @@ const Dashboard: React.FC = () => {
             </ErrorBoundaryWithLanguage>
           </motion.div>
 
-          {/* ── Row 2: Bar Graph (2/3) + Donut Chart (1/3) — same date range ── */}
+          {/* ── Row 2: Bar Graph (2/3) + Donut Chart (1/3) — same date range,
+              chosen between them on a phone and above them on a desktop (LT-509) ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
-            <div className="lg:col-span-2">
+            <div className="order-2 lg:order-1 lg:col-span-3">
+              <GraphRangeControls
+                timeRange={timeRange}
+                currentDate={currentDate}
+                onTimeRangeChange={setTimeRange}
+                onCurrentDateChange={setCurrentDate}
+              />
+            </div>
+            <div className="order-1 lg:order-2 lg:col-span-2">
               <ErrorBoundaryWithLanguage
                 fallback={<DashboardFallback language={language} title={t('common.errorLoadingGraph')} />}
               >
@@ -629,12 +639,10 @@ const Dashboard: React.FC = () => {
                   appointments={appointments}
                   timeRange={timeRange}
                   currentDate={currentDate}
-                  onTimeRangeChange={setTimeRange}
-                  onCurrentDateChange={setCurrentDate}
                 />
               </ErrorBoundaryWithLanguage>
             </div>
-            <div className="lg:col-span-1">
+            <div className="order-3 lg:col-span-1">
               <ErrorBoundaryWithLanguage
                 fallback={<DashboardFallback language={language} title={t('common.errorLoadingStats')} />}
               >

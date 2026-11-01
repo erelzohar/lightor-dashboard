@@ -383,12 +383,15 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     if (!selection) {
       return (
         <>
-          <Tabs value={siteTab} onValueChange={(key) => setSiteTab(key as 'sections' | 'design')} className="mb-4">
-            <TabsList className="grid grid-cols-2">
-              <TabsTrigger value="sections">{t('siteEditor.sections.tab')}</TabsTrigger>
-              <TabsTrigger value="design">{t('siteEditor.pageSettings')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* In the phone's bar each of the two has its own icon (LT-509). */}
+          {!inBar && (
+            <Tabs value={siteTab} onValueChange={(key) => setSiteTab(key as 'sections' | 'design')} className="mb-4">
+              <TabsList className="grid grid-cols-2">
+                <TabsTrigger value="sections">{t('siteEditor.sections.tab')}</TabsTrigger>
+                <TabsTrigger value="design">{t('siteEditor.pageSettings')}</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
           {siteTab === 'sections' ? (
             <SectionsPanel
               rows={rows}

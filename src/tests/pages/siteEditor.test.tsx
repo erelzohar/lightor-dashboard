@@ -726,12 +726,13 @@ describe('the site editor on a phone (LT-380)', () => {
     expect(screen.getByTestId('bottom-tab-bar')).toContainElement(panel());
     expect(tab('sections')).toHaveAttribute('aria-pressed', 'true');
     expect(within(panel()!).getByRole('heading', { name: 'siteEditor.site' })).toBeInTheDocument();
-    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.sections.tab' })).toHaveAttribute('aria-selected', 'true');
+    // The bar's icons choose between the two, with no second switch in the panel (LT-509).
+    expect(within(panel()!).queryByRole('tab')).toBeNull();
 
     fireEvent.click(tab('design'));
     expect(tab('design')).toHaveAttribute('aria-pressed', 'true');
     expect(tab('sections')).toHaveAttribute('aria-pressed', 'false');
-    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.pageSettings' })).toHaveAttribute('aria-selected', 'true');
+    expect(within(panel()!).queryByRole('tab')).toBeNull();
 
     fireEvent.click(tab('add'));
     expect(within(panel()!).getByRole('heading', { name: 'siteEditor.sections.add' })).toBeInTheDocument();
@@ -764,6 +765,6 @@ describe('the site editor on a phone (LT-380)', () => {
     fireEvent.click(tab('design'));
     await waitFor(() => expect(screen.queryByTestId('pages-menu')).toBeNull());
     expect(screen.getByTestId('phone-bar-panel')).toBeVisible();
-    expect(within(panel()!).getByRole('tab', { name: 'siteEditor.pageSettings' })).toHaveAttribute('aria-selected', 'true');
+    expect(tab('design')).toHaveAttribute('aria-pressed', 'true');
   });
 });

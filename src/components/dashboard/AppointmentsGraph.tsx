@@ -2,17 +2,14 @@ import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import { useFirstTime } from '../../hooks/useFirstTime';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, subYears, startOfYear, endOfYear, addMonths, addYears, addWeeks, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
+import { format, eachMonthOfInterval, eachDayOfInterval, startOfMonth, endOfMonth, subYears, startOfYear, endOfYear, addYears, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Appointment } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import Card from '../ui/Card';
-import Button from '../ui/Button';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTranslation } from 'react-i18next';
-import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 
 export type TimeRange = 'week' | 'month' | 'year' | 'all';
 
@@ -20,16 +17,12 @@ interface AppointmentsGraphProps {
   appointments: Appointment[];
   timeRange: TimeRange;
   currentDate: Date;
-  onTimeRangeChange: (range: TimeRange) => void;
-  onCurrentDateChange: (date: Date) => void;
 }
 
 const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
   appointments,
   timeRange,
   currentDate,
-  onTimeRangeChange,
-  onCurrentDateChange,
 }) => {
   // LT-438: the bars grow in the first time a session, then show as they are.
   const growIn = useFirstTime('appointmentsGraph');
@@ -141,13 +134,6 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
     }
   })();
 
-  const timeRangeOptions: { value: TimeRange; label: string }[] = [
-    { value: 'week', label: t('appointmentsGraph.week') },
-    { value: 'month', label: t('appointmentsGraph.month') },
-    { value: 'year', label: t('appointmentsGraph.year') },
-    { value: 'all', label: t('appointmentsGraph.all') }
-  ];
-
   const getRangeTitle = () => {
     switch (timeRange) {
       case 'week': return t('appointmentsGraph.weekly');
@@ -157,59 +143,6 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
     }
   };
 
-  const handlePrevious = () => {
-    switch (timeRange) {
-      case 'week': onCurrentDateChange(subWeeks(currentDate, 1)); break;
-      case 'month': onCurrentDateChange(startOfMonth(subMonths(currentDate, 1))); break;
-      case 'year': onCurrentDateChange(subYears(currentDate, 1)); break;
-      case 'all': onCurrentDateChange(subYears(currentDate, 1)); break;
-    }
-  };
-
-  const handleNext = () => {
-    switch (timeRange) {
-      case 'week': onCurrentDateChange(addWeeks(currentDate, 1)); break;
-      case 'month': onCurrentDateChange(startOfMonth(addMonths(currentDate, 1))); break;
-      case 'year': onCurrentDateChange(addYears(currentDate, 1)); break;
-      case 'all': onCurrentDateChange(addYears(currentDate, 1)); break;
-    }
-  };
-
-  const handleReset = () => {
-    const today = new Date();
-    if (timeRange === 'month') onCurrentDateChange(startOfMonth(today));
-    else onCurrentDateChange(today);
-  };
-
-  const getCurrentPeriodLabel = () => {
-    switch (timeRange) {
-      case 'week': {
-        const weekStart = startOfWeek(currentDate);
-        const weekEnd = endOfWeek(currentDate);
-        return `${format(weekStart, 'd')} - ${format(weekEnd, 'd MMM yyyy', { locale: language === 'he' ? he : undefined })}`;
-      }
-      case 'month':
-        return format(currentDate, 'MMMM yyyy', { locale: language === 'he' ? he : undefined });
-      case 'year':
-        return format(currentDate, 'yyyy', { locale: language === 'he' ? he : undefined });
-      case 'all':
-        return `${format(start, 'yyyy')} - ${format(end, 'yyyy')}`;
-    }
-  };
-
-  const isAtPastLimit = () => {
-    const twoYearsAgo = subYears(new Date(), 2);
-    return currentDate <= twoYearsAgo;
-  };
-
-  const isAtFutureLimit = () => {
-    const twoYearsAhead = addYears(new Date(), 2);
-    return currentDate >= twoYearsAhead;
-  };
-
-  const PrevButton = direction === 'rtl' ? ChevronRight : ChevronLeft;
-  const NextButton = direction === 'rtl' ? ChevronLeft : ChevronRight;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -218,57 +151,9 @@ const AppointmentsGraph: React.FC<AppointmentsGraphProps> = ({
       className="h-full"
     >
       <Card className="-mx-4.5 px-1 h-full flex flex-col">
-        {/* flex-wrap: at narrow card widths the control groups drop to the
-            next line instead of overflowing the card border (LT-082). */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap justify-around items-center gap-4 mb-6">
-          <h3 className="font-semibold text-lg flex items-center gap-2">
-            {getRangeTitle()}
-          </h3>
-          {timeRange !== 'all' && (
-            <div className="flex items-center gap-2">
-              {/* LT-423: the start-side button goes back, as the calendar's
-                  does - the icon was mirrored for RTL and the handler swapped
-                  too, so in Hebrew the right arrow went forward. */}
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={isAtPastLimit()}
-                aria-label={t('appointments.calendar.prevPeriod')}
-              >
-                <PrevButton size={16} />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="min-w-[2.5rem]"
-                aria-label={t('dashboard.graph.reset')}
-              >
-                <RotateCcw size={16} />
-              </Button>
-              <span className="min-w-[7.5rem] text-center text-sm">
-                {getCurrentPeriodLabel()}
-              </span>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleNext}
-                disabled={isAtFutureLimit()}
-                aria-label={t('appointments.calendar.nextPeriod')}
-              >
-                <NextButton size={16} />
-              </Button>
-            </div>
-          )}
-          <Tabs value={timeRange} onValueChange={(range) => onTimeRangeChange(range as TimeRange)}>
-            <TabsList>
-              {timeRangeOptions.map((option) => (
-                <TabsTrigger key={option.value} value={option.value}>{option.label}</TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
+        <h3 className="font-semibold text-lg text-center mb-6">
+          {getRangeTitle()}
+        </h3>
 
         {/* min-h, not h (LT-084): with flex-1, flex-basis:0% overrides a
             plain height in the flex algorithm, so when nothing else
