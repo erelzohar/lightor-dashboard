@@ -40,6 +40,8 @@ const PAD = 6; // the light's room around its target
 const GAP = 12; // between the light and the card
 const EDGE = 16; // from the window's edges
 const CARD_W = 352;
+// Strong enough to tell a tour is running, on the dark theme too (LT-509).
+const DIM = 'rgba(17, 12, 34, 0.7)';
 
 interface PageTourProps {
   /** Off while the account is being set up or the first-run welcome is up. */
@@ -226,11 +228,11 @@ const PageTour: React.FC<PageTourProps> = ({ enabled, settleMs = 700 }) => {
             left: rect.left - PAD,
             width: rect.width + 2 * PAD,
             height: rect.height + 2 * PAD,
-            boxShadow: '0 0 0 200vmax rgba(17, 12, 34, 0.55)',
+            boxShadow: `0 0 0 200vmax ${DIM}`,
           }}
         />
       ) : (
-        <div aria-hidden="true" className="absolute inset-0 bg-[rgba(17,12,34,0.55)]" />
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: DIM }} />
       )}
 
       <div className="absolute" style={place}>
