@@ -19,7 +19,7 @@ interface BottomTabBarProps {
   leadsSite?: boolean;
   /** New leads (LT-197): a dot on the Leads tab while any wait. */
   newLeads?: number | null;
-  /** Notifications wait unread (LT-527): a dot on "More", where their page is. */
+  /** Notifications wait unread (LT-527): a dot on "More", where the bell is. */
   moreDot?: boolean;
   /** Opens or closes the rest of the pages (LT-378: the bar grows with them). */
   onMore: () => void;

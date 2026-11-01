@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Bell, CalendarClock, CalendarPlus, CalendarX, Inbox, Loader2, PencilLine, Sunrise } from 'lucide-react';
+import { Bell, CalendarClock, CalendarPlus, CalendarX, Inbox, Loader2, Megaphone, PencilLine, Sunrise } from 'lucide-react';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { fetchNotifications, markNotificationsRead, OwnerNotification } from '../services/notificationsApi';
 import { setUnreadNotifications } from '../hooks/useUnreadNotifications';
@@ -14,6 +14,7 @@ const EVENT_ICONS: Record<string, typeof Bell> = {
   detailsChanged: PencilLine,
   morningDigest: Sunrise,
   newLead: Inbox,
+  systemMessage: Megaphone,
 };
 
 const MINUTE = 60 * 1000;
@@ -109,6 +110,7 @@ const Notifications: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => item.url.startsWith('/') && navigate(item.url)}
+                    disabled={!item.url}
                     data-testid="notification"
                     data-unread={unread}
                     className={`w-full flex items-start gap-3 text-start rounded-2xl border p-3.5 transition-colors ${

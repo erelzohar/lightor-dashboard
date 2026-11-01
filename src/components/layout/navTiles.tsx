@@ -13,7 +13,6 @@ export const TILE: Record<string, string> = {
   '/appointments': 'from-sky-400 to-blue-500',
   '/customers': 'from-emerald-400 to-green-500',
   '/leads': 'from-amber-300 to-orange-400',
-  '/notifications': 'from-indigo-400 to-purple-500',
   '/schedule-vacations': 'from-cyan-400 to-sky-500',
   '/appointment-types': 'from-orange-400 to-rose-400',
   '/portfolio': 'from-rose-400 to-pink-500',
@@ -25,6 +24,7 @@ export const TILE: Record<string, string> = {
   '/admin/costs': 'from-lime-400 to-green-500',
   '/admin/logs': 'from-slate-400 to-slate-600',
   '/admin/reports': 'from-amber-400 to-red-500',
+  '/admin/messages': 'from-violet-400 to-fuchsia-500',
   '/admin/categories': 'from-fuchsia-500 to-violet-600',
 };
 

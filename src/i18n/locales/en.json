@@ -1269,7 +1269,8 @@
       "userDetail": "User details",
       "logs": "Logs",
       "reports": "Site reports",
-      "categories": "Categories"
+      "categories": "Categories",
+      "messages": "System message"
     },
     "table": {
       "search": "Search…",
@@ -1637,6 +1638,22 @@
         "fr": "French",
         "es": "Spanish"
       }
+    },
+    "messages": {
+      "title": "System message",
+      "subtitle": "One message to every account. It shows on each owner's Notifications page.",
+      "titleLabel": "Title",
+      "bodyLabel": "Message",
+      "pushLabel": "Also send a push to the app",
+      "pushHint": "Service messages only. Apple and Google don't allow advertising by push without consent.",
+      "send": "Send to everyone",
+      "confirmTitle": "Send to every account?",
+      "confirm": "This reaches {{n}} accounts and can't be taken back once sent.",
+      "sent": "Sent to {{n}} accounts",
+      "historyTitle": "Sent recently",
+      "empty": "No messages sent yet",
+      "recipients": "{{n}} accounts",
+      "pushed": "{{n}} phones"
     }
   },
   "customers": {

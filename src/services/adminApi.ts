@@ -463,6 +463,23 @@ export interface SiteReportRow {
   user_id: string;
 }
 
+/** A message sent to every account (LT-534). */
+export interface SystemMessageRow {
+  _id: string;
+  title: string;
+  body: string;
+  push: boolean;
+  recipients: number;
+  pushed: number;
+  createdAt: string;
+}
+
+export const fetchSystemMessages = (): Promise<{ data: SystemMessageRow[]; audience: number }> =>
+  get<{ data: SystemMessageRow[]; audience: number }>('system-messages');
+
+export const sendSystemMessage = async (message: { title: string; body: string; push: boolean }): Promise<SystemMessageRow> =>
+  (await send<{ data: SystemMessageRow }>('post', 'system-messages', message)).data;
+
 export const fetchSiteReports = (
   query: { page?: number; limit?: number; status?: 'new' | 'handled' } = {}
 ): Promise<Paginated<SiteReportRow> & { summary: { open: number } }> =>

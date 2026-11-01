@@ -1269,7 +1269,8 @@
       "userDetail": "Détails de l'utilisateur",
       "logs": "Journaux",
       "reports": "Signalements des sites",
-      "categories": "Catégories"
+      "categories": "Catégories",
+      "messages": "Message système"
     },
     "table": {
       "search": "Rechercher…",
@@ -1637,6 +1638,22 @@
         "fr": "Français",
         "es": "Espagnol"
       }
+    },
+    "messages": {
+      "title": "Message système",
+      "subtitle": "Un message pour tous les comptes. Il apparaît sur la page Notifications de chaque propriétaire.",
+      "titleLabel": "Titre",
+      "bodyLabel": "Message",
+      "pushLabel": "Envoyer aussi une notification push à l'application",
+      "pushHint": "Messages de service uniquement. Apple et Google n'autorisent pas la publicité par push sans consentement.",
+      "send": "Envoyer à tous",
+      "confirmTitle": "Envoyer à tous les comptes ?",
+      "confirm": "Ce message atteindra {{n}} comptes et ne pourra plus être annulé.",
+      "sent": "Envoyé à {{n}} comptes",
+      "historyTitle": "Envoyés récemment",
+      "empty": "Aucun message envoyé pour le moment",
+      "recipients": "{{n}} comptes",
+      "pushed": "{{n}} téléphones"
     }
   },
   "customers": {

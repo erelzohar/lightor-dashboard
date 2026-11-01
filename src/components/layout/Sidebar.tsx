@@ -19,13 +19,14 @@ import {
   Coins,
   ScrollText,
   Inbox,
-  Bell,
+  Megaphone,
   Flag,
   LifeBuoy, Tags } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
 import { usePhoneBar } from '../../contexts/PhoneBarContext';
 import { PhoneMenu, type PhoneMenuSection } from './PhoneMenu';
+import NotificationBell from './NotificationBell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -143,11 +144,13 @@ const SidebarFooter: React.FC = () => {
   const { confirmLeave } = useLeaveGuard();
   return (
     <div className="flex flex-col gap-1">
+      {/* The bell beside the name; under the avatar on the folded rail. */}
+      <div className={open ? 'flex items-center gap-1' : 'flex flex-col items-start gap-1'}>
       {/* LT-362: named, since the folded rail hides the text. */}
       <button
         onClick={() => confirmLeave(() => navigate('/account'), '/account')}
         aria-label={[auth.user?.name, auth.user?.email].filter(Boolean).join(' ') || undefined}
-        className="flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
+        className="flex-1 min-w-0 flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-xl hover:bg-white dark:hover:bg-gray-700/50 transition-colors"
       >
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-lg shadow-primary/20">
           {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
@@ -167,6 +170,8 @@ const SidebarFooter: React.FC = () => {
           )}
         </motion.span>
       </button>
+      <NotificationBell />
+      </div>
 
       {/* LT-448: tell Lightor about a problem. */}
       <button
@@ -230,7 +235,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // either way.
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
-  const notificationsLink = { path: '/notifications', Icon: Bell, name: t('common.notifications'), badge: unreadNotifications ?? undefined };
   const leadsLink = { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined };
   // LT-253: Lighty, the business chat — his face for an icon.
   const lightyLink = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, name: 'Lighty' };
@@ -253,14 +257,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
             lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             leadsLink,
-            notificationsLink,
           ]
         : [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
             lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
-            notificationsLink,
           ],
     },
     {
@@ -297,6 +299,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               { path: '/admin/costs', Icon: Coins, name: t('admin.nav.costs') },
               { path: '/admin/logs', Icon: ScrollText, name: t('admin.nav.logs') },
               { path: '/admin/reports', Icon: Flag, name: t('admin.nav.reports') },
+              { path: '/admin/messages', Icon: Megaphone, name: t('admin.nav.messages') },
               { path: '/admin/categories', Icon: Tags, name: t('admin.nav.categories') },
             ],
           },

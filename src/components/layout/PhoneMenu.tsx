@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import { navTile, TAB_ITEM, TAB_IDLE, TAB_ACTIVE, TAB_RING } from './navTiles';
+import NotificationBell from './NotificationBell';
 
 export interface PhoneMenuItem {
   path: string;
@@ -99,6 +100,7 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
               )}
             </span>
           </button>
+          <NotificationBell onOpen={onClose} />
           <button
             type="button"
             onClick={toggleDarkMode}

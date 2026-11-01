@@ -36,6 +36,7 @@ import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminCosts from './pages/admin/AdminCosts';
 import AdminLogs from './pages/admin/AdminLogs';
 import AdminReports from './pages/admin/AdminReports';
+import AdminMessages from './pages/admin/AdminMessages';
 import AdminCategories from './pages/admin/AdminCategories';
 import ScheduleVacations from './pages/ScheduleVacations';
 import VerifyEmail from './pages/VerifyEmail';
@@ -109,6 +110,7 @@ function App() {
                       <Route path="costs" element={<AdminCosts />} />
                       <Route path="logs" element={<AdminLogs />} />
                       <Route path="reports" element={<AdminReports />} />
+                      <Route path="messages" element={<AdminMessages />} />
                       <Route path="categories" element={<AdminCategories />} />
                     </Route>
                   </Route>
