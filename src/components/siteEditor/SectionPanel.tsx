@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
 import AddPhotoButton from './AddPhotoButton';
@@ -140,14 +140,21 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
       )}
 
       {/* LT-287: the hero's animated background, which the editor never offered. */}
-      {type === 'hero' && (
+      {type === 'hero' && !OWN_BACKDROP_HEROES.includes(String(block?.variant ?? getAt(config, 'design.heroLayout'))) && (
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.heroBackground')}</p>
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.heroBackground')}>
             {HERO_BACKGROUNDS.map((v) => {
-              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType')) === v;
+              const decor = getAt(config, 'design.decor');
+              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType'), decor) === v;
+              // LT-531: the two that live in design.decor, and the others clear them.
+              const pick = () => {
+                if (DECOR_BACKGROUNDS.includes(v)) return onUpdate(setAt(config, 'design.decor', v));
+                const plain = DECOR_BACKGROUNDS.includes(String(decor)) ? setAt(config, 'design.decor', 'none') : config;
+                return onUpdate(setAt(plain, 'components.hero.bgType', v));
+              };
               return (
-                <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={() => onUpdate(setAt(config, 'components.hero.bgType', v))}>
+                <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={pick}>
                   {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
                 </button>
               );

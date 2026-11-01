@@ -34,6 +34,38 @@ describe("the hero's background effect", () => {
     expect(within(screen.getByRole('radiogroup', { name: 'siteEditor.section.heroBackground' })).getByRole('radio', { name: 'Fog' })).toHaveAttribute('aria-checked', 'true');
   });
 
+  // LT-531: these two are design.decor, which the site draws in place of bgType.
+  it('writes the two backdrops of the design to its decor, and the others clear them', () => {
+    const onUpdate = vi.fn();
+    const { rerender } = render(
+      <SectionPanel config={config('clouds')} section="hero" sectionType="hero" fields={[]} onUpdate={onUpdate} onSelectField={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'Liquid metal' }));
+    expect(onUpdate).toHaveBeenLastCalledWith(expect.objectContaining({ design: { decor: 'metal' } }));
+
+    rerender(<SectionPanel config={{ ...config('clouds'), design: { decor: 'sonar' } }} section="hero" sectionType="hero" fields={[]} onUpdate={onUpdate} onSelectField={vi.fn()} />);
+    expect(screen.getByRole('radio', { name: 'Sonar' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Clouds' })).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Birds' }));
+    expect(onUpdate).toHaveBeenLastCalledWith(expect.objectContaining({
+      design: { decor: 'none' },
+      components: { hero: expect.objectContaining({ bgType: 'birds' }) },
+    }));
+  });
+
+  it('leaves another decor alone', () => {
+    const onUpdate = vi.fn();
+    render(<SectionPanel config={{ ...config('clouds'), design: { decor: 'stamp' } }} section="hero" sectionType="hero" fields={[]} onUpdate={onUpdate} onSelectField={vi.fn()} />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Birds' }));
+    expect(onUpdate).toHaveBeenLastCalledWith(expect.objectContaining({ design: { decor: 'stamp' } }));
+  });
+
+  it('is not offered on a hero that draws its own backdrop', () => {
+    render(<SectionPanel config={{ ...config('clouds'), design: { heroLayout: 'parallax' } }} section="hero" sectionType="hero" fields={[]} onUpdate={vi.fn()} onSelectField={vi.fn()} />);
+    expect(screen.queryByRole('radiogroup', { name: 'siteEditor.section.heroBackground' })).toBeNull();
+  });
+
   it('is offered for the hero only', () => {
     render(<SectionPanel config={config()} section="about" sectionType="about" fields={[]} onUpdate={vi.fn()} onSelectField={vi.fn()} />);
     expect(screen.queryByRole('radiogroup', { name: 'siteEditor.section.heroBackground' })).toBeNull();

@@ -88,7 +88,11 @@ export const THEMES: Named = {
  * the public site's Vanta effects (lightor-front Hero.tsx VANTA_IMPORTERS).
  * 'gradient', 'rings' and anything unknown render fog there, so they read as fog here.
  */
-export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk', 'birds', 'net'] as const;
+export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk', 'birds', 'net', 'sonar', 'metal'] as const;
+/** LT-531: these two are `design.decor`, which the site draws in place of `bgType`. */
+export const DECOR_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
+/** LT-531: the heroes that draw their own backdrop; a background chip would do nothing there. */
+export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage'];
 export const HERO_BACKGROUND_NAMES: Named = {
   fog: { he: 'ערפל', en: 'Fog' },
   clouds: { he: 'עננים', en: 'Clouds' },
@@ -97,9 +101,13 @@ export const HERO_BACKGROUND_NAMES: Named = {
   trunk: { he: 'ספירלה', en: 'Spiral' },
   birds: { he: 'ציפורים', en: 'Birds' },
   net: { he: 'רשת', en: 'Network' },
+  sonar: { he: 'נקודות', en: 'Sonar' },
+  metal: { he: 'מתכת נוזלית', en: 'Liquid metal' },
 };
-export const heroBackgroundOf = (raw: unknown): string =>
-  typeof raw === 'string' && (HERO_BACKGROUNDS as readonly string[]).includes(raw) ? raw : 'fog';
+export const heroBackgroundOf = (raw: unknown, decor?: unknown): string => {
+  if (typeof decor === 'string' && DECOR_BACKGROUNDS.includes(decor)) return decor;
+  return typeof raw === 'string' && (HERO_BACKGROUNDS as readonly string[]).includes(raw) && !DECOR_BACKGROUNDS.includes(raw) ? raw : 'fog';
+};
 
 export const LAYOUTS: Named = {
   // hero
@@ -110,6 +118,10 @@ export const LAYOUTS: Named = {
   'poster-split': { he: 'פוסטר מפוצל', en: 'Poster split' },
   'poster-statement': { he: 'פוסטר', en: 'Poster' },
   fullbleed: { he: 'תמונה מלאה', en: 'Full image' },
+  parallax: { he: 'שכבות בגלילה', en: 'Parallax' },
+  expand: { he: 'תמונה נפתחת', en: 'Opening image' },
+  aero: { he: 'חצי תמונה', en: 'Half image' },
+  collage: { he: 'קולאז׳', en: 'Collage' },
   // about
   cards: { he: 'כרטיסים', en: 'Cards' },
   band: { he: 'רצועה', en: 'Band' },
@@ -181,7 +193,7 @@ export interface SectionDef {
   outsideBlocks?: boolean;
 }
 
-const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed'];
+const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage'];
 const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
 const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
