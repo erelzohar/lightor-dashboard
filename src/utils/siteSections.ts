@@ -291,7 +291,8 @@ const blockFor = (config: WebConfig, type: string, id: string): SiteBlock => {
   const aboutLayout = config.design?.aboutLayout ?? '';
   switch (type) {
     case 'intro': return { id, type, variant: INTRO_VARIANT[aboutLayout] ?? 'plain', source: 'about' };
-    case 'features': return { id, type, variant: FEATURES_VARIANT[aboutLayout] ?? 'tiles', source: 'about.features' };
+    // LT-530: a section added by hand opens in the two designs that do not repeat each other.
+    case 'features': return { id, type, variant: 'bento', source: 'about.features' };
     case 'gallery':
     case 'interlude':
     case 'beforeAfter': return { id, type, source: 'portfolio' };
@@ -309,7 +310,7 @@ const blockFor = (config: WebConfig, type: string, id: string): SiteBlock => {
     case 'social': return { id, type, source: 'social' };
     case 'contact': return { id, type, source: 'contact' };
     case 'footer': return { id, type, source: 'footer' };
-    case 'process': return { id, type, variant: 'rail', props: { steps: [] } };
+    case 'process': return { id, type, variant: 'steps', props: { steps: [] } };
     case 'stats': return { id, type, props: { items: [] } };
     default: return { id, type, props: { text: '' } }; // announcement, manifesto, pullQuote
   }

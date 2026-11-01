@@ -181,7 +181,7 @@ describe('adding a section (LT-252)', () => {
 
     const steps = addSection(site(), 'process', 2, { title: 'How it works', steps: [{ title: 'Pick', text: 'A service.' }, { title: 'Come in' }] });
     expect(steps.config.blocks?.[2]).toEqual({
-      id: steps.id, type: 'process', variant: 'rail',
+      id: steps.id, type: 'process', variant: 'steps',
       props: { title: 'How it works', steps: [{ title: 'Pick', text: 'A service.' }, { title: 'Come in' }] },
     });
   });

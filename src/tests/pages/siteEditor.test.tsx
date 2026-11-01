@@ -275,7 +275,7 @@ describe('the site editor (LT-249)', () => {
     fireEvent.click(within(list).getByText('שלבים'));
     expect(aiService.draftSection).toHaveBeenCalledWith('process');
     await waitFor(() => expect(lastConfig().blocks?.map((b) => b.id)).toEqual(['b1', 'b3', 'b2']));
-    expect(lastConfig().blocks?.[1]).toEqual({ id: 'b3', type: 'process', variant: 'rail', props: { title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] } });
+    expect(lastConfig().blocks?.[1]).toEqual({ id: 'b3', type: 'process', variant: 'steps', props: { title: 'How it works', steps: [{ title: 'Pick' }, { title: 'Come in' }] } });
     expect(await screen.findByTestId('section-panel')).toBeInTheDocument();
     expect(lastPosted('LT_SCROLL_TO')?.[0]).toEqual({ type: 'LT_SCROLL_TO', path: null, section: 'b3', block: 'start' });
   });
