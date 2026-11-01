@@ -72,6 +72,8 @@ export interface MyEntitlements {
    * is charged for them). Optional so an older API still parses.
    */
   bookingTerms?: { included: number; plusIncluded?: number; extraAgorot: number | null };
+  /** LT-521: what the plan hides now (older than `limits.historyMonths`); an upgrade brings it back. Absent on an older API. */
+  hiddenHistory?: { bookings: number; leads: number };
   /** LT-458: Paddle is retrying a failed payment - no bookings, inquiries or reminders until it is paid. */
   paymentFailed?: boolean;
 }

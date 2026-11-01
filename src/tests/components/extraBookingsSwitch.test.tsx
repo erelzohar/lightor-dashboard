@@ -165,7 +165,7 @@ describe('Free and Lightor+ side by side', () => {
     } as never);
     const { unmount } = render(<BillingSection />);
     expect(await screen.findByTestId('plan-compare')).toBeInTheDocument();
-    expect(screen.getAllByRole('row')).toHaveLength(12);
+    expect(screen.getAllByRole('row')).toHaveLength(13);
     unmount();
 
     inApp();

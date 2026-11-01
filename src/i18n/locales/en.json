@@ -1006,6 +1006,11 @@
       "chargeFailed": "The last charge for extra bookings didn't go through, so they can't be switched on until it does.",
       "failed": "Couldn't save. Please try again."
     },
+    "hiddenHistory": {
+      "bookings": "{{n}} older bookings are hidden on your plan.",
+      "leads": "{{n}} older inquiries are hidden on your plan.",
+      "upgrade": "Upgrade to see them"
+    },
     "pricing": {
       "title": "Plans & pricing",
       "subtitle": "Every plan includes a full site. Pick the one that fits.",
@@ -1055,6 +1060,11 @@
           "free": "Basic editing with Lighty",
           "plus": "About 2.5x more editing with Lighty",
           "pro": "About 6x more editing with Lighty"
+        },
+        "history": {
+          "free": "2 months of history",
+          "plus": "1 year of history",
+          "pro": "2 years of history"
         },
         "insights": {
           "free": "No customer insights or export",
@@ -1132,6 +1142,12 @@
           "free": "Basic",
           "plus": "About 2.5x more",
           "pro": "About 6x more"
+        },
+        "history": {
+          "label": "History available",
+          "free": "2 months",
+          "plus": "1 year",
+          "pro": "2 years"
         },
         "insights": {
           "label": "Customer insights and export",

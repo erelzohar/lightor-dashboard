@@ -1006,6 +1006,11 @@
       "chargeFailed": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : impossible de les activer tant qu'il n'est pas réglé.",
       "failed": "Enregistrement impossible. Réessayez."
     },
+    "hiddenHistory": {
+      "bookings": "{{n}} réservations plus anciennes sont masquées avec votre forfait.",
+      "leads": "{{n}} demandes plus anciennes sont masquées avec votre forfait.",
+      "upgrade": "Passez au forfait supérieur pour les voir"
+    },
     "pricing": {
       "title": "Forfaits et tarifs",
       "subtitle": "Chaque forfait comprend un site complet. Choisissez celui qui vous convient.",
@@ -1055,6 +1060,11 @@
           "free": "Édition de base avec Lighty",
           "plus": "Environ 2,5 fois plus d’édition avec Lighty",
           "pro": "Environ 6 fois plus d’édition avec Lighty"
+        },
+        "history": {
+          "free": "2 mois d’historique",
+          "plus": "1 an d’historique",
+          "pro": "2 ans d’historique"
         },
         "insights": {
           "free": "Pas d’analyses ni d’export clients",
@@ -1132,6 +1142,12 @@
           "free": "De base",
           "plus": "Environ 2,5 fois plus",
           "pro": "Environ 6 fois plus"
+        },
+        "history": {
+          "label": "Historique disponible",
+          "free": "2 mois",
+          "plus": "1 an",
+          "pro": "2 ans"
         },
         "insights": {
           "label": "Analyses et export des clients",

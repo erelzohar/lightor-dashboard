@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { fetchWebConfig } from '../store/slices/webConfigSlice';
 import { fetchLeads, updateLeadStatus, deleteLead, Lead, LeadStatus, LeadsPage, LEAD_STATUSES } from '../services/leadsApi';
 import { setNewLeadsCount } from '../hooks/useNewLeadsCount';
+import HiddenHistoryNotice from '../components/account/HiddenHistoryNotice';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../utils/phone';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { pop } from '../components/ui/pop-button';
@@ -151,6 +152,8 @@ const Leads: React.FC = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('leads.subtitle')}</p>
           </div>
         </div>
+
+        <HiddenHistoryNotice kind="leads" />
 
         {/* "All" is the empty status; a tab needs a name, so it is 'all' here. */}
         <Tabs

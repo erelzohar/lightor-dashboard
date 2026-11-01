@@ -21,6 +21,7 @@ import { localDateKey } from '../utils/bookingSlots';
 import type { RootState } from '../store/store';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { pop } from '../components/ui/pop-button';
+import HiddenHistoryNotice from '../components/account/HiddenHistoryNotice';
 
 /** A local calendar day from "YYYY-MM-DD"; null for anything else, 2026-02-31 included. */
 const parseDay = (value: string): Date | null => {
@@ -144,6 +145,7 @@ const Appointments: React.FC = () => {
       }`}
       data-view={viewMode}
     >
+      <HiddenHistoryNotice kind="bookings" />
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>

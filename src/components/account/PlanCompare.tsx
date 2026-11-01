@@ -20,6 +20,7 @@ export const PLAN_ROWS = [
   'pictures',
   'editing',
   'insights',
+  'history',
   'badge',
   'support',
 ] as const;

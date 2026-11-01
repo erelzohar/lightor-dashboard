@@ -1006,6 +1006,11 @@
       "chargeFailed": "El último cobro de reservas extra no se pudo hacer, así que no se pueden activar hasta que se haga.",
       "failed": "No se pudo guardar. Inténtalo de nuevo."
     },
+    "hiddenHistory": {
+      "bookings": "{{n}} reservas antiguas están ocultas en tu plan.",
+      "leads": "{{n}} consultas antiguas están ocultas en tu plan.",
+      "upgrade": "Mejora tu plan para verlas"
+    },
     "pricing": {
       "title": "Planes y precios",
       "subtitle": "Todos los planes incluyen un sitio completo. Elige el que te encaje.",
@@ -1055,6 +1060,11 @@
           "free": "Edición básica con Lighty",
           "plus": "Unas 2,5 veces más edición con Lighty",
           "pro": "Unas 6 veces más edición con Lighty"
+        },
+        "history": {
+          "free": "2 meses de historial",
+          "plus": "1 año de historial",
+          "pro": "2 años de historial"
         },
         "insights": {
           "free": "Sin análisis ni exportación de clientes",
@@ -1132,6 +1142,12 @@
           "free": "Básica",
           "plus": "Unas 2,5 veces más",
           "pro": "Unas 6 veces más"
+        },
+        "history": {
+          "label": "Historial disponible",
+          "free": "2 meses",
+          "plus": "1 año",
+          "pro": "2 años"
         },
         "insights": {
           "label": "Análisis y exportación de clientes",
