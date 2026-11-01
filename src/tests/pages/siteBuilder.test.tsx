@@ -13,7 +13,7 @@ import globals from '../../services/globals';
  */
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'he' } }) }));
 const auth = vi.hoisted(() => ({
-  user: { _id: 'u1', phone: '0584006014', email: 'owner@example.com' } as Record<string, unknown>,
+  user: { _id: 'u1', name: 'ארז זוהר', phone: '0584006014', email: 'owner@example.com' } as Record<string, unknown>,
   refreshUser: vi.fn(),
 }));
 vi.mock('../../contexts/AuthContext', () => ({
@@ -56,7 +56,7 @@ describe('SiteBuilder', () => {
     await fromFrame({ type: 'LT_BUILDER_NEED_PASS' });
     await waitFor(() =>
       expect(post).toHaveBeenCalledWith(
-        { type: 'LT_BUILDER_PASS', token: 'pass-1', phone: '0584006014', email: 'owner@example.com' },
+        { type: 'LT_BUILDER_PASS', token: 'pass-1', phone: '0584006014', email: 'owner@example.com', name: 'ארז' },
         globals.registerOrigin,
       ),
     );
