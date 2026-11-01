@@ -138,6 +138,12 @@ export const aiService = {
    * temporary URL - the picture is kept when the site is saved. 429 = this
    * month's AI pictures are used up.
    */
+  /** LT-519: a picture already on the site, changed by the owner's words. Answers a temporary URL, like createImage. */
+  editImage: async (image: string, instruction: string): Promise<string> => {
+    const response = await apiClient.post<{ success: boolean; url: string }>(`${globals.aiUrl}image/edit`, { image, instruction });
+    return response.data.url;
+  },
+
   createImage: async (prompt: string, aspect: '16:9' | '4:3' | '1:1'): Promise<string> => {
     const response = await apiClient.post<{ success: boolean; url: string }>(`${globals.aiUrl}image`, { prompt, aspect });
     return response.data.url;

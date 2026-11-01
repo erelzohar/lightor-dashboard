@@ -1925,7 +1925,18 @@
       "aiFailed": "The picture could not be created, try again",
       "aiLimit": "This month's AI pictures are used up",
       "aiPlusOnly": "Creating pictures with AI in the editor is on the Plus plan.",
-      "aiHint": "The picture is kept on your site when you save."
+      "aiHint": "The picture is kept on your site when you save.",
+      "aiEditOpen": "Edit this picture with AI",
+      "aiEditLabel": "What should change in the picture?",
+      "aiEditPlaceholder": "For example: a brighter background",
+      "aiEditRun": "Edit the picture",
+      "aiEditing": "Lighty is editing the picture…",
+      "aiEditAgain": "Try again",
+      "aiEditHint": "Each edit counts as one AI picture. The result may change details in the picture, including people in it. The original stays until you choose to use the new one.",
+      "aiEditFailed": "We could not edit the picture, please try again",
+      "aiEditTooBig": "Pictures up to 4MB can be edited",
+      "aiBefore": "Before",
+      "aiAfter": "After"
     },
     "section": {
       "heroBackground": "Background effect",

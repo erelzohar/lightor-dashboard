@@ -38,7 +38,9 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiBusy, setAiBusy] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
-  const [aiError, setAiError] = useState<'failed' | 'limit' | null>(null);
+  const [aiError, setAiError] = useState<'failed' | 'limit' | 'tooBig' | null>(null);
+  // LT-519: the same box changes the picture that is there, by the owner's words.
+  const [aiEditing, setAiEditing] = useState(false);
   // LT-489: on the free plan the month's AI pictures are the build's; the editor makes none.
   const [aiLocked, setAiLocked] = useState(false);
 
@@ -56,10 +58,11 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
     setAiError(null);
     setAiResult(null);
     try {
-      setAiResult(await aiService.createImage(aiPrompt.trim(), aspect));
+      setAiResult(await (aiEditing ? aiService.editImage(value, aiPrompt.trim()) : aiService.createImage(aiPrompt.trim(), aspect)));
     } catch (err) {
       const response = (err as { response?: { status?: number; data?: { code?: string } } })?.response;
       if (response?.data?.code === 'AI_IMAGES_PLUS') setAiLocked(true);
+      else if (response?.data?.code === 'IMAGE_TOO_LARGE') setAiError('tooBig');
       else setAiError(response?.status === 429 ? 'limit' : 'failed');
     } finally {
       setAiBusy(false);
@@ -128,18 +131,30 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
       ) : (
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3" data-testid="ai-image">
           {!aiOpen ? (
-            <button
-              type="button"
-              onClick={() => setAiOpen(true)}
-              className="inline-flex items-center gap-2 text-sm font-medium text-primary"
-            >
-              <Wand2 className="w-4 h-4" />
-              {t('siteEditor.image.aiOpen')}
-            </button>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <button
+                type="button"
+                onClick={() => { setAiEditing(false); setAiOpen(true); }}
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+              >
+                <Wand2 className="w-4 h-4" />
+                {t('siteEditor.image.aiOpen')}
+              </button>
+              {value && (
+                <button
+                  type="button"
+                  onClick={() => { setAiEditing(true); setAiOpen(true); }}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {t('siteEditor.image.aiEditOpen')}
+                </button>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col gap-3">
               <label className="text-sm font-medium text-gray-700 dark:text-slate-300" htmlFor="ai-image-prompt">
-                {t('siteEditor.image.aiLabel')}
+                {t(aiEditing ? 'siteEditor.image.aiEditLabel' : 'siteEditor.image.aiLabel')}
               </label>
               <textarea
                 id="ai-image-prompt"
@@ -147,7 +162,7 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
                 onChange={(e) => setAiPrompt(e.target.value)}
                 rows={2}
                 maxLength={300}
-                placeholder={t('siteEditor.image.aiPlaceholder')}
+                placeholder={t(aiEditing ? 'siteEditor.image.aiEditPlaceholder' : 'siteEditor.image.aiPlaceholder')}
                 className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-gray-900 dark:text-slate-100"
               />
               {aiBusy && (
@@ -155,13 +170,24 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
                   <div className="absolute inset-y-0 -left-1/2 w-1/2 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-[ai-sweep_1.6s_ease-in-out_infinite]" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-primary">
                     <Sparkles className="w-8 h-8 animate-pulse" />
-                    <span className="text-xs font-medium">{t('siteEditor.image.aiCreating')}</span>
+                    <span className="text-xs font-medium">{t(aiEditing ? 'siteEditor.image.aiEditing' : 'siteEditor.image.aiCreating')}</span>
                   </div>
                 </div>
               )}
-              {aiResult && !aiBusy && (
+              {aiResult && !aiBusy && (aiEditing ? (
+                <div className="grid grid-cols-2 gap-2" data-testid="ai-before-after">
+                  <figure className="flex flex-col gap-1">
+                    <img src={resolveImage(value)} alt="" className="w-full h-32 object-contain rounded-xl bg-gray-100 dark:bg-slate-800" />
+                    <figcaption className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.image.aiBefore')}</figcaption>
+                  </figure>
+                  <figure className="flex flex-col gap-1">
+                    <img src={resolveImage(aiResult)} alt="" className="w-full h-32 object-contain rounded-xl bg-gray-100 dark:bg-slate-800" />
+                    <figcaption className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.image.aiAfter')}</figcaption>
+                  </figure>
+                </div>
+              ) : (
                 <img src={resolveImage(aiResult)} alt="" className="w-full max-h-48 object-contain rounded-xl bg-gray-100 dark:bg-slate-800" />
-              )}
+              ))}
               <div className="flex flex-wrap gap-2">
                 {aiResult && !aiBusy && (
                   <button
@@ -179,15 +205,27 @@ const ImagePanel: React.FC<ImagePanelProps> = ({ path, value, siteImages, onChan
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/40 text-primary text-sm font-medium disabled:opacity-50"
                 >
                   {aiBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                  {aiBusy ? t('siteEditor.image.aiCreating') : aiResult ? t('siteEditor.image.aiAgain') : t('siteEditor.image.aiCreate')}
+                  {aiEditing
+                    ? t(aiBusy ? 'siteEditor.image.aiEditing' : aiResult ? 'siteEditor.image.aiEditAgain' : 'siteEditor.image.aiEditRun')
+                    : aiBusy ? t('siteEditor.image.aiCreating') : aiResult ? t('siteEditor.image.aiAgain') : t('siteEditor.image.aiCreate')}
                 </button>
               </div>
               {aiError && (
                 <p role="alert" className="text-xs text-red-600 dark:text-red-400">
-                  {t(aiError === 'limit' ? 'siteEditor.image.aiLimit' : 'siteEditor.image.aiFailed')}
+                  {t(
+                    aiError === 'limit'
+                      ? 'siteEditor.image.aiLimit'
+                      : aiError === 'tooBig'
+                        ? 'siteEditor.image.aiEditTooBig'
+                        : aiEditing
+                          ? 'siteEditor.image.aiEditFailed'
+                          : 'siteEditor.image.aiFailed'
+                  )}
                 </p>
               )}
-              <p className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.image.aiHint')}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">
+                {t(aiEditing ? 'siteEditor.image.aiEditHint' : 'siteEditor.image.aiHint')}
+              </p>
             </div>
           )}
         </div>

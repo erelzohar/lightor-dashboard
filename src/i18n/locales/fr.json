@@ -1925,7 +1925,18 @@
       "aiFailed": "L'image n'a pas pu être créée, réessayez",
       "aiLimit": "Les images IA du mois sont épuisées",
       "aiPlusOnly": "La création d'images par IA dans l'éditeur est disponible avec le forfait Plus.",
-      "aiHint": "L'image est conservée sur votre site quand vous enregistrez."
+      "aiHint": "L'image est conservée sur votre site quand vous enregistrez.",
+      "aiEditOpen": "Modifier cette image avec l’IA",
+      "aiEditLabel": "Que faut-il changer dans l’image ?",
+      "aiEditPlaceholder": "Par exemple : un fond plus clair",
+      "aiEditRun": "Modifier l’image",
+      "aiEditing": "Lighty modifie l’image…",
+      "aiEditAgain": "Réessayer",
+      "aiEditHint": "Chaque modification compte pour une image IA. Le résultat peut changer des détails de l’image, y compris les personnes qui y figurent. L’original reste jusqu’à ce que vous choisissiez la nouvelle image.",
+      "aiEditFailed": "Impossible de modifier l’image, veuillez réessayer",
+      "aiEditTooBig": "Seules les images jusqu’à 4 Mo peuvent être modifiées",
+      "aiBefore": "Avant",
+      "aiAfter": "Après"
     },
     "section": {
       "heroBackground": "Effet d'arrière-plan",

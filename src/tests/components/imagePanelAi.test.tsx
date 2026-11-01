@@ -9,7 +9,7 @@ import { canOfferPurchases } from '../../lib/platform';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
-vi.mock('../../services/aiApi', () => ({ aiService: { createImage: vi.fn() } }));
+vi.mock('../../services/aiApi', () => ({ aiService: { createImage: vi.fn(), editImage: vi.fn() } }));
 vi.mock('../../services/entitlementsApi', () => ({ fetchMyEntitlements: vi.fn().mockResolvedValue(null) }));
 vi.mock('../../lib/platform', () => ({ canOfferPurchases: vi.fn(() => true) }));
 
@@ -25,6 +25,57 @@ const ask = (words: string) => {
   fireEvent.change(screen.getByLabelText('siteEditor.image.aiLabel'), { target: { value: words } });
   fireEvent.click(screen.getByText('siteEditor.image.aiCreate'));
 };
+
+describe('ImagePanel - editing a picture with AI (LT-519)', () => {
+  const stored = 'https://api.lightor.app/api/images/photo.webp';
+  const openEdit = (value = stored) => {
+    const onChange = vi.fn();
+    render(<ImagePanel path="components.hero.heroImageSrc" value={value} siteImages={[]} onChange={onChange} onUploaded={vi.fn()} />);
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditOpen'));
+    return { onChange };
+  };
+  const run = (words: string) => {
+    fireEvent.change(screen.getByLabelText('siteEditor.image.aiEditLabel'), { target: { value: words } });
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditRun'));
+  };
+
+  it('offers no edit with no picture', () => {
+    render(<ImagePanel path="components.hero.heroImageSrc" value="" siteImages={[]} onChange={vi.fn()} onUploaded={vi.fn()} />);
+    expect(screen.queryByText('siteEditor.image.aiEditOpen')).toBeNull();
+  });
+
+  it('sends the picture and the words, shows before and after, and uses it only when picked', async () => {
+    vi.mocked(aiService.editImage).mockResolvedValueOnce('https://api.lightor.app/api/images/tmp-ai-2.webp');
+    const { onChange } = openEdit();
+    run('a brighter background');
+    expect(aiService.editImage).toHaveBeenLastCalledWith(stored, 'a brighter background');
+    expect(await screen.findByTestId('ai-before-after')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('siteEditor.image.aiUse'));
+    expect(onChange).toHaveBeenCalledWith('https://api.lightor.app/api/images/tmp-ai-2.webp');
+  });
+
+  it('says a picture is too large, the limit and a failure apart', async () => {
+    const refuse = (status: number, code?: string) => vi.mocked(aiService.editImage).mockRejectedValueOnce({ response: { status, data: { code } } });
+    openEdit();
+    refuse(413, 'IMAGE_TOO_LARGE');
+    run('brighter');
+    expect(await screen.findByRole('alert')).toHaveTextContent('siteEditor.image.aiEditTooBig');
+    refuse(429);
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditRun'));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('siteEditor.image.aiLimit'));
+    refuse(500);
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditRun'));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('siteEditor.image.aiEditFailed'));
+  });
+
+  it('is gone with the locked AI on the free plan', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValueOnce({ limits: { aiImagesInEditor: false } } as unknown as MyEntitlements);
+    render(<ImagePanel path="components.hero.heroImageSrc" value={stored} siteImages={[]} onChange={vi.fn()} onUploaded={vi.fn()} />);
+    await screen.findByText('siteEditor.image.aiPlusOnly');
+    expect(screen.queryByText('siteEditor.image.aiEditOpen')).toBeNull();
+  });
+});
 
 describe('ImagePanel - AI picture', () => {
   it('creates a picture in the slot\'s shape and uses it only when the owner picks it', async () => {
