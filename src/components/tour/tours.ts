@@ -65,6 +65,8 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
           { key: 'appointments.new', target: at('new-appointment') },
         ],
       };
+    case '/notifications':
+      return { id: 'notifications', steps: [{ key: 'notifications.list', target: at('notifications-list') }] };
     case '/leads':
       return {
         id: 'leads',

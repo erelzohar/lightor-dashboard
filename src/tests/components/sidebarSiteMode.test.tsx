@@ -57,7 +57,7 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.conversion = 'book';
     renderSidebar();
 
-    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/appointments']);
+    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/appointments', '/notifications']);
     expect(groupHrefs('sidebar.manage')).toEqual([
       '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings',
     ]);
@@ -68,7 +68,7 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.conversion = 'lead';
     renderSidebar();
 
-    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/leads']);
+    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/leads', '/notifications']);
     expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings']);
     const manage = within(screen.getByRole('group', { name: 'sidebar.manage' }));
     expect(manage.getByText('common.openingHours')).toBeInTheDocument();

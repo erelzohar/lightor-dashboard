@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import Customers from './pages/Customers';
 import Leads from './pages/Leads';
+import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import AppointmentTypes from './pages/AppointmentTypes';
 import Account from './pages/Account';
@@ -88,6 +89,7 @@ function App() {
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="customers" element={<Customers />} />
                     <Route path="leads" element={<Leads />} />
+                    <Route path="notifications" element={<Notifications />} />
                     <Route path="schedule-vacations" element={<ScheduleVacations />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="appointment-types" element={<AppointmentTypes />} />

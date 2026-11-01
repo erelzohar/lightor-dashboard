@@ -2278,6 +2278,12 @@
         "title": "Ordenarlas",
         "body": "Arrastra una foto para cambiar el orden."
       }
+    },
+    "notifications": {
+      "list": {
+        "title": "Todo lo que pasó, en un solo lugar",
+        "body": "Cada mensaje del sistema queda aquí, aunque lo hayas desactivado en el teléfono y el correo. Tócalo para abrir su página."
+      }
     }
   },
   "phoneInput": {
@@ -2328,5 +2334,16 @@
       "cta": "Ir a Cuenta",
       "bodyPlus": "Tu sitio no acepta nuevas reservas hasta el {{date}}. Para reabrirlas ahora, pasa a Lightor Pro en la página de cuenta."
     }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "subtitle": "Los últimos mensajes del sistema: reservas, cancelaciones, consultas y tu cuenta.",
+    "emptyTitle": "Aún no hay notificaciones",
+    "emptyBody": "Aquí aparecerán las reservas nuevas, las cancelaciones, las consultas y los avisos sobre tu cuenta.",
+    "loadFailed": "No pudimos cargar tus notificaciones",
+    "retry": "Intentar de nuevo",
+    "loading": "Cargando notificaciones",
+    "justNow": "Ahora",
+    "new": "Nuevo"
   }
 }

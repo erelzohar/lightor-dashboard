@@ -19,6 +19,8 @@ interface BottomTabBarProps {
   leadsSite?: boolean;
   /** New leads (LT-197): a dot on the Leads tab while any wait. */
   newLeads?: number | null;
+  /** Notifications wait unread (LT-527): a dot on "More", where their page is. */
+  moreDot?: boolean;
   /** Opens or closes the rest of the pages (LT-378: the bar grows with them). */
   onMore: () => void;
   /** "More" is open: the bar has grown upwards with the pages it lacks. */
@@ -64,7 +66,7 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
 export const HOLD_SLOP_PX = 24;
 export const HOLD_CLICK_WAIT_MS = 350;
 
-const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
+const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, moreDot = false, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
   // LT-414: it no longer slides away on a scroll down (LT-342). Any
@@ -240,7 +242,12 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
         aria-expanded={menuOpen}
         aria-controls="phone-menu"
       >
-        {navTile('more', menuOpen ? X : LayoutGrid, '', 'from-slate-400 to-slate-500')}
+        <span className="relative">
+          {navTile('more', menuOpen ? X : LayoutGrid, '', 'from-slate-400 to-slate-500')}
+          {moreDot && !menuOpen && (
+            <span className="absolute -top-0.5 -end-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900" data-testid="more-dot" />
+          )}
+        </span>
         <span className="truncate max-w-full px-1">{t('sidebar.more')}</span>
       </button>
       </div>

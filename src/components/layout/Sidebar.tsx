@@ -19,6 +19,7 @@ import {
   Coins,
   ScrollText,
   Inbox,
+  Bell,
   Flag,
   LifeBuoy, Tags } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
@@ -31,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import globals from '../../services/globals';
 import { useNewLeadsCount, refreshNewLeadsCount } from '../../hooks/useNewLeadsCount';
+import { useUnreadNotifications, refreshUnreadNotifications } from '../../hooks/useUnreadNotifications';
 import { isLeadsSite } from '../../utils/siteMode';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
@@ -219,6 +221,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
+  const unreadNotifications = useUnreadNotifications();
   // A leads site (LT-199) has no calendar: no Appointments, the leads are the
   // daily destination, and the weekly hours are just the hours the site
   // shows. Customers are there too (LT-376): the owner adds them by hand or
@@ -227,6 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // either way.
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
+  const notificationsLink = { path: '/notifications', Icon: Bell, name: t('common.notifications'), badge: unreadNotifications ?? undefined };
   const leadsLink = { path: '/leads', Icon: Inbox, name: t('common.leads'), badge: newLeads ?? undefined };
   // LT-253: Lighty, the business chat — his face for an icon.
   const lightyLink = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, name: 'Lighty' };
@@ -234,7 +238,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // The phone menu closes when the route changes.
   useEffect(() => {
     setMenuOpen(false);
-    if (!isRestricted) void refreshNewLeadsCount();
+    if (isRestricted) return;
+    void refreshNewLeadsCount();
+    void refreshUnreadNotifications();
   }, [location.pathname, isRestricted, setMenuOpen]);
 
   const navSections = [
@@ -247,12 +253,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
             lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             leadsLink,
+            notificationsLink,
           ]
         : [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
             lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
             { path: '/appointments', Icon: CalendarRange, name: t('common.appointments') },
+            notificationsLink,
           ],
     },
     {
@@ -355,6 +363,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         isRestricted={isRestricted}
         leadsSite={leadsSite}
         newLeads={newLeads}
+        moreDot={!!unreadNotifications}
         menuOpen={menuOpen}
         onMore={() => setMenuOpen((wasOpen) => !wasOpen)}
         editing={phoneBar?.editing ?? false}

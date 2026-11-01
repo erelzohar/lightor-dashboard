@@ -2278,6 +2278,12 @@
         "title": "Arrange them",
         "body": "Drag a picture to change the order."
       }
+    },
+    "notifications": {
+      "list": {
+        "title": "Everything that happened, in one place",
+        "body": "Every message from the system stays here, even one you turned off on your phone and email. Tap it to open its page."
+      }
     }
   },
   "phoneInput": {
@@ -2328,5 +2334,16 @@
       "cta": "Go to Account",
       "bodyPlus": "Your site takes no new bookings until {{date}}. To reopen now, move to Lightor Pro on the Account page."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "The latest messages from the system: bookings, cancellations, inquiries and your account.",
+    "emptyTitle": "No notifications yet",
+    "emptyBody": "A new booking, a cancellation, an inquiry or a note about your account will show up here.",
+    "loadFailed": "We couldn't load your notifications",
+    "retry": "Try again",
+    "loading": "Loading notifications",
+    "justNow": "Just now",
+    "new": "New"
   }
 }

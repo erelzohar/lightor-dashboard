@@ -2278,6 +2278,12 @@
         "title": "Les ranger",
         "body": "Glissez une photo pour changer l'ordre."
       }
+    },
+    "notifications": {
+      "list": {
+        "title": "Tout ce qui s’est passé, au même endroit",
+        "body": "Chaque message du système reste ici, même si vous l’avez désactivé sur le téléphone et par e-mail. Touchez-le pour ouvrir sa page."
+      }
     }
   },
   "phoneInput": {
@@ -2328,5 +2334,16 @@
       "cta": "Aller au compte",
       "bodyPlus": "Votre site ne prend plus de réservations jusqu’au {{date}}. Pour les rouvrir maintenant, passez à Lightor Pro sur la page Compte."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Les derniers messages du système : réservations, annulations, demandes et votre compte.",
+    "emptyTitle": "Aucune notification pour le moment",
+    "emptyBody": "Une nouvelle réservation, une annulation, une demande ou un message sur votre compte apparaîtra ici.",
+    "loadFailed": "Impossible de charger vos notifications",
+    "retry": "Réessayer",
+    "loading": "Chargement des notifications",
+    "justNow": "À l'instant",
+    "new": "Nouveau"
   }
 }

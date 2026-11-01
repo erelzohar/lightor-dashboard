@@ -14,6 +14,7 @@ abstract class Globals {
     public adminUrl:string;
     public customersUrl:string;
     public leadsUrl:string;
+    public notificationsUrl:string;
     public assistantUrl:string;
     /** Push device registry (LT-129). */
     public devicesUrl:string;
@@ -48,6 +49,7 @@ class DevelopmentGlobals extends Globals {
     public adminUrl = `${DEV_API_BASE}/api/admin/`;
     public customersUrl = `${DEV_API_BASE}/api/customers/`;
     public leadsUrl = `${DEV_API_BASE}/api/leads/`;
+    public notificationsUrl = `${DEV_API_BASE}/api/notifications/`;
     public assistantUrl = `${DEV_API_BASE}/api/assistant/`;
     public devicesUrl = `${DEV_API_BASE}/api/devices/`;
     public supportUrl = `${DEV_API_BASE}/api/support/`;
@@ -92,6 +94,7 @@ class ProductionGlobals extends Globals {
     public adminUrl = "https://api.lightor.app/api/admin/";
     public customersUrl = "https://api.lightor.app/api/customers/";
     public leadsUrl = "https://api.lightor.app/api/leads/";
+    public notificationsUrl = "https://api.lightor.app/api/notifications/";
     public assistantUrl = "https://api.lightor.app/api/assistant/";
     public devicesUrl = "https://api.lightor.app/api/devices/";
     public supportUrl = "https://api.lightor.app/api/support/";

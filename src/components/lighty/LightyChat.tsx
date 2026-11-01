@@ -22,7 +22,7 @@ export const LightyAvatar: React.FC<{ size?: number; thinking?: boolean; classNa
 );
 
 /** The dashboard pages a reply may link to (the server keeps only these too). */
-const PAGES = ['/appointments', '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/settings', '/account', '/portfolio', '/design'];
+const PAGES = ['/appointments', '/customers', '/leads', '/notifications', '/schedule-vacations', '/appointment-types', '/settings', '/account', '/portfolio', '/design'];
 const INLINE = /\[([^\]\n]{1,80})\]\(((?:[^()\s]|\([^()\s]*\)){1,200})\)|\*\*([^*\n]{1,200})\*\*/g;
 
 // "09:00–10:00" in a right-to-left line reads backwards ("10:00–09:00"):
