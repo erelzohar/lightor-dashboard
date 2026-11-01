@@ -172,6 +172,7 @@
     "additionalDetails": "Additional Details",
     "contactTitle": "Contact Information",
     "phone": "Phone",
+    "phoneEmptyHint": "If left empty, we use your phone, and it shows on your site.",
     "email": "Email",
     "socialMedia": "Social Media",
     "selectTab": "Select a tab above",
@@ -908,6 +909,8 @@
     "nextBill": "Next billing date:",
     "freeDesc": "You are on the free plan, with monthly limits on appointments and inquiries. Upgrade to lift them.",
     "freeDescNative": "You are on the free plan, with monthly limits on appointments and inquiries.",
+    "freeDescLeads": "You are on the free plan, with a monthly limit on inquiries. Upgrade to lift it.",
+    "freeDescNativeLeads": "You are on the free plan, with a monthly limit on inquiries.",
     "pilotLine": "Free trial: Lightor+ is free until {{date}}.",
     "pilotSubscribeNote": "Your trial ends on {{date}}. Subscribe now and the first charge is only on {{date}}; until then you can cancel without paying.",
     "loadingPlans": "Loading plans...",
@@ -1012,14 +1015,67 @@
       "bestValue": "Best value",
       "current": "Your current plan",
       "includes": "What's included:",
-      "badge": {
-        "free": "\"Built with Lightor\" badge on your site",
-        "paid": "No \"Built with Lightor\" badge"
+      "rows": {
+        "bookings": {
+          "free": "Up to 15 bookings a month",
+          "plus": "Up to 200 bookings a month",
+          "pro": "500 bookings a month, then {{price}} each if you switch on extra bookings"
+        },
+        "inquiries": {
+          "free": "Up to 15 inquiries a month",
+          "plus": "Up to 200 inquiries a month",
+          "pro": "Unlimited inquiries"
+        },
+        "services": {
+          "free": "Up to 3 services",
+          "plus": "Unlimited services",
+          "pro": "Unlimited services"
+        },
+        "texts": {
+          "free": "A confirmation text to customers",
+          "plus": "A confirmation and a morning reminder to customers",
+          "pro": "A confirmation and reminders to customers, in the morning and an hour before"
+        },
+        "siteLighty": {
+          "free": "No Lighty on your site",
+          "plus": "Lighty answers your site’s visitors",
+          "pro": "Lighty answers your site’s visitors"
+        },
+        "rebuilds": {
+          "free": "3 AI site rebuilds a month",
+          "plus": "20 AI site rebuilds a month",
+          "pro": "20 AI site rebuilds a month"
+        },
+        "pictures": {
+          "free": "5 AI pictures in the site build",
+          "plus": "10 AI pictures a month",
+          "pro": "40 AI pictures a month"
+        },
+        "editing": {
+          "free": "Basic editing with Lighty",
+          "plus": "About 2.5x more editing with Lighty",
+          "pro": "About 6x more editing with Lighty"
+        },
+        "insights": {
+          "free": "No customer insights or export",
+          "plus": "Customer insights and export",
+          "pro": "Customer insights and export"
+        },
+        "support": {
+          "free": "Standard support",
+          "plus": "Priority support",
+          "pro": "Priority support"
+        },
+        "badge": {
+          "free": "\"Built with Lightor\" badge on your site",
+          "plus": "No \"Built with Lightor\" badge",
+          "pro": "No \"Built with Lightor\" badge"
+        }
       },
       "desc": {
         "free": "Get started and see how it works.",
-        "plus": "Everything most sites need.",
-        "pro": "More room and more AI for a busy site."
+        "plus": "The basic plan, everything most sites need.",
+        "pro": "More room, more AI, more of everything, for professional sites."
       }
     },
     "compare": {
@@ -2202,6 +2258,7 @@
     "invalidAny": "Enter a valid Israeli phone number",
     "country": "Israel (+972)",
     "notVerified": "Confirm this mobile number with the code sent to it, then save again.",
+    "accountLimit": "This number already has 3 accounts. Sign in to one of them, or delete one you no longer need.",
     "mismatch": "The code was confirmed for another number. Save again for a new code.",
     "businessCodeHint": "To show a mobile number that is not yours on your site, confirm it with a code.",
     "invalidWorld": "Enter a valid phone number: an Israeli one, or with its country code (e.g. +1)"

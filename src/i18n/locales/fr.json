@@ -172,6 +172,7 @@
     "additionalDetails": "Détails supplémentaires",
     "contactTitle": "Coordonnées",
     "phone": "Téléphone",
+    "phoneEmptyHint": "Si le champ reste vide, nous utilisons votre téléphone, et il s’affiche sur votre site.",
     "email": "E-mail",
     "socialMedia": "Réseaux sociaux",
     "selectTab": "Sélectionnez un onglet ci-dessus",
@@ -908,6 +909,8 @@
     "nextBill": "Prochaine date de facturation :",
     "freeDesc": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes. Passez au forfait supérieur pour les lever.",
     "freeDescNative": "Vous êtes sur le forfait gratuit, avec des limites mensuelles de rendez-vous et de demandes.",
+    "freeDescLeads": "Vous êtes sur le forfait gratuit, avec une limite mensuelle de demandes. Passez au forfait supérieur pour la lever.",
+    "freeDescNativeLeads": "Vous êtes sur le forfait gratuit, avec une limite mensuelle de demandes.",
     "pilotLine": "Essai gratuit : Lightor+ est offert jusqu’au {{date}}.",
     "pilotSubscribeNote": "Votre essai se termine le {{date}}. En vous abonnant maintenant, le premier prélèvement n'a lieu que le {{date}} ; d'ici là, vous pouvez annuler sans payer.",
     "loadingPlans": "Chargement des forfaits...",
@@ -1012,14 +1015,67 @@
       "bestValue": "Meilleure offre",
       "current": "Votre forfait actuel",
       "includes": "Ce qui est inclus :",
-      "badge": {
-        "free": "Badge \"Built with Lightor\" sur votre site",
-        "paid": "Sans le badge \"Built with Lightor\""
+      "rows": {
+        "bookings": {
+          "free": "Jusqu’à 15 réservations par mois",
+          "plus": "Jusqu’à 200 réservations par mois",
+          "pro": "500 réservations par mois, puis {{price}} chacune si vous activez les réservations supplémentaires"
+        },
+        "inquiries": {
+          "free": "Jusqu’à 15 demandes par mois",
+          "plus": "Jusqu’à 200 demandes par mois",
+          "pro": "Demandes illimitées"
+        },
+        "services": {
+          "free": "Jusqu’à 3 services",
+          "plus": "Services illimités",
+          "pro": "Services illimités"
+        },
+        "texts": {
+          "free": "Un message de confirmation aux clients",
+          "plus": "Une confirmation et un rappel le matin aux clients",
+          "pro": "Une confirmation et des rappels aux clients, le matin et une heure avant"
+        },
+        "siteLighty": {
+          "free": "Pas de Lighty sur votre site",
+          "plus": "Lighty répond aux visiteurs de votre site",
+          "pro": "Lighty répond aux visiteurs de votre site"
+        },
+        "rebuilds": {
+          "free": "3 reconstructions du site par l’IA par mois",
+          "plus": "20 reconstructions du site par l’IA par mois",
+          "pro": "20 reconstructions du site par l’IA par mois"
+        },
+        "pictures": {
+          "free": "5 images IA à la création du site",
+          "plus": "10 images IA par mois",
+          "pro": "40 images IA par mois"
+        },
+        "editing": {
+          "free": "Édition de base avec Lighty",
+          "plus": "Environ 2,5 fois plus d’édition avec Lighty",
+          "pro": "Environ 6 fois plus d’édition avec Lighty"
+        },
+        "insights": {
+          "free": "Pas d’analyses ni d’export clients",
+          "plus": "Analyses et export des clients",
+          "pro": "Analyses et export des clients"
+        },
+        "support": {
+          "free": "Assistance standard",
+          "plus": "Assistance prioritaire",
+          "pro": "Assistance prioritaire"
+        },
+        "badge": {
+          "free": "Badge \"Built with Lightor\" sur votre site",
+          "plus": "Sans le badge \"Built with Lightor\"",
+          "pro": "Sans le badge \"Built with Lightor\""
+        }
       },
       "desc": {
         "free": "Démarrez et voyez comment ça marche.",
-        "plus": "Tout ce qu’il faut pour la plupart des sites.",
-        "pro": "Plus de place et plus d’IA pour un site très actif."
+        "plus": "L’abonnement de base, tout ce qu’il faut pour la plupart des sites.",
+        "pro": "Plus de place, plus d’IA, plus de tout, pour les sites professionnels."
       }
     },
     "compare": {
@@ -2202,6 +2258,7 @@
     "invalidAny": "Saisissez un numéro de téléphone israélien valide",
     "country": "Israël (+972)",
     "notVerified": "Confirmez ce numéro de mobile avec le code qui lui a été envoyé, puis enregistrez à nouveau.",
+    "accountLimit": "Ce numéro a déjà 3 comptes. Connectez-vous à l’un d’eux, ou supprimez celui dont vous n’avez plus besoin.",
     "mismatch": "Le code a été confirmé pour un autre numéro. Enregistrez à nouveau pour recevoir un nouveau code.",
     "businessCodeHint": "Pour afficher sur votre site un mobile qui n'est pas le vôtre, confirmez-le avec un code.",
     "invalidWorld": "Saisissez un numéro valide : israélien, ou avec son indicatif pays (ex. +1)"

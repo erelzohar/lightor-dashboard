@@ -14,7 +14,8 @@ import { VerticalCutReveal } from './vertical-cut-reveal';
  *
  * What changed from the original:
  * - the plans and the rows are Lightor's: the prices are Paddle's, the rows
- *   the comparison's own, so a limit is written in one place (LT-504);
+ *   plain sentences (Erel 2026-11-01), `billing.pricing.rows`. Their numbers
+ *   are the server's limits (entitlements.ts), as in PlanCompare: change both;
  * - what a site does decides its rows: bookings, or inquiries (LT-511);
  * - the dashboard's primary colour and dark mode, right-to-left logical
  *   classes, and no scaled card, which would cover its neighbour here;
@@ -180,14 +181,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({
               </span>
             )}
           </div>
-          <p className={cn('mt-2 text-sm', highlighted ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
+          <p className={cn('mt-2 text-sm lg:min-h-10', highlighted ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
             {t(`billing.pricing.desc.${column}`)}
           </p>
           <div className={cn('mt-4 border-t pt-3', highlighted ? 'border-white/30' : 'border-gray-300 dark:border-gray-600')}>
             <h4 className="mb-2 text-sm font-medium">{t('billing.pricing.includes')}</h4>
             <ul className="space-y-2">
               {rows.map((row) => {
-                const value = t(`billing.compare.rows.${row}.${column}`, { price: extraPrice });
                 // A row the free plan does not have reads as such at a glance.
                 const missing = column === 'free' && (row === 'siteLighty' || row === 'badge');
                 const Icon = missing ? Minus : CheckCheck;
@@ -201,17 +201,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                     >
                       <Icon className="h-3 w-3" aria-hidden="true" />
                     </span>
-                    {/* Each part isolated, as in the comparison: a label ending in "AI" pulls the rest into its run. */}
                     <span className={highlighted ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
-                      {row === 'badge' ? (
-                        // One sentence, not "label: value" (Erel 2026-11-01).
-                        t(`billing.pricing.badge.${column === 'free' ? 'free' : 'paid'}`)
-                      ) : (
-                        <>
-                          <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
-                          <span className="[unicode-bidi:isolate]">{value}</span>
-                        </>
-                      )}
+                      {t(`billing.pricing.rows.${row}.${column}`, { price: extraPrice })}
                     </span>
                   </li>
                 );

@@ -101,6 +101,52 @@ beforeEach(() => {
   });
 });
 
+describe('Settings: a business phone left empty (LT-518)', () => {
+  const following = () => {
+    const config = baseConfig();
+    state.webConfig.data = { ...config, contact: { ...config.contact, phoneFollowsOwner: true } };
+  };
+
+  it('shows the field empty, with the note, as an unchanged form, on a site that follows its owner', () => {
+    following();
+    render(<Settings />);
+    openContactTab();
+    expect(phoneField()).toHaveValue('');
+    expect(screen.getByTestId('contact-phone-empty')).toHaveTextContent('settings.phoneEmptyHint');
+    expect(screen.queryByText('common.save')).toBeNull();
+  });
+
+  it('shows no note beside a number of its own', () => {
+    render(<Settings />);
+    openContactTab();
+    expect(screen.queryByTestId('contact-phone-empty')).toBeNull();
+  });
+
+  it('saves an emptied field as empty, with no code, and shows the note', async () => {
+    render(<Settings />);
+    openContactTab();
+    typePhone('');
+    expect(screen.getByTestId('contact-phone-empty')).toBeInTheDocument();
+    await save();
+
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().contact?.phone).toBe('');
+    expect(sendPhoneCode).not.toHaveBeenCalled();
+  });
+
+  it('saves a number typed into the empty field, and the note goes', async () => {
+    following();
+    render(<Settings />);
+    openContactTab();
+    typePhone('03-1234567');
+    expect(screen.queryByTestId('contact-phone-empty')).toBeNull();
+    await save();
+
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().contact?.phone).toBe('+97231234567');
+  });
+});
+
 describe('Settings: the business phone (LT-404)', () => {
   it('shows the stored number nationally, as an unchanged form', () => {
     render(<Settings />);

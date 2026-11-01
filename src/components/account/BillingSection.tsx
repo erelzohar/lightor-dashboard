@@ -723,8 +723,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               {pilotDate
                 ? t('billing.pilotLine', { date: pilotDate })
                 : canSell
-                  ? t('billing.freeDesc')
-                  : t('billing.freeDescNative')}
+                  ? t(leadsSite ? 'billing.freeDescLeads' : 'billing.freeDesc')
+                  : t(leadsSite ? 'billing.freeDescNativeLeads' : 'billing.freeDescNative')}
             </p>
             {/* The free period this account did not get, and why (LT-360). */}
             {!pilotDate && auth.user?.freePeriod?.state === 'withheld' && (

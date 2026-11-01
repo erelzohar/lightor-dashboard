@@ -12,6 +12,8 @@ export interface Address {
 export interface Contact {
   phone: string;
   mail: string;
+  /** LT-518: left empty, so `phone` is the owner's own and follows it. The server's to say. */
+  phoneFollowsOwner?: boolean;
 }
 
 export interface Social {

@@ -17,6 +17,8 @@ export const verifyPhoneCode = async (phoneNumber: string, otp: string): Promise
 
 /** The translation key for a failed send or check. */
 export const phoneCodeErrorKey = (error: unknown): string => {
+  // The save's refusal, not the code's (LT-515): userApi hands on its code alone.
+  if ((error as { code?: string } | null)?.code === 'PHONE_ACCOUNT_LIMIT') return 'phoneInput.accountLimit';
   if (!axios.isAxiosError(error) || !error.response) return 'account.phoneCode.failed';
   const { status } = error.response;
   const data = (error.response.data ?? {}) as { code?: string; error?: string; message?: string };

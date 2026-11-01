@@ -11,7 +11,8 @@ export const updateUserInfo = async (id: string, userData: Partial<User> & { pho
   } catch (error: any) {
     // The API's error envelope is { success:false, error }, not .message —
     // surface the real reason (e.g. "Email already in use") when it's there.
-    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to update account');
+    // The refusal's code rides along for the screens that word it (LT-515).
+    throw Object.assign(new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to update account'), { code: error.response?.data?.code });
   }
 };
 

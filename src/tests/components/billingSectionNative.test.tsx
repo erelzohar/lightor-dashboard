@@ -240,7 +240,7 @@ describe('BillingSection on a leads site', () => {
     expect(t).toHaveBeenCalledWith('billing.leadsMeter', { used: 4, cap: 15 });
     expect(screen.queryByTestId('appointments-meter')).not.toBeInTheDocument();
     expect(screen.queryByText('billing.usageMeter')).not.toBeInTheDocument();
-    expect(screen.getByText('billing.freeDesc')).toBeInTheDocument();
+    expect(screen.getByText('billing.freeDescLeads')).toBeInTheDocument();
   });
 
   it('keeps both meters on a booking site', async () => {
@@ -712,27 +712,26 @@ describe('BillingSection with two plans', () => {
       fourPrices();
       const { unmount } = render(<BillingSection />);
       const booking = await screen.findByTestId('pricing-card-plus');
-      expect(booking).toHaveTextContent('billing.compare.rows.bookings.plus');
-      expect(booking).not.toHaveTextContent('billing.compare.rows.inquiries.plus');
+      expect(booking).toHaveTextContent('billing.pricing.rows.bookings.plus');
+      expect(booking).not.toHaveTextContent('billing.pricing.rows.inquiries.plus');
       unmount();
 
       fourPrices();
       render(<BillingSection leadsSite />);
       const lead = await screen.findByTestId('pricing-card-plus');
-      expect(lead).toHaveTextContent('billing.compare.rows.inquiries.plus');
-      expect(lead).not.toHaveTextContent('billing.compare.rows.bookings.plus');
-      expect(lead).not.toHaveTextContent('billing.compare.rows.texts.plus');
+      expect(lead).toHaveTextContent('billing.pricing.rows.inquiries.plus');
+      expect(lead).not.toHaveTextContent('billing.pricing.rows.bookings.plus');
+      expect(lead).not.toHaveTextContent('billing.pricing.rows.texts.plus');
       expect(screen.getByTestId('plan-compare')).not.toHaveTextContent('billing.compare.rows.bookings.label');
     });
 
     it('says the badge in one sentence on each card', async () => {
       fourPrices();
       render(<BillingSection />);
-      expect(await screen.findByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.badge.free');
-      for (const card of ['pricing-card-plus', 'pricing-card-pro']) {
-        expect(screen.getByTestId(card)).toHaveTextContent('billing.pricing.badge.paid');
-        expect(screen.getByTestId(card)).not.toHaveTextContent('billing.compare.rows.badge');
-      }
+      expect(await screen.findByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.rows.badge.free');
+      expect(screen.getByTestId('pricing-card-plus')).toHaveTextContent('billing.pricing.rows.badge.plus');
+      expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('billing.pricing.rows.badge.pro');
+      expect(screen.getByTestId('pricing-card-pro')).not.toHaveTextContent('billing.compare.rows');
     });
 
     it('marks Pro as the best value, and no other plan', async () => {
@@ -761,14 +760,14 @@ describe('BillingSection with two plans', () => {
   it('leaves bookings out of what a leads site`s subscription includes (LT-511)', async () => {
     entitlementsState.data = paid('plus');
     const { unmount } = render(<BillingSection />);
-    expect(await screen.findByTestId('plan-includes')).toHaveTextContent('billing.compare.rows.bookings.label');
+    expect(await screen.findByTestId('plan-includes')).toHaveTextContent('billing.pricing.rows.bookings.plus');
     unmount();
 
     render(<BillingSection leadsSite />);
     const includes = await screen.findByTestId('plan-includes');
-    expect(includes).toHaveTextContent('billing.compare.rows.inquiries.label');
-    expect(includes).not.toHaveTextContent('billing.compare.rows.bookings.label');
-    expect(includes).not.toHaveTextContent('billing.compare.rows.texts.label');
+    expect(includes).toHaveTextContent('billing.pricing.rows.inquiries.plus');
+    expect(includes).not.toHaveTextContent('billing.pricing.rows.bookings.plus');
+    expect(includes).not.toHaveTextContent('billing.pricing.rows.texts.plus');
   });
 
   it('says the plan, moves up with Paddle`s numbers first, and waits for the webhook', async () => {
@@ -794,6 +793,18 @@ describe('BillingSection with two plans', () => {
     fireEvent.click(await screen.findByTestId('plan-change'));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.change.overBookings', expect.anything()));
     expect(screen.queryByTestId('plan-change-modal')).toBeNull();
+  });
+
+  it('names only leads in the free plan`s line on a leads site (LT-516)', async () => {
+    authState.subscription = { status: 'free' };
+    entitlementsState.data = { ...paid('free'), bookings: null };
+    const { unmount } = render(<BillingSection />);
+    expect(await screen.findByText('billing.freeDesc')).toBeInTheDocument();
+    unmount();
+
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByText('billing.freeDescLeads')).toBeInTheDocument();
+    expect(screen.queryByText('billing.freeDesc')).toBeNull();
   });
 
   it('tells the owner when a move down must wait for next month, over the inquiries (LT-506)', async () => {

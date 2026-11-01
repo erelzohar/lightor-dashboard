@@ -266,7 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: { ...prev.user!, ...updatedUser }
       }));
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to update user account');
+      throw Object.assign(new Error(error.message || 'Failed to update user account'), { code: error.code });
     }
   };
 

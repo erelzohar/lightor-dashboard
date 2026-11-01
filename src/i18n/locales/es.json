@@ -172,6 +172,7 @@
     "additionalDetails": "Detalles adicionales",
     "contactTitle": "Información de contacto",
     "phone": "Teléfono",
+    "phoneEmptyHint": "Si lo dejas vacío, usamos tu teléfono y se mostrará en tu sitio.",
     "email": "Correo electrónico",
     "socialMedia": "Redes sociales",
     "selectTab": "Selecciona una pestaña arriba",
@@ -908,6 +909,8 @@
     "nextBill": "Próxima fecha de facturación:",
     "freeDesc": "Estás en el plan gratuito, con límites mensuales de citas y consultas. Mejora tu plan para quitarlos.",
     "freeDescNative": "Estás en el plan gratuito, con límites mensuales de citas y consultas.",
+    "freeDescLeads": "Estás en el plan gratuito, con un límite mensual de consultas. Mejora tu plan para quitarlo.",
+    "freeDescNativeLeads": "Estás en el plan gratuito, con un límite mensual de consultas.",
     "pilotLine": "Prueba gratuita: Lightor+ es gratis hasta el {{date}}.",
     "pilotSubscribeNote": "Tu prueba termina el {{date}}. Si te suscribes ahora, el primer cobro será recién el {{date}}; hasta entonces puedes cancelar sin pagar.",
     "loadingPlans": "Cargando planes...",
@@ -1012,14 +1015,67 @@
       "bestValue": "Mejor valor",
       "current": "Tu plan actual",
       "includes": "Qué incluye:",
-      "badge": {
-        "free": "Insignia \"Built with Lightor\" en tu sitio",
-        "paid": "Sin la insignia \"Built with Lightor\""
+      "rows": {
+        "bookings": {
+          "free": "Hasta 15 reservas al mes",
+          "plus": "Hasta 200 reservas al mes",
+          "pro": "500 reservas al mes, luego {{price}} cada una si activas las reservas extra"
+        },
+        "inquiries": {
+          "free": "Hasta 15 consultas al mes",
+          "plus": "Hasta 200 consultas al mes",
+          "pro": "Consultas ilimitadas"
+        },
+        "services": {
+          "free": "Hasta 3 servicios",
+          "plus": "Servicios ilimitados",
+          "pro": "Servicios ilimitados"
+        },
+        "texts": {
+          "free": "Un mensaje de confirmación a los clientes",
+          "plus": "Confirmación y recordatorio por la mañana a los clientes",
+          "pro": "Confirmación y recordatorios a los clientes, por la mañana y una hora antes"
+        },
+        "siteLighty": {
+          "free": "Sin Lighty en tu sitio",
+          "plus": "Lighty responde a los visitantes de tu sitio",
+          "pro": "Lighty responde a los visitantes de tu sitio"
+        },
+        "rebuilds": {
+          "free": "3 reconstrucciones del sitio con IA al mes",
+          "plus": "20 reconstrucciones del sitio con IA al mes",
+          "pro": "20 reconstrucciones del sitio con IA al mes"
+        },
+        "pictures": {
+          "free": "5 imágenes con IA al crear el sitio",
+          "plus": "10 imágenes con IA al mes",
+          "pro": "40 imágenes con IA al mes"
+        },
+        "editing": {
+          "free": "Edición básica con Lighty",
+          "plus": "Unas 2,5 veces más edición con Lighty",
+          "pro": "Unas 6 veces más edición con Lighty"
+        },
+        "insights": {
+          "free": "Sin análisis ni exportación de clientes",
+          "plus": "Análisis y exportación de clientes",
+          "pro": "Análisis y exportación de clientes"
+        },
+        "support": {
+          "free": "Soporte estándar",
+          "plus": "Soporte prioritario",
+          "pro": "Soporte prioritario"
+        },
+        "badge": {
+          "free": "Insignia \"Built with Lightor\" en tu sitio",
+          "plus": "Sin la insignia \"Built with Lightor\"",
+          "pro": "Sin la insignia \"Built with Lightor\""
+        }
       },
       "desc": {
         "free": "Empieza y mira cómo funciona.",
-        "plus": "Todo lo que necesitan la mayoría de los sitios.",
-        "pro": "Más espacio y más IA para un sitio con mucho movimiento."
+        "plus": "El plan básico, todo lo que necesitan la mayoría de los sitios.",
+        "pro": "Más espacio, más IA, más de todo, para sitios profesionales."
       }
     },
     "compare": {
@@ -2202,6 +2258,7 @@
     "invalidAny": "Introduce un número de teléfono israelí válido",
     "country": "Israel (+972)",
     "notVerified": "Confirma este número de móvil con el código que se le envió y vuelve a guardar.",
+    "accountLimit": "Este número ya tiene 3 cuentas. Inicia sesión en una de ellas o elimina la que ya no necesites.",
     "mismatch": "El código se confirmó para otro número. Vuelve a guardar para recibir un código nuevo.",
     "businessCodeHint": "Para mostrar en tu sitio un móvil que no es el tuyo, confírmalo con un código.",
     "invalidWorld": "Introduce un número válido: israelí, o con el prefijo del país (p. ej. +1)"

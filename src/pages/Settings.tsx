@@ -59,8 +59,17 @@ const socialKey = (social: WebConfig['social'] | undefined): string =>
 
 // One number however it is written (LT-404): the stored "050-1234567" and
 // the field's "+972501234567" are no change.
-const contactKey = (contact: WebConfig['contact'] | undefined): string =>
-  JSON.stringify({ ...(contact ?? {}), phone: toE164(contact?.phone) ?? contact?.phone ?? '' });
+const contactKey = (contact: WebConfig['contact'] | undefined): string => {
+  const { phoneFollowsOwner, ...rest } = (contact ?? {}) as Partial<WebConfig['contact']>;
+  // An empty field is what a site that follows its owner's phone saved (LT-518).
+  return JSON.stringify({ ...rest, phone: phoneFollowsOwner ? '' : toE164(rest.phone) ?? rest.phone ?? '' });
+};
+
+/** The form's contact: the field is empty while the site shows the owner's phone (LT-518). */
+const contactForForm = (contact: WebConfig['contact']): WebConfig['contact'] => {
+  const { phoneFollowsOwner, ...rest } = contact;
+  return phoneFollowsOwner ? { ...rest, phone: '' } : rest;
+};
 
 // What the server says about the business phone (LT-404), in the owner's words.
 const CONTACT_PHONE_CODES = new Set(['CONTACT_PHONE_INVALID', 'PHONE_NOT_VERIFIED', 'PHONE_MISMATCH']);
@@ -245,6 +254,7 @@ const Settings: React.FC = () => {
       // Always one of the two modes (LT-199): a config saved before the
       // switch existed has none, and reads as a booking site.
       conversion: isLeadsSite(saved) ? 'lead' : 'book',
+      contact: contactForForm(saved.contact),
       // The API omits `address` entirely for a business with no premises, but
       // this form needs all four inputs to stay controlled. Give it an empty
       // shape to edit rather than reading `.state` off undefined.
@@ -313,7 +323,8 @@ const Settings: React.FC = () => {
 
     // Any valid Israeli number, mobile or landline (LT-404). The field shows
     // its own message; this entry keeps the save shut meanwhile.
-    phone: (value) => (israeliPhoneKind(value) ? null : t('phoneInput.invalidAny')),
+    // Empty is allowed since LT-518: the site then shows the owner's own.
+    phone: (value) => (!value?.trim() || israeliPhoneKind(value) ? null : t('phoneInput.invalidAny')),
 
     mail: (value) =>
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? t('validation.emailInvalid') : null,
@@ -918,21 +929,27 @@ const Settings: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Phone} title={t('settings.contactTitle')} description={t('settings.sections.contactDesc')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Mobile or landline, Israeli (LT-404). */}
-                <PhoneInput
-                  label={t('settings.phone')}
-                  name="contactPhone"
-                  accept="any"
-                  value={localWebConfig.contact.phone ?? ''}
-                  required
-                  showError={triedSave}
-                  error={contactPhoneError}
-                  onChange={(phone) => {
-                    handleChange('contact', 'phone', phone);
-                    setContactPhoneError(null);
-                    clearPhoneCode();
-                  }}
-                />
+                {/* Mobile or landline, Israeli (LT-404); empty is the owner's own (LT-518). */}
+                <div className="space-y-1">
+                  <PhoneInput
+                    label={t('settings.phone')}
+                    name="contactPhone"
+                    accept="any"
+                    value={localWebConfig.contact.phone ?? ''}
+                    showError={triedSave}
+                    error={contactPhoneError}
+                    onChange={(phone) => {
+                      handleChange('contact', 'phone', phone);
+                      setContactPhoneError(null);
+                      clearPhoneCode();
+                    }}
+                  />
+                  {!localWebConfig.contact.phone?.trim() && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400" data-testid="contact-phone-empty">
+                      {t('settings.phoneEmptyHint')}
+                    </p>
+                  )}
+                </div>
 
                 <Input
                   label={t('settings.email')}

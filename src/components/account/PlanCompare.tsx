@@ -47,13 +47,8 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price, le
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t('billing.compare.includesTitle')}</p>
         <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 list-disc ps-5">
           {rows.map((row) => (
-            // Each part isolated in the page's own direction: a label ending
-            // in "AI" would pull the colon and the number into its run, and a
-            // <bdi> would turn "Lighty ..." left to right.
-            <li key={row}>
-              <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
-              <span className="[unicode-bidi:isolate]">{cell(row, plan)}</span>
-            </li>
+            // Plain sentences, as on the plan cards (Erel 2026-11-01).
+            <li key={row}>{t(`billing.pricing.rows.${row}.${plan}`, { price })}</li>
           ))}
         </ul>
       </div>
