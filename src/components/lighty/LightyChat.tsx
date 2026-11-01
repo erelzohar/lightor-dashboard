@@ -153,19 +153,16 @@ export const LightyThreadLoading: React.FC = () => {
 };
 
 /**
- * Lighty is writing: three dots beside his still face. One animation per
- * screen (LT-258) — the moving Lighty is the 3D one on his page, the
- * editor line's face elsewhere — so the bubble's face keeps still.
+ * Lighty is thinking: the words with a light passing over them (LT-524),
+ * beside his still face. One animation per screen (LT-258) — the moving
+ * Lighty is the 3D one on his page, the editor line's face elsewhere — so
+ * the bubble's face keeps still.
  */
 export const LightyTyping: React.FC<{ avatar?: number }> = ({ avatar = 32 }) => {
   const { t } = useTranslation();
   return (
     <LightyBubble avatar={avatar}>
-      <span className="inline-flex items-center gap-1 py-1" role="status" aria-label={t('lighty.thinking')}>
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="w-1.5 h-1.5 rounded-full bg-violet-400 dark:bg-violet-300 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-        ))}
-      </span>
+      <span className="thinking-shimmer font-medium text-violet-700 dark:text-violet-200" role="status" data-testid="lighty-typing">{t('lighty.thinking')}</span>
     </LightyBubble>
   );
 };

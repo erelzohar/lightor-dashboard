@@ -173,7 +173,7 @@ const LightyPage: React.FC = () => {
         <div className={empty ? 'max-w-md' : 'flex-1 min-w-0'}>
           <h1 className={`font-bold text-gray-800 dark:text-white ${empty ? 'text-2xl' : 'text-base'}`}>{empty ? t('lighty.hello') : 'Lighty'}</h1>
           <p className={`text-gray-500 dark:text-slate-400 ${empty ? 'mt-1 text-sm' : 'text-xs truncate'}`} aria-live="polite">
-            {busy ? t('lighty.thinking') : empty ? t('lighty.intro') : t('lighty.subtitle')}
+            {empty ? t('lighty.intro') : t('lighty.subtitle')}
           </p>
         </div>
         {!empty && (

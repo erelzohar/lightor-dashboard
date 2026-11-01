@@ -390,13 +390,46 @@ html[dir="rtl"] body {
 }
 
 /* LT-375: under the device's "reduce motion" (iOS Reduce Motion in the app),
-   the endless decorative loops stand still: the login page's drifting blobs,
-   Lighty's thinking and typing dots. Loading spinners keep turning (they say
-   that something is happening); framer-motion follows the same setting
-   through MotionConfig in App.tsx. */
+   the endless decorative loops stand still, such as the login page's drifting
+   blobs. Loading spinners keep turning (they say that something is
+   happening); framer-motion follows the same setting through MotionConfig in
+   App.tsx. */
 @media (prefers-reduced-motion: reduce) {
   .animate-blob,
   .dot-wave,
   .animate-bounce,
   .animate-ping { animation: none; }
+}
+
+/* LT-524: Lighty thinking is a line of words with a light passing over them,
+   not three dots. A mask, so the words keep the colour of wherever they sit;
+   the light runs the way the language reads. Plain words under reduced motion
+   and the accessibility menu's stop switch. */
+.thinking-shimmer {
+  display: inline-block;
+  padding-block: 0.1em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.a11y-still) .thinking-shimmer {
+    -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 42%, #000 50%, rgba(0, 0, 0, 0.5) 58%);
+    mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 42%, #000 50%, rgba(0, 0, 0, 0.5) 58%);
+    -webkit-mask-size: 250% 100%;
+    mask-size: 250% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: thinking-shimmer 1s ease-in-out infinite;
+  }
+  html[dir='rtl']:not(.a11y-still) .thinking-shimmer {
+    animation-direction: reverse;
+  }
+}
+@keyframes thinking-shimmer {
+  from {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  to {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
 }
