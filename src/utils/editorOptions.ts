@@ -130,6 +130,9 @@ export const LAYOUTS: Named = {
   scroller: { he: 'גלילה', en: 'Scroller' },
   spotlight: { he: 'זרקור', en: 'Spotlight' },
   carousel: { he: 'קרוסלה', en: 'Carousel' },
+  clothesline: { he: 'חבל תמונות', en: 'Clothesline' },
+  curve: { he: 'קשת', en: 'Curve' },
+  cascade: { he: 'מפל', en: 'Cascade' },
   // quotes
   quote: { he: 'ציטוט גדול', en: 'Big quote' },
   bubbles: { he: 'בועות', en: 'Bubbles' },
@@ -178,7 +181,7 @@ export interface SectionDef {
 }
 
 const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed'];
-const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel'];
+const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
 const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
 const SCHEDULE_STYLES = ['card', 'flat', 'inset', 'split'];
