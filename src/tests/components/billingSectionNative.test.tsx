@@ -646,6 +646,15 @@ describe('BillingSection with two plans', () => {
     expect(screen.queryByTestId('plan-change-modal')).toBeNull();
   });
 
+  it('tells the owner when a move down must wait for next month, over the inquiries (LT-506)', async () => {
+    entitlementsState.data = paid('pro');
+    vi.mocked(previewPlanChange).mockRejectedValue({ response: { status: 409, data: { code: 'OVER_PLUS_LEADS' } } });
+    render(<BillingSection />);
+    fireEvent.click(await screen.findByTestId('plan-change'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('billing.change.overLeads', expect.anything()));
+    expect(screen.queryByTestId('plan-change-modal')).toBeNull();
+  });
+
   it('says a declined card left the plan as it was', async () => {
     entitlementsState.data = paid('plus');
     vi.mocked(previewPlanChange).mockResolvedValue(change);

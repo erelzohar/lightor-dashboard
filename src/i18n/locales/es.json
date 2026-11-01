@@ -1019,7 +1019,7 @@
         "inquiries": {
           "label": "Consultas desde el sitio",
           "free": "15 al mes",
-          "plus": "Ilimitadas",
+          "plus": "Hasta 200 al mes",
           "pro": "Ilimitadas"
         },
         "services": {
@@ -1095,6 +1095,7 @@
       "moved": "Ya estás en {{plan}}",
       "paymentFailed": "El cobro del cambio no se completó, así que tu plan sigue igual. Actualiza tu método de pago e inténtalo de nuevo.",
       "overBookings": "Este período ya tiene {{n}} reservas o más, así que solo puedes pasar a Lightor+ desde el próximo período.",
+      "overLeads": "Este mes ya tiene 200 consultas o más, así que solo puedes pasar a Lightor+ desde el próximo mes.",
       "failed": "No pudimos cambiar tu plan. Inténtalo de nuevo o contacta con soporte."
     }
   },

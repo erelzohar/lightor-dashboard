@@ -1019,7 +1019,7 @@
         "inquiries": {
           "label": "Demandes depuis le site",
           "free": "15 par mois",
-          "plus": "Illimitées",
+          "plus": "Jusqu'à 200 par mois",
           "pro": "Illimitées"
         },
         "services": {
@@ -1095,6 +1095,7 @@
       "moved": "Vous êtes maintenant sur {{plan}}",
       "paymentFailed": "Le prélèvement pour le changement n’a pas abouti, votre formule reste la même. Mettez à jour votre moyen de paiement et réessayez.",
       "overBookings": "Cette période compte déjà {{n}} réservations ou plus : vous pourrez passer à Lightor+ à partir de la prochaine période.",
+      "overLeads": "Ce mois compte déjà 200 demandes ou plus : vous pourrez passer à Lightor+ à partir du mois prochain.",
       "failed": "Nous n’avons pas pu changer votre formule. Réessayez ou contactez le support."
     }
   },

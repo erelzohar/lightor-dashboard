@@ -1019,7 +1019,7 @@
         "inquiries": {
           "label": "Inquiries from the site",
           "free": "15 a month",
-          "plus": "Unlimited",
+          "plus": "Up to 200 a month",
           "pro": "Unlimited"
         },
         "services": {
@@ -1095,6 +1095,7 @@
       "moved": "You're on {{plan}} now",
       "paymentFailed": "The charge for the move didn't go through, so your plan stays as it was. Update your payment method and try again.",
       "overBookings": "This period already has {{n}} bookings or more, so you can move to Lightor+ only from the next period.",
+      "overLeads": "This month already has 200 inquiries or more, so you can move to Lightor+ only from next month.",
       "failed": "We couldn't change your plan. Try again, or contact support."
     }
   },

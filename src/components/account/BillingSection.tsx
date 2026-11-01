@@ -245,6 +245,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     const response = (error as AxiosError<{ code?: string }>)?.response;
     if (response?.data?.code === 'OVER_PLUS_BOOKINGS') {
       toast.error(t('billing.change.overBookings', { n: bookingTerms?.plusIncluded ?? 200 }), { duration: 8000 });
+    } else if (response?.data?.code === 'OVER_PLUS_LEADS') {
+      toast.error(t('billing.change.overLeads'), { duration: 8000 });
     } else if (response?.data?.code === 'PLAN_CHANGE_PAYMENT_FAILED') {
       toast.error(t('billing.change.paymentFailed'), { duration: 8000 });
     } else {
