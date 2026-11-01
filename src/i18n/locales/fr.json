@@ -1009,7 +1009,7 @@
       "monthly": "Mensuel",
       "yearly": "Annuel",
       "saveMonths": "{{months}} mois offerts",
-      "recommended": "Recommandé",
+      "bestValue": "Meilleure offre",
       "current": "Votre forfait actuel",
       "includes": "Ce qui est inclus :",
       "desc": {

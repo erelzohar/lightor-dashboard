@@ -1009,7 +1009,7 @@
       "monthly": "Monthly",
       "yearly": "Yearly",
       "saveMonths": "{{months}} months free",
-      "recommended": "Recommended",
+      "bestValue": "Best value",
       "current": "Your current plan",
       "includes": "What's included:",
       "desc": {

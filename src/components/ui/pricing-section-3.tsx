@@ -136,7 +136,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 
   const card = (column: Column, order: number) => {
     const chosen = column === 'free' ? undefined : offer(column, shown);
-    const recommended = column === 'plus';
+    // Erel 2026-11-01: Pro, as the best value.
+    const highlighted = column === 'pro';
     return (
       <motion.div
         key={column}
@@ -148,7 +149,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
         data-testid={`pricing-card-${column}`}
         className={cn(
           'flex flex-col justify-between gap-4 rounded-xl p-4',
-          recommended
+          highlighted
             ? 'bg-gradient-to-t from-primary-dark to-primary text-white ring-2 ring-primary shadow-lg'
             : 'text-gray-900 dark:text-white'
         )}
@@ -158,9 +159,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({
             <h3 className="text-xl font-semibold">
               {column === 'free' ? t('billing.compare.free') : <bdi>{PLAN_NAMES[column]}</bdi>}
             </h3>
-            {recommended && (
+            {highlighted && (
               <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
-                {t('billing.pricing.recommended')}
+                {t('billing.pricing.bestValue')}
               </span>
             )}
           </div>
@@ -173,16 +174,16 @@ const PricingSection: React.FC<PricingSectionProps> = ({
               <span className="text-4xl font-semibold">{chosen?.formatted}</span>
             )}
             {column !== 'free' && (
-              <span className={cn('text-sm', recommended ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
+              <span className={cn('text-sm', highlighted ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
                 {' / '}
                 {t(`billing.per_${shown}`)}
               </span>
             )}
           </div>
-          <p className={cn('mt-2 text-sm', recommended ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
+          <p className={cn('mt-2 text-sm', highlighted ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>
             {t(`billing.pricing.desc.${column}`)}
           </p>
-          <div className={cn('mt-4 border-t pt-3', recommended ? 'border-white/30' : 'border-gray-300 dark:border-gray-600')}>
+          <div className={cn('mt-4 border-t pt-3', highlighted ? 'border-white/30' : 'border-gray-300 dark:border-gray-600')}>
             <h4 className="mb-2 text-sm font-medium">{t('billing.pricing.includes')}</h4>
             <ul className="space-y-2">
               {rows.map((row) => {
@@ -195,13 +196,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                     <span
                       className={cn(
                         'mt-0.5 grid h-5 w-5 shrink-0 place-content-center rounded-full',
-                        recommended ? 'bg-white/20 text-white' : 'border border-gray-300 dark:border-gray-600 text-primary dark:text-white'
+                        highlighted ? 'bg-white/20 text-white' : 'border border-gray-300 dark:border-gray-600 text-primary dark:text-white'
                       )}
                     >
                       <Icon className="h-3 w-3" aria-hidden="true" />
                     </span>
                     {/* Each part isolated, as in the comparison: a label ending in "AI" pulls the rest into its run. */}
-                    <span className={recommended ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
+                    <span className={highlighted ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
                       <span className="[unicode-bidi:isolate]">{t(`billing.compare.rows.${row}.label`)}</span>:{' '}
                       <span className="[unicode-bidi:isolate]">{value}</span>
                     </span>
@@ -218,7 +219,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
             disabled={opening !== null}
             className={cn(
               'w-full rounded-xl px-4 py-3 font-semibold transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-60',
-              recommended
+              highlighted
                 ? 'bg-white text-primary-dark shadow-md hover:opacity-90'
                 : 'bg-gradient-to-t from-gray-900 to-gray-700 text-white shadow-md hover:opacity-90 dark:from-white dark:to-gray-200 dark:text-gray-900'
             )}

@@ -725,6 +725,14 @@ describe('BillingSection with two plans', () => {
       expect(screen.getByTestId('plan-compare')).not.toHaveTextContent('billing.compare.rows.bookings.label');
     });
 
+    it('marks Pro as the best value, and no other plan', async () => {
+      fourPrices();
+      render(<BillingSection />);
+      expect(await screen.findByTestId('pricing-card-pro')).toHaveTextContent('billing.pricing.bestValue');
+      expect(screen.getByTestId('pricing-card-plus')).not.toHaveTextContent('billing.pricing.bestValue');
+      expect(screen.getByTestId('pricing-card-free')).not.toHaveTextContent('billing.pricing.bestValue');
+    });
+
     it('calls the free plan the current one only when it is', async () => {
       fourPrices();
       const { unmount } = render(<BillingSection />);
