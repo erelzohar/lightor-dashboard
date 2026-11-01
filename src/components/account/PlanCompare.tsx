@@ -32,10 +32,13 @@ interface PlanCompareProps {
   plan?: PaidPlan;
   /** What one extra booking costs, written in the page's language. */
   price: string;
+  /** A leads site (LT-511): it takes no bookings and sends no booking's texts. */
+  leadsSite?: boolean;
 }
 
-const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price }) => {
+const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price, leadsSite = false }) => {
   const { t } = useTranslation();
+  const rows = leadsSite ? PLAN_ROWS.filter((row) => row !== 'bookings' && row !== 'texts') : PLAN_ROWS;
   const cell = (row: (typeof PLAN_ROWS)[number], column: PlanColumn) => t(`billing.compare.rows.${row}.${column}`, { price });
 
   if (mode === 'includes') {
@@ -43,7 +46,7 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price }) 
       <div className="space-y-1" data-testid="plan-includes">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t('billing.compare.includesTitle')}</p>
         <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 list-disc ps-5">
-          {PLAN_ROWS.map((row) => (
+          {rows.map((row) => (
             // Each part isolated in the page's own direction: a label ending
             // in "AI" would pull the colon and the number into its run, and a
             // <bdi> would turn "Lighty ..." left to right.
@@ -77,7 +80,7 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price }) 
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-gray-600 dark:text-gray-300">
-            {PLAN_ROWS.map((row) => (
+            {rows.map((row) => (
               <tr key={row}>
                 <th scope="row" className="p-2 text-start font-medium text-gray-800 dark:text-gray-100">
                   {t(`billing.compare.rows.${row}.label`)}

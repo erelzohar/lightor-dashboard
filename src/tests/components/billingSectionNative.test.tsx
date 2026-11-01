@@ -57,6 +57,9 @@ const freeEntitlements = (): Record<string, unknown> => ({
   usage: { appointmentsThisMonth: 12 },
   pilot: null,
 });
+// A custom element jsdom cannot run: its update throws. The number itself is what matters here.
+vi.mock('@number-flow/react', () => ({ default: ({ value }: { value: number }) => <span>{value}</span> }));
+
 vi.mock('../../services/entitlementsApi', () => ({
   fetchMyEntitlements: vi.fn(() => Promise.resolve(entitlementsState.data)),
 }));
@@ -619,6 +622,122 @@ describe('BillingSection with two plans', () => {
     expect(t).toHaveBeenCalledWith('billing.planBookingTermsPlus', { included: 200 });
     expect(screen.getByTestId('plan-booking-terms')).toHaveTextContent('Lightor Pro');
     expect(screen.queryByText('Paddle name')).toBeNull();
+  });
+
+  describe('the terms follow what the site does (LT-511)', () => {
+    const summary = {
+      name: 'checkout.loaded',
+      data: {
+        currency_code: 'ILS',
+        totals: { subtotal: 89, tax: 0, discount: 0, total: 89 },
+        recurring_totals: { subtotal: 89, tax: 0, discount: 0, total: 89 },
+        items: [] as unknown[],
+      },
+    };
+    const offerPlans = () => {
+      authState.subscription = { status: 'free' };
+      entitlementsState.data = { ...paid('free'), bookings: null };
+      vi.mocked(fetchUpgradePlans).mockResolvedValueOnce([
+        { plan: 'plus', priceId: 'p_plus', productName: 'Plus', formatted: '₪89', interval: 'month' },
+        { plan: 'pro', priceId: 'p_pro', productName: 'Pro', formatted: '₪119', interval: 'month' },
+      ]);
+      vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_1', trialDays: 0, firstChargeAt: null });
+    };
+    const openCheckout = async (plan: number) => {
+      fireEvent.click((await screen.findAllByRole('button', { name: 'billing.upgrade' }))[plan]);
+      await waitFor(() => expect(openInlineCheckout).toHaveBeenCalled());
+      act(() => checkoutEvents.emit(summary));
+      return screen.getByTestId('checkout-booking-terms');
+    };
+
+    it('speaks of inquiries on a leads site, under the plans and in the checkout', async () => {
+      offerPlans();
+      render(<BillingSection leadsSite />);
+      expect(await screen.findByTestId('plan-booking-terms-plus')).toHaveTextContent('billing.planLeadTermsPlus');
+      expect(screen.getByTestId('plan-booking-terms')).toHaveTextContent('billing.planLeadTermsPro');
+      expect(await openCheckout(0)).toHaveTextContent('billing.planLeadTermsPlus');
+    });
+
+    it('tells a leads site on Pro that its inquiries are unlimited, in the checkout too', async () => {
+      offerPlans();
+      render(<BillingSection leadsSite />);
+      expect(await openCheckout(1)).toHaveTextContent('billing.planLeadTermsPro');
+    });
+
+    it('speaks of bookings on a bookings site, and not of inquiries', async () => {
+      offerPlans();
+      render(<BillingSection />);
+      expect(await screen.findByTestId('plan-booking-terms-plus')).toHaveTextContent('billing.planBookingTermsPlus');
+      expect(screen.getByTestId('plan-booking-terms')).toHaveTextContent('billing.planBookingTerms');
+      expect(await openCheckout(0)).toHaveTextContent('billing.planBookingTermsPlus');
+    });
+  });
+
+  describe('the pricing section (LT-512)', () => {
+    const fourPrices = () => {
+      authState.subscription = { status: 'free' };
+      entitlementsState.data = { ...paid('free'), bookings: null };
+      vi.mocked(fetchUpgradePlans).mockResolvedValueOnce([
+        { plan: 'plus', priceId: 'plus_m', productName: 'Plus', formatted: '₪89', amount: 89, currency: 'ILS', interval: 'month' },
+        { plan: 'plus', priceId: 'plus_y', productName: 'Plus', formatted: '₪890', amount: 890, currency: 'ILS', interval: 'year' },
+        { plan: 'pro', priceId: 'pro_m', productName: 'Pro', formatted: '₪119', amount: 119, currency: 'ILS', interval: 'month' },
+        { plan: 'pro', priceId: 'pro_y', productName: 'Pro', formatted: '₪1,190', amount: 1190, currency: 'ILS', interval: 'year' },
+      ]);
+      vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_1', trialDays: 0, firstChargeAt: null });
+    };
+
+    it('buys the monthly price first, and the yearly one after the switch', async () => {
+      fourPrices();
+      render(<BillingSection />);
+      fireEvent.click((await screen.findAllByRole('button', { name: 'billing.upgrade' }))[0]);
+      await waitFor(() => expect(createCheckout).toHaveBeenCalledWith('plus_m'));
+    });
+
+    it('sells the year it shows', async () => {
+      fourPrices();
+      render(<BillingSection />);
+      fireEvent.click(await screen.findByRole('button', { name: /billing\.pricing\.yearly/ }));
+      fireEvent.click(screen.getAllByRole('button', { name: 'billing.upgrade' })[1]);
+      await waitFor(() => expect(createCheckout).toHaveBeenCalledWith('pro_y'));
+    });
+
+    it('counts what a year saves from the two prices', async () => {
+      fourPrices();
+      render(<BillingSection />);
+      await screen.findByTestId('pricing-section');
+      expect(t).toHaveBeenCalledWith('billing.pricing.saveMonths', { months: 2 });
+    });
+
+    it('lists bookings on a bookings site, and inquiries on a leads site', async () => {
+      fourPrices();
+      const { unmount } = render(<BillingSection />);
+      const booking = await screen.findByTestId('pricing-card-plus');
+      expect(booking).toHaveTextContent('billing.compare.rows.bookings.plus');
+      expect(booking).not.toHaveTextContent('billing.compare.rows.inquiries.plus');
+      unmount();
+
+      fourPrices();
+      render(<BillingSection leadsSite />);
+      const lead = await screen.findByTestId('pricing-card-plus');
+      expect(lead).toHaveTextContent('billing.compare.rows.inquiries.plus');
+      expect(lead).not.toHaveTextContent('billing.compare.rows.bookings.plus');
+      expect(lead).not.toHaveTextContent('billing.compare.rows.texts.plus');
+      expect(screen.getByTestId('plan-compare')).not.toHaveTextContent('billing.compare.rows.bookings.label');
+    });
+
+    it('calls the free plan the current one only when it is', async () => {
+      fourPrices();
+      const { unmount } = render(<BillingSection />);
+      expect(await screen.findByTestId('pricing-current')).toHaveTextContent('billing.pricing.current');
+      unmount();
+
+      fourPrices();
+      entitlementsState.data = { ...paid('plus'), bookings: null, pilot: { until: '2026-12-01T00:00:00.000Z' } };
+      render(<BillingSection />);
+      await screen.findByTestId('pricing-section');
+      expect(screen.queryByTestId('pricing-current')).toBeNull();
+      expect(screen.getAllByRole('button', { name: 'billing.subscribe' })).toHaveLength(2);
+    });
   });
 
   it('says the plan, moves up with Paddle`s numbers first, and waits for the webhook', async () => {

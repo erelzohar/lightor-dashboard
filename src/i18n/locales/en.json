@@ -1003,6 +1003,21 @@
       "chargeFailed": "The last charge for extra bookings didn't go through, so they can't be switched on until it does.",
       "failed": "Couldn't save. Please try again."
     },
+    "pricing": {
+      "title": "Plans & pricing",
+      "subtitle": "Every plan includes a full site. Pick the one that fits.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "saveMonths": "{{months}} months free",
+      "recommended": "Recommended",
+      "current": "Your current plan",
+      "includes": "What's included:",
+      "desc": {
+        "free": "Get started and see how it works.",
+        "plus": "Everything most sites need.",
+        "pro": "More room and more AI for a busy site."
+      }
+    },
     "compare": {
       "title": "Free and Lightor+ compared",
       "feature": "Feature",
@@ -1079,6 +1094,8 @@
       }
     },
     "planBookingTermsPlus": "Includes up to {{included}} bookings a month. At {{included}} your site stops taking bookings until the next month.",
+    "planLeadTermsPlus": "Includes up to 200 inquiries a month. At 200 the contact form on your site gives way to call and WhatsApp buttons until the next month.",
+    "planLeadTermsPro": "Includes unlimited inquiries.",
     "activePlan": "Your plan:",
     "plusFullDesc": "Your site takes no new bookings until {{date}}. Moving to Lightor Pro reopens them now.",
     "change": {

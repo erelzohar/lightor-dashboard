@@ -69,6 +69,9 @@ export interface UpgradePlan {
   priceId: string;
   /** Pre-formatted by Paddle — currency, symbol and decimals included. */
   formatted: string;
+  /** The same price as a number, in major units, and its currency (LT-512). */
+  amount?: number;
+  currency?: string;
   productName: string;
   interval?: string;
 }
@@ -100,6 +103,8 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
       plan: planOf.get(li.price.id) ?? 'pro',
       priceId: li.price.id,
       formatted: li.formattedUnitTotals.total,
+      amount: Number(li.unitTotals.total) / 100,
+      currency: response.data.currencyCode,
       productName: li.product.name,
       interval: li.price.billingCycle?.interval,
     }));

@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { restoreLocation } from './helpers/location';
 import { typewriterConfig } from '../components/lighty/LightyTyped';
 
@@ -13,3 +13,11 @@ afterEach(() => {
   localStorage.clear();
   restoreLocation();
 });
+
+// jsdom has no IntersectionObserver; framer's whileInView and NumberFlow ask for one (LT-512).
+class NoIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+vi.stubGlobal('IntersectionObserver', NoIntersectionObserver);

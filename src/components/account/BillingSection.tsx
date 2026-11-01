@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import type { CheckoutEventsData } from '@paddle/paddle-js';
@@ -27,9 +27,11 @@ import { fetchMyEntitlements, MyEntitlements, BookingsMeter } from '../../servic
 import ExtraBookingsSwitch from './ExtraBookingsSwitch';
 import PlanChangeModal from './PlanChangeModal';
 import PlanCompare from './PlanCompare';
+import PlainPlans from './PlainPlans';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
+import { lazyOr } from '../../lib/lazyOr';
 
 // Activation is webhook-driven, so after a completed checkout the server is
 // re-read on this cadence until the subscription flips. Sandbox webhooks
@@ -61,6 +63,9 @@ interface BillingSectionProps {
    */
   leadsSite?: boolean;
 }
+
+// LT-512: on sale only on the web (LT-130), so the apps never fetch this chunk.
+const PricingSection = lazyOr(() => import('../ui/pricing-section-3'), PlainPlans);
 
 const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) => {
   const { auth, refreshUser } = useAuth();
@@ -392,7 +397,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     t('billing.planBookingTerms', { included, price: money(agorot / 100, 'ILS') });
   // What one extra booking costs (LT-465), for the switch and the plans.
   const extraPrice = money((bookings?.extraAgorot ?? bookingTerms?.extraAgorot ?? 35) / 100, 'ILS');
-  const plusTermsLine = t('billing.planBookingTermsPlus', { included: bookingTerms?.plusIncluded ?? 200 });
+  // LT-511: what a plan includes, in what this site does: bookings or inquiries.
+  const plusTermsLine = leadsSite
+    ? t('billing.planLeadTermsPlus')
+    : t('billing.planBookingTermsPlus', { included: bookingTerms?.plusIncluded ?? 200 });
+  const proTermsLine = leadsSite
+    ? t('billing.planLeadTermsPro')
+    : bookingTerms?.extraAgorot != null ? termsLine(bookingTerms.included, bookingTerms.extraAgorot) : null;
   const currentPlan = entitlements && entitlements.plan !== 'free' ? entitlements.plan : null;
   const otherPlan: PaidPlan = currentPlan === 'plus' ? 'pro' : 'plus';
   const meterChanged = (next: BookingsMeter) =>
@@ -791,9 +802,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                           <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="checkout-booking-terms">
                             {plusTermsLine}
                           </p>
-                        ) : bookingTerms?.extraAgorot != null && (
+                        ) : proTermsLine && (
                           <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="checkout-booking-terms">
-                            {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
+                            {proTermsLine}
                           </p>
                         )}
                         <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -828,47 +839,27 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     {t('billing.pilotSubscribeNote', { date: pilotDate })}
                   </p>
                 )}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {plans.map((plan) => (
-                    <div
-                      key={plan.priceId}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2"
-                    >
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        <bdi>{PLAN_NAMES[plan.plan]}</bdi>
-                      </span>
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {plan.formatted}
-                        {plan.interval && (
-                          <span className="text-sm font-normal text-gray-500">
-                            {' / '}
-                            {t(`billing.per_${plan.interval}`)}
-                          </span>
-                        )}
-                      </span>
-                      <Button
-                        variant="primary"
-                        onClick={() => handleUpgrade(plan)}
-                        disabled={opening !== null}
-                      >
-                        {opening === plan.priceId
-                          ? t('billing.opening')
-                          : pilotDate
-                            ? t('billing.subscribe')
-                            : t('billing.upgrade')}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                {/* What the plan includes, and what a booking over it costs (LT-458). */}
+                <Suspense fallback={<div className="h-96" />}>
+                  <PricingSection
+                    plans={plans}
+                    leadsSite={leadsSite}
+                    locale={dateLocale}
+                    extraPrice={extraPrice}
+                    opening={opening}
+                    actionLabel={pilotDate ? t('billing.subscribe') : t('billing.upgrade')}
+                    onFreePlan={!pilotDate}
+                    onChoose={handleUpgrade}
+                  />
+                </Suspense>
+                {/* What the plan includes, and what a booking over it costs (LT-458, LT-511). */}
                 {plans.some((plan) => plan.plan === 'plus') && (
                   <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="plan-booking-terms-plus">
                     <bdi>{PLAN_NAMES.plus}</bdi>: {plusTermsLine}
                   </p>
                 )}
-                {bookingTerms?.extraAgorot != null && (
+                {proTermsLine && (
                   <p className="text-xs text-gray-600 dark:text-gray-300" data-testid="plan-booking-terms">
-                    <bdi>{PLAN_NAMES.pro}</bdi>: {termsLine(bookingTerms.included, bookingTerms.extraAgorot)}
+                    <bdi>{PLAN_NAMES.pro}</bdi>: {proTermsLine}
                   </p>
                 )}
                 {/* Paddle asks for the seller's own refund terms beside the plans (LT-265). */}
@@ -887,7 +878,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
 
             {/* The plans side by side (LT-465): web only, as the plans are,
                 and said even when Paddle's prices could not be read. */}
-            {canSell && !checkout && <PlanCompare mode="compare" price={extraPrice} />}
+            {canSell && !checkout && <PlanCompare mode="compare" price={extraPrice} leadsSite={leadsSite} />}
 
             {/* A plan that ended still has its invoices (LT-265). */}
             {manageButton && <div>{manageButton}</div>}

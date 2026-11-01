@@ -1003,6 +1003,21 @@
       "chargeFailed": "Le dernier prélèvement pour les réservations supplémentaires n'est pas passé : impossible de les activer tant qu'il n'est pas réglé.",
       "failed": "Enregistrement impossible. Réessayez."
     },
+    "pricing": {
+      "title": "Forfaits et tarifs",
+      "subtitle": "Chaque forfait comprend un site complet. Choisissez celui qui vous convient.",
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "saveMonths": "{{months}} mois offerts",
+      "recommended": "Recommandé",
+      "current": "Votre forfait actuel",
+      "includes": "Ce qui est inclus :",
+      "desc": {
+        "free": "Démarrez et voyez comment ça marche.",
+        "plus": "Tout ce qu’il faut pour la plupart des sites.",
+        "pro": "Plus de place et plus d’IA pour un site très actif."
+      }
+    },
     "compare": {
       "title": "Gratuit et Lightor+ comparés",
       "feature": "Fonction",
@@ -1079,6 +1094,8 @@
       }
     },
     "planBookingTermsPlus": "Comprend jusqu’à {{included}} réservations par mois. À {{included}}, votre site cesse de prendre des réservations jusqu’au mois suivant.",
+    "planLeadTermsPlus": "Comprend jusqu’à 200 demandes par mois. À 200, le formulaire de contact de votre site laisse place aux boutons d’appel et WhatsApp jusqu’au mois suivant.",
+    "planLeadTermsPro": "Comprend des demandes illimitées.",
     "activePlan": "Votre formule :",
     "plusFullDesc": "Votre site ne prend plus de réservations jusqu’au {{date}}. Passer à Lightor Pro les rouvre maintenant.",
     "change": {

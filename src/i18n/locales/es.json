@@ -1003,6 +1003,21 @@
       "chargeFailed": "El último cobro de reservas extra no se pudo hacer, así que no se pueden activar hasta que se haga.",
       "failed": "No se pudo guardar. Inténtalo de nuevo."
     },
+    "pricing": {
+      "title": "Planes y precios",
+      "subtitle": "Todos los planes incluyen un sitio completo. Elige el que te encaje.",
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "saveMonths": "{{months}} meses gratis",
+      "recommended": "Recomendado",
+      "current": "Tu plan actual",
+      "includes": "Qué incluye:",
+      "desc": {
+        "free": "Empieza y mira cómo funciona.",
+        "plus": "Todo lo que necesitan la mayoría de los sitios.",
+        "pro": "Más espacio y más IA para un sitio con mucho movimiento."
+      }
+    },
     "compare": {
       "title": "Gratis y Lightor+ comparados",
       "feature": "Función",
@@ -1079,6 +1094,8 @@
       }
     },
     "planBookingTermsPlus": "Incluye hasta {{included}} reservas al mes. Al llegar a {{included}}, tu sitio deja de aceptar reservas hasta el mes siguiente.",
+    "planLeadTermsPlus": "Incluye hasta 200 consultas al mes. Al llegar a 200, el formulario de contacto de tu sitio se sustituye por botones de llamada y WhatsApp hasta el mes siguiente.",
+    "planLeadTermsPro": "Incluye consultas ilimitadas.",
     "activePlan": "Tu plan:",
     "plusFullDesc": "Tu sitio no acepta nuevas reservas hasta el {{date}}. Pasar a Lightor Pro las reabre ahora.",
     "change": {
