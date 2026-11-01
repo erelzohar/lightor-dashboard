@@ -43,7 +43,7 @@ describe('AdminMessages', () => {
     expect(sendSystemMessage).not.toHaveBeenCalled();
 
     vi.mocked(fetchSystemMessages).mockResolvedValue({ data: [row], audience: 22 });
-    fireEvent.click(screen.getAllByRole('button', { name: 'admin.messages.send' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: 'admin.messages.send' }).slice(-1)[0]);
 
     await waitFor(() => expect(sendSystemMessage).toHaveBeenCalledWith({ title: 'Upkeep', body: 'Tonight', push: false }));
     expect(await screen.findByTestId('system-message-row')).toHaveTextContent('admin.messages.recipients:22');
