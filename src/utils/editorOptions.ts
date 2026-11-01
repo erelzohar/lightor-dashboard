@@ -195,7 +195,7 @@ export interface SectionDef {
 
 const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage'];
 const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
-const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight'];
+const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight', 'editorial'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
 const SCHEDULE_STYLES = ['card', 'flat', 'inset', 'split'];
 const CONTACT_LAYOUTS = ['split', 'stacked', 'poster', 'editorial', 'statement', 'band', 'cards'];
