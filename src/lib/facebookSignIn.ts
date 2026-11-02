@@ -25,10 +25,16 @@ export const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || '';
 export const facebookSignInAvailable = (): boolean =>
   import.meta.env.VITE_FACEBOOK_LOGIN_ENABLED === 'true' && Boolean(FACEBOOK_APP_ID);
 
-/** A user closing Facebook's sheet or popup is not an error. */
+/**
+ * A user closing Facebook's sheet or popup is not an error. Android says
+ * "Sign in canceled."; the iPhone's Limited Login rejects a cancel with no
+ * message at all (the plugin passes neither text nor error for `.cancelled`),
+ * while every real failure carries the error's description.
+ */
 export const isFacebookCancel = (err: unknown): boolean => {
   const e = err as { message?: string; code?: string | number };
-  return /cancel/i.test(e?.message ?? '') || /cancel/i.test(String(e?.code ?? ''));
+  const message = (e?.message ?? '').trim();
+  return !message || /cancel/i.test(message) || /cancel/i.test(String(e?.code ?? ''));
 };
 
 export const nativeFacebookSignIn = async (): Promise<FacebookCredential> => {

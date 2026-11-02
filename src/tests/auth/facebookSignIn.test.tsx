@@ -64,6 +64,8 @@ describe('in the app', () => {
   it('a closed sheet is not an error', () => {
     expect(isFacebookCancel(new Error('Sign in canceled.'))).toBe(true);
     expect(isFacebookCancel(new Error('Network error'))).toBe(false);
+    // The iPhone's Limited Login rejects a cancel with an empty message.
+    expect(isFacebookCancel(new Error(''))).toBe(true);
   });
 });
 
