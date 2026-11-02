@@ -118,7 +118,10 @@ describe('the Products page (LT-540)', () => {
     render(<Products />);
     fireEvent.click(await screen.findByTestId('product-card'));
     const dialog = await screen.findByTestId('product-editor');
-    fireEvent.click(within(dialog).getByTestId('fill-from-picture'));
+    const fill = within(dialog).getByTestId('fill-from-picture');
+    // LT-542 (Erel): it looks like a button - the pop look, not a line of text.
+    expect(fill.className).toContain('shadow-[inset_0_0_0_2px_var(--pop-edge)');
+    fireEvent.click(fill);
     await waitFor(() => expect((within(dialog).getByLabelText('products.summary') as HTMLInputElement).value).toBe('AI line'));
     expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Ring');
     expect(aiService.draftProduct).toHaveBeenCalledWith('a.webp', 'he');

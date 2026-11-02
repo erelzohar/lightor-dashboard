@@ -127,6 +127,23 @@ describe('Leads page', () => {
     await waitFor(() => expect(deleteLead).toHaveBeenCalledWith('l2'));
   });
 
+  // LT-542 (Erel: "only the product's name, make it a real link to the product").
+  it('opens the product a lead is about where the site shows it, and keeps the bare name when it does not', async () => {
+    vi.mocked(fetchLeads).mockReset().mockResolvedValue(page([
+      lead('l1', 'Dana Levi', { product: { name: 'Big candle', url: 'https://candles.lightor.app/products/big-candle' } }),
+      lead('l2', 'Moshe Cohen', { product: { name: 'Old candle' } }),
+    ]) as never);
+    renderAt(<Leads />);
+
+    const [linked, bare] = await screen.findAllByTestId('lead-product');
+    expect(linked.tagName).toBe('A');
+    expect(linked.getAttribute('href')).toBe('https://candles.lightor.app/products/big-candle');
+    expect(linked.getAttribute('target')).toBe('_blank');
+    expect(linked.getAttribute('rel')).toContain('noopener');
+    expect(bare.tagName).toBe('P');
+    expect(bare.closest('a')).toBeNull();
+  });
+
   it('shows the empty state', async () => {
     vi.mocked(fetchLeads).mockResolvedValue(page([], { new: 0, contacted: 0, closed: 0 }) as never);
     renderAt(<Leads />);

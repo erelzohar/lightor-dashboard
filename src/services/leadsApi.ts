@@ -19,8 +19,11 @@ export interface Lead {
   phone: string;
   message?: string;
   answers?: AppointmentAnswer[];
-  /** LT-540: the product it is about, as it was then. */
-  product?: { name: string; price?: number };
+  /**
+   * LT-540: the product it is about, as it was then. `url` (LT-542) is where
+   * the site shows it now; absent once the site no longer does.
+   */
+  product?: { name: string; price?: number; url?: string };
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;

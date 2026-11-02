@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Inbox, Phone, MessageCircle, Trash2, ChevronLeft, ChevronRight, Loader2, UserRound, UserPlus } from 'lucide-react';
+import { Inbox, Phone, MessageCircle, Trash2, ChevronLeft, ChevronRight, Loader2, UserRound, UserPlus, ShoppingBag, ExternalLink } from 'lucide-react';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CustomerDetailDrawer from '../components/customers/CustomerDetailDrawer';
 import LeadToCustomerDialog from '../components/customers/LeadToCustomerDialog';
@@ -258,11 +258,24 @@ const Leads: React.FC = () => {
                   )}
                 </div>
 
-                {lead.product && (
+                {/* LT-542: the product opens where the site shows it. */}
+                {lead.product && (lead.product.url ? (
+                  <a
+                    href={lead.product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="lead-product"
+                    className="flex w-fit max-w-full items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <ShoppingBag size={15} className="shrink-0" aria-hidden="true" />
+                    <span className="min-w-0 break-words [overflow-wrap:anywhere]">{t('leads.aboutProduct', { name: lead.product.name })}</span>
+                    <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
+                  </a>
+                ) : (
                   <p className="text-sm font-medium text-primary break-words" data-testid="lead-product">
                     {t('leads.aboutProduct', { name: lead.product.name })}
                   </p>
-                )}
+                ))}
                 {lead.message && (
                   <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                     {lead.message}

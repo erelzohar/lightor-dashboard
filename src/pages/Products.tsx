@@ -28,6 +28,7 @@ import { currencySymbol } from '../utils/currency';
 import { siteUrlOf } from '../utils/siteUrl';
 import { isAiBusy } from '../lib/aiErrors';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
+import { pop } from '../components/ui/pop-button';
 
 const MAX_PICTURES = 6;
 const MAX_DETAILS = 6;
@@ -224,8 +225,15 @@ const ProductEditor: React.FC<{
             </div>
             <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t('products.picturesHint')}</p>
             {draft.images.length > 0 && (
-              <button type="button" onClick={fillFromPicture} disabled={drafting} className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary disabled:opacity-60" data-testid="fill-from-picture">
-                {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              // LT-542 (Erel): a button, not a line of purple text.
+              <button
+                type="button"
+                onClick={fillFromPicture}
+                disabled={drafting}
+                className={`mt-3 inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
+                data-testid="fill-from-picture"
+              >
+                {drafting ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
                 {t('products.fillFromPicture')}
               </button>
             )}
