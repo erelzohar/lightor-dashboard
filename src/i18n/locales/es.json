@@ -1642,19 +1642,56 @@
     },
     "messages": {
       "title": "Mensaje del sistema",
-      "subtitle": "Un mensaje para todas las cuentas. Aparece en la página de Notificaciones de cada propietario.",
+      "subtitle": "Un mensaje a todas las cuentas o a algunas. Aparece en la página de Notificaciones de quien lo recibe.",
       "titleLabel": "Título",
       "bodyLabel": "Mensaje",
       "pushLabel": "Enviar también un push a la app",
       "pushHint": "Solo mensajes de servicio. Apple y Google no permiten publicidad por push sin consentimiento.",
-      "send": "Enviar a todos",
-      "confirmTitle": "¿Enviar a todas las cuentas?",
+      "send": "Enviar",
+      "confirmTitle": "¿Enviar este mensaje?",
       "confirm": "Llegará a {{n}} cuentas y no se puede deshacer una vez enviado.",
       "sent": "Enviado a {{n}} cuentas",
       "historyTitle": "Enviados recientemente",
       "empty": "Aún no se enviaron mensajes",
       "recipients": "{{n}} cuentas",
-      "pushed": "{{n}} teléfonos"
+      "pushed": "{{n}} teléfonos",
+      "audience": {
+        "title": "Quién lo recibe",
+        "byGroup": "Por grupo",
+        "byAccounts": "Cuentas concretas",
+        "groupHint": "Sin elegir nada, llega a todos. En cada fila basta con una de tus opciones; entre filas hacen falta todas.",
+        "siteKinds": {
+          "label": "Tipo de sitio",
+          "book": "Reservas",
+          "lead": "Consultas",
+          "catalog": "Con productos"
+        },
+        "plans": {
+          "label": "Plan",
+          "free": "Gratis",
+          "trial": "Días gratis",
+          "plus": "Lightor+",
+          "pro": "Lightor Pro",
+          "lapsed": "Cancelado o pago fallido"
+        },
+        "languages": {
+          "label": "Idioma del panel"
+        },
+        "siteStates": {
+          "label": "Sitio",
+          "live": "Publicado",
+          "notLive": "Aún no publicado"
+        },
+        "accountsLabel": "Cuentas que lo reciben",
+        "excludeLabel": "No enviar a...",
+        "search": "Buscar por nombre, correo o negocio",
+        "noResults": "No se encontraron cuentas",
+        "remove": "Quitar {{name}}",
+        "count": "Llegará a {{n}} cuentas",
+        "counting": "Contando cuentas...",
+        "everyone": "Todos",
+        "without": "Excepto {{names}}"
+      }
     }
   },
   "customers": {

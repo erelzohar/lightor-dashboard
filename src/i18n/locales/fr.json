@@ -1642,19 +1642,56 @@
     },
     "messages": {
       "title": "Message système",
-      "subtitle": "Un message pour tous les comptes. Il apparaît sur la page Notifications de chaque propriétaire.",
+      "subtitle": "Un message à tous les comptes ou à une partie. Il apparaît sur la page Notifications de chaque destinataire.",
       "titleLabel": "Titre",
       "bodyLabel": "Message",
       "pushLabel": "Envoyer aussi une notification push à l'application",
       "pushHint": "Messages de service uniquement. Apple et Google n'autorisent pas la publicité par push sans consentement.",
-      "send": "Envoyer à tous",
-      "confirmTitle": "Envoyer à tous les comptes ?",
+      "send": "Envoyer",
+      "confirmTitle": "Envoyer ce message ?",
       "confirm": "Ce message atteindra {{n}} comptes et ne pourra plus être annulé.",
       "sent": "Envoyé à {{n}} comptes",
       "historyTitle": "Envoyés récemment",
       "empty": "Aucun message envoyé pour le moment",
       "recipients": "{{n}} comptes",
-      "pushed": "{{n}} téléphones"
+      "pushed": "{{n}} téléphones",
+      "audience": {
+        "title": "Destinataires",
+        "byGroup": "Par groupe",
+        "byAccounts": "Comptes précis",
+        "groupHint": "Sans choix, le message va à tout le monde. Dans une ligne, un seul de vos choix suffit ; entre les lignes, il les faut tous.",
+        "siteKinds": {
+          "label": "Type de site",
+          "book": "Rendez-vous",
+          "lead": "Demandes",
+          "catalog": "Avec produits"
+        },
+        "plans": {
+          "label": "Formule",
+          "free": "Gratuit",
+          "trial": "Jours gratuits",
+          "plus": "Lightor+",
+          "pro": "Lightor Pro",
+          "lapsed": "Annulé ou paiement échoué"
+        },
+        "languages": {
+          "label": "Langue du tableau de bord"
+        },
+        "siteStates": {
+          "label": "Site",
+          "live": "En ligne",
+          "notLive": "Pas encore en ligne"
+        },
+        "accountsLabel": "Comptes destinataires",
+        "excludeLabel": "Ne pas envoyer à...",
+        "search": "Rechercher par nom, e-mail ou entreprise",
+        "noResults": "Aucun compte trouvé",
+        "remove": "Retirer {{name}}",
+        "count": "Ce message atteindra {{n}} comptes",
+        "counting": "Comptage des comptes...",
+        "everyone": "Tout le monde",
+        "without": "Sauf {{names}}"
+      }
     }
   },
   "customers": {

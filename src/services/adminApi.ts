@@ -464,11 +464,37 @@ export interface SiteReportRow {
 }
 
 /** A message sent to every account (LT-534). */
+/**
+ * Who a system message goes to (LT-543): the named accounts when there are
+ * any; otherwise each list narrows it (any of its values) and nothing set is
+ * every account. The excluded never get it.
+ */
+export interface SystemMessageAudience {
+  accounts?: string[];
+  siteKinds?: Array<'book' | 'lead' | 'catalog'>;
+  plans?: Array<'free' | 'trial' | 'plus' | 'pro' | 'lapsed'>;
+  languages?: Array<'he' | 'en' | 'ar' | 'fr' | 'es'>;
+  siteStates?: Array<'live' | 'notLive'>;
+  exclude?: string[];
+}
+
+/** A named account in a sent message's audience, as the history shows it. */
+export interface AudienceAccount {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 export interface SystemMessageRow {
   _id: string;
   title: string;
   body: string;
   push: boolean;
+  /** Messages from before LT-543 have none: they went to everyone. */
+  audience?: Omit<SystemMessageAudience, 'accounts' | 'exclude'> & {
+    accounts?: AudienceAccount[];
+    exclude?: AudienceAccount[];
+  };
   recipients: number;
   pushed: number;
   createdAt: string;
@@ -477,8 +503,16 @@ export interface SystemMessageRow {
 export const fetchSystemMessages = (): Promise<{ data: SystemMessageRow[]; audience: number }> =>
   get<{ data: SystemMessageRow[]; audience: number }>('system-messages');
 
-export const sendSystemMessage = async (message: { title: string; body: string; push: boolean }): Promise<SystemMessageRow> =>
-  (await send<{ data: SystemMessageRow }>('post', 'system-messages', message)).data;
+/** How many accounts an audience reaches right now. */
+export const countSystemMessageAudience = async (audience: SystemMessageAudience): Promise<number> =>
+  (await send<{ count: number }>('post', 'system-messages/audience', { audience })).count;
+
+export const sendSystemMessage = async (message: {
+  title: string;
+  body: string;
+  push: boolean;
+  audience: SystemMessageAudience;
+}): Promise<SystemMessageRow> => (await send<{ data: SystemMessageRow }>('post', 'system-messages', message)).data;
 
 export const fetchSiteReports = (
   query: { page?: number; limit?: number; status?: 'new' | 'handled' } = {}

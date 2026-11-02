@@ -1642,19 +1642,56 @@
     },
     "messages": {
       "title": "System message",
-      "subtitle": "One message to every account. It shows on each owner's Notifications page.",
+      "subtitle": "A message to every account or some of them. It shows on the Notifications page of everyone who gets it.",
       "titleLabel": "Title",
       "bodyLabel": "Message",
       "pushLabel": "Also send a push to the app",
       "pushHint": "Service messages only. Apple and Google don't allow advertising by push without consent.",
-      "send": "Send to everyone",
-      "confirmTitle": "Send to every account?",
+      "send": "Send",
+      "confirmTitle": "Send this message?",
       "confirm": "This reaches {{n}} accounts and can't be taken back once sent.",
       "sent": "Sent to {{n}} accounts",
       "historyTitle": "Sent recently",
       "empty": "No messages sent yet",
       "recipients": "{{n}} accounts",
-      "pushed": "{{n}} phones"
+      "pushed": "{{n}} phones",
+      "audience": {
+        "title": "Who gets it",
+        "byGroup": "By group",
+        "byAccounts": "Specific accounts",
+        "groupHint": "Pick nothing and it goes to everyone. Within a row any one of your picks is enough; across rows it takes all of them.",
+        "siteKinds": {
+          "label": "Site type",
+          "book": "Bookings",
+          "lead": "Inquiries",
+          "catalog": "With products"
+        },
+        "plans": {
+          "label": "Plan",
+          "free": "Free",
+          "trial": "Free days",
+          "plus": "Lightor+",
+          "pro": "Lightor Pro",
+          "lapsed": "Cancelled or payment failed"
+        },
+        "languages": {
+          "label": "Dashboard language"
+        },
+        "siteStates": {
+          "label": "Site",
+          "live": "Live",
+          "notLive": "Not live yet"
+        },
+        "accountsLabel": "Accounts that get it",
+        "excludeLabel": "Don't send to...",
+        "search": "Search by name, email or business",
+        "noResults": "No accounts found",
+        "remove": "Remove {{name}}",
+        "count": "This reaches {{n}} accounts",
+        "counting": "Counting accounts...",
+        "everyone": "Everyone",
+        "without": "Except {{names}}"
+      }
     }
   },
   "customers": {
