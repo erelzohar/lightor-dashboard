@@ -48,6 +48,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
   // Ticked from the start (LT-398, Erel): a plain login lasts 60 minutes,
   // a remembered one 180 days; the owner can still untick it.
   const [rememberMe, setRememberMe] = useState(true);
+  const socialCount = [true, !!onAppleLogin, !!onFacebookLogin].filter(Boolean).length;
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -305,7 +306,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
               </div>
 
               {/* Social login buttons */}
-              <div className={`grid gap-3 ${[true, !!onAppleLogin, !!onFacebookLogin].filter(Boolean).length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <div className={`grid gap-3 ${socialCount > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
@@ -325,8 +326,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 </motion.button>
 
                 {/* LT-383: Apple's white button for dark backgrounds (Human
-                    Interface Guidelines): the Apple logo and one of Apple's
-                    approved titles, as tall as Google's beside it. */}
+                    Interface Guidelines), as tall as Google's beside it. Its
+                    title is just "Apple", like Google's and Facebook's (Erel,
+                    LT-552). */}
                 {onAppleLogin && (
                 <motion.button
                   whileTap={{ scale: 0.98 }}
@@ -339,7 +341,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M16.37 1.43c0 1.14-.42 2.2-1.12 2.98-.84.93-1.98 1.47-3.08 1.38-.13-1.1.42-2.25 1.1-2.99.77-.85 2.07-1.48 3.1-1.37zM20.5 17.24c-.55 1.27-.81 1.84-1.52 2.96-.99 1.56-2.38 3.5-4.11 3.52-1.53.01-1.93-1-4.01-.99-2.08.01-2.52 1-4.05.99-1.73-.02-3.05-1.77-4.04-3.33C.01 16.03-.28 10.97 1.46 8.29c1.24-1.9 3.19-3.01 5.03-3.01 1.87 0 3.05 1.03 4.6 1.03 1.5 0 2.42-1.03 4.58-1.03 1.64 0 3.38.89 4.62 2.43-4.06 2.23-3.4 8.03.21 9.53z" />
                     </svg>
-                    <span className="text-xs truncate">{t('login.apple')}</span>
+                    <span className="text-xs">Apple</span>
                   </div>
                 </motion.button>
                 )}
@@ -350,7 +352,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                   type="button"
                   onClick={onFacebookLogin}
                   data-testid="facebook-sign-in"
-                  className="relative group/facebook"
+                  // Third in a row of two (the iPhone app: Google, Apple,
+                  // Facebook): the whole width, so no gap is left beside it.
+                  className={`relative group/facebook ${socialCount === 3 ? 'col-span-2' : ''}`}
                 >
                   <div className="absolute inset-0 bg-[#1877F2]/10 rounded-lg blur opacity-0 group-hover/facebook:opacity-70 transition-opacity duration-300" />
                   <div className="relative overflow-hidden bg-white/5 text-white font-medium h-10 rounded-lg border border-white/10 hover:border-[#1877F2]/40 transition-all duration-300 flex items-center justify-center gap-2">

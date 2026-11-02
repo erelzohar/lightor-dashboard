@@ -80,6 +80,21 @@ describe('the button', () => {
     expect(screen.queryByTestId('facebook-sign-in')).toBeNull();
   });
 
+  it('takes the whole row when it is the third button', () => {
+    render(
+      <MemoryRouter>
+        <SignInCard onSubmit={async () => {}} onGoogleLogin={() => {}} onAppleLogin={() => {}} onFacebookLogin={() => {}} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('facebook-sign-in').className).toContain('col-span-2');
+    expect(screen.getByTestId('apple-sign-in')).toHaveTextContent(/^Apple$/);
+  });
+
+  it('shares the row with Google when it is the second', () => {
+    card(() => {});
+    expect(screen.getByTestId('facebook-sign-in').className).not.toContain('col-span-2');
+  });
+
   it('calls it', () => {
     const onFacebook = vi.fn();
     card(onFacebook);

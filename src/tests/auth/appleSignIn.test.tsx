@@ -94,7 +94,7 @@ describe('the sign-in card', () => {
     const onApple = vi.fn();
     renderCard(onApple);
     const button = screen.getByTestId('apple-sign-in');
-    expect(button).toHaveTextContent('login.apple');
+    expect(button).toHaveTextContent('Apple');
     expect(button.parentElement?.className).toContain('grid-cols-2');
     fireEvent.click(button);
     expect(onApple).toHaveBeenCalledTimes(1);
