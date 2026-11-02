@@ -124,7 +124,7 @@ const AdminMessages: React.FC = () => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-2xl">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">{t('admin.messages.title')}</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.messages.subtitle')}</p>

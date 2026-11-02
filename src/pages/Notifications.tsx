@@ -64,7 +64,7 @@ const Notifications: React.FC = () => {
 
   return (
     <PullToRefresh onRefresh={load}>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-2xl mx-auto space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10">
             <Bell size={22} className="text-primary" />
@@ -101,7 +101,7 @@ const Notifications: React.FC = () => {
         )}
 
         {!!items?.length && (
-          <ul data-tour="notifications-list" className="space-y-2 max-w-2xl">
+          <ul data-tour="notifications-list" className="space-y-2">
             {items.map((item) => {
               const Icon = EVENT_ICONS[item.event] ?? Bell;
               const unread = !item.read;
