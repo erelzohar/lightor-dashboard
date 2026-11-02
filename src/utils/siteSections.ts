@@ -52,6 +52,7 @@ export const SECTION_CATALOG: { type: string; group: SectionGroup }[] = [
   { type: 'manifesto', group: 'content' },
   { type: 'pullQuote', group: 'content' },
   { type: 'announcement', group: 'content' },
+  { type: 'products', group: 'images' },
   { type: 'gallery', group: 'images' },
   { type: 'interlude', group: 'images' },
   { type: 'photoPair', group: 'images' },
@@ -115,6 +116,9 @@ export const availabilityOf = (config: WebConfig, type: string, pageSize: number
       return { ok: true, source: 'owner' };
     // LT-320: an emptied gallery was a dead end ("add photos first", with no
     // way to add one here); now it comes back empty, ready for the owner's photos.
+    // LT-540: they are added on their own page; the section's panel leads there.
+    case 'products':
+      return READY;
     case 'gallery':
       return photos > 0 ? READY : { ok: true, source: 'photos' };
     case 'interlude':
@@ -235,6 +239,7 @@ export const defaultInsertIndex = (types: string[], type: string): number => {
     case 'features':
     case 'process':
       at = afterLast(['intro']) ?? firstOf(['gallery', 'photoPair', 'beforeAfter', 'interlude', 'ledger', 'priceCards', 'quote', 'bookingBand', 'schedule', ...TAIL]); break;
+    case 'products':
     case 'gallery':
     case 'interlude':
     case 'photoPair':
@@ -293,6 +298,7 @@ const blockFor = (config: WebConfig, type: string, id: string): SiteBlock => {
     case 'intro': return { id, type, variant: INTRO_VARIANT[aboutLayout] ?? 'plain', source: 'about' };
     // LT-530: a section added by hand opens in the two designs that do not repeat each other.
     case 'features': return { id, type, variant: 'bento', source: 'about.features' };
+    case 'products': return { id, type, source: 'products' };
     case 'gallery':
     case 'interlude':
     case 'beforeAfter': return { id, type, source: 'portfolio' };

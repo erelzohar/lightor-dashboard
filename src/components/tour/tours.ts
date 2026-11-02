@@ -102,6 +102,15 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
           { key: 'services.list', target: at('services') },
         ],
       };
+    case '/products':
+      return {
+        id: 'products',
+        steps: [
+          { key: 'products.add', target: at('add-product') },
+          { key: 'products.many', target: at('add-products') },
+          { key: 'products.list', target: at('products') },
+        ],
+      };
     case '/portfolio':
       return {
         id: 'gallery',

@@ -21,7 +21,9 @@ import {
   Inbox,
   Megaphone,
   Flag,
-  LifeBuoy, Tags } from 'lucide-react';
+  LifeBuoy, Tags,
+  ShoppingBag,
+} from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
 import { usePhoneBar } from '../../contexts/PhoneBarContext';
@@ -247,6 +249,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
     void refreshUnreadNotifications();
   }, [location.pathname, isRestricted, setMenuOpen]);
 
+  const showGallery = !webConfig?.catalog || (webConfig?.components?.portfolio?.items?.length ?? 0) > 0;
+
   const navSections = [
     {
       id: 'navigation',
@@ -280,7 +284,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
             ]),
         { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
-        { path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') },
+        // LT-540: on a site with products they take the gallery's place; a gallery
+        // that holds pictures stays beside them.
+        ...(showGallery ? [{ path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') }] : []),
+        { path: '/products', Icon: ShoppingBag, name: t('common.products') },
         { path: '/settings', Icon: Settings, name: t('common.settings') },
       ],
     },

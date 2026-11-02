@@ -61,7 +61,8 @@
       "dropped": "{{name}} déposé à la place de {{over}}.",
       "cancelled": "Déplacement annulé."
     },
-    "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes."
+    "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes.",
+    "products": "Produits"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -1855,7 +1856,8 @@
       "loadFailed": "Impossible de charger les demandes",
       "saveFailed": "Impossible de mettre à jour la demande",
       "deleteFailed": "Impossible de supprimer la demande"
-    }
+    },
+    "aboutProduct": "Au sujet de : {{name}}"
   },
   "siteEditor": {
     "title": "Design du site",
@@ -1984,7 +1986,8 @@
       "remove": "Retirer la section",
       "fields": "Textes et images ici",
       "noOptions": "Cette section n'a pas d'options de design.",
-      "hiddenNote": "Cette section est masquée sur votre site. Elle apparaît estompée ici pour pouvoir la réafficher."
+      "hiddenNote": "Cette section est masquée sur votre site. Elle apparaît estompée ici pour pouvoir la réafficher.",
+      "manageProducts": "Gérer les produits"
     },
     "theme": {
       "tryStyle": "Touchez un style pour voir votre site avec",
@@ -2301,6 +2304,20 @@
         "title": "Tout ce qui s’est passé, au même endroit",
         "body": "Chaque message du système reste ici, même si vous l’avez désactivé sur le téléphone et par e-mail. Touchez-le pour ouvrir sa page."
       }
+    },
+    "products": {
+      "add": {
+        "title": "Ajouter un produit",
+        "body": "Un à la fois : photos, nom et prix."
+      },
+      "many": {
+        "title": "Plusieurs photos d'un coup",
+        "body": "Choisissez plusieurs photos : chacune devient un brouillon de produit. Lighty peut remplir le nom et la description à partir de la photo."
+      },
+      "list": {
+        "title": "Ordonner les produits",
+        "body": "Faites glisser pour changer l'ordre. Les premiers s'affichent sur la page d'accueil."
+      }
     }
   },
   "phoneInput": {
@@ -2362,5 +2379,61 @@
     "loading": "Chargement des notifications",
     "justNow": "À l'instant",
     "new": "Nouveau"
+  },
+  "products": {
+    "title": "Produits",
+    "description": "Les produits de votre site. Les personnes intéressées laissent une demande, qui vous parvient avec le nom du produit.",
+    "count": "{{used}} sur {{max}} produits",
+    "onePageNote": "Avec cette offre, le produit s'affiche sur la page d'accueil, sans page propre.",
+    "add": "Ajouter un produit",
+    "addMany": "Plusieurs photos d'un coup",
+    "seeOnSite": "Voir sur le site",
+    "newTitle": "Nouveau produit",
+    "editTitle": "Modifier le produit",
+    "newName": "Nouveau produit",
+    "name": "Nom du produit",
+    "price": "Prix",
+    "pricePlaceholder": "Vide = sans prix",
+    "category": "Catégorie",
+    "summary": "Ligne courte",
+    "fieldDescription": "Description",
+    "details": "Détails courts",
+    "detailPlaceholder": "Par exemple : argent 925, puis Entrée",
+    "pictures": "Photos",
+    "picturesHint": "Jusqu'à 6 photos. La première est la principale.",
+    "addPicture": "Ajouter une photo",
+    "removePicture": "Retirer la photo",
+    "removeDetail": "Retirer ce détail",
+    "fillFromPicture": "Laisser Lighty remplir à partir de la photo",
+    "published": "Affiché sur le site",
+    "soldOut": "Épuisé",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "delete": "Supprimer",
+    "reorder": "Déplacer {{name}}",
+    "nameRequired": "Un produit a besoin d'un nom",
+    "priceInvalid": "Le prix doit être un nombre, comme 120 ou 120.50",
+    "capReached": "Vous avez atteint le nombre de produits de cette offre.",
+    "tooMany": "Vous pouvez en ajouter encore {{count}}",
+    "draftsMade": "{{count}} brouillons créés",
+    "uploadError": "La photo n'a pas pu être envoyée",
+    "saveError": "L'enregistrement a échoué, réessayez",
+    "loadFailed": "Les produits n'ont pas pu être chargés",
+    "draftBudget": "Le budget de Lighty pour le mois est épuisé",
+    "draftFailed": "Lighty n'a pas pu lire la photo",
+    "badge": {
+      "draft": "Brouillon",
+      "sample": "Exemple, à remplacer"
+    },
+    "empty": {
+      "title": "Pas encore de produits",
+      "body": "Ajoutez un produit, ou choisissez plusieurs photos d'un coup."
+    },
+    "deleteDialog": {
+      "title": "Supprimer ce produit ?",
+      "body": "{{name}} sera retiré du site. C'est irréversible.",
+      "confirm": "Supprimer"
+    },
+    "close": "Fermer"
   }
 }

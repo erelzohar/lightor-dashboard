@@ -258,6 +258,11 @@ const Leads: React.FC = () => {
                   )}
                 </div>
 
+                {lead.product && (
+                  <p className="text-sm font-medium text-primary break-words" data-testid="lead-product">
+                    {t('leads.aboutProduct', { name: lead.product.name })}
+                  </p>
+                )}
                 {lead.message && (
                   <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                     {lead.message}

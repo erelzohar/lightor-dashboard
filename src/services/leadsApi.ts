@@ -19,6 +19,8 @@ export interface Lead {
   phone: string;
   message?: string;
   answers?: AppointmentAnswer[];
+  /** LT-540: the product it is about, as it was then. */
+  product?: { name: string; price?: number };
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;

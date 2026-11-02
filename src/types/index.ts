@@ -225,6 +225,10 @@ export interface WebConfig {
    * through `isLeadsSite` (utils/siteMode), never inline.
    */
   conversion?: 'book' | 'lead';
+  /** LT-540: the site shows products; set by the first one. */
+  catalog?: boolean;
+  /** LT-540: what the site shows of them, as the public site reads it (for the preview). */
+  products?: { total: number; pages: boolean; items: unknown[] };
   /**
    * The owner's own words about the business (LT-202), at most 2000
    * characters. The server writes it on every AI generation and the AI

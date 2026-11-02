@@ -133,6 +133,13 @@ export const LAYOUTS: Named = {
   columns: { he: 'עמודות', en: 'Columns' },
   tiles: { he: 'אריחים', en: 'Tiles' },
   steps: { he: 'שורת שלבים', en: 'Steps in a row' },
+  // products
+  well: { he: 'אריחים שקטים', en: 'Quiet tiles' },
+  list: { he: 'רשימה עם מחירים', en: 'List with prices' },
+  swap: { he: 'תמונה מתחלפת', en: 'Swapping picture' },
+  belt: { he: 'מסוע', en: 'Conveyor' },
+  hanger: { he: 'קולב', en: 'Clothes rail' },
+  coverflow: { he: 'קלפים בתלת ממד', en: 'Coverflow' },
   // gallery
   grid: { he: 'רשת', en: 'Grid' },
   masonry: { he: 'פסיפס', en: 'Masonry' },
@@ -236,6 +243,7 @@ export const SECTIONS: Record<string, SectionDef> = {
   visit: { label: { he: 'פרטי ביקור', en: 'Visit' } },
   portfolio: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS, designToken: 'portfolioLayout', visibleKey: 'portfolio' },
   gallery: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS },
+  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow'], designToken: 'productsLayout' },
   testimonials: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS, designToken: 'testimonialsLayout', visibleKey: 'testimonials' },
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },
@@ -275,6 +283,7 @@ export const SECTION_HINTS: Named = {
   pullQuote: { he: 'משפט מודגש בקול שלכם', en: 'A highlighted line in your voice' },
   announcement: { he: 'שורה בראש הדף: מבצע, חדשות', en: 'A line at the top: an offer, news' },
   gallery: { he: 'התמונות מהגלריה', en: 'Your gallery photos' },
+  products: { he: 'המוצרים שלך, עם תמונה ומחיר', en: 'Your products, with pictures and prices' },
   interlude: { he: 'תמונה רחבה בין אזורים', en: 'A wide photo between sections' },
   photoPair: { he: 'שתי תמונות זו לצד זו', en: 'Two photos side by side' },
   beforeAfter: { he: 'השוואה בין שתי תמונות', en: 'Two photos compared' },
@@ -292,7 +301,7 @@ export const SECTION_HINTS: Named = {
 };
 
 /** A block variant that stands for "the default look" — stored as no variant at all. */
-export const DEFAULT_VARIANT: Record<string, string> = { interlude: 'photo', bookingBand: 'plain', ledger: 'ledger', manifesto: 'display' };
+export const DEFAULT_VARIANT: Record<string, string> = { products: 'well', interlude: 'photo', bookingBand: 'plain', ledger: 'ledger', manifesto: 'display' };
 
 export const sectionDef = (type: string | null | undefined): SectionDef =>
   (type && SECTIONS[type]) || { label: { he: 'אזור', en: 'Section' } };

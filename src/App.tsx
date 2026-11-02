@@ -20,6 +20,7 @@ import Settings from './pages/Settings';
 import AppointmentTypes from './pages/AppointmentTypes';
 import Account from './pages/Account';
 import Portfolio from './pages/Portfolio';
+import Products from './pages/Products';
 import SiteEditor from './pages/SiteEditor';
 import LightyPage from './pages/Lighty';
 import AiToDesignRedirect from './components/routing/AiToDesignRedirect';
@@ -96,6 +97,7 @@ function App() {
                     <Route path="appointment-types" element={<AppointmentTypes />} />
                     <Route path="account" element={<Account />} />
                     <Route path="portfolio" element={<Portfolio />} />
+                    <Route path="products" element={<Products />} />
                     <Route path="design" element={<SiteEditor />} />
                     <Route path="lighty" element={<LightyPage />} />
                     <Route path="ai" element={<AiToDesignRedirect />} />

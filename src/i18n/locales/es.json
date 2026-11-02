@@ -61,7 +61,8 @@
       "dropped": "{{name}} soltado en el lugar de {{over}}.",
       "cancelled": "Movimiento cancelado."
     },
-    "aiBusy": "Un momento: otra solicitud todavía está en curso. Inténtalo de nuevo en unos segundos."
+    "aiBusy": "Un momento: otra solicitud todavía está en curso. Inténtalo de nuevo en unos segundos.",
+    "products": "Productos"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -1855,7 +1856,8 @@
       "loadFailed": "No se pudieron cargar las consultas",
       "saveFailed": "No se pudo actualizar la consulta",
       "deleteFailed": "No se pudo eliminar la consulta"
-    }
+    },
+    "aboutProduct": "Sobre: {{name}}"
   },
   "siteEditor": {
     "title": "Diseño del sitio",
@@ -1984,7 +1986,8 @@
       "remove": "Quitar la sección",
       "fields": "Textos e imágenes aquí",
       "noOptions": "Esta sección no tiene opciones de diseño.",
-      "hiddenNote": "Esta sección está oculta en tu sitio. Aquí aparece atenuada para que puedas volver a mostrarla."
+      "hiddenNote": "Esta sección está oculta en tu sitio. Aquí aparece atenuada para que puedas volver a mostrarla.",
+      "manageProducts": "Gestionar los productos"
     },
     "theme": {
       "tryStyle": "Toca un estilo para ver tu sitio con él",
@@ -2301,6 +2304,20 @@
         "title": "Todo lo que pasó, en un solo lugar",
         "body": "Cada mensaje del sistema queda aquí, aunque lo hayas desactivado en el teléfono y el correo. Tócalo para abrir su página."
       }
+    },
+    "products": {
+      "add": {
+        "title": "Agregar un producto",
+        "body": "Uno a la vez: fotos, nombre y precio."
+      },
+      "many": {
+        "title": "Muchas fotos a la vez",
+        "body": "Elige varias fotos y cada una será un borrador de producto. Lighty puede completar el nombre y la descripción a partir de la foto."
+      },
+      "list": {
+        "title": "Ordenar los productos",
+        "body": "Arrastra para cambiar el orden. Los primeros aparecen en la página de inicio."
+      }
     }
   },
   "phoneInput": {
@@ -2362,5 +2379,61 @@
     "loading": "Cargando notificaciones",
     "justNow": "Ahora",
     "new": "Nuevo"
+  },
+  "products": {
+    "title": "Productos",
+    "description": "Los productos de tu sitio. Quien se interesa deja una consulta, que te llega con el nombre del producto.",
+    "count": "{{used}} de {{max}} productos",
+    "onePageNote": "En este plan el producto aparece en la página de inicio, sin página propia.",
+    "add": "Agregar un producto",
+    "addMany": "Muchas fotos a la vez",
+    "seeOnSite": "Ver en el sitio",
+    "newTitle": "Producto nuevo",
+    "editTitle": "Editar producto",
+    "newName": "Producto nuevo",
+    "name": "Nombre del producto",
+    "price": "Precio",
+    "pricePlaceholder": "Vacío = sin precio",
+    "category": "Categoría",
+    "summary": "Línea corta",
+    "fieldDescription": "Descripción",
+    "details": "Datos breves",
+    "detailPlaceholder": "Por ejemplo: plata 925, luego Enter",
+    "pictures": "Fotos",
+    "picturesHint": "Hasta 6 fotos. La primera es la principal.",
+    "addPicture": "Agregar una foto",
+    "removePicture": "Quitar la foto",
+    "removeDetail": "Quitar este dato",
+    "fillFromPicture": "Que Lighty lo complete desde la foto",
+    "published": "Aparece en el sitio",
+    "soldOut": "Agotado",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "delete": "Eliminar",
+    "reorder": "Mover {{name}}",
+    "nameRequired": "Un producto necesita un nombre",
+    "priceInvalid": "El precio debe ser un número, como 120 o 120.50",
+    "capReached": "Alcanzaste el número de productos de este plan.",
+    "tooMany": "Puedes agregar {{count}} más",
+    "draftsMade": "{{count}} borradores creados",
+    "uploadError": "No se pudo subir la foto",
+    "saveError": "No se guardó, inténtalo de nuevo",
+    "loadFailed": "No se pudieron cargar los productos",
+    "draftBudget": "Se agotó el presupuesto mensual de Lighty",
+    "draftFailed": "Lighty no pudo leer la foto",
+    "badge": {
+      "draft": "Borrador",
+      "sample": "Ejemplo, conviene reemplazarlo"
+    },
+    "empty": {
+      "title": "Aún no hay productos",
+      "body": "Agrega un producto, o elige varias fotos a la vez."
+    },
+    "deleteDialog": {
+      "title": "¿Eliminar este producto?",
+      "body": "{{name}} se quitará del sitio. No se puede deshacer.",
+      "confirm": "Eliminar"
+    },
+    "close": "Cerrar"
   }
 }

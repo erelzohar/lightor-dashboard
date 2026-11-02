@@ -1,5 +1,7 @@
-import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, Trash2, Type } from 'lucide-react';
+import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, ShoppingBag, Trash2, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
@@ -43,6 +45,7 @@ const chip = (on: boolean) =>
  */
 function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSelectField, onMove, onAddBelow, onAddPhoto }: SectionPanelProps<T>) {
   const { t, i18n } = useTranslation();
+  const { guardLinkClick } = useLeaveGuard();
   const lang = vocabLang(i18n.language);
   const type = sectionType ?? section;
   const def = sectionDef(type);
@@ -111,6 +114,19 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
 
       {/* LT-320: the gallery's own action — a photo from the phone or the computer. */}
       {onAddPhoto && (type === 'gallery' || type === 'portfolio') && <AddPhotoButton onAdded={onAddPhoto} />}
+
+      {/* LT-540: products are records of their own, kept on their page. */}
+      {type === 'products' && (
+        <Link
+          to="/products"
+          onClick={(e) => guardLinkClick(e, '/products')}
+          data-testid="manage-products"
+          className="flex items-center justify-center gap-2 rounded-xl border border-primary/40 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+        >
+          <ShoppingBag className="h-4 w-4" aria-hidden="true" />
+          {t('siteEditor.section.manageProducts')}
+        </Link>
+      )}
 
       {/* LT-256: then Lighty's line — every text of the section at once. */}
       {aiFields.length > 0 && (

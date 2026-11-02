@@ -61,7 +61,8 @@
       "dropped": "{{name}} was dropped on {{over}}.",
       "cancelled": "The move was cancelled."
     },
-    "aiBusy": "One moment - another AI request is still running. Try again in a few seconds."
+    "aiBusy": "One moment - another AI request is still running. Try again in a few seconds.",
+    "products": "Products"
   },
   "greetings": {
     "morning": "Good morning",
@@ -1855,7 +1856,8 @@
       "loadFailed": "Could not load inquiries",
       "saveFailed": "Could not update the inquiry",
       "deleteFailed": "Could not delete the inquiry"
-    }
+    },
+    "aboutProduct": "About: {{name}}"
   },
   "siteEditor": {
     "title": "Site design",
@@ -1984,7 +1986,8 @@
       "remove": "Remove section",
       "fields": "Texts and pictures here",
       "noOptions": "This section has no design options.",
-      "hiddenNote": "This section is hidden on your site. It shows faded here so you can bring it back."
+      "hiddenNote": "This section is hidden on your site. It shows faded here so you can bring it back.",
+      "manageProducts": "Manage the products"
     },
     "theme": {
       "tryStyle": "Tap a style to see your site in it",
@@ -2301,6 +2304,20 @@
         "title": "Everything that happened, in one place",
         "body": "Every message from the system stays here, even one you turned off on your phone and email. Tap it to open its page."
       }
+    },
+    "products": {
+      "add": {
+        "title": "Add a product",
+        "body": "One at a time: pictures, a name and a price."
+      },
+      "many": {
+        "title": "Many pictures at once",
+        "body": "Pick several pictures and each becomes a draft product. Lighty can fill in a name and a description from the picture."
+      },
+      "list": {
+        "title": "Order the products",
+        "body": "Drag to change the order. The first ones show on the home page."
+      }
     }
   },
   "phoneInput": {
@@ -2362,5 +2379,61 @@
     "loading": "Loading notifications",
     "justNow": "Just now",
     "new": "New"
+  },
+  "products": {
+    "title": "Products",
+    "description": "The products on your site. Anyone interested leaves an inquiry, and it reaches you with the product's name.",
+    "count": "{{used}} of {{max}} products",
+    "onePageNote": "On this plan the product shows on the home page, without a page of its own.",
+    "add": "Add a product",
+    "addMany": "Many pictures at once",
+    "seeOnSite": "See on the site",
+    "newTitle": "New product",
+    "editTitle": "Edit product",
+    "newName": "New product",
+    "name": "Product name",
+    "price": "Price",
+    "pricePlaceholder": "Empty = no price",
+    "category": "Category",
+    "summary": "Short line",
+    "fieldDescription": "Description",
+    "details": "Short facts",
+    "detailPlaceholder": "For example: 925 silver, then Enter",
+    "pictures": "Pictures",
+    "picturesHint": "Up to 6 pictures. The first is the main one.",
+    "addPicture": "Add a picture",
+    "removePicture": "Remove the picture",
+    "removeDetail": "Remove this fact",
+    "fillFromPicture": "Let Lighty fill it in from the picture",
+    "published": "Shows on the site",
+    "soldOut": "Sold out",
+    "save": "Save",
+    "saved": "Saved",
+    "delete": "Delete",
+    "reorder": "Move {{name}}",
+    "nameRequired": "A product needs a name",
+    "priceInvalid": "The price must be a number, such as 120 or 120.50",
+    "capReached": "You have reached this plan's number of products.",
+    "tooMany": "You can add {{count}} more",
+    "draftsMade": "{{count}} drafts made",
+    "uploadError": "The picture could not be uploaded",
+    "saveError": "That did not save, please try again",
+    "loadFailed": "The products could not be loaded",
+    "draftBudget": "Lighty's budget for the month is used up",
+    "draftFailed": "Lighty could not read the picture",
+    "badge": {
+      "draft": "Draft",
+      "sample": "Sample, worth replacing"
+    },
+    "empty": {
+      "title": "No products yet",
+      "body": "Add a product, or pick several pictures at once."
+    },
+    "deleteDialog": {
+      "title": "Delete this product?",
+      "body": "{{name}} will be removed from the site. This cannot be undone.",
+      "confirm": "Delete"
+    },
+    "close": "Close"
   }
 }
