@@ -43,21 +43,20 @@ const config: CapacitorConfig = {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
     FirebaseAuthentication: {
-      // We only need Google's (LT-128) and Apple's (LT-383) ID tokens, which
-      // our own API verifies.
+      // We only need Google's (LT-128) and Apple's (LT-383) ID tokens and
+      // Facebook's token (LT-552), which our own API verifies.
       // Signing the user into Firebase Auth as well would create a Firebase
       // user record nothing reads and, on iOS, write to the keychain — which
       // fails outright on unsigned simulator builds ("keychain error").
       skipNativeAuth: true,
-      providers: ['google.com', 'apple.com'],
+      providers: ['google.com', 'apple.com', 'facebook.com'],
     },
   },
   // iOS uses Swift Package Manager (CocoaPods is not installed on the build
   // Mac). The two capawesome packages both depend on firebase-ios-sdk, which
   // trips a SwiftPM package-identity collision unless they are symlinked in
-  // (capawesome-team/capacitor-firebase#959). The `Google` trait keeps the
-  // GoogleSignIn SDK and drops the Facebook SDK — Facebook login is parked
-  // behind `metaFeatures` (LT-090) and would only add binary size here.
+  // (capawesome-team/capacitor-firebase#959). The `Google` and `Facebook`
+  // traits link the GoogleSignIn and Facebook SDKs (Facebook since LT-552).
   experimental: {
     ios: {
       spm: {
@@ -67,7 +66,7 @@ const config: CapacitorConfig = {
           '@capacitor-firebase/messaging': { symlink: true },
         },
         packageTraits: {
-          '@capacitor-firebase/authentication': ['Google'],
+          '@capacitor-firebase/authentication': ['Google', 'Facebook'],
         },
       },
     },

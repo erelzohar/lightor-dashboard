@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import FirebaseCore
 import FirebaseAuth
+import FBSDKCoreKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -33,6 +34,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             FirebaseApp.configure(options: placeholder)
             NSLog("Lightor: GoogleService-Info.plist missing — Firebase running on placeholder options; push and Google Sign-In are off")
         }
+        // LT-552: the Facebook SDK (Sign in with Facebook) reads FacebookAppID
+        // and FacebookClientToken from Info.plist.
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         return true
     }
 
@@ -75,6 +79,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Auth.auth() would crash before FirebaseApp.configure(), so guard on
         // the same condition as above.
         if FirebaseApp.app() != nil, Auth.auth().canHandle(url) {
+            return true
+        }
+        // LT-552: the Facebook app hands the sign-in back on fb<app id>://.
+        if ApplicationDelegate.shared.application(app, open: url, sourceApplication: options[.sourceApplication] as? String, annotation: options[.annotation]) {
             return true
         }
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)

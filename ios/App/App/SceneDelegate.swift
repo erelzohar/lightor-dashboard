@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import FBSDKCoreKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -15,6 +16,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        // LT-552: with scenes, the Facebook app's fb<app id>:// return lands
+        // here rather than in the AppDelegate; hand it to the Facebook SDK first.
+        for context in URLContexts {
+            ApplicationDelegate.shared.application(
+                UIApplication.shared, open: context.url,
+                sourceApplication: context.options.sourceApplication,
+                annotation: context.options.annotation
+            )
+        }
         SceneDelegateProxy.shared.scene(scene, openURLContexts: URLContexts)
     }
 

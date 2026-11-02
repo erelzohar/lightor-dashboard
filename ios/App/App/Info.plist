@@ -36,6 +36,32 @@
 				<string>com.googleusercontent.apps.303325632008-qm03eeusg4kr640k79ngjctdvts879h1</string>
 			</array>
 		</dict>
+		<!-- LT-552: the Facebook app returns the sign-in on fb<app id>://. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Facebook</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb2690947951349617</string>
+			</array>
+		</dict>
+	</array>
+	<!-- LT-552: Sign in with Facebook. The client token is the app's public
+	     client credential (Meta: App settings > Advanced), not the app secret. -->
+	<key>FacebookAppID</key>
+	<string>2690947951349617</string>
+	<key>FacebookClientToken</key>
+	<string>1caf461f06a5c14874b52ed5aebdd5b1</string>
+	<key>FacebookDisplayName</key>
+	<string>Lightor</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fbauth</string>
+		<string>fbauth2</string>
+		<string>fb-messenger-share-api</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>

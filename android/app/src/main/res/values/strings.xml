@@ -4,4 +4,9 @@
     <string name="title_activity_main">Lightor</string>
     <string name="package_name">app.lightor.dashboard</string>
     <string name="custom_url_scheme">app.lightor.dashboard</string>
+    <!-- LT-552: Sign in with Facebook. The client token is the app's public
+         client credential (Meta: App settings > Advanced), not the app secret. -->
+    <string name="facebook_app_id">2690947951349617</string>
+    <string name="fb_login_protocol_scheme">fb2690947951349617</string>
+    <string name="facebook_client_token">1caf461f06a5c14874b52ed5aebdd5b1</string>
 </resources>
