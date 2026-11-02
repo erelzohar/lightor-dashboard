@@ -80,13 +80,14 @@ describe('the button', () => {
     expect(screen.queryByTestId('facebook-sign-in')).toBeNull();
   });
 
-  it('takes the whole row when it is the third button', () => {
+  it('sits alone in the middle of its row when it is the third button', () => {
     render(
       <MemoryRouter>
         <SignInCard onSubmit={async () => {}} onGoogleLogin={() => {}} onAppleLogin={() => {}} onFacebookLogin={() => {}} />
       </MemoryRouter>,
     );
     expect(screen.getByTestId('facebook-sign-in').className).toContain('col-span-2');
+    expect(screen.getByTestId('facebook-sign-in').className).toContain('justify-self-center');
     expect(screen.getByTestId('apple-sign-in')).toHaveTextContent(/^Apple$/);
   });
 

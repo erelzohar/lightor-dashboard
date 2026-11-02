@@ -353,8 +353,9 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                   onClick={onFacebookLogin}
                   data-testid="facebook-sign-in"
                   // Third in a row of two (the iPhone app: Google, Apple,
-                  // Facebook): the whole width, so no gap is left beside it.
-                  className={`relative group/facebook ${socialCount === 3 ? 'col-span-2' : ''}`}
+                  // Facebook): its own row, one column wide, in the middle
+                  // (Erel, LT-552) - half the row less half the gap-3.
+                  className={`relative group/facebook ${socialCount === 3 ? 'col-span-2 justify-self-center w-[calc(50%-0.375rem)]' : ''}`}
                 >
                   <div className="absolute inset-0 bg-[#1877F2]/10 rounded-lg blur opacity-0 group-hover/facebook:opacity-70 transition-opacity duration-300" />
                   <div className="relative overflow-hidden bg-white/5 text-white font-medium h-10 rounded-lg border border-white/10 hover:border-[#1877F2]/40 transition-all duration-300 flex items-center justify-center gap-2">
