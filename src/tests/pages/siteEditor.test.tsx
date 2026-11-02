@@ -536,6 +536,93 @@ describe('the site editor (LT-249)', () => {
   });
 
   // LT-426: the register's style pictures and try-on (LT-326/330).
+  // ── LT-545 (Erel): the products' own pages, designed in the editor ──
+  describe("the products' pages", () => {
+    const withProducts = (pages = true, homeLook?: string) => {
+      state.webConfig.data = {
+        ...saved,
+        catalog: true,
+        conversion: 'lead',
+        products: { total: 3, pages, items: [{ id: 'p1', slug: 'ring', name: 'Ring' }, { id: 'p2', slug: 'chain', name: 'Chain' }] },
+        blocks: [{ id: 'b1', type: 'hero' }, { id: 'b3', type: 'products', ...(homeLook ? { variant: homeLook } : {}) }],
+      } as unknown as WebConfig;
+    };
+    const pageTab = (name: string) => screen.getAllByRole('tab', { name })[0];
+
+    it('no switcher on a site whose products have no pages of their own', async () => {
+      withProducts(false);
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      expect(screen.queryByTestId('page-switcher')).toBeNull();
+      expect(screen.queryByTestId('page-switcher-short')).toBeNull();
+    });
+
+    it("moves the preview to the products page, offers its layout and the card, and the link follows", async () => {
+      withProducts();
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      expect(screen.getByTestId('live-site-link')).toHaveAttribute('href', 'https://nails.lightor.app');
+
+      fireEvent.mouseDown(pageTab('siteEditor.pages.products'));
+      expect(lastPosted('LT_GO')?.[0]).toEqual({ type: 'LT_GO', path: '/products' });
+      // The panel follows the page the site says it shows.
+      await fromSite({ type: 'LT_PAGE', path: '/products' });
+      expect(await screen.findByTestId('products-page-panel')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'siteEditor.pages.products' })).toBeInTheDocument();
+      expect(screen.getByTestId('live-site-link')).toHaveAttribute('href', 'https://nails.lightor.app/products');
+      expect(screen.queryByRole('tab', { name: 'siteEditor.sections.tab' })).toBeNull();
+
+      fireEvent.click(screen.getByRole('radio', { name: 'רשימה עם מחירים' }));
+      await waitFor(() => expect(lastConfig().design?.productsPageLayout).toBe('list'));
+      expect(screen.getByText('siteEditor.products.noCards')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('radio', { name: 'אריחים שקטים' }));
+      fireEvent.click(within(screen.getByTestId('product-card-choices')).getByRole('radio', { name: 'במסגרת' }));
+      await waitFor(() => expect(lastConfig().design?.productCard).toBe('framed'));
+      expect(within(screen.getByTestId('product-card-choices')).getByRole('radio', { checked: true })).toHaveTextContent('במסגרת');
+    });
+
+    it("the products page's layout is the home section's look until the owner chooses one", async () => {
+      withProducts(true, 'bento');
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_PAGE', path: '/products' });
+      expect(await screen.findByTestId('products-page-panel')).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'בנטו' })).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it("a product's page: the product shown and the page's layout; home again brings the sections back", async () => {
+      withProducts();
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      fireEvent.mouseDown(pageTab('siteEditor.pages.product'));
+      expect(lastPosted('LT_GO')?.[0]).toEqual({ type: 'LT_GO', path: '/products/ring' });
+      await fromSite({ type: 'LT_PAGE', path: '/products/ring' });
+      expect(await screen.findByTestId('product-page-panel')).toBeInTheDocument();
+      expect(screen.getByRole('radio', { checked: true })).toHaveTextContent('תמונות בצד');
+
+      fireEvent.click(screen.getByRole('radio', { name: 'תמונה גדולה מעל' }));
+      await waitFor(() => expect(lastConfig().design?.productPageLayout).toBe('hero'));
+
+      fireEvent.change(screen.getByLabelText('siteEditor.products.preview'), { target: { value: 'chain' } });
+      expect(lastPosted('LT_GO')?.[0]).toEqual({ type: 'LT_GO', path: '/products/chain' });
+
+      await fromSite({ type: 'LT_PAGE', path: '/' });
+      await waitFor(() => expect(screen.queryByTestId('product-page-panel')).toBeNull());
+      expect(screen.getByRole('tab', { name: 'siteEditor.sections.tab' })).toBeInTheDocument();
+    });
+
+    it("the home page's products section offers the card where its layout draws cards", async () => {
+      withProducts();
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_SELECT', kind: 'section', path: null, section: 'b3', sectionType: 'products', count: 1, fields: [] });
+      expect(await screen.findByTestId('product-card-choices')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'בנטו' }));
+      await waitFor(() => expect(screen.queryByTestId('product-card-choices')).toBeNull());
+    });
+  });
+
   describe('the style pictures', () => {
     const lastConfig = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig & { design: Record<string, unknown>; pallete: Record<string, unknown>; blocks: Record<string, unknown>[] } }).config;
 
@@ -746,6 +833,24 @@ describe('the site editor on a phone (LT-380)', () => {
     // No second panel beside or over the preview: it lives in the bar.
     expect(screen.queryByRole('complementary')).toBeNull();
     expect(screen.queryByLabelText('siteEditor.site')).toBeNull();
+  });
+
+  // LT-545: the products' pages have no sections: their own design and the site's.
+  it("on a products page the bar offers the page's design and the site's", async () => {
+    state.webConfig.data = { ...saved, catalog: true, products: { total: 2, pages: true, items: [{ id: 'p1', slug: 'ring', name: 'Ring' }] } } as unknown as WebConfig;
+    renderOnPhone();
+    const frame = screen.getByTitle('siteEditor.previewTitle') as HTMLIFrameElement;
+    await act(() => {
+      window.dispatchEvent(new MessageEvent('message', { data: { type: 'LT_PAGE', path: '/products' }, origin: new URL(frame.src).origin, source: frame.contentWindow }));
+    });
+    await waitFor(() => expect(bar().getAllByRole('button').map((b) => b.getAttribute('data-testid') ?? b.getAttribute('aria-label'))).toEqual([
+      'edit-tab-page', 'edit-tab-design', 'sidebar.openMenu',
+    ]));
+    fireEvent.click(tab('page'));
+    expect(within(panel()!).getByTestId('products-page-panel')).toBeInTheDocument();
+    // The switcher sits under the editor's own bar on a phone.
+    expect(screen.getByTestId('page-switcher-short')).toBeInTheDocument();
+    state.webConfig.data = saved;
   });
 
   it('grows the bar with the panel: the sections, the design, the add list; the same tab closes it', async () => {

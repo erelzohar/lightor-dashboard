@@ -51,6 +51,8 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
         id: 'design',
         steps: [
           { key: 'design.preview', target: at('[data-testid="preview-box"]') },
+          // LT-545: the switcher between the site's pages, on a site whose products have pages.
+          { key: 'design.pages', target: at('editor-pages') },
           // Beside the preview on a computer; on a phone the tab bar is the editing menu (LT-380).
           { key: 'design.panel', target: at('editor-panel', '[data-testid="bottom-tab-bar"]') },
           { key: 'design.save', target: at('editor-save') },

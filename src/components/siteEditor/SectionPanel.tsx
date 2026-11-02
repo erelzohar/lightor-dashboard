@@ -5,7 +5,8 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { ProductCardPicker } from './ProductDesign';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
 import AddPhotoButton from './AddPhotoButton';
@@ -154,6 +155,9 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
           </div>
         </div>
       )}
+
+      {/* LT-545: the products' card, where the layout draws one per product. */}
+      {type === 'products' && CARD_LAYOUTS.includes(current ?? DEFAULT_VARIANT.products) && <ProductCardPicker config={config} onUpdate={onUpdate} />}
 
       {/* LT-287: the hero's animated background, which the editor never offered. */}
       {type === 'hero' && !OWN_BACKDROP_HEROES.includes(String(block?.variant ?? getAt(config, 'design.heroLayout'))) && (

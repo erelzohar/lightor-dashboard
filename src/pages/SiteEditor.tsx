@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Layers, Loader2, Monitor, Palette, Plus, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
+  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink, LayoutGrid, Layers, Loader2, Monitor, Palette, Plus, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { AxiosError } from 'axios';
@@ -35,6 +35,7 @@ import SectionPanel from '../components/siteEditor/SectionPanel';
 import PagePanel from '../components/siteEditor/PagePanel';
 import SectionsPanel from '../components/siteEditor/SectionsPanel';
 import AddSectionPanel from '../components/siteEditor/AddSectionPanel';
+import { ProductPagePanel, ProductsPagePanel, previewProductsOf } from '../components/siteEditor/ProductDesign';
 import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/labels';
 import SiteBuilder from './SiteBuilder';
 import type { WebConfig } from '../types';
@@ -123,7 +124,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const initialMessageSent = useCallback(() => setInitialMessage(undefined), []);
   // LT-252: with nothing selected the panel is the whole site — its sections, or its design.
   // It opens on the design (LT-386, Erel); a phone opens no panel until a tab is tapped.
-  const [siteTab, setSiteTab] = useState<'sections' | 'design'>('design');
+  // LT-545: 'page' is the design of the page the preview shows, on the products' own pages.
+  const [siteTab, setSiteTab] = useState<'sections' | 'design' | 'page'>('design');
   // The add-section list, placed below a section (`after`) or where each one belongs (null).
   const [adding, setAdding] = useState<{ after: string | null } | null>(null);
   // The section the AI is drafting for the owner.
@@ -168,6 +170,30 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const previewConfig = useMemo(() => (plus ? { ...draft.value, assistant: true } : draft.value), [draft.value, plus]);
   const bridge = usePreviewBridge({ iframeRef, siteOrigin, config: previewConfig, selection, onSelect: selectFromSite });
   scrollRef.current = bridge.scrollTo;
+
+  // ── LT-545: the site's pages (Erel: design the products' page and a product's page) ──
+  // The preview shows one page at a time; the switcher moves it, and the panel
+  // offers what can be designed on the page it shows.
+  const framePath = bridge.path;
+  const pageKind: 'home' | 'products' | 'product' = framePath === '/products' ? 'products' : framePath.startsWith('/products/') ? 'product' : 'home';
+  const productSlug = pageKind === 'product' ? decodeURIComponent(framePath.slice('/products/'.length)) : null;
+  const hasPages = !!draft.value.products?.pages;
+  const previewProducts = previewProductsOf(draft.value);
+  const goPage = (kind: string) => {
+    const to = kind === 'products' ? '/products' : kind === 'product' && previewProducts[0] ? `/products/${encodeURIComponent(previewProducts[0].slug)}` : '/';
+    if (to !== framePath) bridge.go(to);
+  };
+  // Another page: nothing of the last one stays selected, and the panel shows the new one's choices.
+  useEffect(() => {
+    setSelection(null);
+    setAdding(null);
+    setSiteTab((tab) => (pageKind === 'home' ? (tab === 'page' ? 'design' : tab) : 'page'));
+  }, [pageKind]);
+  // A site whose products lost their pages (one product left, a plan without them) is shown its home.
+  const goFrame = bridge.go;
+  useEffect(() => {
+    if (!hasPages && pageKind !== 'home') goFrame('/');
+  }, [hasPages, pageKind, goFrame]);
 
   const update = useCallback((next: DraftUpdate<WebConfig>, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
   // LT-320: a gallery photo uploaded here lands on the draft as it is once the
@@ -397,14 +423,21 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         <>
           {/* In the phone's bar each of the two has its own icon (LT-509). */}
           {!inBar && (
-            <Tabs value={siteTab} onValueChange={(key) => setSiteTab(key as 'sections' | 'design')} className="mb-4">
+            <Tabs value={siteTab} onValueChange={(key) => setSiteTab(key as 'sections' | 'design' | 'page')} className="mb-4">
               <TabsList className="grid grid-cols-2">
-                <TabsTrigger value="sections">{t('siteEditor.sections.tab')}</TabsTrigger>
+                {/* LT-545: the products' pages have no sections: their own design instead. */}
+                {pageKind === 'home'
+                  ? <TabsTrigger value="sections">{t('siteEditor.sections.tab')}</TabsTrigger>
+                  : <TabsTrigger value="page">{t('siteEditor.pages.tab')}</TabsTrigger>}
                 <TabsTrigger value="design">{t('siteEditor.pageSettings')}</TabsTrigger>
               </TabsList>
             </Tabs>
           )}
-          {siteTab === 'sections' ? (
+          {siteTab === 'page' && pageKind === 'products' ? (
+            <ProductsPagePanel config={draft.value} onUpdate={update} />
+          ) : siteTab === 'page' && pageKind === 'product' ? (
+            <ProductPagePanel config={draft.value} onUpdate={update} slug={productSlug} onPreview={(slug) => bridge.go(`/products/${encodeURIComponent(slug)}`)} />
+          ) : siteTab === 'sections' ? (
             <SectionsPanel
               rows={rows}
               selectedId={null}
@@ -467,7 +500,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const heading = adding
     ? t('siteEditor.sections.add')
     : !selection
-      ? t('siteEditor.site')
+      ? (siteTab === 'page' && pageKind !== 'home' ? t(`siteEditor.pages.${pageKind}`) : t('siteEditor.site'))
       : selection.kind === 'section'
         ? sectionLabel(selection.sectionType ?? selection.section, lang)
         : fieldLabel(t, selection.path ?? '');
@@ -514,9 +547,9 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     setBarEditing(true);
     return () => setBarEditing(false);
   }, [inBar, setBarEditing]);
-  const openSite = (tab: 'sections' | 'design') => {
+  const openSite = (tab: 'sections' | 'design' | 'page') => {
     setBarMenuOpen?.(false);
-    const showing = sheetOpen && !adding && (tab === 'sections' ? !!selection || siteTab === 'sections' : !selection && siteTab === 'design');
+    const showing = sheetOpen && !adding && (tab === 'sections' ? !!selection || siteTab === 'sections' : !selection && siteTab === tab);
     if (showing) {
       closePanel();
       return;
@@ -536,11 +569,29 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     setSelection(null);
     setAdding({ after: null });
   };
-  const editTabs = [
+  const designTab = { id: 'design', label: t('siteEditor.pageSettings'), Icon: Palette, tile: 'from-pink-400 to-fuchsia-500', active: sheetOpen && !adding && !selection && siteTab === 'design', onClick: () => openSite('design') };
+  // LT-545: on the products' pages, the page's own design and the site's; there are no sections to add.
+  const editTabs = pageKind === 'home' ? [
     { id: 'sections', label: t('siteEditor.sections.tab'), Icon: Layers, tile: 'from-violet-400 to-violet-600', active: sheetOpen && !adding && (!!selection || siteTab === 'sections'), onClick: () => openSite('sections') },
-    { id: 'design', label: t('siteEditor.pageSettings'), Icon: Palette, tile: 'from-pink-400 to-fuchsia-500', active: sheetOpen && !adding && !selection && siteTab === 'design', onClick: () => openSite('design') },
+    designTab,
     { id: 'add', label: t('siteEditor.sections.add'), Icon: Plus, tile: 'from-emerald-400 to-green-500', active: !!adding, onClick: toggleAdd },
+  ] : [
+    { id: 'page', label: t('siteEditor.pages.tab'), Icon: LayoutGrid, tile: 'from-amber-400 to-orange-500', active: sheetOpen && !selection && siteTab === 'page', onClick: () => openSite('page') },
+    designTab,
   ];
+
+  // LT-545 (Erel: the site's own link, elegantly): the live page the preview shows, as saved.
+  const livePage = liveSite ? `${liveSite}${framePath === '/' ? '' : framePath}` : null;
+  const liveLabel = livePage ? livePage.replace(/^https:\/\//, '') : '';
+  const pageSwitcher = (short: boolean) => (
+    <Tabs value={pageKind} onValueChange={goPage}>
+      <TabsList className="grid grid-cols-3" aria-label={t('siteEditor.pages.label')}>
+        <TabsTrigger value="home">{t(short ? 'siteEditor.pages.homeShort' : 'siteEditor.pages.home')}</TabsTrigger>
+        <TabsTrigger value="products">{t(short ? 'siteEditor.pages.productsShort' : 'siteEditor.pages.products')}</TabsTrigger>
+        <TabsTrigger value="product">{t('siteEditor.pages.product')}</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
 
   const panelHeader = (
     <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700/50 shrink-0">
@@ -578,7 +629,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   );
   const panelBody = (
     <div ref={panelScrollRef} className={`flex-1 min-h-0 overflow-y-auto p-4 ${folded ? 'hidden md:block' : ''}`}>
-      {!selection && !adding && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
+      {/* The products' pages have nothing to click and edit (LT-545): their panel says what they offer. */}
+      {!selection && !adding && pageKind === 'home' && <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.hint')}</p>}
       {panel()}
     </div>
   );
@@ -589,9 +641,35 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       <header className="h-14 md:h-16 flex items-center justify-between gap-2 px-3 md:px-6 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <Palette className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
-          <h1 className="font-semibold text-gray-800 dark:text-white text-[15px] truncate">{t('siteEditor.title')}</h1>
-          {draft.dirty && <span className="hidden sm:inline text-xs text-amber-600 dark:text-amber-400">• {t('siteEditor.unsaved')}</span>}
+          <div className="min-w-0">
+            <h1 className="font-semibold text-gray-800 dark:text-white text-[15px] truncate">{t('siteEditor.title')}</h1>
+            {/* Under the title where the bar is narrow; a pill beside it on a wide screen. */}
+            {livePage && (
+              <a href={livePage} target="_blank" rel="noopener noreferrer" title={t('siteEditor.liveSiteHint')} data-testid="live-site-link-short" className="xl:hidden flex items-center gap-1 text-[11px] leading-tight text-gray-500 dark:text-slate-400 hover:text-primary transition-colors">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                <span dir="ltr" className="truncate">{liveLabel}</span>
+                <ExternalLink className="w-3 h-3 shrink-0" aria-hidden="true" />
+              </a>
+            )}
+          </div>
+          {draft.dirty && <span className="hidden sm:inline whitespace-nowrap text-xs text-amber-600 dark:text-amber-400">• {t('siteEditor.unsaved')}</span>}
+          {livePage && (
+            <a
+              href={livePage}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t('siteEditor.liveSiteHint')}
+              data-testid="live-site-link"
+              className="hidden xl:inline-flex items-center gap-2 min-w-0 max-w-[22rem] rounded-full border border-gray-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-3 py-1.5 text-xs text-gray-600 dark:text-slate-300 hover:text-primary hover:border-primary/40 transition-colors"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+              <span dir="ltr" className="truncate">{liveLabel}</span>
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            </a>
+          )}
         </div>
+        {/* In the bar where it has room (a wide screen); under it otherwise. */}
+        {hasPages && <div className="hidden xl:block shrink-0" data-tour="editor-pages" data-testid="page-switcher">{pageSwitcher(false)}</div>}
         <div className="flex items-center gap-1">
           <div className="hidden md:flex items-center gap-1 me-2">
             <button type="button" className={`${iconButton} ${pickedDevice === 'desktop' ? 'text-primary' : ''}`} onClick={() => setDevice('desktop')} title={t('siteEditor.desktop')} aria-label={t('siteEditor.desktop')} aria-pressed={pickedDevice === 'desktop'}>
@@ -623,13 +701,15 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
             aria-label={justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}
             onClick={() => void save()}
             disabled={!draft.dirty || saving}
-            className={`ms-1 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
+            className={`ms-1 inline-flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
           >
             {justSaved ? <CheckCircle2 className="w-4 h-4" /> : saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span className="hidden sm:inline">{justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}</span>
           </button>
         </div>
       </header>
+
+      {hasPages && <div className="xl:hidden px-3 pb-2 md:px-5 md:max-w-md" data-tour="editor-pages" data-testid="page-switcher-short">{pageSwitcher(true)}</div>}
 
       {/* ── Workspace ── */}
       <div className="flex-1 flex overflow-hidden md:px-5 md:pb-5 md:gap-4 relative">

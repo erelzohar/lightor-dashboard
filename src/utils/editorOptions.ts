@@ -38,6 +38,23 @@ export const PRESETS: Named = {
   earthy: { he: 'אדמתי', en: 'Earthy' },
 };
 
+/** LT-545: a product's card, and the layouts of a product's own page. */
+export const PRODUCT_CARDS: Named = {
+  plain: { he: 'נקי', en: 'Plain' },
+  framed: { he: 'במסגרת', en: 'Framed' },
+  overlay: { he: 'טקסט על התמונה', en: 'Words on the picture' },
+  button: { he: 'עם כפתור', en: 'With a button' },
+};
+export const PRODUCT_PAGE_LAYOUTS: Named = {
+  side: { he: 'תמונות בצד', en: 'Pictures beside' },
+  hero: { he: 'תמונה גדולה מעל', en: 'Large picture above' },
+  gallery: { he: 'גלריה ופרטים צמודים', en: 'Gallery, details in view' },
+};
+/** The products page's own layouts: the still ones (the moving ones suit a handful). */
+export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list'];
+/** The layouts that draw a card per product. */
+export const CARD_LAYOUTS = ['well', 'swap'];
+
 export const FONTS: Named = {
   inter: { he: 'Inter', en: 'Inter' },
   raleway: { he: 'Raleway', en: 'Raleway' },

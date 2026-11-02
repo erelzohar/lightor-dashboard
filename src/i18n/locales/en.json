@@ -2099,7 +2099,25 @@
     },
     "fold": "Fold the panel",
     "unfold": "Unfold the panel",
-    "keepEditing": "Keep editing"
+    "keepEditing": "Keep editing",
+    "pages": {
+      "label": "Site pages",
+      "home": "Home page",
+      "homeShort": "Home",
+      "products": "Products page",
+      "productsShort": "Products",
+      "product": "Product page",
+      "tab": "Page design"
+    },
+    "products": {
+      "layout": "Layout",
+      "card": "Product card",
+      "cardHint": "The card applies across the site: the home page, the products page and \"More products\" on a product page.",
+      "noCards": "This layout has no cards. Pick \"Quiet tiles\" or \"Swapping picture\" to choose one.",
+      "preview": "Product shown",
+      "contentHint": "Each product's pictures, price and description are edited on the Products page."
+    },
+    "liveSiteHint": "Your live site, as last saved. Opens in a new tab."
   },
   "lighty": {
     "hello": "Hi! I'm Lighty",
@@ -2244,6 +2262,10 @@
       "preview": {
         "title": "Your site",
         "body": "Exactly as your customers see it. Tap any text or picture to edit it."
+      },
+      "pages": {
+        "title": "Site pages",
+        "body": "Switch here between the home page, the products page and a product page. Each page has its own design choices."
       },
       "panel": {
         "title": "Editing tools",

@@ -2099,7 +2099,25 @@
     },
     "fold": "Réduire le panneau",
     "unfold": "Agrandir le panneau",
-    "keepEditing": "Continuer à modifier"
+    "keepEditing": "Continuer à modifier",
+    "pages": {
+      "label": "Pages du site",
+      "home": "Page d'accueil",
+      "homeShort": "Accueil",
+      "products": "Page des produits",
+      "productsShort": "Produits",
+      "product": "Page produit",
+      "tab": "Design de la page"
+    },
+    "products": {
+      "layout": "Disposition",
+      "card": "Carte produit",
+      "cardHint": "La carte s'applique à tout le site : l'accueil, la page des produits et « Autres produits » sur une page produit.",
+      "noCards": "Cette disposition n'a pas de cartes. Choisissez « Quiet tiles » ou « Swapping picture » pour en choisir une.",
+      "preview": "Produit affiché",
+      "contentHint": "Les photos, le prix et la description de chaque produit se modifient sur la page Produits."
+    },
+    "liveSiteHint": "Votre site en ligne, tel qu'enregistré. S'ouvre dans un nouvel onglet."
   },
   "lighty": {
     "hello": "Salut ! Je suis Lighty",
@@ -2244,6 +2262,10 @@
       "preview": {
         "title": "Votre site",
         "body": "Tel que vos clients le voient. Touchez un texte ou une image pour le modifier."
+      },
+      "pages": {
+        "title": "Pages du site",
+        "body": "Passez ici de l'accueil à la page des produits et à une page produit. Chaque page a ses propres choix de design."
       },
       "panel": {
         "title": "Les outils d'édition",

@@ -8,7 +8,8 @@ import type { LayoutBlock } from '../utils/siteSections';
  * is up; the editor then sends the draft (PREVIEW_DATA, on every change) and
  * LT_EDIT on, and keeps the site's highlight on what the panel has selected.
  * A click on the site comes back as LT_SELECT / LT_DESELECT. Messages go to,
- * and are only taken from, the site's own origin and its own window.
+ * and are only taken from, the site's own origin and its own window. LT-545:
+ * LT_GO shows another page of the site, and LT_PAGE says which one it shows.
  */
 export interface SiteField { path: string; kind: 'text' | 'image' }
 
@@ -41,6 +42,8 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
   const ready = readySeq > 0;
   // LT-252: a legacy page's sections as the blocks it would be (front LT_LAYOUT).
   const [layout, setLayout] = useState<LayoutBlock[] | null>(null);
+  // LT-545: the address the frame shows ('/', '/products', '/products/<slug>').
+  const [path, setPath] = useState('/');
   const onSelectRef = useRef(onSelect);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
 
@@ -64,6 +67,8 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
         });
       } else if (data?.type === 'LT_DESELECT') {
         onSelectRef.current(null);
+      } else if (data?.type === 'LT_PAGE' && typeof data.path === 'string') {
+        setPath(data.path);
       } else if (data?.type === 'LT_LAYOUT' && Array.isArray(data.blocks)) {
         setLayout((data.blocks as unknown[]).filter((b): b is LayoutBlock => {
           const r = b as Record<string, unknown> | null;
@@ -107,5 +112,10 @@ export function usePreviewBridge({ iframeRef, siteOrigin, config, selection, onS
     post({ type: 'LT_SCROLL_TO', path: target.path ?? null, section: target.section ?? null, ...(target.block ? { block: target.block } : {}) });
   }, [post]);
 
-  return { ready, onLoad, reloading, scrollTo, layout };
+  /** LT-545: the frame to another page of the site; it answers with LT_PAGE. */
+  const go = useCallback((to: string) => {
+    post({ type: 'LT_GO', path: to });
+  }, [post]);
+
+  return { ready, onLoad, reloading, scrollTo, layout, path, go };
 }
