@@ -117,6 +117,14 @@ describe('the site editor (LT-249)', () => {
     expect([...screenBox.children].filter((el) => el !== iframe())).toHaveLength(0);
   });
 
+  // LT-549 (Erel): the button says it publishes: its full name, and one word on a phone.
+  it('the save button says it publishes, on a phone in one word', () => {
+    renderEditor();
+    const button = screen.getByRole('button', { name: 'siteEditor.save' });
+    expect(within(button).getByText('siteEditor.save')).toHaveClass('hidden', 'sm:inline');
+    expect(within(button).getByText('siteEditor.saveShort')).toHaveClass('sm:hidden');
+  });
+
   // LT-444: the tab kept the previous page's title.
   it('names the window', () => {
     document.title = 'Gallery';

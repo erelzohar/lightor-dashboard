@@ -642,7 +642,8 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         <div className="flex items-center gap-2 min-w-0">
           <Palette className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
           <div className="min-w-0">
-            <h1 className="font-semibold text-gray-800 dark:text-white text-[15px] truncate">{t('siteEditor.title')}</h1>
+            {/* On the narrowest phones the button's word wins the room (LT-549): the title stays for screen readers. */}
+            <h1 className="font-semibold text-gray-800 dark:text-white text-[15px] truncate max-[359px]:sr-only">{t('siteEditor.title')}</h1>
             {/* Under the title where the bar is narrow; a pill beside it on a wide screen. */}
             {livePage && (
               <a href={livePage} target="_blank" rel="noopener noreferrer" title={t('siteEditor.liveSiteHint')} data-testid="live-site-link-short" className="xl:hidden flex items-center gap-1 text-[11px] leading-tight text-gray-500 dark:text-slate-400 hover:text-primary transition-colors">
@@ -697,14 +698,20 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           <button
             type="button"
             data-tour="editor-save"
-            // Its words hide on a phone (LT-423): the name stays.
+            // The full name from a tablet up, one word on a phone (LT-549).
             aria-label={justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}
             onClick={() => void save()}
             disabled={!draft.dirty || saving}
             className={`ms-1 inline-flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium disabled:opacity-50 ${justSaved ? pop('success') : pop()}`}
           >
             {justSaved ? <CheckCircle2 className="w-4 h-4" /> : saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span className="hidden sm:inline">{justSaved ? t('siteEditor.saved') : saving ? t('siteEditor.saving') : t('siteEditor.save')}</span>
+            {/* LT-549 (Erel): the button says it publishes, a phone too: its own short word, and the two states are short everywhere. */}
+            {justSaved || saving ? (
+              <span>{justSaved ? t('siteEditor.saved') : t('siteEditor.saving')}</span>
+            ) : (<>
+              <span className="hidden sm:inline">{t('siteEditor.save')}</span>
+              <span className="sm:hidden">{t('siteEditor.saveShort')}</span>
+            </>)}
           </button>
         </div>
       </header>
