@@ -64,7 +64,7 @@ const Consumer: React.FC = () => {
       <span data-testid="token">{auth.token === null ? 'null' : String(auth.token)}</span>
       <button onClick={() => login('jane', 'secret', true)}>login</button>
       <button onClick={() => loginWithGoogle('g-cred')}>google</button>
-      <button onClick={() => loginWithFacebook('fb-token')}>facebook</button>
+      <button onClick={() => loginWithFacebook({ accessToken: 'fb-token' })}>facebook</button>
       <button onClick={() => void refreshUser()}>refresh</button>
       <button onClick={logout}>logout</button>
       <button onClick={() => void updateUser({ name: 'Jane Cohen' }).catch(() => {})}>update</button>
@@ -317,7 +317,7 @@ describe('AuthContext', () => {
       await userEvent.click(screen.getByText('facebook'));
 
       await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
-      expect(facebookLogin).toHaveBeenCalledWith('fb-token');
+      expect(facebookLogin).toHaveBeenCalledWith({ accessToken: 'fb-token' });
     });
 
     it('reports a failed social login distinctly', async () => {

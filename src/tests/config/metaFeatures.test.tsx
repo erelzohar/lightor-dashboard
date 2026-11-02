@@ -27,7 +27,8 @@ const renderCard = () =>
       <SignInCard
         onSubmit={async () => {}}
         onGoogleLogin={noop}
-        onFacebookLogin={noop}
+        // LT-552: the page passes a Facebook handler only when its own
+        // switch is on; the photo-import switch no longer decides it.
       />
     </MemoryRouter>
   );
@@ -62,7 +63,7 @@ describe('LT-091 Meta feature switch', () => {
   });
 });
 
-describe('LT-091 sign-in card while Meta is parked', () => {
+describe('LT-091 sign-in card without the Facebook handler', () => {
   beforeEach(() => {
     vi.resetModules();
   });

@@ -14,11 +14,9 @@
  * opt-out: a missing or misspelled variable hides the pending features, which
  * is the safe direction.
  *
- * Note the Facebook *login* button is gated by the same flag even though
- * Facebook Login needs no review (`public_profile` is approved). That is
- * Erel's call while the whole Meta integration is parked, not a technical
- * requirement — it can be split back out on its own if sign-in with Facebook
- * is wanted before the imports are approved.
+ * The Facebook *login* button used to sit behind this flag too. It has its
+ * own switch since LT-552 (`facebookSignInAvailable`, VITE_FACEBOOK_LOGIN_ENABLED):
+ * Facebook Login needs no review, only the server's keys.
  */
 export const META_FEATURES_ENABLED =
   import.meta.env.VITE_META_FEATURES_ENABLED === 'true';

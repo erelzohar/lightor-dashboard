@@ -4,7 +4,6 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { META_FEATURES_ENABLED } from '../../config/metaFeatures';
 import { canOfferPurchases } from '../../lib/platform';
 
 function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>) {
@@ -28,7 +27,8 @@ interface SignInCardProps {
   hideRememberMe?: boolean;
   /** Hide the "or" divider and the social sign-in buttons entirely. */
   hideSocial?: boolean;
-  onFacebookLogin: () => void;
+  /** LT-552: Sign in with Facebook; absent = no button. */
+  onFacebookLogin?: () => void;
   /** LT-383: Sign in with Apple, beside Google (App Store guideline 4.8); absent = no button. */
   onAppleLogin?: () => void;
   isLoading?: boolean;
@@ -305,7 +305,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
               </div>
 
               {/* Social login buttons */}
-              <div className={`grid gap-3 ${[true, !!onAppleLogin, META_FEATURES_ENABLED].filter(Boolean).length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <div className={`grid gap-3 ${[true, !!onAppleLogin, !!onFacebookLogin].filter(Boolean).length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
@@ -344,11 +344,12 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 </motion.button>
                 )}
 
-                {META_FEATURES_ENABLED && (
+                {onFacebookLogin && (
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={onFacebookLogin}
+                  data-testid="facebook-sign-in"
                   className="relative group/facebook"
                 >
                   <div className="absolute inset-0 bg-[#1877F2]/10 rounded-lg blur opacity-0 group-hover/facebook:opacity-70 transition-opacity duration-300" />

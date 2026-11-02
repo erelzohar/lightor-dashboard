@@ -78,7 +78,7 @@ describe('authApi', () => {
     it('on facebook login', async () => {
       const post = vi.spyOn(apiClient, 'post').mockResolvedValue(ok());
 
-      await facebookLogin('fb-access-token');
+      await facebookLogin({ accessToken: 'fb-access-token' });
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}facebook`,

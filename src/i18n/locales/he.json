@@ -483,7 +483,9 @@
     "forgotPassword": "שכחת סיסמה?",
     "apple": "המשך עם Apple",
     "appleNoEmail": "Apple לא שיתפה כתובת מייל, ובלעדיה אי אפשר לפתוח חשבון. נסו שוב ובחרו לשתף את המייל (אפשר גם את הכתובת המוסתרת של Apple).",
-    "appleFailed": "ההתחברות עם Apple נכשלה. נסו שוב."
+    "appleFailed": "ההתחברות עם Apple נכשלה. נסו שוב.",
+    "facebookNoEmail": "Facebook לא שיתף כתובת מייל, ובלעדיה אי אפשר לפתוח חשבון. נסו שוב ואשרו את שיתוף המייל, או הירשמו עם מייל.",
+    "facebookFailed": "ההתחברות עם Facebook נכשלה. נסו שוב."
   },
   "onboarding": {
     "welcomeTitle": "ברוך הבא, {{name}}!",

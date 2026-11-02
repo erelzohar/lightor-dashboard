@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import type { FacebookCredential } from '../lib/facebookSignIn';
 import toast from 'react-hot-toast';
 import { AuthState, User } from '../types';
 import { loginUser, googleLogin, googleLoginWithIdToken, appleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
@@ -20,7 +21,7 @@ interface AuthContextType {
   loginWithGoogleIdToken: (idToken: string) => Promise<void>;
   /** LT-383: Sign in with Apple; rethrows, like the native Google call, so the page can show why. */
   loginWithApple: (payload: { idToken: string; nonce: string; authorizationCode?: string; name?: string }) => Promise<void>;
-  loginWithFacebook: (accessToken: string) => Promise<void>;
+  loginWithFacebook: (credential: FacebookCredential) => Promise<void>;
   logout: () => void;
   loading: boolean;
   updateUser: (userData: Partial<User> & { phoneToken?: string }) => Promise<void>;
@@ -225,12 +226,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithApple = (payload: { idToken: string; nonce: string; authorizationCode?: string; name?: string }) =>
     finishGoogleLogin(() => appleLogin(payload));
 
-  const loginWithFacebook = async (accessToken: string) => {
+  const loginWithFacebook = async (credential: FacebookCredential) => {
     setLoading(true);
     try {
       // The response set the HttpOnly session cookie; on native the body's
       // token becomes the Bearer (LT-128).
-      const { token } = await facebookLogin(accessToken);
+      const { token } = await facebookLogin(credential);
       if (token) await saveSession(token);
       const user = await getCurrentUser();
       setSessionHint();
@@ -246,9 +247,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       navigate('/', { replace: true });
     } catch (error) {
+      // The API's own words when it answered (LT-552); a Facebook account
+      // with no email to share gets our sentence on what to do instead.
+      const e = error as { response?: { data?: { error?: string; code?: string } } };
       setAuth(prev => ({
         ...prev,
-        error: 'Facebook login failed',
+        error: e.response?.data?.code === 'FACEBOOK_NO_EMAIL'
+          ? i18n.t('login.facebookNoEmail')
+          : e.response?.data?.error || i18n.t('login.facebookFailed'),
         isLoading: false,
       }));
     } finally {

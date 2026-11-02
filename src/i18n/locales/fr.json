@@ -483,7 +483,9 @@
     "forgotPassword": "Mot de passe oublié ?",
     "apple": "Continuer avec Apple",
     "appleNoEmail": "Apple n'a pas partagé d'adresse e-mail, et un compte en a besoin. Réessayez en partageant votre e-mail (l'adresse masquée d'Apple convient aussi).",
-    "appleFailed": "La connexion avec Apple a échoué. Veuillez réessayer."
+    "appleFailed": "La connexion avec Apple a échoué. Veuillez réessayer.",
+    "facebookNoEmail": "Facebook n'a pas partagé d'adresse e-mail, et un compte en a besoin. Réessayez en autorisant votre e-mail, ou inscrivez-vous avec un e-mail.",
+    "facebookFailed": "La connexion avec Facebook a échoué. Veuillez réessayer."
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue, {{name}} !",

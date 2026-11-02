@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import type { FacebookCredential } from '../lib/facebookSignIn';
 import { User } from '../types';
 import globals from './globals';
 
@@ -173,11 +174,12 @@ export const builderPass = async (): Promise<string> => {
   return token;
 };
 
-export const facebookLogin = async (accessToken: string): Promise<{ token: string; user: User }> => {
+/** LT-552: an access token (web, Android) or the iPhone's Limited Login ID token + nonce. */
+export const facebookLogin = async (credential: FacebookCredential): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(
       globals.authUrl + 'facebook',
-      { accessToken },
+      credential,
       { withCredentials: true },
     );
     if (response.data?.success) {

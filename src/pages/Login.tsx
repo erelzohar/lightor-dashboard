@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import FacebookLoginPkg from '@greatsumini/react-facebook-login';
 import { SignInCard } from '../components/ui/sign-in-card-2';
-import { META_FEATURES_ENABLED } from '../config/metaFeatures';
 import { isNativeApp } from '../lib/platform';
 import { appleSignInAvailable, isAppleCancel, signInWithApple } from '../lib/appleSignIn';
+import { FACEBOOK_APP_ID, facebookSignInAvailable, isFacebookCancel, nativeFacebookSignIn } from '../lib/facebookSignIn';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const NATIVE_GOOGLE_ENABLED = true;
@@ -82,6 +82,21 @@ const Login: React.FC = () => {
         ? t('login.appleNoEmail')
         : e.response?.data?.error || t('login.appleFailed'));
     }
+  };
+
+  // LT-552: Facebook's own sheet in the app (the browser popup is refused
+  // inside web views), the JS SDK's popup on the web. Backing out is not an
+  // error; the API's refusals land in auth.error through loginWithFacebook.
+  const nativeFacebookLogin = async () => {
+    setNativeError(null);
+    let credential;
+    try {
+      credential = await nativeFacebookSignIn();
+    } catch (err) {
+      if (!isFacebookCancel(err)) setNativeError(t('login.facebookFailed'));
+      return;
+    }
+    await loginWithFacebook(credential);
   };
 
   if (auth.isLoading) return null;
@@ -179,7 +194,7 @@ const Login: React.FC = () => {
                   return login(email, password, staySignedIn);
                 }}
                 onGoogleLogin={() => void onGoogleLogin()}
-                onFacebookLogin={onFacebookLogin ?? (() => {})}
+                onFacebookLogin={onFacebookLogin}
                 onAppleLogin={appleSignInAvailable() ? () => void appleLogin() : undefined}
                 isLoading={loading}
                 // nativeError first: on the native path both are set for the
@@ -221,16 +236,25 @@ const Login: React.FC = () => {
         </div>
   );
 
-  // While the Meta integration is parked (LT-090) the Facebook SDK is not
-  // mounted at all — hiding the button but still loading Meta's script on
-  // every visit to the sign-in page would be the worst of both.
-  if (!META_FEATURES_ENABLED) return page();
+  // Without the button the Facebook SDK is not mounted at all: loading Meta's
+  // script on every visit to the sign-in page for nothing would be the worst
+  // of both. The app never mounts it (its sheet is native).
+  if (!facebookSignInAvailable()) return page();
+  if (isNativeApp()) return page(() => void nativeFacebookLogin());
 
   return (
     <FacebookLogin
-      appId={import.meta.env.VITE_FACEBOOK_APP_ID || ''}
+      appId={FACEBOOK_APP_ID}
+      // An existing app grant is reused silently; if its email permission
+      // lapsed, every login would come back email-less with no dialog.
+      // rerequest makes Facebook ask again (as on the register, LT-088).
+      scope="public_profile,email"
+      loginOptions={{ auth_type: 'rerequest' }}
       onSuccess={(response: { accessToken?: string }) => {
-        if (response.accessToken) loginWithFacebook(response.accessToken);
+        if (response.accessToken) void loginWithFacebook({ accessToken: response.accessToken });
+      }}
+      onFail={(error: { status?: string }) => {
+        if (!/cancel/i.test(error?.status ?? '')) setNativeError(t('login.facebookFailed'));
       }}
       render={(renderProps: { onClick?: () => void }) => page(renderProps.onClick)}
     />

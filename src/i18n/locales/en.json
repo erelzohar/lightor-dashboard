@@ -483,7 +483,9 @@
     "forgotPassword": "Forgot password?",
     "apple": "Continue with Apple",
     "appleNoEmail": "Apple did not share an email address, and an account needs one. Try again and share your email (Apple's hidden address works too).",
-    "appleFailed": "Signing in with Apple failed. Please try again."
+    "appleFailed": "Signing in with Apple failed. Please try again.",
+    "facebookNoEmail": "Facebook did not share an email address, and an account needs one. Try again and allow your email, or sign up with email.",
+    "facebookFailed": "Signing in with Facebook failed. Please try again."
   },
   "onboarding": {
     "welcomeTitle": "Welcome, {{name}}!",
