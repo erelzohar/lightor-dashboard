@@ -1061,8 +1061,8 @@
         },
         "editing": {
           "free": "Édition de base avec Lighty",
-          "plus": "Environ 2,5 fois plus d’édition avec Lighty",
-          "pro": "Environ 6 fois plus d’édition avec Lighty"
+          "plus": "Deux fois plus d’édition avec Lighty, avec un modèle d’IA plus avancé",
+          "pro": "5 fois plus d’édition avec Lighty, avec un modèle d’IA plus avancé"
         },
         "history": {
           "free": "2 mois d’historique",
@@ -1143,8 +1143,8 @@
         "editing": {
           "label": "Modifier avec Lighty",
           "free": "De base",
-          "plus": "Environ 2,5 fois plus",
-          "pro": "Environ 6 fois plus"
+          "plus": "Deux fois plus, avec un modèle plus avancé",
+          "pro": "5 fois plus, avec un modèle plus avancé"
         },
         "history": {
           "label": "Historique disponible",
