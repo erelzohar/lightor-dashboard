@@ -47,4 +47,11 @@ describe('editor fields (LT-249)', () => {
     expect(changedLabels(before, after, (p) => fieldInfo(p).label, 'look')).toEqual(['heroTitle', 'look']);
     expect(changedLabels(before, before, (p) => p, 'look')).toEqual([]);
   });
+
+  it("names the site's type first when Lighty changed it (LT-556), an absent type being a booking site", () => {
+    const site = { components: { hero: { cta: 'Book' } } };
+    expect(changedLabels(site, { ...site, conversion: 'lead' }, (p) => p, 'look', 'type')).toEqual(['type']);
+    expect(changedLabels({ ...site, conversion: 'lead' }, { ...site, conversion: 'book' }, (p) => p, 'look', 'type')).toEqual(['type']);
+    expect(changedLabels(site, { ...site, conversion: 'book' }, (p) => p, 'look', 'type')).toEqual([]);
+  });
 });

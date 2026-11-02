@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Settings from '../../pages/Settings';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
 import type { WebConfig } from '../../types';
@@ -137,8 +137,8 @@ describe('Settings: the currency', () => {
     fireEvent.click(currencyCard('EUR'));
     await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
 
-    fireEvent.click(screen.getByRole('radio', { name: /settings\.site\.modeLead/ }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'settings.site.switchConfirm' }));
+    // Another change on the tab, for a save to send.
+    fireEvent.change(screen.getByLabelText('settings.site.ctaLabel'), { target: { value: 'Get a quote' } });
     fireEvent.click(await screen.findByText('common.save'));
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
     expect(sentPayload()).not.toHaveProperty('currency');

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, X } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, Calendar, LayoutGrid, Palette, Inbox, ShoppingBag, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useVirtualKeyboard } from '../../hooks/useVirtualKeyboard';
@@ -17,6 +17,8 @@ interface BottomTabBarProps {
    * destinations are the leads, the services and the opening hours.
    */
   leadsSite?: boolean;
+  /** LT-556: a leads site with products (LT-541): the products in the bar, the hours under "More". */
+  productsSite?: boolean;
   /** New leads (LT-197): a dot on the Leads tab while any wait. */
   newLeads?: number | null;
   /** Notifications wait unread (LT-527): a dot on "More", where the bell is. */
@@ -54,11 +56,11 @@ interface BottomTabBarProps {
  * Flex row + logical properties, so RTL just works.
  */
 /** The pages the bar itself shows; "More" adds only the others (LT-378). */
-export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
+export const barPaths = (isRestricted: boolean, leadsSite: boolean, productsSite = false): string[] =>
   isRestricted
     ? ['/', '/design']
     : leadsSite
-      ? ['/', '/leads', '/lighty', '/schedule-vacations']
+      ? ['/', '/leads', '/lighty', productsSite ? '/products' : '/schedule-vacations']
       : ['/', '/appointments', '/lighty', '/schedule-vacations'];
 
 /** LT-419: how far a held touch may slide and still open its link, and how
@@ -66,7 +68,7 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean): string[] =>
 export const HOLD_SLOP_PX = 24;
 export const HOLD_CLICK_WAIT_MS = 350;
 
-const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, newLeads, moreDot = false, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
+const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, productsSite = false, newLeads, moreDot = false, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
   const keyboardOpen = useVirtualKeyboard();
   // LT-414: it no longer slides away on a scroll down (LT-342). Any
@@ -98,7 +100,9 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
           { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },
           { path: '/leads', Icon: Inbox, label: t('common.leads'), dot: !!newLeads },
           lighty,
-          { path: '/schedule-vacations', Icon: Calendar, label: t('common.openingHours') },
+          productsSite
+            ? { path: '/products', Icon: ShoppingBag, label: t('common.products') }
+            : { path: '/schedule-vacations', Icon: Calendar, label: t('common.openingHours') },
         ]
       : [
           { path: '/', Icon: LayoutDashboard, label: t('common.dashboard') },

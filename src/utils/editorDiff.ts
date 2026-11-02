@@ -14,8 +14,8 @@ const textLeaves = (node: unknown, prefix: string, out: Map<string, string>) => 
   }
 };
 
-/** The names of what an answer changed: texts by their labels, then the look. */
-export const changedLabels = (before: unknown, after: unknown, label: (path: string) => string, lookLabel: string): string[] => {
+/** The names of what an answer changed: the site's type (LT-556), texts by their labels, then the look. */
+export const changedLabels = (before: unknown, after: unknown, label: (path: string) => string, lookLabel: string, typeLabel?: string): string[] => {
   const pick = (cfg: unknown) => {
     const out = new Map<string, string>();
     const c = (cfg ?? {}) as Record<string, unknown>;
@@ -26,6 +26,9 @@ export const changedLabels = (before: unknown, after: unknown, label: (path: str
   const a = pick(before);
   const b = pick(after);
   const names: string[] = [];
+  // Absent and 'book' are the same type (siteMode).
+  const leads = (cfg: unknown) => (cfg as Record<string, unknown> | null)?.conversion === 'lead';
+  if (typeLabel && leads(before) !== leads(after)) names.push(typeLabel);
   for (const [path, value] of b) {
     if (a.get(path) === value) continue;
     const info = fieldInfo(path);

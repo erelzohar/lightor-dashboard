@@ -250,16 +250,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   }, [location.pathname, isRestricted, setMenuOpen]);
 
   const showGallery = !webConfig?.catalog || (webConfig?.components?.portfolio?.items?.length ?? 0) > 0;
+  // LT-556: a products site (a leads site with products, LT-541) has them in
+  // the first section, and the services only once it has some: it is built
+  // with none.
+  const productsSite = leadsSite && webConfig?.catalog === true;
+  const productsLink = { path: '/products', Icon: ShoppingBag, name: t('common.products') };
+  const showServices = !productsSite || (webConfig?.appointmentTypes?.length ?? 0) > 0;
 
   const navSections = [
     {
       id: 'navigation',
-      label: t('sidebar.navigation'),
+      label: t('sidebar.main'),
       items: leadsSite
         ? [
             { path: '/', Icon: LayoutDashboard, name: t('common.dashboard') },
             lightyLink,
             { path: '/design', Icon: Palette, name: t('common.siteDesign') },
+            ...(productsSite ? [productsLink] : []),
             leadsLink,
           ]
         : [
@@ -283,11 +290,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               leadsLink,
               { path: '/schedule-vacations', Icon: Calendar, name: t('common.scheduleVacations') },
             ]),
-        { path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') },
+        ...(showServices ? [{ path: '/appointment-types', Icon: Tag, name: t('common.serviceTypes') }] : []),
         // LT-540: on a site with products they take the gallery's place; a gallery
         // that holds pictures stays beside them.
         ...(showGallery ? [{ path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') }] : []),
-        { path: '/products', Icon: ShoppingBag, name: t('common.products') },
+        ...(productsSite ? [] : [productsLink]),
         { path: '/settings', Icon: Settings, name: t('common.settings') },
       ],
     },
@@ -320,7 +327,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // operator's admin pages keep their own caption.
   // While a page has taken the bar over (LT-380, the site editor) its row
   // holds that page's tabs, so "More" shows every page (LT-384).
-  const inBar = new Set(phoneBar?.editing ? [] : barPaths(isRestricted, leadsSite));
+  const inBar = new Set(phoneBar?.editing ? [] : barPaths(isRestricted, leadsSite, productsSite));
   const allowed = ({ path }: { path: string }) =>
     !inBar.has(path) && (!isRestricted || ALLOWED_WHEN_RESTRICTED.includes(path));
   const phoneSections: PhoneMenuSection[] = [
@@ -372,6 +379,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
       <BottomTabBar
         isRestricted={isRestricted}
         leadsSite={leadsSite}
+        productsSite={productsSite}
         newLeads={newLeads}
         moreDot={!!unreadNotifications}
         menuOpen={menuOpen}

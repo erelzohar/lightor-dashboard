@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { motion } from 'framer-motion';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import BottomTabBar, { HOLD_CLICK_WAIT_MS } from '../../components/layout/BottomTabBar';
+import BottomTabBar, { HOLD_CLICK_WAIT_MS, barPaths } from '../../components/layout/BottomTabBar';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -88,6 +88,19 @@ describe('BottomTabBar', () => {
     expect(screen.queryByText('common.scheduleVacations')).not.toBeInTheDocument();
     expect(screen.getByText('common.leads').closest('a')).toHaveAttribute('aria-current', 'page');
     expect(screen.getByText('sidebar.more')).toBeInTheDocument();
+  });
+
+  it('has the products in the bar on a products site, the hours under "More" (LT-556)', () => {
+    render(
+      <MemoryRouter initialEntries={['/products']}>
+        <BottomTabBar leadsSite productsSite onMore={vi.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/', '/leads', '/lighty', '/products']);
+    expect(screen.getByText('common.products').closest('a')).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByText('common.openingHours')).not.toBeInTheDocument();
+    expect(barPaths(false, true, true)).toEqual(['/', '/leads', '/lighty', '/products']);
+    expect(barPaths(false, true)).toEqual(['/', '/leads', '/lighty', '/schedule-vacations']);
   });
 
   it('dots the Leads tab while new leads wait', () => {

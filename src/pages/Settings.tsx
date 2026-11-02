@@ -1,7 +1,7 @@
 import { CURRENCIES, currencyOf, currencySymbol } from '../utils/currency';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink, Banknote, Tag } from 'lucide-react';
+import { Clock, Info, Type, RefreshCcw, MapPin, Phone, Mail, Image as ImageIcon, Link2, EyeOff, Settings as SettingsIcon, Instagram, Facebook, X, Music2, AlertCircle, Copy, Check, Languages, CalendarRange, Globe, CalendarCheck, Inbox, Accessibility, ExternalLink, Banknote, Tag, ShoppingBag } from 'lucide-react';
 import UnsavedChangesBar from '../components/ui/UnsavedChangesBar';
 import { WebConfig, Address } from '../types';
 import { checkSubdomainAvailability } from '../services/webConfigApi';
@@ -28,7 +28,6 @@ import CalendarFeedCard from '../components/settings/CalendarFeedCard';
 import CategoryFields from '../components/settings/CategoryFields';
 import GoogleCalendarCard from '../components/settings/GoogleCalendarCard';
 import Select from '../components/ui/Select';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { SUPPORTED_LANGUAGES } from '../i18n/config';
 import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
@@ -129,10 +128,6 @@ const Settings: React.FC = () => {
   const webConfig = useAppSelector(state => state.webConfig.data);
   // The booking-questions editor scopes questions per service (LT-178).
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
-  // Switching what the site does asks first (LT-199). The target outlives the
-  // open flag, so the dialog keeps its words while it animates out.
-  const [switchTarget, setSwitchTarget] = useState<'book' | 'lead'>('lead');
-  const [switchOpen, setSwitchOpen] = useState(false);
   // The business phone (LT-404). A mobile that is neither the owner's nor
   // the one stored is proven by a code sent to it, as the account's phone
   // is: the save waits here, the code field shows under the number, and
@@ -165,15 +160,16 @@ const Settings: React.FC = () => {
     !!localWebConfig && !!webConfig &&
     JSON.stringify(localWebConfig.leadFields ?? []) !== JSON.stringify(webConfig.leadFields ?? []);
 
-  // What the site does (LT-199). The SAVED mode decides which booking-only
-  // controls this page shows, like every other page; the draft's mode is the
-  // one being chosen on the Site tab. Absent and 'book' are the same mode.
+  // What the site does (LT-199). The saved mode decides which booking-only
+  // controls this page shows, like every other page. Absent and 'book' are
+  // the same mode. LT-556 (Erel): the owner no longer switches it here; the
+  // AI does, in the site editor, when the owner asks for it.
   const leadsSite = isLeadsSite(webConfig);
   useEffect(() => {
     if (leadsSite && activeTab === 'bookings') setActiveTab('general');
   }, [leadsSite, activeTab]);
-  const draftLeads = isLeadsSite(localWebConfig);
-  const conversionChanged = !!localWebConfig && !!webConfig && draftLeads !== leadsSite;
+  // A leads site with products leads with them (LT-541): its main button goes there.
+  const productsSite = leadsSite && webConfig?.catalog === true;
   // The main button's text (LT-199): '' and absent both mean the mode's
   // default, and only trimmed text is stored.
   const ctaOf = (config: WebConfig | null) => (config?.components?.hero?.cta ?? '').trim();
@@ -211,7 +207,6 @@ const Settings: React.FC = () => {
       (localWebConfig.bookingHorizonDays ?? 60) !== (webConfig.bookingHorizonDays ?? 60) ||
       bookingFieldsChanged ||
       leadFieldsChanged ||
-      conversionChanged ||
       ctaChanged ||
       hideFromSearchChanged ||
       a11yMenuChanged ||
@@ -357,7 +352,6 @@ const Settings: React.FC = () => {
     setLogoPreviewError(false);
     setSubdomainError(null);
     setErrors(null);
-    setSwitchOpen(false);
     setTriedSave(false);
     setContactPhoneError(null);
     clearPhoneCode();
@@ -440,10 +434,7 @@ const Settings: React.FC = () => {
       if (leadFieldsChanged) {
         payload.leadFields = normaliseBookingFields(localWebConfig.leadFields ?? []).map((f) => ({ ...f, services: [] }));
       }
-      // The mode only when the owner switched it (LT-199). The server
-      // re-composes the page on this save and deletes nothing.
-      if (conversionChanged) payload.conversion = draftLeads ? 'lead' : 'book';
-      // Only when the owner flipped it (LT-208), as the mode above.
+      // Only when the owner flipped it (LT-208).
       if (hideFromSearchChanged) payload.hideFromSearch = !!localWebConfig.hideFromSearch;
       if (a11yMenuChanged) payload.accessibility = { widgetHidden: a11yMenuHidden(localWebConfig) };
       // The currency only when the owner chose one (LT-395).
@@ -1039,21 +1030,13 @@ const Settings: React.FC = () => {
       // Everything about the site itself: its address and language, what it
       // does, its popup, its contact form, and search engines.
       case 'site': {
-        // What the site does and its main button (LT-199).
-        const modes = [
-          {
-            value: 'book' as const,
-            Icon: CalendarCheck,
-            title: t('settings.site.modeBook'),
-            desc: t('settings.site.modeBookDesc'),
-          },
-          {
-            value: 'lead' as const,
-            Icon: Inbox,
-            title: t('settings.site.modeLead'),
-            desc: t('settings.site.modeLeadDesc'),
-          },
-        ];
+        // What the site does and its main button (LT-199). LT-556: shown, not
+        // chosen: the AI changes it in the site editor when the owner asks.
+        const mode = productsSite
+          ? { Icon: ShoppingBag, title: t('settings.site.modeProducts'), desc: t('settings.site.modeProductsDesc') }
+          : leadsSite
+            ? { Icon: Inbox, title: t('settings.site.modeLead'), desc: t('settings.site.modeLeadDesc') }
+            : { Icon: CalendarCheck, title: t('settings.site.modeBook'), desc: t('settings.site.modeBookDesc') };
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Languages} title={t('settings.sections.siteBasics')} description={t('settings.sections.siteBasicsDesc')}>
@@ -1089,36 +1072,13 @@ const Settings: React.FC = () => {
             </SettingsSection>
 
             <SettingsSection icon={Globe} title={t('settings.site.modeTitle')} titleId="site-mode-title">
-              <div role="radiogroup" aria-labelledby="site-mode-title" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {modes.map(({ value, Icon, title, desc }) => {
-                  const selected = (value === 'lead') === draftLeads;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      // Switching asks first; choosing the current mode is a no-op.
-                      onClick={() => {
-                        if (selected) return;
-                        setSwitchTarget(value);
-                        setSwitchOpen(true);
-                      }}
-                      className={`text-start p-4 rounded-2xl border transition-all ${
-                        selected
-                          ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20'
-                          : 'border-gray-200 dark:border-gray-700 bg-white/40 dark:bg-white/[0.02] hover:border-primary/40'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <Icon className={`w-5 h-5 shrink-0 ${selected ? 'text-primary' : 'text-gray-400'}`} />
-                        <span className="font-semibold text-gray-900 dark:text-white">{title}</span>
-                        {selected && <Check className="w-4 h-4 text-primary ms-auto shrink-0" />}
-                      </span>
-                      <span className="block mt-1.5 text-sm text-gray-500 dark:text-gray-400">{desc}</span>
-                    </button>
-                  );
-                })}
+              <div data-testid="site-mode" className="p-4 rounded-2xl border border-primary/30 bg-primary/5 dark:bg-primary/10">
+                <span className="flex items-center gap-2">
+                  <mode.Icon className="w-5 h-5 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="font-semibold text-gray-900 dark:text-white">{mode.title}</span>
+                </span>
+                <span className="block mt-1.5 text-sm text-gray-500 dark:text-gray-400">{mode.desc}</span>
+                <span className="block mt-3 text-sm text-gray-600 dark:text-gray-300">{t('settings.site.modeByAi')}</span>
               </div>
               <div className="max-w-md">
                 <Input
@@ -1129,7 +1089,7 @@ const Settings: React.FC = () => {
                   // The owner's own words in the site's language, whatever the
                   // dashboard's; the placeholder is the default the site shows.
                   dir="auto"
-                  placeholder={t(draftLeads ? 'settings.site.ctaDefaultLead' : 'settings.site.ctaDefaultBook', {
+                  placeholder={t(productsSite ? 'settings.site.ctaDefaultProducts' : leadsSite ? 'settings.site.ctaDefaultLead' : 'settings.site.ctaDefaultBook', {
                     lng: localWebConfig.defaultLanguage || undefined,
                   })}
                   helperText={t('settings.site.ctaHelp')}
@@ -1377,25 +1337,6 @@ const Settings: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Switching modes asks first and says nothing is deleted (LT-199). The
-          choice lands in the draft; the save bar commits it. */}
-      <ConfirmDialog
-        open={switchOpen}
-        title={switchTarget === 'lead' ? t('settings.site.switchToLeadTitle') : t('settings.site.switchToBookTitle')}
-        message={
-          <>
-            <p>{switchTarget === 'lead' ? t('settings.site.switchToLeadMessage') : t('settings.site.switchToBookMessage')}</p>
-            <p className="mt-2 font-medium text-gray-800 dark:text-gray-100">{t('settings.site.nothingDeleted')}</p>
-          </>
-        }
-        confirmLabel={t('settings.site.switchConfirm')}
-        cancelLabel={t('common.cancel')}
-        onConfirm={() => {
-          handleChange('root', 'conversion', switchTarget);
-          setSwitchOpen(false);
-        }}
-        onClose={() => setSwitchOpen(false)}
-      />
     </motion.div>
   );
 };

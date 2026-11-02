@@ -41,6 +41,7 @@ import SiteBuilder from './SiteBuilder';
 import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { siteUrlOf } from '../utils/siteUrl';
+import { isLeadsSite } from '../utils/siteMode';
 import { pop } from '../components/ui/pop-button';
 import { usePhoneBar } from '../contexts/PhoneBarContext';
 import { useIsPhone } from '../hooks/useIsPhone';
@@ -339,6 +340,9 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       await Promise.all(changedServices.map((s) => updateAppointmentType(s._id, { name: s.name, price: s.price, image: s.image })));
 
       // Only what the editor edits travels: the rest of the config is not ours to resend.
+      // LT-556: the site's type too when Lighty changed it here at the owner's
+      // request, the only place it changes now (Settings shows it).
+      const typeChanged = isLeadsSite(d) !== isLeadsSite(before);
       const payload: Partial<WebConfig> & { _id: string } = {
         _id: saved._id,
         businessName: d.businessName,
@@ -347,6 +351,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         pallete: d.pallete,
         ...(d.design !== undefined ? { design: d.design } : {}),
         ...(d.blocks !== undefined ? { blocks: d.blocks } : {}),
+        ...(typeChanged ? { conversion: isLeadsSite(d) ? 'lead' as const : 'book' as const } : {}),
       };
       const result = await dispatch(updateWebConfig(payload));
       if (updateWebConfig.rejected.match(result)) throw new Error(result.error?.message ?? 'Web config update refused');

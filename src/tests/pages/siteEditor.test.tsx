@@ -742,6 +742,21 @@ describe('the site editor (LT-249)', () => {
       });
     });
 
+    it("a site's type Lighty changed at the owner's request travels with the save (LT-556)", async () => {
+      const asLeads = { ...saved, conversion: 'lead', components: { ...saved.components, hero: { ...saved.components.hero, cta: 'Get a quote' } } };
+      vi.mocked(aiService.editSite).mockReset().mockResolvedValue({ config: asLeads, message: 'Done' } as never);
+      renderWithRequest('Make it a leads site');
+      await fromSite({ type: 'LT_READY' });
+      await waitFor(() => expect(aiService.editSite).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect((lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig }).config.conversion).toBe('lead'));
+
+      fireEvent.click(screen.getByText('siteEditor.save'));
+      await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+      const payload = vi.mocked(updateWebConfig).mock.calls[0][0] as Partial<WebConfig>;
+      expect(payload.conversion).toBe('lead');
+      expect(payload.components?.hero.cta).toBe('Get a quote');
+    });
+
     it("the floating Lighty's request is sent once, however often the design tab re-mounts", async () => {
       vi.mocked(aiService.editSite).mockReset().mockResolvedValue({ config: warmer, message: 'Done' } as never);
       renderWithRequest('Warmer headline');

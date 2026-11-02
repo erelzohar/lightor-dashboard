@@ -91,8 +91,6 @@ const sentPayload = (call = 0) => vi.mocked(updateWebConfig).mock.calls[call][0]
 // A tab is chosen on press (Radix Tabs, LT-313), as a finger or mouse goes down.
 const openSiteTab = () => fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.site/ }));
 const openBookingsTab = () => fireEvent.mouseDown(screen.getByRole('tab', { name: /settings\.tabs\.bookings/ }));
-const modeCard = (key: 'settings.site.modeBook' | 'settings.site.modeLead') =>
-  screen.getByRole('radio', { name: new RegExp(key.replace(/\./g, '\\.')) });
 
 beforeEach(() => {
   state.webConfig.data = baseConfig();
@@ -113,64 +111,34 @@ beforeEach(() => {
  * the server's answer is adopted, so a saved form reads as saved.
  */
 describe('Settings: the Site tab', () => {
-  it('asks before switching to inquiries, says nothing is deleted, and saves the mode alone', async () => {
+  // LT-556 (Erel): the owner does not switch the site's type; Lighty does, in the site editor.
+  it.each([
+    ['a booking site', {}, 'settings.site.modeBook', 'settings.site.ctaDefaultBook'],
+    ['a leads site', { conversion: 'lead' }, 'settings.site.modeLead', 'settings.site.ctaDefaultLead'],
+    ['a products site', { conversion: 'lead', catalog: true }, 'settings.site.modeProducts', 'settings.site.ctaDefaultProducts'],
+    ['a booking site with products', { catalog: true }, 'settings.site.modeBook', 'settings.site.ctaDefaultBook'],
+  ] as const)('shows %s its type with no switch, and the button its default', (_name, over, mode, placeholder) => {
+    state.webConfig.data = { ...baseConfig(), ...over };
     render(<Settings />);
     openSiteTab();
 
-    expect(modeCard('settings.site.modeBook')).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(modeCard('settings.site.modeLead'));
-
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('settings.site.switchToLeadTitle')).toBeInTheDocument();
-    expect(within(dialog).getByText('settings.site.nothingDeleted')).toBeInTheDocument();
-    // Nothing changes until the owner confirms.
-    expect(modeCard('settings.site.modeBook')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.queryByText('common.save')).toBeNull();
-
-    fireEvent.click(within(dialog).getByRole('button', { name: 'settings.site.switchConfirm' }));
-    expect(modeCard('settings.site.modeLead')).toHaveAttribute('aria-checked', 'true');
-    // The placeholder is the new mode's default text.
-    expect(screen.getByLabelText('settings.site.ctaLabel')).toHaveAttribute('placeholder', 'settings.site.ctaDefaultLead');
-
-    fireEvent.click(await screen.findByText('common.save'));
-    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
-    expect(sentPayload().conversion).toBe('lead');
-    // Nothing in `components` changed, so none of it travels.
-    expect(sentPayload()).not.toHaveProperty('components');
-
-    // The server's answer is adopted: the form is saved, not dirty.
-    await waitFor(() => expect(screen.queryByText('common.save')).toBeNull());
-    expect(modeCard('settings.site.modeLead')).toHaveAttribute('aria-checked', 'true');
+    const shown = screen.getByTestId('site-mode');
+    expect(within(shown).getByText(mode)).toBeInTheDocument();
+    expect(within(shown).getByText('settings.site.modeByAi')).toBeInTheDocument();
+    expect(within(shown).queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'settings.site.modeTitle' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: /settings\.site\.mode(Book|Lead)/ })).toBeNull();
+    expect(screen.getByLabelText('settings.site.ctaLabel')).toHaveAttribute('placeholder', placeholder);
   });
 
-  it('leaves everything as it was when the switch is cancelled', async () => {
-    render(<Settings />);
-    openSiteTab();
-
-    fireEvent.click(modeCard('settings.site.modeLead'));
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'common.cancel' }));
-
-    expect(modeCard('settings.site.modeBook')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByLabelText('settings.site.ctaLabel')).toHaveAttribute('placeholder', 'settings.site.ctaDefaultBook');
-    expect(screen.queryByText('common.save')).toBeNull();
-  });
-
-  it('asks before switching a leads site back to bookings', async () => {
+  it('never sends the type with a save', async () => {
     state.webConfig.data = { ...baseConfig(), conversion: 'lead' };
     render(<Settings />);
     openSiteTab();
-
-    expect(modeCard('settings.site.modeLead')).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(modeCard('settings.site.modeBook'));
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('settings.site.switchToBookTitle')).toBeInTheDocument();
-    expect(within(dialog).getByText('settings.site.nothingDeleted')).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'settings.site.switchConfirm' }));
-
+    fireEvent.change(screen.getByLabelText('settings.site.ctaLabel'), { target: { value: 'Get a quote' } });
     fireEvent.click(await screen.findByText('common.save'));
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
-    expect(sentPayload().conversion).toBe('book');
+    expect(sentPayload()).not.toHaveProperty('conversion');
   });
 
   it('sends a new button text with the whole stored hero, trimmed, and adopts what was stored', async () => {

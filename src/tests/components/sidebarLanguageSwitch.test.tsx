@@ -45,7 +45,8 @@ describe('the sidebar across a language switch (LT-291)', () => {
       lang.current = next;
       rerender(tree());
     }
-    expect(screen.getAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(['Navigation', 'Manage', 'Admin']);
+    // LT-556: the first group is "Main" ("ראשי"), no longer "Navigation".
+    expect(screen.getAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(['Main', 'Manage', 'Admin']);
     const named = screen.getAllByRole('group').flatMap((g) => Array.from(g.querySelectorAll('a'), (a) => a.textContent));
     expect(named.filter((n) => n === 'Settings')).toHaveLength(1);
   });

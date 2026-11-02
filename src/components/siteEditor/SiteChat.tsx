@@ -111,7 +111,7 @@ function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: 
         bookingFields: kept.bookingFields,
         leadFields: kept.leadFields,
       } as unknown as T;
-      const changed = changedLabels(before, next, (p) => fieldLabel(t, p), t('siteEditor.chat.look'));
+      const changed = changedLabels(before, next, (p) => fieldLabel(t, p), t('siteEditor.chat.look'), t('siteEditor.chat.siteType'));
       onApply((prev) => applyAiAnswer(prev, before as unknown as T, next));
       const summary = changed.length ? t('siteEditor.chat.changed', { list: changed.slice(0, 6).join(', ') }) : t('siteEditor.chat.nothingChanged');
       const answer: ChatTurn = { role: 'assistant', content: [result.message, summary].filter(Boolean).join('\n') };

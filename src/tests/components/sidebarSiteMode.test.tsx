@@ -17,7 +17,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ direction: 'ltr', darkMode: false, toggleDarkMode: vi.fn() }),
 }));
 const state = vi.hoisted(() => ({
-  webConfig: { data: { businessName: 'Biz', conversion: 'book' as 'book' | 'lead', catalog: false, components: { portfolio: { items: [] as unknown[] } } } },
+  webConfig: { data: { businessName: 'Biz', conversion: 'book' as 'book' | 'lead', catalog: false, appointmentTypes: [] as unknown[], components: { portfolio: { items: [] as unknown[] } } } },
 }));
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: typeof state) => unknown): unknown => selector(state),
@@ -54,10 +54,10 @@ describe('Sidebar by site mode', () => {
   });
 
   it('puts products in the gallery\'s place on a site with products, unless the gallery holds pictures (LT-540)', () => {
-    state.webConfig.data.conversion = 'lead';
+    state.webConfig.data.conversion = 'book';
     state.webConfig.data.catalog = true;
     renderSidebar();
-    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/products', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/leads', '/schedule-vacations', '/appointment-types', '/products', '/settings']);
     state.webConfig.data.components.portfolio.items = [{ url: 'a.webp' }];
     renderSidebar();
     const groups = screen.getAllByRole('group', { name: 'sidebar.manage' });
@@ -66,11 +66,25 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.components.portfolio.items = [];
   });
 
+  it('brings the products up on a products site, and the services only once it has some (LT-556)', () => {
+    state.webConfig.data.conversion = 'lead';
+    state.webConfig.data.catalog = true;
+    const { unmount } = renderSidebar();
+    expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/products', '/leads']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/settings']);
+    unmount();
+    state.webConfig.data.appointmentTypes = [{ _id: 's1', name: 'Fitting' }];
+    renderSidebar();
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/settings']);
+    state.webConfig.data.appointmentTypes = [];
+    state.webConfig.data.catalog = false;
+  });
+
   it('keeps the booking sidebar on a booking site', () => {
     state.webConfig.data.conversion = 'book';
     renderSidebar();
 
-    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/appointments']);
+    expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/appointments']);
     expect(groupHrefs('sidebar.manage')).toEqual([
       '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/settings',
     ]);
@@ -81,13 +95,13 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.conversion = 'lead';
     renderSidebar();
 
-    expect(groupHrefs('sidebar.navigation')).toEqual(['/', '/lighty', '/design', '/leads']);
+    expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/leads']);
     expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/settings']);
     const manage = within(screen.getByRole('group', { name: 'sidebar.manage' }));
     expect(manage.getByText('common.openingHours')).toBeInTheDocument();
     expect(manage.queryByText('common.scheduleVacations')).not.toBeInTheDocument();
     // The badge travels with the link.
-    const navigation = within(screen.getByRole('group', { name: 'sidebar.navigation' }));
+    const navigation = within(screen.getByRole('group', { name: 'sidebar.main' }));
     await waitFor(() => expect(navigation.getByTestId('nav-badge')).toHaveTextContent('4'));
   });
 });
