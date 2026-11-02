@@ -19,6 +19,8 @@ export const PLAN_ROWS = [
   'rebuilds',
   'pictures',
   'editing',
+  // LT-551: the paid plans' line, no model named (Erel 2026-11-02).
+  'aiModel',
   'insights',
   'history',
   'badge',

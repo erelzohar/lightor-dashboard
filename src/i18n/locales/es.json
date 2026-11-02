@@ -1061,8 +1061,13 @@
         },
         "editing": {
           "free": "Edición básica con Lighty",
-          "plus": "El doble de edición con Lighty, con un modelo de IA más avanzado",
-          "pro": "5 veces más edición con Lighty, con un modelo de IA más avanzado"
+          "plus": "El doble de edición con Lighty",
+          "pro": "5 veces más edición con Lighty"
+        },
+        "aiModel": {
+          "free": "Un modelo de IA básico",
+          "plus": "Un modelo de IA más avanzado",
+          "pro": "Un modelo de IA más avanzado"
         },
         "history": {
           "free": "2 meses de historial",
@@ -1143,8 +1148,14 @@
         "editing": {
           "label": "Editar con Lighty",
           "free": "Básica",
-          "plus": "El doble, con un modelo más avanzado",
-          "pro": "5 veces más, con un modelo más avanzado"
+          "plus": "El doble",
+          "pro": "5 veces más"
+        },
+        "aiModel": {
+          "label": "Modelo de IA",
+          "free": "Básico",
+          "plus": "Más avanzado",
+          "pro": "Más avanzado"
         },
         "history": {
           "label": "Historial disponible",
