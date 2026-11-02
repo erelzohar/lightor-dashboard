@@ -20,7 +20,7 @@ import { uploadImage } from '../services/imagesApi';
 import { aiService } from '../services/aiApi';
 import globals from '../services/globals';
 import {
-  createProduct, createProductsFromImages, deleteProduct, listProducts, minorToPrice, priceToMinor, reorderProducts, updateProduct,
+  createProduct, createProductsFromGallery, createProductsFromImages, deleteProduct, listProducts, minorToPrice, priceToMinor, reorderProducts, updateProduct,
   type Product, type ProductInput, type ProductLimits,
 } from '../services/productsApi';
 import { sortableA11y } from '../utils/sortableA11y';
@@ -367,6 +367,7 @@ const Products: React.FC = () => {
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
   const [uploading, setUploading] = useState(false);
   const manyRef = useRef<HTMLInputElement>(null);
+  const { confirm: confirmConvert, dialog: convertDialog } = useConfirm();
 
   const load = useCallback(async () => {
     try {
@@ -441,6 +442,28 @@ const Products: React.FC = () => {
     refreshSite();
   };
 
+  // LT-541: a gallery that is really a catalogue turns into one in a tap.
+  const galleryCount = webConfig?.components?.portfolio?.items?.length ?? 0;
+  const convertGallery = async () => {
+    const ok = await confirmConvert({
+      title: t('products.fromGallery.title'),
+      message: t('products.fromGallery.body', { count: Math.min(galleryCount, room) }),
+      confirmLabel: t('products.fromGallery.confirm'),
+    });
+    if (!ok) return;
+    setUploading(true);
+    try {
+      const created = await createProductsFromGallery(t('products.newName'));
+      setProducts((list) => [...(list ?? []), ...created]);
+      toast.success(t('products.fromGallery.done', { count: created.length }));
+      refreshSite();
+    } catch {
+      toast.error(t('products.saveError'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const siteUrl = siteUrlOf(webConfig?.subDomain);
   const categories = [...new Set((products ?? []).map((p) => p.category).filter((c): c is string => !!c))];
   const full = limits !== null && room === 0;
@@ -478,6 +501,15 @@ const Products: React.FC = () => {
         </div>
       </div>
 
+      {galleryCount > 0 && !webConfig?.catalog && room > 0 && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3" data-testid="from-gallery">
+          <p className="min-w-0 text-sm text-gray-700 dark:text-slate-200">{t('products.fromGallery.hint', { count: galleryCount })}</p>
+          <button type="button" onClick={convertGallery} disabled={uploading} className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            {t('products.fromGallery.action')}
+          </button>
+        </div>
+      )}
+
       {full && <p className="mb-6 rounded-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200" data-testid="products-full">{t('products.capReached')}</p>}
 
       {products === null ? (
@@ -514,6 +546,7 @@ const Products: React.FC = () => {
           onDeleted={onDeleted}
         />
       )}
+      {convertDialog}
     </div>
   );
 };

@@ -2434,6 +2434,14 @@
       "body": "{{name}} sera retiré du site. C'est irréversible.",
       "confirm": "Supprimer"
     },
-    "close": "Fermer"
+    "close": "Fermer",
+    "fromGallery": {
+      "hint": "Vous avez {{count}} photos dans votre galerie. Elles peuvent devenir des produits.",
+      "action": "En faire des produits",
+      "title": "Transformer la galerie en produits ?",
+      "body": "{{count}} photos deviendront des produits, et la section Produits prendra la place de la galerie. Les photos restent, et la galerie peut revenir dans l'éditeur. Pensez à ajouter noms et prix.",
+      "confirm": "En faire des produits",
+      "done": "{{count}} produits créés"
+    }
   }
 }

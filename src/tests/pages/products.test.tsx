@@ -1,19 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import Products from '../../pages/Products';
-import { createProduct, createProductsFromImages, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
+import { createProduct, createProductsFromGallery, createProductsFromImages, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
 import { aiService } from '../../services/aiApi';
 import { uploadImage } from '../../services/imagesApi';
 
 // One `t`, as the real hook keeps: the page reloads its list when it changes.
 const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) => (o ? `${key}:${JSON.stringify(o)}` : key) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => i18n }));
+const site = vi.hoisted(() => ({ current: { subDomain: 'shop', defaultLanguage: 'he' } as Record<string, unknown> }));
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { webConfig_id: 'w1' } } }) }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
 vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: { subDomain: 'shop', defaultLanguage: 'he' } } }),
+  useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: site.current } }),
 }));
 vi.mock('../../store/slices/webConfigSlice', () => ({ fetchWebConfig: vi.fn() }));
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
@@ -23,6 +24,7 @@ vi.mock('../../services/productsApi', async (original) => ({
   listProducts: vi.fn(),
   createProduct: vi.fn(),
   createProductsFromImages: vi.fn(),
+  createProductsFromGallery: vi.fn(),
   updateProduct: vi.fn(),
   deleteProduct: vi.fn(),
   reorderProducts: vi.fn(),
@@ -134,5 +136,25 @@ describe('the Products page (LT-540)', () => {
     await waitFor(() => expect(createProductsFromImages).toHaveBeenCalled());
     expect(vi.mocked(createProductsFromImages).mock.calls[0][0]).toHaveLength(2);
     expect(await screen.findByText('products.badge.draft')).toBeTruthy();
+  });
+
+  it('offers to turn a gallery into products, once, and confirms first', async () => {
+    site.current = { subDomain: 'shop', defaultLanguage: 'he', components: { portfolio: { items: [{ url: 'a.webp' }, { url: 'b.webp' }] } } };
+    vi.mocked(listProducts).mockResolvedValue({ products: [], limits: plan(10) });
+    vi.mocked(createProductsFromGallery).mockResolvedValue([product({ _id: 'g1', name: 'From the gallery' })]);
+    render(<Products />);
+    const offer = await screen.findByTestId('from-gallery');
+    fireEvent.click(within(offer).getByText('products.fromGallery.action'));
+    expect(createProductsFromGallery).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByText('products.fromGallery.confirm'));
+    await waitFor(() => expect(createProductsFromGallery).toHaveBeenCalled());
+    expect(await screen.findByText('From the gallery')).toBeTruthy();
+    site.current = { subDomain: 'shop', defaultLanguage: 'he', catalog: true, components: { portfolio: { items: [{ url: 'a.webp' }] } } };
+  });
+
+  it('says nothing of the gallery on a site that already has products', async () => {
+    render(<Products />);
+    await screen.findByText('Ring');
+    expect(screen.queryByTestId('from-gallery')).toBeNull();
   });
 });

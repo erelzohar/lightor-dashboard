@@ -2434,6 +2434,14 @@
       "body": "{{name}} se quitará del sitio. No se puede deshacer.",
       "confirm": "Eliminar"
     },
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "fromGallery": {
+      "hint": "Tienes {{count}} fotos en la galería. Pueden convertirse en productos.",
+      "action": "Convertirlas en productos",
+      "title": "¿Convertir la galería en productos?",
+      "body": "{{count}} fotos se convertirán en productos, y la sección de productos ocupará el lugar de la galería. Las fotos se conservan, y la galería puede volver en el editor. Recuerda añadir nombres y precios.",
+      "confirm": "Convertirlas en productos",
+      "done": "{{count}} productos creados"
+    }
   }
 }

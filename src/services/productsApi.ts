@@ -51,6 +51,10 @@ export const createProduct = async (input: ProductInput & { name: string }): Pro
 export const createProductsFromImages = async (images: string[], fallbackName: string): Promise<Product[]> =>
   (await apiClient.post(`${URL}bulk`, { images, fallbackName })).data.data;
 
+/** LT-541: each gallery picture becomes a product, and their section takes the gallery's place. */
+export const createProductsFromGallery = async (fallbackName: string): Promise<Product[]> =>
+  (await apiClient.post(`${URL}from-gallery`, { fallbackName })).data.data;
+
 export const updateProduct = async (id: string, input: ProductInput & { sample?: false }): Promise<Product> =>
   (await apiClient.patch(`${URL}${id}`, input)).data.data;
 

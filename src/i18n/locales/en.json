@@ -2434,6 +2434,14 @@
       "body": "{{name}} will be removed from the site. This cannot be undone.",
       "confirm": "Delete"
     },
-    "close": "Close"
+    "close": "Close",
+    "fromGallery": {
+      "hint": "You have {{count}} pictures in your gallery. They can become products.",
+      "action": "Make them products",
+      "title": "Turn the gallery into products?",
+      "body": "{{count}} pictures will become products, and the products section will take the gallery's place. The pictures stay, and the gallery can come back in the editor. Remember to give them names and prices.",
+      "confirm": "Make them products",
+      "done": "{{count}} products made"
+    }
   }
 }
