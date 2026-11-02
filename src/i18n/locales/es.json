@@ -2524,6 +2524,14 @@
       "body": "{{count}} fotos se convertirán en productos, y la sección de productos ocupará el lugar de la galería. Las fotos se conservan, y la galería puede volver en el editor. Recuerda añadir nombres y precios.",
       "confirm": "Convertirlas en productos",
       "done": "{{count}} productos creados"
+    },
+    "visibility": {
+      "label": "Mostrar los productos en el sitio",
+      "shown": "Tus productos están en el sitio",
+      "hidden": "Tus productos están ocultos en el sitio",
+      "hiddenBody": "Siguen guardados aquí y puedes volver a mostrarlos cuando quieras.",
+      "savedShown": "Tus productos vuelven a estar en el sitio",
+      "savedHidden": "Tus productos están ocultos en el sitio"
     }
   }
 }

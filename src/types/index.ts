@@ -130,6 +130,8 @@ export interface ComponentsConfig {
   testimonials?: { visible: boolean; title: string; items: { text: string; name: string }[] };
   faq?: { visible: boolean; title: string; items: { question: string; answer: string }[] };
   services?: { title?: string };
+  /** LT-540 heading; LT-558 the Products page's switch (absent = shown). */
+  products?: { title?: string; description?: string; cta?: string; visible?: boolean };
 }
 
 /** One section of a composed page (LT-133); the site editor selects and edits blocks by id (LT-249). */

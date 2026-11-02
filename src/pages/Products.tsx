@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useConfirm } from '../hooks/useConfirm';
-import { fetchWebConfig } from '../store/slices/webConfigSlice';
+import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
 import { uploadImage } from '../services/imagesApi';
 import { aiService } from '../services/aiApi';
 import globals from '../services/globals';
@@ -386,6 +386,7 @@ const Products: React.FC = () => {
   const [limits, setLimits] = useState<ProductLimits | null>(null);
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [savingShown, setSavingShown] = useState(false);
   const manyRef = useRef<HTMLInputElement>(null);
   const { confirm: confirmConvert, dialog: convertDialog } = useConfirm();
 
@@ -484,6 +485,26 @@ const Products: React.FC = () => {
     }
   };
 
+  // LT-558: the owner's switch, as the gallery has; off, the site shows no products anywhere.
+  const shownOnSite = webConfig?.components?.products?.visible !== false;
+  const setShownOnSite = async (visible: boolean) => {
+    if (!webConfig) return;
+    setSavingShown(true);
+    try {
+      const res = await dispatch(updateWebConfig({
+        _id: webConfig._id,
+        components: { ...webConfig.components, products: { ...webConfig.components.products, visible } },
+      } as Parameters<typeof updateWebConfig>[0]));
+      if (updateWebConfig.rejected.match(res)) throw new Error('Update rejected');
+      toast.success(t(visible ? 'products.visibility.savedShown' : 'products.visibility.savedHidden'));
+      refreshSite();
+    } catch {
+      toast.error(t('products.saveError'));
+    } finally {
+      setSavingShown(false);
+    }
+  };
+
   const siteUrl = siteUrlOf(webConfig?.subDomain);
   const categories = [...new Set((products ?? []).map((p) => p.category).filter((c): c is string => !!c))];
   const full = limits !== null && room === 0;
@@ -538,6 +559,24 @@ const Products: React.FC = () => {
           <input ref={manyRef} type="file" accept="image/*" multiple className="sr-only" onChange={addMany} aria-label={t('products.addMany')} />
         </div>
       </div>
+
+      {webConfig?.catalog && (products?.length ?? 0) > 0 && (
+        <div
+          className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 ${shownOnSite ? 'border-gray-200 dark:border-slate-700' : 'border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10'}`}
+          data-testid="products-on-site"
+        >
+          <div className="flex min-w-0 items-start gap-2">
+            {!shownOnSite && <EyeOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />}
+            <div className="min-w-0">
+              <p className={`text-sm font-medium ${shownOnSite ? 'text-gray-900 dark:text-white' : 'text-amber-800 dark:text-amber-200'}`}>
+                {t(shownOnSite ? 'products.visibility.shown' : 'products.visibility.hidden')}
+              </p>
+              {!shownOnSite && <p className="text-sm text-amber-800/80 dark:text-amber-200/80">{t('products.visibility.hiddenBody')}</p>}
+            </div>
+          </div>
+          <ToggleSwitch checked={shownOnSite} onChange={(v) => void setShownOnSite(v)} disabled={savingShown} label={t('products.visibility.label')} />
+        </div>
+      )}
 
       {galleryCount > 0 && !webConfig?.catalog && room > 0 && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3" data-testid="from-gallery">

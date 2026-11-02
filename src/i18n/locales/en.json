@@ -2524,6 +2524,14 @@
       "body": "{{count}} pictures will become products, and the products section will take the gallery's place. The pictures stay, and the gallery can come back in the editor. Remember to give them names and prices.",
       "confirm": "Make them products",
       "done": "{{count}} products made"
+    },
+    "visibility": {
+      "label": "Show products on the site",
+      "shown": "Your products are on the site",
+      "hidden": "Your products are hidden from the site",
+      "hiddenBody": "They stay saved here, and you can bring them back at any time.",
+      "savedShown": "Your products are on the site again",
+      "savedHidden": "Your products are hidden from the site"
     }
   }
 }

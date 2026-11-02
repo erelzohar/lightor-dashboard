@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Products from '../../pages/Products';
 import { createProduct, createProductsFromGallery, createProductsFromImages, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
 import { aiService } from '../../services/aiApi';
 import { uploadImage } from '../../services/imagesApi';
+import { updateWebConfig } from '../../store/slices/webConfigSlice';
 
 // One `t`, as the real hook keeps: the page reloads its list when it changes.
 const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) => (o ? `${key}:${JSON.stringify(o)}` : key), i18n: { language: 'he' } }));
@@ -13,12 +14,16 @@ const site = vi.hoisted(() => ({ current: { subDomain: 'shop', defaultLanguage: 
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { webConfig_id: 'w1' } } }) }));
-vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
+const store = vi.hoisted(() => ({ dispatch: vi.fn(async (a: unknown) => a) }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => store.dispatch }));
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: site.current } }),
 }));
-vi.mock('../../store/slices/webConfigSlice', () => ({ fetchWebConfig: vi.fn() }));
-const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true) }));
+vi.mock('../../store/slices/webConfigSlice', () => ({
+  fetchWebConfig: vi.fn(),
+  updateWebConfig: Object.assign(vi.fn((config: unknown) => ({ type: 'webConfig/update', config })), { rejected: { match: () => false } }),
+}));
+const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true), isNativeApp: () => false }));
 vi.mock('../../lib/platform', () => platform);
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
 vi.mock('../../services/aiApi', () => ({ aiService: { draftProduct: vi.fn() } }));
@@ -166,6 +171,47 @@ describe('the Products page (LT-540)', () => {
 });
 
 // LT-546 (Erel 2026-11-02): "write that only the first product shows after the free period".
+describe('the switch that shows them on the site (LT-558)', () => {
+  beforeEach(() => {
+    vi.mocked(listProducts).mockResolvedValue({ products: [product()], limits: plan(10) });
+    vi.mocked(updateWebConfig).mockClear();
+  });
+  afterEach(() => { site.current = { subDomain: 'shop', defaultLanguage: 'he' }; });
+  const withSite = (products?: Record<string, unknown>) => {
+    site.current = { _id: 'w1', subDomain: 'shop', defaultLanguage: 'he', catalog: true, components: { hero: { visible: true }, ...(products ? { products } : {}) } };
+  };
+
+  it('is on for a site that never touched it, and turns the products off with the rest of the site kept', async () => {
+    withSite({ title: 'Our rings' });
+    render(<Products />);
+    const toggle = (await screen.findByRole('switch')) as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+    expect(screen.getByTestId('products-on-site').textContent).toContain('products.visibility.shown');
+    fireEvent.click(toggle);
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledWith({
+      _id: 'w1',
+      components: { hero: { visible: true }, products: { title: 'Our rings', visible: false } },
+    }));
+  });
+
+  it('says the products are hidden and still kept, and turns them back on', async () => {
+    withSite({ visible: false });
+    render(<Products />);
+    const toggle = (await screen.findByRole('switch')) as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    expect(screen.getByTestId('products-on-site').textContent).toContain('products.visibility.hiddenBody');
+    fireEvent.click(toggle);
+    await waitFor(() => expect(vi.mocked(updateWebConfig).mock.calls[0][0]).toMatchObject({ components: { products: { visible: true } } }));
+  });
+
+  it('is not there before the site has products', async () => {
+    site.current = { _id: 'w1', subDomain: 'shop', defaultLanguage: 'he', components: {} };
+    render(<Products />);
+    await screen.findByText('Ring');
+    expect(screen.queryByTestId('products-on-site')).toBeNull();
+  });
+});
+
 describe('products past the plan (LT-546)', () => {
   const ten = Array.from({ length: 10 }, (_, i) => product({ _id: `p${i}`, slug: `p-${i}`, name: `Product ${i}`, order: i }));
   const page = () => render(<MemoryRouter><Products /></MemoryRouter>);
