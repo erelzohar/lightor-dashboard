@@ -2488,7 +2488,7 @@
     "priceInvalid": "Le prix doit être un nombre, comme 120 ou 120.50",
     "capReached": "Vous avez atteint le nombre de produits de cette offre.",
     "countOnly": "{{used}} produits.",
-    "afterFreeDays": "Votre essai se termine le {{date}}. Ensuite, avec l'offre gratuite, seul le premier produit de la liste s'affichera sur votre site, et les autres seront conservés, masqués.",
+    "afterFreeDays": "Votre essai se termine le {{date}}. Ensuite, avec l'offre gratuite, seuls les {{max}} premiers produits de la liste s'afficheront sur votre site, et les autres seront conservés, masqués.",
     "overFree": "Avec l'offre gratuite, seul le premier produit de la liste s'affiche sur votre site, et vous ne pouvez pas ajouter de produits. Les autres sont conservés, masqués. Pour choisir le produit affiché, faites-le glisser en haut de la liste.",
     "overPlan": "Avec cette offre, seuls les {{max}} premiers produits de la liste s'affichent sur votre site, et vous ne pouvez pas ajouter de produits. Les autres sont conservés, masqués. Pour choisir ceux qui s'affichent, faites-les glisser vers le haut de la liste.",
     "upgradeBack": "Passez au forfait supérieur pour les retrouver",

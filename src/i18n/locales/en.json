@@ -2488,7 +2488,7 @@
     "priceInvalid": "The price must be a number, such as 120 or 120.50",
     "capReached": "You have reached this plan's number of products.",
     "countOnly": "{{used}} products.",
-    "afterFreeDays": "Your trial ends on {{date}}. After it, on the free plan, only the first product in the list will show on your site, and the others will be kept, hidden.",
+    "afterFreeDays": "Your trial ends on {{date}}. After it, on the free plan, only the first {{max}} products in the list will show on your site, and the others will be kept, hidden.",
     "overFree": "On the free plan only the first product in the list shows on your site, and you can't add products. The others are kept, hidden. To choose which product shows, drag it to the top of the list.",
     "overPlan": "On this plan only the first {{max}} products in the list show on your site, and you can't add products. The others are kept, hidden. To choose which ones show, drag them up the list.",
     "upgradeBack": "Upgrade to bring them back",

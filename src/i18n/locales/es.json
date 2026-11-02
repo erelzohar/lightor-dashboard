@@ -2488,7 +2488,7 @@
     "priceInvalid": "El precio debe ser un número, como 120 o 120.50",
     "capReached": "Alcanzaste el número de productos de este plan.",
     "countOnly": "{{used}} productos.",
-    "afterFreeDays": "Tu prueba termina el {{date}}. Después, en el plan gratuito, solo el primer producto de la lista aparecerá en tu sitio, y los demás se conservarán ocultos.",
+    "afterFreeDays": "Tu prueba termina el {{date}}. Después, en el plan gratuito, solo los primeros {{max}} productos de la lista aparecerán en tu sitio, y los demás se conservarán ocultos.",
     "overFree": "En el plan gratuito solo el primer producto de la lista aparece en tu sitio, y no puedes agregar productos. Los demás se conservan, ocultos. Para elegir qué producto aparece, arrástralo al principio de la lista.",
     "overPlan": "En este plan solo los primeros {{max}} productos de la lista aparecen en tu sitio, y no puedes agregar productos. Los demás se conservan, ocultos. Para elegir cuáles aparecen, arrástralos hacia arriba en la lista.",
     "upgradeBack": "Mejora tu plan para recuperarlos",

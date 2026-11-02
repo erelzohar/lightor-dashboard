@@ -518,8 +518,8 @@ const Products: React.FC = () => {
               {!limits.productPages && <span className="ms-1">{t('products.onePageNote')}</span>}
             </p>
           )}
-          {freeDaysEnd && (
-            <p className="mt-1 text-sm text-gray-600 dark:text-slate-300" data-testid="products-after-trial">{t('products.afterFreeDays', { date: freeDaysEnd })}</p>
+          {freeDaysEnd && limits?.freeMaxProducts !== undefined && (
+            <p className="mt-1 text-sm text-gray-600 dark:text-slate-300" data-testid="products-after-trial">{t('products.afterFreeDays', { date: freeDaysEnd, max: limits.freeMaxProducts })}</p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">

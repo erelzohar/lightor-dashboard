@@ -251,11 +251,13 @@ describe('products past the plan (LT-546)', () => {
   });
 
   it('under the free days says when they end and what the free plan shows', async () => {
-    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 2), limits: plan(20, true, '2027-01-02T10:00:00.000Z') });
+    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 2), limits: { ...plan(15, true, '2027-01-02T10:00:00.000Z'), freeMaxProducts: 5 } });
     page();
     const note = await screen.findByTestId('products-after-trial');
     expect(note.textContent).toContain('products.afterFreeDays');
     expect(note.textContent).toContain(new Date('2027-01-02T10:00:00.000Z').toLocaleDateString('he-IL'));
+    // LT-553: how many the free plan then shows, from the server.
+    expect(note.textContent).toContain('"max":5');
     expect(screen.queryByTestId('products-over-plan')).toBeNull();
   });
 
