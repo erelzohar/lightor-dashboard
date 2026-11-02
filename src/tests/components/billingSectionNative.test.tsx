@@ -422,6 +422,21 @@ describe('BillingSection payment management', () => {
     expect(screen.queryByText('billing.freeDesc')).not.toBeInTheDocument();
   });
 
+  it('tells a leads site of inquiries only when a payment fails (LT-544)', async () => {
+    authState.subscription = { status: 'past_due', customerId: 'ctm_1' };
+    vi.mocked(fetchPortalLinks).mockResolvedValue({ overview: OVERVIEW, updatePaymentMethod: UPDATE });
+    const { unmount } = render(<BillingSection leadsSite />);
+    expect(screen.getByText('billing.pastDueDescLeads')).toBeInTheDocument();
+    expect(screen.queryByText('billing.pastDueDesc')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'billing.updatePaymentMethod' })).toBeInTheDocument();
+    unmount();
+
+    inApp();
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByText('billing.pastDueDescNativeLeads')).toBeInTheDocument();
+    expect(screen.queryByText('billing.pastDueDescNative')).not.toBeInTheDocument();
+  });
+
   it('offers no payment management in the app, past due or paying', async () => {
     inApp();
     authState.subscription = { status: 'past_due', customerId: 'ctm_1' };

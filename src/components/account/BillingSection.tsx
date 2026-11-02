@@ -691,14 +691,18 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
           <>
             {/* A renewal Paddle could not collect (LT-265): until it is paid
                 the site takes no bookings or inquiries and the customers'
-                reminders stop (LT-458). The app states it without the way to
-                pay (LT-130). */}
+                reminders stop (LT-458); a leads site hears of inquiries only
+                (LT-544). The app states it without the way to pay (LT-130). */}
             <div
               className="flex items-start gap-2 rounded-lg border border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-200"
               data-testid="billing-past-due"
             >
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-              <p>{t(canSell ? 'billing.pastDueDesc' : 'billing.pastDueDescNative')}</p>
+              <p>
+                {canSell
+                  ? t(leadsSite ? 'billing.pastDueDescLeads' : 'billing.pastDueDesc')
+                  : t(leadsSite ? 'billing.pastDueDescNativeLeads' : 'billing.pastDueDescNative')}
+              </p>
             </div>
             {meters}
             {canSell && <div className="flex flex-wrap items-center gap-2">
