@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Products from '../../pages/Products';
 import { createProduct, createProductsFromGallery, createProductsFromImages, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
 import { aiService } from '../../services/aiApi';
 import { uploadImage } from '../../services/imagesApi';
 
 // One `t`, as the real hook keeps: the page reloads its list when it changes.
-const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) => (o ? `${key}:${JSON.stringify(o)}` : key) }));
+const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) => (o ? `${key}:${JSON.stringify(o)}` : key), i18n: { language: 'he' } }));
 vi.mock('react-i18next', () => ({ useTranslation: () => i18n }));
 const site = vi.hoisted(() => ({ current: { subDomain: 'shop', defaultLanguage: 'he' } as Record<string, unknown> }));
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
@@ -17,6 +18,8 @@ vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: site.current } }),
 }));
 vi.mock('../../store/slices/webConfigSlice', () => ({ fetchWebConfig: vi.fn() }));
+const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true) }));
+vi.mock('../../lib/platform', () => platform);
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
 vi.mock('../../services/aiApi', () => ({ aiService: { draftProduct: vi.fn() } }));
 vi.mock('../../services/productsApi', async (original) => ({
@@ -33,7 +36,7 @@ vi.mock('../../services/productsApi', async (original) => ({
 const product = (over: Partial<Product> = {}): Product => ({
   _id: 'p1', slug: 'ring', name: 'Ring', price: 12050, images: [{ url: 'a.webp' }], details: [], status: 'published', availability: 'in_stock', order: 0, ...over,
 });
-const plan = (maxProducts: number, productPages = true) => ({ maxProducts, productPages });
+const plan = (maxProducts: number, productPages = true, freeDaysUntil?: string) => ({ maxProducts, productPages, ...(freeDaysUntil ? { freeDaysUntil } : {}) });
 
 describe('prices', () => {
   it('reads what the owner types into minor units, and back', () => {
@@ -159,5 +162,107 @@ describe('the Products page (LT-540)', () => {
     render(<Products />);
     await screen.findByText('Ring');
     expect(screen.queryByTestId('from-gallery')).toBeNull();
+  });
+});
+
+// LT-546 (Erel 2026-11-02): "write that only the first product shows after the free period".
+describe('products past the plan (LT-546)', () => {
+  const ten = Array.from({ length: 10 }, (_, i) => product({ _id: `p${i}`, slug: `p-${i}`, name: `Product ${i}`, order: i }));
+  const page = () => render(<MemoryRouter><Products /></MemoryRouter>);
+
+  beforeEach(() => {
+    platform.canOfferPurchases.mockReturnValue(true);
+  });
+
+  it('on the free plan marks the first product shown and the rest hidden, and adds none', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten, limits: plan(1, false) });
+    page();
+    const notice = await screen.findByTestId('products-over-plan');
+    expect(notice.textContent).toContain('products.overFree');
+    expect(within(notice).getByText('products.upgradeBack').getAttribute('href')).toBe('/account');
+    expect(screen.queryByTestId('products-full')).toBeNull();
+    expect(screen.getAllByTestId('badge-shown')).toHaveLength(1);
+    expect(screen.getAllByTestId('badge-hidden')).toHaveLength(9);
+    const cards = screen.getAllByTestId('product-card');
+    expect(within(cards[0]).getByTestId('badge-shown')).toBeTruthy();
+    expect(within(cards[1]).getByTestId('badge-hidden')).toBeTruthy();
+    // "10 of 1 products" read wrong: the count alone.
+    expect(screen.getByTestId('products-count').textContent).toContain('products.countOnly:{"used":10}');
+    expect((screen.getByText('products.add').closest('button') as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByText('products.addMany').closest('button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('counts only what is published: a draft is never on the site', async () => {
+    vi.mocked(listProducts).mockResolvedValue({
+      products: [product({ _id: 'd', name: 'Draft', status: 'draft' }), product({ _id: 'a', name: 'A' }), product({ _id: 'b', name: 'B' })],
+      limits: plan(1, false),
+    });
+    page();
+    await screen.findByTestId('products-over-plan');
+    const [draft, a, b] = screen.getAllByTestId('product-card');
+    expect(within(draft).queryByTestId('badge-shown')).toBeNull();
+    expect(within(draft).queryByTestId('badge-hidden')).toBeNull();
+    expect(within(a).getByTestId('badge-shown')).toBeTruthy();
+    expect(within(b).getByTestId('badge-hidden')).toBeTruthy();
+  });
+
+  it('says so in a hidden product\'s form', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 3), limits: plan(1, false) });
+    page();
+    await screen.findByTestId('products-over-plan');
+    fireEvent.click(screen.getAllByTestId('product-card')[2]);
+    expect(within(await screen.findByTestId('product-editor')).getByTestId('product-hidden-note').textContent).toBe('products.hiddenNote');
+  });
+
+  it('shows the shown product no note', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 3), limits: plan(1, false) });
+    page();
+    await screen.findByTestId('products-over-plan');
+    fireEvent.click(screen.getAllByTestId('product-card')[0]);
+    expect(within(await screen.findByTestId('product-editor')).queryByTestId('product-hidden-note')).toBeNull();
+  });
+
+  it('in the app states the fact and offers no upgrade', async () => {
+    platform.canOfferPurchases.mockReturnValue(false);
+    vi.mocked(listProducts).mockResolvedValue({ products: ten, limits: plan(1, false) });
+    page();
+    const notice = await screen.findByTestId('products-over-plan');
+    expect(notice.textContent).toContain('products.overFree');
+    expect(within(notice).queryByText('products.upgradeBack')).toBeNull();
+  });
+
+  it('on a paid plan past its number names the number', async () => {
+    const thirty = Array.from({ length: 30 }, (_, i) => product({ _id: `q${i}`, name: `Q${i}`, order: i }));
+    vi.mocked(listProducts).mockResolvedValue({ products: thirty, limits: plan(20) });
+    page();
+    expect((await screen.findByTestId('products-over-plan')).textContent).toContain('products.overPlan:{"max":20}');
+    expect(screen.getAllByTestId('badge-shown')).toHaveLength(20);
+    expect(screen.getAllByTestId('badge-hidden')).toHaveLength(10);
+  });
+
+  it('within the plan marks nothing', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten, limits: plan(20) });
+    page();
+    await screen.findByText('Product 0');
+    expect(screen.queryByTestId('products-over-plan')).toBeNull();
+    expect(screen.queryByTestId('badge-shown')).toBeNull();
+    expect(screen.queryByTestId('badge-hidden')).toBeNull();
+    expect(screen.getByTestId('products-count').textContent).toContain('products.count:{"used":10,"max":20}');
+  });
+
+  it('under the free days says when they end and what the free plan shows', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 2), limits: plan(20, true, '2027-01-02T10:00:00.000Z') });
+    page();
+    const note = await screen.findByTestId('products-after-trial');
+    expect(note.textContent).toContain('products.afterFreeDays');
+    expect(note.textContent).toContain(new Date('2027-01-02T10:00:00.000Z').toLocaleDateString('he-IL'));
+    expect(screen.queryByTestId('products-over-plan')).toBeNull();
+  });
+
+  it('says nothing of the free days to a paying account', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: ten.slice(0, 2), limits: plan(20) });
+    page();
+    await screen.findByText('Product 0');
+    expect(screen.queryByTestId('products-after-trial')).toBeNull();
   });
 });

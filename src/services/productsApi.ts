@@ -31,9 +31,12 @@ export interface Product {
 }
 
 export interface ProductLimits {
+  /** How many published products the site shows: the first ones in the owner's order. */
   maxProducts: number;
   /** Whether products have addresses of their own on this plan. */
   productPages: boolean;
+  /** LT-546: under the free days, when they end (ISO); the free plan then shows the first product only. */
+  freeDaysUntil?: string;
 }
 
 export type ProductInput = Partial<Omit<Product, '_id' | 'slug' | 'order' | 'price'>> & { price?: number | null };

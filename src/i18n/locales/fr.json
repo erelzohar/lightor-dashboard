@@ -2444,7 +2444,7 @@
   "products": {
     "title": "Produits",
     "description": "Les produits de votre site. Les personnes intéressées laissent une demande, qui vous parvient avec le nom du produit.",
-    "count": "{{used}} sur {{max}} produits",
+    "count": "{{used}} sur {{max}} produits.",
     "onePageNote": "Avec cette offre, le produit s'affiche sur la page d'accueil, sans page propre.",
     "add": "Ajouter un produit",
     "addMany": "Plusieurs photos d'un coup",
@@ -2475,6 +2475,12 @@
     "nameRequired": "Un produit a besoin d'un nom",
     "priceInvalid": "Le prix doit être un nombre, comme 120 ou 120.50",
     "capReached": "Vous avez atteint le nombre de produits de cette offre.",
+    "countOnly": "{{used}} produits.",
+    "afterFreeDays": "Votre essai se termine le {{date}}. Ensuite, avec l'offre gratuite, seul le premier produit de la liste s'affichera sur votre site, et les autres seront conservés, masqués.",
+    "overFree": "Avec l'offre gratuite, seul le premier produit de la liste s'affiche sur votre site, et vous ne pouvez pas ajouter de produits. Les autres sont conservés, masqués. Pour choisir le produit affiché, faites-le glisser en haut de la liste.",
+    "overPlan": "Avec cette offre, seuls les {{max}} premiers produits de la liste s'affichent sur votre site, et vous ne pouvez pas ajouter de produits. Les autres sont conservés, masqués. Pour choisir ceux qui s'affichent, faites-les glisser vers le haut de la liste.",
+    "upgradeBack": "Passez au forfait supérieur pour les retrouver",
+    "hiddenNote": "Ce produit est masqué sur votre site : cette offre n'affiche que les premiers produits de la liste.",
     "tooMany": "Vous pouvez en ajouter encore {{count}}",
     "draftsMade": "{{count}} brouillons créés",
     "uploadError": "La photo n'a pas pu être envoyée",
@@ -2484,7 +2490,9 @@
     "draftFailed": "Lighty n'a pas pu lire la photo",
     "badge": {
       "draft": "Brouillon",
-      "sample": "Exemple, à remplacer"
+      "sample": "Exemple, à remplacer",
+      "shown": "Sur le site",
+      "hidden": "Masqué sur le site"
     },
     "empty": {
       "title": "Pas encore de produits",

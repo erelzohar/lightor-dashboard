@@ -2444,7 +2444,7 @@
   "products": {
     "title": "Productos",
     "description": "Los productos de tu sitio. Quien se interesa deja una consulta, que te llega con el nombre del producto.",
-    "count": "{{used}} de {{max}} productos",
+    "count": "{{used}} de {{max}} productos.",
     "onePageNote": "En este plan el producto aparece en la página de inicio, sin página propia.",
     "add": "Agregar un producto",
     "addMany": "Muchas fotos a la vez",
@@ -2475,6 +2475,12 @@
     "nameRequired": "Un producto necesita un nombre",
     "priceInvalid": "El precio debe ser un número, como 120 o 120.50",
     "capReached": "Alcanzaste el número de productos de este plan.",
+    "countOnly": "{{used}} productos.",
+    "afterFreeDays": "Tu prueba termina el {{date}}. Después, en el plan gratuito, solo el primer producto de la lista aparecerá en tu sitio, y los demás se conservarán ocultos.",
+    "overFree": "En el plan gratuito solo el primer producto de la lista aparece en tu sitio, y no puedes agregar productos. Los demás se conservan, ocultos. Para elegir qué producto aparece, arrástralo al principio de la lista.",
+    "overPlan": "En este plan solo los primeros {{max}} productos de la lista aparecen en tu sitio, y no puedes agregar productos. Los demás se conservan, ocultos. Para elegir cuáles aparecen, arrástralos hacia arriba en la lista.",
+    "upgradeBack": "Mejora tu plan para recuperarlos",
+    "hiddenNote": "Este producto está oculto en tu sitio: este plan muestra solo los primeros productos de la lista.",
     "tooMany": "Puedes agregar {{count}} más",
     "draftsMade": "{{count}} borradores creados",
     "uploadError": "No se pudo subir la foto",
@@ -2484,7 +2490,9 @@
     "draftFailed": "Lighty no pudo leer la foto",
     "badge": {
       "draft": "Borrador",
-      "sample": "Ejemplo, conviene reemplazarlo"
+      "sample": "Ejemplo, conviene reemplazarlo",
+      "shown": "En el sitio",
+      "hidden": "Oculto en el sitio"
     },
     "empty": {
       "title": "Aún no hay productos",

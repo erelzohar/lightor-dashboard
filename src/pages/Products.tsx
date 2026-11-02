@@ -4,6 +4,7 @@ import { ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingB
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 import {
   DndContext, MeasuringStrategy, MouseSensor, KeyboardSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent,
@@ -27,6 +28,7 @@ import { sortableA11y } from '../utils/sortableA11y';
 import { currencySymbol } from '../utils/currency';
 import { siteUrlOf } from '../utils/siteUrl';
 import { isAiBusy } from '../lib/aiErrors';
+import { canOfferPurchases } from '../lib/platform';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { pop } from '../components/ui/pop-button';
 
@@ -73,10 +75,12 @@ const ProductEditor: React.FC<{
   product: Product | null;
   language: string;
   categories: string[];
+  /** LT-546: as many published products come before it as the plan shows, so on the site it stays hidden. */
+  hiddenByPlan: boolean;
   onClose: () => void;
   onSaved: (product: Product, created: boolean) => void;
   onDeleted: (id: string) => void;
-}> = ({ product, language, categories, onClose, onSaved, onDeleted }) => {
+}> = ({ product, language, categories, hiddenByPlan, onClose, onSaved, onDeleted }) => {
   const { t } = useTranslation();
   const titleId = useId();
   const { confirm, dialog } = useConfirm();
@@ -297,6 +301,9 @@ const ProductEditor: React.FC<{
               <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.published')}</p>
               <ToggleSwitch checked={draft.published} onChange={(on) => set('published', on)} ariaLabel={t('products.published')} />
             </div>
+            {hiddenByPlan && draft.published && (
+              <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="product-hidden-note">{t('products.hiddenNote')}</p>
+            )}
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.soldOut')}</p>
               <ToggleSwitch checked={draft.soldOut} onChange={(on) => set('soldOut', on)} ariaLabel={t('products.soldOut')} />
@@ -322,7 +329,10 @@ const ProductEditor: React.FC<{
   );
 };
 
-const SortableProduct: React.FC<{ product: Product; currency?: string; onOpen: (p: Product) => void }> = ({ product, currency, onOpen }) => {
+/** LT-546: past the plan, which products the site shows and which it hides. */
+type SiteState = 'shown' | 'hidden';
+
+const SortableProduct: React.FC<{ product: Product; currency?: string; siteState?: SiteState; onOpen: (p: Product) => void }> = ({ product, currency, siteState, onOpen }) => {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: product._id });
   const cover = product.images[0]?.url;
@@ -336,6 +346,8 @@ const SortableProduct: React.FC<{ product: Product; currency?: string; onOpen: (
         <div className="relative aspect-square bg-gray-100 dark:bg-slate-800">
           {cover ? <img src={imageSrc(cover)} alt="" loading="lazy" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-gray-400"><ImagePlus className="h-8 w-8" /></div>}
           <div className="absolute start-2 top-2 flex flex-wrap gap-1">
+            {siteState === 'shown' && <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-medium text-white" data-testid="badge-shown">{t('products.badge.shown')}</span>}
+            {siteState === 'hidden' && <span className="rounded-full bg-black/70 px-2 py-0.5 text-xs font-medium text-white" data-testid="badge-hidden">{t('products.badge.hidden')}</span>}
             {product.status === 'draft' && <span className="rounded-full bg-black/70 px-2 py-0.5 text-xs font-medium text-white">{t('products.badge.draft')}</span>}
             {product.availability === 'out_of_stock' && <span className="rounded-full bg-black/70 px-2 py-0.5 text-xs font-medium text-white">{t('products.soldOut')}</span>}
             {product.sample && <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-medium text-white">{t('products.badge.sample')}</span>}
@@ -366,7 +378,7 @@ const SortableProduct: React.FC<{ product: Product; currency?: string; onOpen: (
  * its picture.
  */
 const Products: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector((state) => state.webConfig.data);
@@ -475,6 +487,21 @@ const Products: React.FC = () => {
   const siteUrl = siteUrlOf(webConfig?.subDomain);
   const categories = [...new Set((products ?? []).map((p) => p.category).filter((c): c is string => !!c))];
   const full = limits !== null && room === 0;
+  // LT-546: the site shows the first published products, as many as the plan
+  // takes (visibleProducts in the API); past them the rest are kept, hidden.
+  const overPlan = limits !== null && (products ?? []).filter((p) => p.status === 'published').length > limits.maxProducts;
+  /** Published, this one would be past the plan's number: as many published products come before it. */
+  const hiddenOnSite = (id: string): boolean => {
+    if (!limits || !products) return false;
+    const at = products.findIndex((p) => p._id === id);
+    return products.slice(0, at).filter((p) => p.status === 'published').length >= limits.maxProducts;
+  };
+  const siteStateOf = (p: Product): SiteState | undefined =>
+    overPlan && p.status === 'published' ? (hiddenOnSite(p._id) ? 'hidden' : 'shown') : undefined;
+  const dateLocale =
+    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  const freeDaysEnd = limits?.freeDaysUntil ? new Date(limits.freeDaysUntil).toLocaleDateString(dateLocale) : null;
+  const used = products?.length ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 md:p-8">
@@ -487,9 +514,12 @@ const Products: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400">{t('products.description')}</p>
           {limits && (
             <p className="mt-2 text-sm text-gray-600 dark:text-slate-300" data-testid="products-count">
-              {t('products.count', { used: products?.length ?? 0, max: limits.maxProducts })}
+              {used > limits.maxProducts ? t('products.countOnly', { used }) : t('products.count', { used, max: limits.maxProducts })}
               {!limits.productPages && <span className="ms-1">{t('products.onePageNote')}</span>}
             </p>
+          )}
+          {freeDaysEnd && (
+            <p className="mt-1 text-sm text-gray-600 dark:text-slate-300" data-testid="products-after-trial">{t('products.afterFreeDays', { date: freeDaysEnd })}</p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -518,7 +548,17 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      {full && <p className="mb-6 rounded-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200" data-testid="products-full">{t('products.capReached')}</p>}
+      {overPlan ? (
+        <p className="mb-6 rounded-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200" data-testid="products-over-plan">
+          {limits.maxProducts === 1 ? t('products.overFree') : t('products.overPlan', { max: limits.maxProducts })}
+          {/* The app states the fact and sells nothing (LT-130). */}
+          {canOfferPurchases() && (
+            <Link to="/account" className="ms-1 font-medium underline">{t('products.upgradeBack')}</Link>
+          )}
+        </p>
+      ) : full && (
+        <p className="mb-6 rounded-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200" data-testid="products-full">{t('products.capReached')}</p>
+      )}
 
       {products === null ? (
         <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
@@ -538,7 +578,7 @@ const Products: React.FC = () => {
         >
           <SortableContext items={products.map((p) => p._id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5" data-tour="products" data-testid="products-grid">
-              {products.map((product) => <SortableProduct key={product._id} product={product} currency={webConfig?.currency} onOpen={setEditing} />)}
+              {products.map((product) => <SortableProduct key={product._id} product={product} currency={webConfig?.currency} siteState={siteStateOf(product)} onOpen={setEditing} />)}
             </div>
           </SortableContext>
         </DndContext>
@@ -549,6 +589,7 @@ const Products: React.FC = () => {
           product={editing === 'new' ? null : editing}
           language={webConfig?.defaultLanguage || 'he'}
           categories={categories}
+          hiddenByPlan={editing !== 'new' && hiddenOnSite(editing._id)}
           onClose={() => setEditing(null)}
           onSaved={onSaved}
           onDeleted={onDeleted}
