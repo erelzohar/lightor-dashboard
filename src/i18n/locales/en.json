@@ -1065,7 +1065,7 @@
           "pro": "20 AI site rebuilds a month"
         },
         "pictures": {
-          "free": "5 AI pictures in the site build",
+          "free": "5 AI pictures a month, for the site build and products",
           "plus": "10 AI pictures a month",
           "pro": "40 AI pictures a month"
         },
@@ -1157,7 +1157,7 @@
         },
         "pictures": {
           "label": "AI pictures",
-          "free": "5 in the site build",
+          "free": "5 a month, for the site build and products",
           "plus": "10 a month",
           "pro": "40 a month"
         },
@@ -2639,7 +2639,6 @@
       "action": "Lighty creates the product",
       "hint": "Lighty writes the name, summary, full description and category, and makes a fitting picture. You can change everything before saving.",
       "tooShort": "Write at least a few words about the product",
-      "picturePlus": "Lighty wrote the product. AI pictures come with Lightor+, and you can add a picture of your own.",
       "pictureLimit": "Lighty wrote the product. This month's AI pictures are used up, and you can add a picture of your own.",
       "pictureFailed": "Lighty wrote the product, but the picture wasn't made. Try again, or add a picture of your own."
     },

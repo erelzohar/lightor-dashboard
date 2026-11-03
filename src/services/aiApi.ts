@@ -146,8 +146,9 @@ export const aiService = {
     return response.data.url;
   },
 
-  createImage: async (prompt: string, aspect: '16:9' | '4:3' | '1:1'): Promise<string> => {
-    const response = await apiClient.post<{ success: boolean; url: string }>(`${globals.aiUrl}image`, { prompt, aspect });
+  // LT-568: `product`, a product's picture from a few words - made on every plan, out of the plan's month of pictures.
+  createImage: async (prompt: string, aspect: '16:9' | '4:3' | '1:1', purpose?: 'product'): Promise<string> => {
+    const response = await apiClient.post<{ success: boolean; url: string }>(`${globals.aiUrl}image`, { prompt, aspect, ...(purpose ? { for: purpose } : {}) });
     return response.data.url;
   },
 

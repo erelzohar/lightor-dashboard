@@ -1065,7 +1065,7 @@
           "pro": "20 reconstructions du site par l’IA par mois"
         },
         "pictures": {
-          "free": "5 images IA à la création du site",
+          "free": "5 images IA par mois, pour la création du site et les produits",
           "plus": "10 images IA par mois",
           "pro": "40 images IA par mois"
         },
@@ -1157,7 +1157,7 @@
         },
         "pictures": {
           "label": "Images IA",
-          "free": "5 à la création du site",
+          "free": "5 par mois, pour la création du site et les produits",
           "plus": "10 par mois",
           "pro": "40 par mois"
         },
@@ -2639,7 +2639,6 @@
       "action": "Lighty crée le produit",
       "hint": "Lighty écrit le nom, le résumé, la description complète et la catégorie, et prépare une photo adaptée. Tout reste modifiable avant d’enregistrer.",
       "tooShort": "Écrivez au moins quelques mots sur le produit",
-      "picturePlus": "Lighty a rédigé le produit. Les photos IA sont incluses dans Lightor+, et vous pouvez ajouter votre propre photo.",
       "pictureLimit": "Lighty a rédigé le produit. Les photos IA de ce mois sont épuisées, et vous pouvez ajouter votre propre photo.",
       "pictureFailed": "Lighty a rédigé le produit, mais la photo n’a pas été créée. Réessayez ou ajoutez votre propre photo."
     },

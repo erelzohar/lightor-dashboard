@@ -140,8 +140,8 @@ const ProductEditor: React.FC<{
   };
 
   // LT-568: a new product from the owner's few words. Lighty writes its texts and, when it has
-  // no picture yet, makes one with the editor's "create with AI" (the plan's monthly pictures).
-  // Like the picture's draft, nothing is stored until the owner saves.
+  // no picture yet, makes one out of the plan's monthly AI pictures - the free plan's 5 too
+  // (Erel). Like the picture's draft, nothing is stored until the owner saves.
   const createFromWords = async () => {
     const words = brief.trim();
     if (words.length < 3) { toast.error(t('products.fromWords.tooShort')); return; }
@@ -158,12 +158,11 @@ const ProductEditor: React.FC<{
       }));
       if (needsPicture && filled.picture) {
         try {
-          const url = await aiService.createImage(filled.picture, '4:3');
+          const url = await aiService.createImage(filled.picture, '4:3', 'product');
           setDraft((d) => (d.images.length < MAX_PICTURES ? { ...d, images: [...d.images, { url }] } : d));
         } catch (err) {
-          const res = (err as AxiosError<{ code?: string }>)?.response;
-          if (res?.data?.code === 'AI_IMAGES_PLUS') toast(t('products.fromWords.picturePlus'));
-          else toast.error(t(res?.status === 429 ? 'products.fromWords.pictureLimit' : 'products.fromWords.pictureFailed'));
+          const status = (err as AxiosError)?.response?.status;
+          toast.error(t(status === 429 ? 'products.fromWords.pictureLimit' : 'products.fromWords.pictureFailed'));
         }
       }
     } catch (err) {

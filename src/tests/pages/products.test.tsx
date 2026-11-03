@@ -202,7 +202,7 @@ describe('a product from a few words (LT-568)', () => {
     expect((within(dialog).getByText('products.save').closest('button') as HTMLButtonElement).disabled).toBe(true);
     await waitFor(() => expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle'));
     expect(aiService.draftProductFromText).toHaveBeenCalledWith('a vanilla candle in a jar', 'he');
-    await waitFor(() => expect(aiService.createImage).toHaveBeenCalledWith('A candle in a glass jar, plain background', '4:3'));
+    await waitFor(() => expect(aiService.createImage).toHaveBeenCalledWith('A candle in a glass jar, plain background', '4:3', 'product'));
     // The thumbnails carry an empty alt (the form names them), so they are found as elements.
     await waitFor(() => expect([...dialog.querySelectorAll('img')].some((img) => img.getAttribute('src')?.endsWith('/temp/t1.webp'))).toBe(true));
     await waitFor(() => expect((within(dialog).getByText('products.save').closest('button') as HTMLButtonElement).disabled).toBe(false));
@@ -214,12 +214,14 @@ describe('a product from a few words (LT-568)', () => {
     });
   });
 
-  it('keeps the texts and says so when the plan makes no AI pictures', async () => {
-    vi.mocked(aiService.createImage).mockRejectedValue({ response: { status: 429, data: { code: 'AI_IMAGES_PLUS' } } });
+  // Erel: the free plan makes the picture too, out of its 5 a month; past the month, the texts stay.
+  it("asks for a product's picture, and keeps the texts when the month's pictures are used up", async () => {
+    vi.mocked(aiService.createImage).mockRejectedValue({ response: { status: 429, data: {} } });
     const dialog = await openNew();
     fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a vanilla candle' } });
     fireEvent.click(within(dialog).getByTestId('create-from-words'));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('products.fromWords.picturePlus'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('products.fromWords.pictureLimit'));
+    expect(aiService.createImage).toHaveBeenCalledWith('A candle in a glass jar, plain background', '4:3', 'product');
     expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle');
     expect(dialog.querySelectorAll('img')).toHaveLength(0);
   });
