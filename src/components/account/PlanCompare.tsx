@@ -14,6 +14,8 @@ export const PLAN_ROWS = [
   'bookings',
   'inquiries',
   'services',
+  // LT-565: entitlements' maxProducts, on any site (a booking site can show products too).
+  'products',
   'texts',
   'siteLighty',
   'rebuilds',

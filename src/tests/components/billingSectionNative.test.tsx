@@ -740,6 +740,23 @@ describe('BillingSection with two plans', () => {
       expect(screen.getByTestId('plan-compare')).not.toHaveTextContent('billing.compare.rows.bookings.label');
     });
 
+    // LT-565: a products site is a leads site, so its cards name the products;
+    // the comparison has them on every site.
+    it('names the products on a leads site`s cards, and in the comparison on every site', async () => {
+      fourPrices();
+      const { unmount } = render(<BillingSection />);
+      expect(await screen.findByTestId('pricing-card-plus')).not.toHaveTextContent('billing.pricing.rows.products.plus');
+      expect(screen.getByTestId('plan-compare')).toHaveTextContent('billing.compare.rows.products.label');
+      unmount();
+
+      fourPrices();
+      render(<BillingSection leadsSite />);
+      expect(await screen.findByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.rows.products.free');
+      expect(screen.getByTestId('pricing-card-plus')).toHaveTextContent('billing.pricing.rows.products.plus');
+      expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('billing.pricing.rows.products.pro');
+      expect(screen.getByTestId('plan-compare')).toHaveTextContent('billing.compare.rows.products.label');
+    });
+
     it('says the badge in one sentence on each card', async () => {
       fourPrices();
       render(<BillingSection />);

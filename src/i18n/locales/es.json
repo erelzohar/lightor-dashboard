@@ -1044,6 +1044,11 @@
           "plus": "Servicios ilimitados",
           "pro": "Servicios ilimitados"
         },
+        "products": {
+          "free": "Hasta 5 productos en tu sitio, cada uno con su página",
+          "plus": "Hasta 15 productos en tu sitio",
+          "pro": "Hasta 100 productos en tu sitio"
+        },
         "texts": {
           "free": "Un mensaje de confirmación a los clientes",
           "plus": "Confirmación y recordatorio por la mañana a los clientes",
@@ -1125,6 +1130,12 @@
           "free": "Hasta 3",
           "plus": "Ilimitados",
           "pro": "Ilimitados"
+        },
+        "products": {
+          "label": "Productos en el sitio",
+          "free": "Hasta 5",
+          "plus": "Hasta 15",
+          "pro": "Hasta 100"
         },
         "texts": {
           "label": "Mensajes a clientes",

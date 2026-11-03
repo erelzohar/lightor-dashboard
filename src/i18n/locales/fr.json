@@ -1044,6 +1044,11 @@
           "plus": "Services illimités",
           "pro": "Services illimités"
         },
+        "products": {
+          "free": "Jusqu’à 5 produits sur votre site, chacun avec sa page",
+          "plus": "Jusqu’à 15 produits sur votre site",
+          "pro": "Jusqu’à 100 produits sur votre site"
+        },
         "texts": {
           "free": "Un message de confirmation aux clients",
           "plus": "Une confirmation et un rappel le matin aux clients",
@@ -1125,6 +1130,12 @@
           "free": "Jusqu'à 3",
           "plus": "Illimités",
           "pro": "Illimités"
+        },
+        "products": {
+          "label": "Produits sur le site",
+          "free": "Jusqu'à 5",
+          "plus": "Jusqu'à 15",
+          "pro": "Jusqu'à 100"
         },
         "texts": {
           "label": "Messages aux clients",
