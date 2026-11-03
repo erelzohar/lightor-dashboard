@@ -48,7 +48,7 @@ describe("Lighty's action card (LT-561)", () => {
     vi.mocked(assistantService.confirm).mockResolvedValue(card({ status: 'done' }));
     render(<LightyActionCard action={card({})} onChange={onChange} />);
     expect(screen.getByText('ביטול תור')).toBeInTheDocument();
-    expect(screen.getByRole('listitem')).toHaveTextContent(/דנה כהן · .*11:00 · ג׳ל/);
+    expect(screen.getByRole('listitem')).toHaveTextContent(/דנה כהן.*11:00.*ג׳ל/);
     expect(screen.getByText('הלקוח יקבל הודעה על זה ב-SMS או WhatsApp.')).toBeInTheDocument();
     expect(assistantService.confirm).not.toHaveBeenCalled();
 
@@ -115,20 +115,22 @@ describe("Lighty's action card (LT-561)", () => {
     ];
     const { container } = render(<>{kinds.map((k) => <LightyActionCard key={k.id} action={k} onChange={vi.fn()} />)}</>);
     expect(container.textContent).not.toContain('MISSING:');
-    expect(container.textContent).toContain('סגור ← 09:00-13:00');
-    expect(container.querySelector('bdi[dir="ltr"]')?.textContent).toBe('09:00-13:00');
+    // Every range its own left-to-right chip, after the arrow; closed a chip of its own (LT-562).
+    const friday = screen.getAllByRole('listitem')[0];
+    expect(friday).toHaveTextContent(/יום שישי.*סגור.*←.*09:00–13:00/);
+    expect([...friday.querySelectorAll('[dir="ltr"]')].map((c) => c.textContent)).toEqual(['09:00–13:00']);
     expect(container.textContent).toContain('תורים שכבר נקבעו בזמן הזה נשארים: 2');
-    expect(container.textContent).toContain('חלון הביטול לפני התור: שעה ← 24 שעות');
-    expect(container.textContent).toContain('קביעת תורים מראש: 60 ימים ← 30 ימים');
+    expect(container.textContent).toMatch(/חלון הביטול לפני התורשעה.*←.*24 שעות/);
+    expect(container.textContent).toMatch(/קביעת תורים מראש60 ימים.*←.*30 ימים/);
     expect(container.textContent).toContain('השעה מחוץ לשעות הפעילות.');
     expect(container.textContent).toContain('050-1234567');
     expect(container.textContent).toContain('שינוי סטטוס של 2 לידים');
-    expect(container.textContent).toContain('אבי: חדש ← סגור');
+    expect(container.textContent).toMatch(/אביחדש.*←.*סגור/);
     expect(container.textContent).toContain('חסימת לקוח');
     expect(container.textContent).toContain('סיבה: לא הגיעה');
     expect(container.textContent).toContain('2 לקוחות יקבלו הודעה');
     expect(container.textContent).toContain('סימון 2 תורים כהושלמו');
-    expect(container.textContent).toContain('דנה: “מעדיפה בוקר”');
+    expect(container.textContent).toContain('מעדיפה בוקר');
 
     lang.current = 'en';
     const { container: english } = render(<LightyActionCard action={kinds[0]} onChange={vi.fn()} />);
@@ -144,5 +146,11 @@ describe("Lighty's action card (LT-561)", () => {
       expect(typeof dict.lighty.suggest.blockDay).toBe('string');
       expect(JSON.stringify(dict.lighty)).not.toContain('—');
     }
+  });
+  it('splits a day of several ranges into chips that each read left to right', () => {
+    render(<LightyActionCard action={card({ kind: 'hours', card: { items: [{ date: '2026-11-06', before: '09:00-11:00,12:00-14:00', after: null }], texts: 0, notes: [] } })} onChange={vi.fn()} />);
+    const item = screen.getByRole('listitem');
+    expect([...item.querySelectorAll('[dir="ltr"]')].map((c) => c.textContent)).toEqual(['09:00–11:00', '12:00–14:00']);
+    expect(item).toHaveTextContent(/09:00–11:00.*12:00–14:00.*←.*סגור/);
   });
 });

@@ -239,7 +239,8 @@ const LightyPage: React.FC = () => {
             )}
           </LightyBubble>
           {turn.actions?.map((action) => (
-            <div key={action.id} className="ms-10 max-w-[85%]">
+            // On a phone as wide as the answer; wider screens keep the card compact (LT-562).
+            <div key={action.id} className="ms-10 max-w-[85%] sm:max-w-sm">
               <LightyActionCard action={action} onChange={updateAction} />
             </div>
           ))}

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Check, Loader2, MessageSquare, Undo2, X } from 'lucide-react';
-import { assistantService, type LightyAction, type LightyActionItem } from '../../services/assistantApi';
+import {
+  AlertTriangle, Ban, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, Loader2,
+  MessageSquare, Settings2, StickyNote, Undo2, UserPlus, Users, X, type LucideIcon,
+} from 'lucide-react';
+import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
 
 /**
  * LT-561 — a change Lighty proposed, as the server wrote it from the owner's
@@ -9,6 +12,11 @@ import { assistantService, type LightyAction, type LightyActionItem } from '../.
  * know - and Confirm / No. Nothing happens until Confirm. A done change that
  * texted no one can be undone for 10 minutes; a closed card says how it
  * ended, and that nothing changed when nothing did.
+ *
+ * LT-562 (Erel: "messy and unreadable"): every line is its subject on top,
+ * then what it is now and what it becomes as separate chips - each time
+ * range its own left-to-right chip - so nothing runs together in a
+ * right-to-left sentence.
  */
 
 const ymdParts = (ymd: string) => ymd.split('-').map(Number) as [number, number, number];
@@ -20,16 +28,40 @@ const dateLabel = (ymd: string, lang: string): string => {
 const weekdayLabel = (day: number, lang: string): string =>
   new Intl.DateTimeFormat(lang, { weekday: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, 0, 7 + day)));
 
-/** A clock or a range keeps left to right in a right-to-left line. */
-const Ltr: React.FC<{ children: React.ReactNode }> = ({ children }) => <bdi dir="ltr">{children}</bdi>;
+const ICONS: Record<LightyActionKind, LucideIcon> = {
+  vacation_add: CalendarOff,
+  vacation_remove: CalendarCheck,
+  hours: Clock,
+  booking_rules: Settings2,
+  appointment_book: CalendarPlus,
+  appointment_move: CalendarClock,
+  appointment_cancel: CalendarX,
+  appointment_complete: CalendarCheck,
+  lead_status: Users,
+  lead_to_customer: UserPlus,
+  customer_note: StickyNote,
+  customer_block: Ban,
+};
 
-const when = (date: string | undefined, time: string | undefined, lang: string): React.ReactNode =>
-  date ? <>{dateLabel(date, lang)}{time ? <> <Ltr>{time}</Ltr></> : null}</> : null;
+type Tone = 'old' | 'new' | 'closed' | 'plain';
+const TONES: Record<Tone, string> = {
+  old: 'bg-gray-100 text-gray-500 line-through decoration-gray-400/70 dark:bg-slate-800 dark:text-slate-400',
+  new: 'bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-100',
+  closed: 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
+  plain: 'bg-gray-50 text-gray-700 border border-gray-200 dark:bg-slate-800/70 dark:text-slate-200 dark:border-slate-700',
+};
+
+/** One value; a clock or a range reads left to right in any line. */
+const Chip: React.FC<{ tone: Tone; ltr?: boolean; children: React.ReactNode }> = ({ tone, ltr = false, children }) => (
+  <span dir={ltr ? 'ltr' : undefined} className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ${TONES[tone]}`}>
+    {children}
+  </span>
+);
 
 export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next: LightyAction) => void }> = ({ action, onChange }) => {
   const { t, i18n } = useTranslation();
   const lang = (i18n.language || 'he').split('-')[0];
-  // "before → after" in the line's own direction.
+  // "now → after" in the line's own direction.
   const arrow = ['he', 'ar'].includes(lang) ? '←' : '→';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -46,6 +78,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
   const status = action.status === 'pending' && new Date(action.expiresAt).getTime() <= now ? 'expired' : action.status;
   const canUndo = status === 'done' && !!action.undoUntil && new Date(action.undoUntil).getTime() > now;
   const { items, texts, notes } = action.card;
+  const Icon = ICONS[action.kind] ?? Clock;
 
   const answer = async (verb: 'confirm' | 'decline' | 'undo') => {
     setBusy(true);
@@ -59,46 +92,90 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
     }
   };
 
-  const hours = (h: string | null | undefined) => (h ? <Ltr>{h.replace(/,/g, ', ')}</Ltr> : t('lighty.action.closed'));
   const minutes = (n: number) =>
     n === 0 ? t('lighty.action.anyTime') : n === 60 ? t('lighty.action.oneHour') : n % 60 === 0 ? t('lighty.action.hoursN', { count: n / 60 }) : t('lighty.action.minutesN', { count: n });
   const days = (n: number) => (n === 1 ? t('lighty.action.oneDay') : t('lighty.action.daysN', { count: n }));
   const leadStatus = (s?: string) => (s ? t(`leads.status.${s}`) : '');
 
-  const line = (item: LightyActionItem): React.ReactNode => {
+  /** A day's hours as chips, one per range; closed is one chip. */
+  const hours = (h: string | null | undefined, tone: 'old' | 'new') =>
+    h
+      ? h.split(',').map((range) => <Chip key={range} tone={tone} ltr>{range.replace('-', '–')}</Chip>)
+      : <Chip tone={tone === 'old' ? 'old' : 'closed'}>{t('lighty.action.closed')}</Chip>;
+
+  /** What it is now, an arrow, what it becomes. */
+  const change = (from: React.ReactNode, to: React.ReactNode) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="flex flex-wrap gap-1">{from}</span>
+      <span className="text-gray-400 dark:text-slate-500 text-sm leading-none" aria-hidden="true">{arrow}</span>
+      <span className="flex flex-wrap gap-1">{to}</span>
+    </div>
+  );
+
+  /** A booking's day, time and service. */
+  const slot = (date: string | undefined, time: string | undefined, service: string | undefined, tone: Tone = 'plain') => (
+    <span className="flex flex-wrap gap-1">
+      {date && <Chip tone={tone}>{dateLabel(date, lang)}</Chip>}
+      {time && <Chip tone={tone} ltr>{time}</Chip>}
+      {service && <Chip tone={tone === 'old' ? 'old' : 'plain'}>{service}</Chip>}
+    </span>
+  );
+
+  const row = (item: LightyActionItem): { head: React.ReactNode; body: React.ReactNode } => {
     switch (action.kind) {
       case 'vacation_add':
-      case 'vacation_remove':
-        return <>{item.title}: {item.from && dateLabel(item.from, lang)}{item.to && item.to !== item.from ? <> - {dateLabel(item.to, lang)}</> : null}</>;
+      case 'vacation_remove': {
+        const range = <>{item.from && dateLabel(item.from, lang)}{item.to && item.to !== item.from ? <> – {dateLabel(item.to, lang)}</> : null}</>;
+        return { head: item.title, body: <Chip tone={action.kind === 'vacation_remove' ? 'old' : 'new'}>{range}</Chip> };
+      }
       case 'hours':
-        return <>{item.date ? dateLabel(item.date, lang) : weekdayLabel(item.weekday ?? 0, lang)}: {hours(item.before)} {arrow} {hours(item.after)}{item.regular ? ` (${t('lighty.action.regular')})` : ''}</>;
+        return {
+          head: item.date ? dateLabel(item.date, lang) : weekdayLabel(item.weekday ?? 0, lang),
+          body: (
+            <>
+              {change(hours(item.before, 'old'), hours(item.after, 'new'))}
+              {item.regular && <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t('lighty.action.regular')}</p>}
+            </>
+          ),
+        };
       case 'booking_rules':
         return item.rule === 'cancelUntilMinutes'
-          ? <>{t('lighty.action.cancelUntil')}: {minutes(item.was ?? 0)} {arrow} {minutes(item.becomes ?? 0)}</>
-          : <>{t('lighty.action.bookAhead')}: {days(item.was ?? 0)} {arrow} {days(item.becomes ?? 0)}</>;
+          ? { head: t('lighty.action.cancelUntil'), body: change(<Chip tone="old">{minutes(item.was ?? 0)}</Chip>, <Chip tone="new">{minutes(item.becomes ?? 0)}</Chip>) }
+          : { head: t('lighty.action.bookAhead'), body: change(<Chip tone="old">{days(item.was ?? 0)}</Chip>, <Chip tone="new">{days(item.becomes ?? 0)}</Chip>) };
       case 'appointment_book':
-        return <>{item.customer}{item.phone ? <> (<Ltr>{item.phone}</Ltr>)</> : null} · {when(item.date, item.time, lang)} · {item.service}</>;
+        return {
+          head: <>{item.customer}{item.phone && <span className="block text-xs font-normal text-gray-500 dark:text-slate-400"><bdi dir="ltr">{item.phone}</bdi></span>}</>,
+          body: slot(item.date, item.time, item.service, 'new'),
+        };
       case 'appointment_move':
-        return (
-          <>
-            {item.customer} · {when(item.date, item.time, lang)} · {item.service}
-            {item.newDate && <span className="block font-medium">{arrow} {when(item.newDate, item.newTime, lang)}</span>}
-            {item.newService && <span className="block font-medium">{arrow} {item.newService}</span>}
-          </>
-        );
+        return {
+          head: item.customer,
+          body: (
+            <div className="space-y-1">
+              {item.newDate || item.newTime
+                ? change(slot(item.date, item.time, undefined, 'old'), slot(item.newDate, item.newTime, undefined, 'new'))
+                : slot(item.date, item.time, undefined)}
+              {item.newService ? change(<Chip tone="old">{item.service}</Chip>, <Chip tone="new">{item.newService}</Chip>) : <Chip tone="plain">{item.service}</Chip>}
+            </div>
+          ),
+        };
       case 'appointment_cancel':
+        return { head: item.customer, body: slot(item.date, item.time, item.service, 'old') };
       case 'appointment_complete':
-        return <>{item.customer} · {when(item.date, item.time, lang)} · {item.service}</>;
+        return { head: item.customer, body: slot(item.date, item.time, item.service) };
       case 'lead_status':
-        return <>{item.customer}: {leadStatus(item.previous)} {arrow} {leadStatus(item.status)}</>;
+        return { head: item.customer, body: change(<Chip tone="old">{leadStatus(item.previous)}</Chip>, <Chip tone="new">{leadStatus(item.status)}</Chip>) };
       case 'lead_to_customer':
-        return <>{item.customer}{item.received ? <> · {when(item.received.slice(0, 10), item.received.slice(11), lang)}</> : null}</>;
+        return { head: item.customer, body: item.received ? slot(item.received.slice(0, 10), item.received.slice(11), undefined) : null };
       case 'customer_note':
-        return <>{item.customer}: “{item.note}”</>;
+        return {
+          head: item.customer,
+          body: <p className="rounded-lg border-s-2 border-violet-300 dark:border-violet-700 bg-violet-50/60 dark:bg-violet-950/30 px-2.5 py-1.5 text-sm text-gray-700 dark:text-slate-200 whitespace-pre-line break-words">{item.note}</p>,
+        };
       case 'customer_block':
-        return <>{item.customer}{item.reason ? <span className="block text-gray-500 dark:text-slate-400">{t('lighty.action.reason', { reason: item.reason })}</span> : null}</>;
+        return { head: item.customer, body: item.reason ? <p className="text-xs text-gray-500 dark:text-slate-400">{t('lighty.action.reason', { reason: item.reason })}</p> : null };
       default:
-        return null;
+        return { head: null, body: null };
     }
   };
 
@@ -118,36 +195,50 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
     expired: t('lighty.action.expired'),
     undone: t('lighty.action.undone'),
   };
+  const open = status === 'pending' || status === 'running';
 
   return (
     <div
       data-testid="lighty-action"
-      className={`rounded-2xl border bg-white dark:bg-slate-900 px-3.5 py-3 text-sm shadow-sm ${
-        status === 'pending' || status === 'running' ? 'border-violet-200 dark:border-violet-800/60' : 'border-gray-200 dark:border-slate-700'
-      }`}
+      className={`rounded-2xl border bg-white dark:bg-slate-900 p-3.5 text-sm shadow-sm ${open ? 'border-violet-200 dark:border-violet-800/60' : 'border-gray-200 dark:border-slate-700'}`}
     >
-      <p className="font-semibold text-gray-800 dark:text-white">{title}</p>
-      <ul className="mt-1.5 space-y-1 text-gray-700 dark:text-slate-200">
-        {items.map((item, i) => <li key={i} className="leading-snug">{line(item)}</li>)}
+      <div className="flex items-center gap-2">
+        <span className={`inline-flex w-7 h-7 shrink-0 items-center justify-center rounded-full ${open ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-200' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+          <Icon className="w-4 h-4" aria-hidden="true" />
+        </span>
+        <p className="font-semibold text-gray-800 dark:text-white">{title}</p>
+      </div>
+      <ul className="mt-2.5 divide-y divide-gray-100 dark:divide-slate-800">
+        {items.map((item, i) => {
+          const { head, body } = row(item);
+          return (
+            <li key={i} className="py-2 first:pt-0 last:pb-0">
+              {head && <p className="text-sm font-medium text-gray-800 dark:text-slate-100 break-words">{head}</p>}
+              {body && <div className="mt-1">{body}</div>}
+            </li>
+          );
+        })}
       </ul>
-      {(status === 'pending' || status === 'running') && (
+      {open && (
         <>
-          <p className="mt-2 flex items-start gap-1.5 text-xs text-gray-500 dark:text-slate-400">
-            <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
-            {texts === 0 ? t('lighty.action.textsNone') : texts === 1 ? t('lighty.action.textsOne') : t('lighty.action.textsMany', { count: texts })}
-          </p>
-          {notes.map((note) => (
-            <p key={note.key} className="mt-1 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
-              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
-              {t(`lighty.action.note.${note.key}`, { count: note.count })}
+          <div className="mt-3 space-y-1 rounded-xl bg-gray-50 dark:bg-slate-800/50 px-2.5 py-2">
+            <p className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-slate-300">
+              <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+              {texts === 0 ? t('lighty.action.textsNone') : texts === 1 ? t('lighty.action.textsOne') : t('lighty.action.textsMany', { count: texts })}
             </p>
-          ))}
+            {notes.map((note) => (
+              <p key={note.key} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                {t(`lighty.action.note.${note.key}`, { count: note.count })}
+              </p>
+            ))}
+          </div>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               disabled={busy}
               onClick={() => void answer('confirm')}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-primary to-violet-500 text-white shadow-sm disabled:opacity-60"
+              className="inline-flex flex-1 sm:flex-none justify-center items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-primary to-violet-500 text-white shadow-sm disabled:opacity-60"
             >
               {busy ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Check className="w-4 h-4" aria-hidden="true" />}
               {t('lighty.action.confirm')}
@@ -156,7 +247,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
               type="button"
               disabled={busy}
               onClick={() => void answer('decline')}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 disabled:opacity-60"
+              className="inline-flex flex-1 sm:flex-none justify-center items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 disabled:opacity-60"
             >
               <X className="w-4 h-4" aria-hidden="true" />
               {t('lighty.action.decline')}
@@ -165,7 +256,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
         </>
       )}
       {status === 'done' && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300" role="status">
             <Check className="w-4 h-4" aria-hidden="true" />
             {action.failedItems ? t('lighty.action.donePartly', { count: action.failedItems }) : t('lighty.action.done')}
@@ -185,12 +276,12 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
         </div>
       )}
       {status === 'failed' && (
-        <p className="mt-2 flex items-start gap-1.5 text-sm text-red-600 dark:text-red-400" role="status">
+        <p className="mt-3 flex items-start gap-1.5 text-sm text-red-600 dark:text-red-400" role="status">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
           {t(`lighty.action.failed.${action.failure ?? 'failed'}`)}
         </p>
       )}
-      {ended[status] && <p className="mt-2 text-sm text-gray-500 dark:text-slate-400" role="status">{ended[status]}</p>}
+      {ended[status] && <p className="mt-3 text-sm text-gray-500 dark:text-slate-400" role="status">{ended[status]}</p>}
       {error && <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">{t('lighty.action.sendFailed')}</p>}
     </div>
   );

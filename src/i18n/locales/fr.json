@@ -2185,7 +2185,7 @@
         "unblock": "Débloquer un client"
       },
       "closed": "Fermé",
-      "regular": "les horaires habituels",
+      "regular": "Retour aux horaires habituels",
       "anyTime": "à tout moment",
       "oneHour": "1 heure",
       "hoursN": "{{count}} heures",

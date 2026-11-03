@@ -2185,7 +2185,7 @@
         "unblock": "Unblock a customer"
       },
       "closed": "Closed",
-      "regular": "the regular hours",
+      "regular": "Back to the regular hours",
       "anyTime": "any time",
       "oneHour": "1 hour",
       "hoursN": "{{count}} hours",
