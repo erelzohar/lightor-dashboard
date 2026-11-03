@@ -231,6 +231,33 @@ describe('Leads home - the last 30 days', () => {
     expect(screen.getByTestId('leads-chart').parentElement).toHaveClass('lg:col-span-2');
   });
 
+  it('folds the question\'s own "other" option into the rest, so "other" shows once (LT-576)', async () => {
+    vi.mocked(fetchLeadStats).mockResolvedValue(
+      stats({
+        topic: {
+          label: 'מה מעניין אותך?',
+          items: [{ value: 'טבעת', count: 4 }, { value: ' אחר ', count: 3 }, { value: 'שרשרת', count: 2 }],
+          other: 2,
+        },
+      })
+    );
+    render(<Dashboard />);
+
+    const rows = within(await screen.findByTestId('leads-topics')).getAllByTestId('leads-topic-row');
+    expect(rows.map((row) => row.textContent)).toEqual(['טבעת4', 'שרשרת2', 'dashboard.leadsTopics.other5']);
+    expect((rows[2].querySelector('[style]') as HTMLElement).style.width).toBe('100%'); // 5 is now the most
+  });
+
+  it('shows the folded "Other" alone when nothing else is past the top four', async () => {
+    vi.mocked(fetchLeadStats).mockResolvedValue(
+      stats({ topic: { label: 'Type of work', items: [{ value: 'Kitchen', count: 2 }, { value: 'Other…', count: 1 }], other: 0 } })
+    );
+    render(<Dashboard />);
+
+    const rows = within(await screen.findByTestId('leads-topics')).getAllByTestId('leads-topic-row');
+    expect(rows.map((row) => row.textContent)).toEqual(['Kitchen2', 'dashboard.leadsTopics.other1']);
+  });
+
   it('hides the topics when no answer came in', async () => {
     vi.mocked(fetchLeadStats).mockResolvedValue(
       stats({ topic: { label: 'Type of work', items: [{ value: 'Kitchen', count: 0 }], other: 0 } })
