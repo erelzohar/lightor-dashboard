@@ -1781,7 +1781,7 @@
       "message": "{{name}} will no longer be able to book with you online or reschedule existing appointments. They can still cancel.",
       "messageLeads": "{{name}} will no longer be able to send you inquiries through the site.",
       "cancelUpcoming": "Also cancel their upcoming appointments",
-      "cancelUpcomingHint": "{{count}} upcoming - no message is sent to the customer",
+      "cancelUpcomingHint": "{{count}} upcoming - the customer gets a cancellation message",
       "reason": "Reason (optional)",
       "reasonPlaceholder": "Only you see this",
       "confirm": "Block",

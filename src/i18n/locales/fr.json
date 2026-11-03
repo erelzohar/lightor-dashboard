@@ -1781,7 +1781,7 @@
       "message": "{{name}} ne pourra plus réserver en ligne ni déplacer ses rendez-vous. Il pourra toujours annuler.",
       "messageLeads": "{{name}} ne pourra plus vous envoyer de demandes par le site.",
       "cancelUpcoming": "Annuler aussi ses rendez-vous à venir",
-      "cancelUpcomingHint": "{{count}} à venir - aucun message n’est envoyé au client",
+      "cancelUpcomingHint": "{{count}} à venir - le client reçoit un message d’annulation",
       "reason": "Motif (facultatif)",
       "reasonPlaceholder": "Visible par vous seul",
       "confirm": "Bloquer",

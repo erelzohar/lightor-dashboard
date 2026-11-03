@@ -1781,7 +1781,7 @@
       "message": "{{name}} ya no podrá reservar en línea ni cambiar sus citas existentes. Podrá seguir cancelando.",
       "messageLeads": "{{name}} ya no podrá enviarte consultas a través del sitio.",
       "cancelUpcoming": "Cancelar también sus próximas citas",
-      "cancelUpcomingHint": "{{count}} próximas - no se envía ningún mensaje al cliente",
+      "cancelUpcomingHint": "{{count}} próximas - el cliente recibe un mensaje de cancelación",
       "reason": "Motivo (opcional)",
       "reasonPlaceholder": "Solo tú lo ves",
       "confirm": "Bloquear",
