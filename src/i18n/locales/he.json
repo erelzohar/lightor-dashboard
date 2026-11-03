@@ -2194,7 +2194,9 @@
         "product_add": "הוספת מוצר: {{name}}",
         "product_edit": "שינוי מוצר: {{name}}",
         "alerts": "שינוי ההתראות שלך",
-        "business_details": "שינוי פרטי העסק"
+        "business_details": "שינוי פרטי העסק",
+        "lead_reply": "תשובה לליד: {{name}}",
+        "moveMany": "הזזת {{count}} תורים"
       },
       "closed": "סגור",
       "regular": "חוזר לשעות הרגילות",
@@ -2216,7 +2218,8 @@
         "upcomingCancelled": "גם התורים הקרובים שלו יבוטלו: {{count}}",
         "upcomingStay": "התורים הקרובים שלו נשארים: {{count}}",
         "noPicture": "תמונות מוסיפים בדף המוצרים.",
-        "draftProduct": "המוצר יישמר כטיוטה ולא יופיע באתר עד שתבחרו להציג אותו."
+        "draftProduct": "המוצר יישמר כטיוטה ולא יופיע באתר עד שתבחרו להציג אותו.",
+        "ownPhone": "Lightor לא שולח את ההודעה: היא נפתחת בטלפון שלך עם הטקסט מוכן, ונשלחת מהמספר שלך."
       },
       "confirm": "אישור",
       "decline": "לא",
@@ -2265,7 +2268,11 @@
         "app": "באפליקציה",
         "email": "במייל",
         "phone": "ב-WhatsApp"
-      }
+      },
+      "sendWhatsApp": "שליחה ב-WhatsApp",
+      "sendSms": "שליחה ב-SMS",
+      "replyText": "נוסח התשובה",
+      "replyDone": "נפתח לשליחה. הליד סומן \"נוצר קשר\"."
     }
   },
   "forgotPassword": {

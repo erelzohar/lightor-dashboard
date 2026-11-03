@@ -177,4 +177,24 @@ describe("Lighty's action card (LT-561)", () => {
     expect(text).toMatch(/עירתל אביב.*←.*חיפה/);
     expect(container.querySelector('span[dir="ltr"]')).not.toBeNull();
   });
+  // LT-567: an answer to a lead opens on the owner's phone with the text, which they may change first.
+  it("opens the drafted answer in WhatsApp or SMS with the owner's changes, and marks the lead contacted", async () => {
+    const onChange = vi.fn();
+    vi.mocked(assistantService.confirm).mockResolvedValue(card({ id: 'r1', kind: 'lead_reply', status: 'done' }));
+    render(<LightyActionCard action={card({ id: 'r1', kind: 'lead_reply', card: { items: [{ customer: 'נועה', phone: '054-1112222', note: 'היי נועה, ג׳ל 120 ₪', status: 'new' }], texts: 0, notes: [{ key: 'ownPhone' }] } })} onChange={onChange} />);
+    expect(screen.getByText('תשובה לליד: נועה')).toBeInTheDocument();
+    expect(screen.queryByText('לא תישלח הודעה ללקוחות.')).toBeNull();
+    const box = screen.getByRole('textbox', { name: 'נוסח התשובה' });
+    fireEvent.change(box, { target: { value: 'היי נועה, ג׳ל אצלנו 120 ₪' } });
+    const wa = screen.getByRole('link', { name: 'שליחה ב-WhatsApp' });
+    expect(wa.getAttribute('href')).toBe(`https://wa.me/972541112222?text=${encodeURIComponent('היי נועה, ג׳ל אצלנו 120 ₪')}`);
+    expect(screen.getByRole('link', { name: 'שליחה ב-SMS' }).getAttribute('href')).toBe(`sms:+972541112222?&body=${encodeURIComponent('היי נועה, ג׳ל אצלנו 120 ₪')}`);
+    fireEvent.click(wa);
+    await waitFor(() => expect(assistantService.confirm).toHaveBeenCalledWith('r1'));
+  });
+
+  it('names how many appointments move together', () => {
+    render(<LightyActionCard action={card({ kind: 'appointment_move', card: { items: [{ customer: 'דנה', service: 'ג׳ל', date: '2026-11-10', time: '10:00', newDate: '2026-11-10', newTime: '11:00' }, { customer: 'מיכל', service: 'ג׳ל', date: '2026-11-10', time: '11:00', newDate: '2026-11-10', newTime: '12:00' }], texts: 2, notes: [] } })} onChange={vi.fn()} />);
+    expect(screen.getByText('הזזת 2 תורים')).toBeInTheDocument();
+  });
 });

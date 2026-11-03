@@ -2194,7 +2194,9 @@
         "product_add": "Añadir un producto: {{name}}",
         "product_edit": "Cambiar un producto: {{name}}",
         "alerts": "Cambiar tus avisos",
-        "business_details": "Cambiar los datos del negocio"
+        "business_details": "Cambiar los datos del negocio",
+        "lead_reply": "Respuesta a un contacto: {{name}}",
+        "moveMany": "Mover {{count}} citas"
       },
       "closed": "Cerrado",
       "regular": "Vuelve al horario habitual",
@@ -2216,7 +2218,8 @@
         "upcomingCancelled": "También se cancelan sus próximas citas: {{count}}",
         "upcomingStay": "Sus próximas citas se mantienen: {{count}}",
         "noPicture": "Las fotos se añaden en la página de productos.",
-        "draftProduct": "El producto se guarda como borrador y no aparece en el sitio hasta que elijas mostrarlo."
+        "draftProduct": "El producto se guarda como borrador y no aparece en el sitio hasta que elijas mostrarlo.",
+        "ownPhone": "Lightor no envía nada: el mensaje se abre en tu teléfono con el texto listo y sale de tu propio número."
       },
       "confirm": "Confirmar",
       "decline": "No",
@@ -2265,7 +2268,11 @@
         "app": "En la app",
         "email": "Por email",
         "phone": "Por WhatsApp"
-      }
+      },
+      "sendWhatsApp": "Enviar por WhatsApp",
+      "sendSms": "Enviar por SMS",
+      "replyText": "Texto de la respuesta",
+      "replyDone": "Abierto para enviar. El contacto queda como contactado."
     }
   },
   "forgotPassword": {

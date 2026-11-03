@@ -2194,7 +2194,9 @@
         "product_add": "Add a product: {{name}}",
         "product_edit": "Change a product: {{name}}",
         "alerts": "Change your alerts",
-        "business_details": "Change the business details"
+        "business_details": "Change the business details",
+        "lead_reply": "Reply to a lead: {{name}}",
+        "moveMany": "Move {{count}} appointments"
       },
       "closed": "Closed",
       "regular": "Back to the regular hours",
@@ -2216,7 +2218,8 @@
         "upcomingCancelled": "Their upcoming appointments are cancelled too: {{count}}",
         "upcomingStay": "Their upcoming appointments stay: {{count}}",
         "noPicture": "Pictures are added on the products page.",
-        "draftProduct": "The product is saved as a draft and stays off the site until you choose to show it."
+        "draftProduct": "The product is saved as a draft and stays off the site until you choose to show it.",
+        "ownPhone": "Lightor sends nothing: the message opens on your phone with the text ready, and goes from your own number."
       },
       "confirm": "Confirm",
       "decline": "No",
@@ -2265,7 +2268,11 @@
         "app": "In the app",
         "email": "By email",
         "phone": "By WhatsApp"
-      }
+      },
+      "sendWhatsApp": "Send by WhatsApp",
+      "sendSms": "Send by SMS",
+      "replyText": "The reply",
+      "replyDone": "Opened to send. The lead is marked contacted."
     }
   },
   "forgotPassword": {

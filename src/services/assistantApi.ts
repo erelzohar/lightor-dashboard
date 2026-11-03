@@ -17,7 +17,9 @@ export type LightyActionKind =
   | 'appointment_book' | 'appointment_move' | 'appointment_cancel' | 'appointment_complete'
   | 'lead_status' | 'lead_to_customer' | 'customer_note' | 'customer_block'
   // LT-564, phase 2.
-  | 'service_add' | 'service_edit' | 'product_add' | 'product_edit' | 'alerts' | 'business_details';
+  | 'service_add' | 'service_edit' | 'product_add' | 'product_edit' | 'alerts' | 'business_details'
+  // LT-567, phase 3: an answer to a lead, sent from the owner's own phone.
+  | 'lead_reply';
 
 /** One line of a card, as the server wrote it from the owner's data. */
 export interface LightyActionItem {
