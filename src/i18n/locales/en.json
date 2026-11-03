@@ -2601,6 +2601,16 @@
   },
   "products": {
     "title": "Products",
+    "form": {
+      "picture": "Upload a picture",
+      "mainPicture": "The main picture",
+      "makeMain": "Make it the main picture",
+      "namePlaceholder": "e.g. Silver ring with turquoise",
+      "categoryTip": "Products in the same category show together on the site's products page.",
+      "summaryTip": "One line under the product's name on its card on the site.",
+      "detailsTip": "Up to 6 short details, like material, size or volume. They show on the product's page.",
+      "about": "About {{field}}"
+    },
     "views": {
       "title": "Most viewed products",
       "total": "Views in the last 30 days: {{count}}",

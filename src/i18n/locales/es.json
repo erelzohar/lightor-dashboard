@@ -2601,6 +2601,16 @@
   },
   "products": {
     "title": "Productos",
+    "form": {
+      "picture": "Subir una foto",
+      "mainPicture": "La foto principal",
+      "makeMain": "Hacerla la foto principal",
+      "namePlaceholder": "p. ej. Anillo de plata con turquesa",
+      "categoryTip": "Los productos de la misma categoría se muestran juntos en la página de productos del sitio.",
+      "summaryTip": "Una línea bajo el nombre del producto, en su tarjeta en el sitio.",
+      "detailsTip": "Hasta 6 detalles cortos, como material, talla o capacidad. Se muestran en la página del producto.",
+      "about": "Sobre {{field}}"
+    },
     "views": {
       "title": "Productos más vistos",
       "total": "Vistas en los últimos 30 días: {{count}}",

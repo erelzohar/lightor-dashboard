@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Eye, EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { Eye, EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Info, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import { useTranslation } from 'react-i18next';
@@ -44,8 +45,67 @@ const imageSrc = (url: string | undefined): string => {
 const compressed = (file: File): Promise<File> =>
   imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true, alwaysKeepResolution: true });
 
-const field = 'w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-primary';
-const label = 'mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300';
+const field = 'w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20';
+const label = 'mb-1.5 flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-slate-300';
+
+const TIP_WIDTH = 224;
+const TIP_MARGIN = 12;
+
+/**
+ * LT-577: a field's short explanation behind an (i) - opened by a tap as well
+ * as a hover or the keyboard, since the form lives on phones too.
+ */
+const FieldTip: React.FC<{ text: string; label: string }> = ({ text, label: name }) => {
+  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const tipId = useId();
+  // Above the (i), kept on the screen: a phone's narrow column put a centred tip past its edge.
+  const show = () => {
+    const r = buttonRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const width = Math.min(TIP_WIDTH, window.innerWidth - 2 * TIP_MARGIN);
+    const left = Math.max(TIP_MARGIN, Math.min(r.left + r.width / 2 - width / 2, window.innerWidth - TIP_MARGIN - width));
+    setAt({ left, top: r.top - 8 });
+  };
+  const hide = () => setAt(null);
+  return (
+    // A mouse opens it on hover; a finger's tap would also "hover" first, and the click would close it again.
+    <span
+      className="inline-flex"
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') show(); }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse') hide(); }}
+    >
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-label={name}
+        aria-describedby={at ? tipId : undefined}
+        aria-expanded={!!at}
+        onClick={() => (at ? hide() : show())}
+        // From the keyboard only: a tap focuses and clicks, and the two would cancel out.
+        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) show(); }}
+        onBlur={hide}
+        className="rounded-full p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"
+      >
+        <Info className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+      {at && (
+        <span
+          id={tipId}
+          role="tooltip"
+          style={{ left: at.left, top: at.top, width: Math.min(TIP_WIDTH, window.innerWidth - 2 * TIP_MARGIN) }}
+          className="fixed z-[80] -translate-y-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-normal leading-5 text-gray-700 dark:text-slate-200 shadow-lg"
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+};
+
+/** LT-577: the form's parts come in one after another (Erel's form card); still when motion is reduced. */
+const FORM_STAGGER: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const FORM_PART: Variants = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 26 } } };
 
 interface Draft {
   name: string;
@@ -224,169 +284,252 @@ const ProductEditor: React.FC<{
     setNewDetail('');
   };
 
+  const reduceMotion = useReducedMotion();
+  const cover = draft.images[0]?.url;
+  const required = <span className="text-red-500" aria-hidden="true">*</span>;
+  // A tapped picture becomes the main one: the site shows the first.
+  const makeCover = (i: number) => set('images', [draft.images[i], ...draft.images.filter((_, k) => k !== i)]);
+  const pictureInput = (
+    <input type="file" accept="image/*" multiple className="sr-only" onChange={addPictures} disabled={uploading} />
+  );
+
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 sm:items-center sm:p-6" onClick={onClose}>
-      <div
+      <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         data-testid="product-editor"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-2xl bg-white dark:bg-slate-900 sm:rounded-2xl"
+        initial={reduceMotion ? false : 'hidden'}
+        animate="show"
+        variants={FORM_STAGGER}
+        className="flex max-h-[92dvh] w-full max-w-3xl flex-col rounded-t-3xl bg-white shadow-xl dark:bg-slate-900 sm:rounded-3xl"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 px-5 py-4">
-          <h2 id={titleId} className="text-lg font-bold text-gray-900 dark:text-white">{product ? t('products.editTitle') : t('products.newTitle')}</h2>
-          <button type="button" onClick={onClose} aria-label={t('products.close')} className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
+        <div className="flex items-center justify-between gap-3 px-5 pb-2 pt-5 sm:px-6">
+          <motion.h2 variants={FORM_PART} id={titleId} className="text-xl font-semibold text-gray-900 dark:text-white">
+            {product ? t('products.editTitle') : t('products.newTitle')}
+          </motion.h2>
+          <button type="button" onClick={onClose} aria-label={t('products.close')} className="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800"><X className="h-4 w-4" /></button>
         </div>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
-          {!product && (
-            <div className="space-y-2 rounded-2xl border border-primary/20 bg-primary/5 p-4" data-testid="product-from-words">
-              <label className={label} htmlFor="product-words">{t('products.fromWords.label')}</label>
-              <textarea
-                id="product-words"
-                className={field}
-                rows={2}
-                maxLength={300}
-                value={brief}
-                placeholder={t('products.fromWords.placeholder')}
-                onChange={(e) => setBrief(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={createFromWords}
-                disabled={creating || brief.trim().length < 3}
-                className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
-                data-testid="create-from-words"
-              >
-                {creating ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
-                {t('products.fromWords.action')}
-              </button>
-              <p className="text-xs text-gray-500 dark:text-slate-400">{t('products.fromWords.hint')}</p>
-            </div>
-          )}
+        <div className="flex-1 overflow-y-auto px-5 pb-5 pt-3 sm:px-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8">
+            {/* The pictures: the main one large, the rest under it; side by side with the words on a phone. */}
+            <motion.div variants={FORM_PART} className="flex gap-4 md:flex-col md:gap-3" data-testid="product-pictures">
+              <div className="relative h-28 w-28 shrink-0 md:h-auto md:w-full">
+                <label className={`block h-full w-full cursor-pointer overflow-hidden rounded-2xl md:aspect-square ${cover ? 'bg-gray-100 dark:bg-slate-800' : 'border-2 border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800/60 hover:border-primary'}`}>
+                  {cover ? (
+                    <img src={imageSrc(cover)} alt="" className="h-full w-full object-cover" data-testid="product-cover" />
+                  ) : (
+                    <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-gray-400">
+                      {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <ImagePlus className="h-6 w-6" />}
+                      <span className="text-xs">{t('products.form.picture')}</span>
+                    </span>
+                  )}
+                  <span className="sr-only">{t('products.addPicture')}</span>
+                  {draft.images.length < MAX_PICTURES && pictureInput}
+                </label>
+                {draft.images.length < MAX_PICTURES && (
+                  <label
+                    className="absolute -end-1.5 -top-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800"
+                    aria-label={t('products.addPicture')}
+                  >
+                    {uploading && cover ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                    {pictureInput}
+                  </label>
+                )}
+              </div>
 
-          <div>
-            <p className={label}>{t('products.pictures')}</p>
-            <div className="flex flex-wrap gap-2">
-              {draft.images.map((image, i) => (
-                <div key={image.url} className="relative h-20 w-20 overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
-                  <img src={imageSrc(image.url)} alt="" className="h-full w-full object-cover" />
+              <div className="min-w-0 flex-1 space-y-2.5">
+                <div className="md:text-center">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{t('products.pictures')}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{t('products.picturesHint')}</p>
+                </div>
+                {draft.images.length > 1 && (
+                  <ul className="flex flex-wrap gap-3 md:justify-center" aria-label={t('products.pictures')}>
+                    {draft.images.map((image, i) => (
+                      <li key={image.url} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => makeCover(i)}
+                          aria-label={i === 0 ? t('products.form.mainPicture') : t('products.form.makeMain')}
+                          aria-pressed={i === 0}
+                          className={`block h-12 w-12 overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800 ${i === 0 ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-slate-900' : ''}`}
+                        >
+                          <img src={imageSrc(image.url)} alt="" className="h-full w-full object-cover" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => set('images', draft.images.filter((_, k) => k !== i))}
+                          aria-label={t('products.removePicture')}
+                          className="absolute -end-1.5 -top-1.5 rounded-full bg-black/70 p-0.5 text-white"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {draft.images.length === 1 && (
                   <button
                     type="button"
-                    onClick={() => set('images', draft.images.filter((_, k) => k !== i))}
-                    aria-label={t('products.removePicture')}
-                    className="absolute end-1 top-1 rounded-full bg-black/60 p-0.5 text-white"
+                    onClick={() => set('images', [])}
+                    className="text-xs font-medium text-gray-500 underline-offset-2 hover:underline dark:text-slate-400 md:mx-auto md:block"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    {t('products.removePicture')}
                   </button>
-                </div>
-              ))}
-              {draft.images.length < MAX_PICTURES && (
-                <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-500 hover:border-primary hover:text-primary">
-                  {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImagePlus className="h-5 w-5" />}
-                  <span className="sr-only">{t('products.addPicture')}</span>
-                  <input type="file" accept="image/*" multiple className="sr-only" onChange={addPictures} disabled={uploading} />
-                </label>
+                )}
+                {draft.images.length < MAX_PICTURES && (
+                  <label className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-slate-600 px-3 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800">
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                    {t('products.addPicture')}
+                    {pictureInput}
+                  </label>
+                )}
+                {draft.images.length > 0 && (
+                  // LT-542 (Erel): a button, not a line of purple text.
+                  <button
+                    type="button"
+                    onClick={fillFromPicture}
+                    disabled={drafting}
+                    className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
+                    data-testid="fill-from-picture"
+                  >
+                    {drafting ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                    {t('products.fillFromPicture')}
+                  </button>
+                )}
+              </div>
+            </motion.div>
+
+            {/* The words. */}
+            <div className="min-w-0 space-y-4">
+              {!product && (
+                <motion.div variants={FORM_PART} className="space-y-2 rounded-2xl border border-primary/20 bg-primary/5 p-4" data-testid="product-from-words">
+                  <label className={label} htmlFor="product-words">{t('products.fromWords.label')}</label>
+                  <textarea
+                    id="product-words"
+                    className={field}
+                    rows={2}
+                    maxLength={300}
+                    value={brief}
+                    placeholder={t('products.fromWords.placeholder')}
+                    onChange={(e) => setBrief(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={createFromWords}
+                    disabled={creating || brief.trim().length < 3}
+                    className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
+                    data-testid="create-from-words"
+                  >
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                    {t('products.fromWords.action')}
+                  </button>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{t('products.fromWords.hint')}</p>
+                </motion.div>
               )}
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t('products.picturesHint')}</p>
-            {draft.images.length > 0 && (
-              // LT-542 (Erel): a button, not a line of purple text.
-              <button
-                type="button"
-                onClick={fillFromPicture}
-                disabled={drafting}
-                className={`mt-3 inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
-                data-testid="fill-from-picture"
-              >
-                {drafting ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
-                {t('products.fillFromPicture')}
-              </button>
-            )}
-          </div>
 
-          <div>
-            <label className={label} htmlFor="product-name">{t('products.name')}</label>
-            <input id="product-name" className={field} maxLength={120} value={draft.name} onChange={(e) => set('name', e.target.value)} />
-          </div>
+              <motion.div variants={FORM_PART}>
+                <span className={label}><label htmlFor="product-name">{t('products.name')}</label>{required}</span>
+                <input id="product-name" className={field} maxLength={120} required value={draft.name} onChange={(e) => set('name', e.target.value)} placeholder={t('products.form.namePlaceholder')} />
+              </motion.div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className={label} htmlFor="product-price">{t('products.price')}</label>
-              <input id="product-price" className={field} inputMode="decimal" dir="ltr" value={draft.price} onChange={(e) => set('price', e.target.value)} placeholder={t('products.pricePlaceholder')} />
-            </div>
-            <div>
-              <label className={label} htmlFor="product-category">{t('products.category')}</label>
-              <input id="product-category" className={field} maxLength={40} list="product-categories" value={draft.category} onChange={(e) => set('category', e.target.value)} />
-              <datalist id="product-categories">{categories.map((c) => <option key={c} value={c} />)}</datalist>
-            </div>
-          </div>
+              <motion.div variants={FORM_PART} className="grid grid-cols-2 gap-3">
+                <div className="min-w-0">
+                  <label className={label} htmlFor="product-price">{t('products.price')}</label>
+                  <input id="product-price" className={field} inputMode="decimal" dir="ltr" value={draft.price} onChange={(e) => set('price', e.target.value)} placeholder={t('products.pricePlaceholder')} />
+                </div>
+                <div className="min-w-0">
+                  <span className={label}>
+                    <label htmlFor="product-category">{t('products.category')}</label>
+                    <FieldTip text={t('products.form.categoryTip')} label={t('products.form.about', { field: t('products.category') })} />
+                  </span>
+                  <input id="product-category" className={field} maxLength={40} list="product-categories" value={draft.category} onChange={(e) => set('category', e.target.value)} />
+                  <datalist id="product-categories">{categories.map((c) => <option key={c} value={c} />)}</datalist>
+                </div>
+              </motion.div>
 
-          <div>
-            <label className={label} htmlFor="product-summary">{t('products.summary')}</label>
-            <input id="product-summary" className={field} maxLength={160} value={draft.summary} onChange={(e) => set('summary', e.target.value)} />
-          </div>
+              <motion.div variants={FORM_PART}>
+                <span className={label}>
+                  <label htmlFor="product-summary">{t('products.summary')}</label>
+                  <FieldTip text={t('products.form.summaryTip')} label={t('products.form.about', { field: t('products.summary') })} />
+                </span>
+                <input id="product-summary" className={field} maxLength={160} value={draft.summary} onChange={(e) => set('summary', e.target.value)} />
+              </motion.div>
 
-          <div>
-            <label className={label} htmlFor="product-description">{t('products.fieldDescription')}</label>
-            <textarea id="product-description" className={field} rows={4} maxLength={3000} value={draft.description} onChange={(e) => set('description', e.target.value)} />
-          </div>
+              <motion.div variants={FORM_PART}>
+                <label className={label} htmlFor="product-description">{t('products.fieldDescription')}</label>
+                <textarea id="product-description" className={field} rows={4} maxLength={3000} value={draft.description} onChange={(e) => set('description', e.target.value)} />
+              </motion.div>
 
-          <div>
-            <label className={label} htmlFor="product-detail">{t('products.details')}</label>
-            {draft.details.length > 0 && (
-              <ul className="mb-2 flex flex-wrap gap-1.5">
-                {draft.details.map((detail, i) => (
-                  <li key={detail} className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-sm text-gray-700 dark:text-slate-200">
-                    {detail}
-                    <button type="button" aria-label={t('products.removeDetail')} onClick={() => set('details', draft.details.filter((_, k) => k !== i))}><X className="h-3.5 w-3.5" /></button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {draft.details.length < MAX_DETAILS && (
-              <input
-                id="product-detail"
-                className={field}
-                maxLength={60}
-                value={newDetail}
-                placeholder={t('products.detailPlaceholder')}
-                onChange={(e) => setNewDetail(e.target.value)}
-                onBlur={addDetail}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDetail(); } }}
-              />
-            )}
-          </div>
+              <motion.div variants={FORM_PART}>
+                <span className={label}>
+                  <label htmlFor="product-detail">{t('products.details')}</label>
+                  <FieldTip text={t('products.form.detailsTip')} label={t('products.form.about', { field: t('products.details') })} />
+                </span>
+                {draft.details.length > 0 && (
+                  <ul className="mb-2 flex flex-wrap gap-1.5">
+                    {draft.details.map((detail, i) => (
+                      <li key={detail} className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-sm text-gray-700 dark:text-slate-200">
+                        {detail}
+                        <button type="button" aria-label={t('products.removeDetail')} onClick={() => set('details', draft.details.filter((_, k) => k !== i))}><X className="h-3.5 w-3.5" /></button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {draft.details.length < MAX_DETAILS && (
+                  <input
+                    id="product-detail"
+                    className={field}
+                    maxLength={60}
+                    value={newDetail}
+                    placeholder={t('products.detailPlaceholder')}
+                    onChange={(e) => setNewDetail(e.target.value)}
+                    onBlur={addDetail}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDetail(); } }}
+                  />
+                )}
+              </motion.div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.published')}</p>
-              <ToggleSwitch checked={draft.published} onChange={(on) => set('published', on)} ariaLabel={t('products.published')} />
-            </div>
-            {hiddenByPlan && draft.published && (
-              <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="product-hidden-note">{t('products.hiddenNote')}</p>
-            )}
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.soldOut')}</p>
-              <ToggleSwitch checked={draft.soldOut} onChange={(on) => set('soldOut', on)} ariaLabel={t('products.soldOut')} />
+              <motion.div variants={FORM_PART} className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
+                <div className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.published')}</p>
+                    <ToggleSwitch checked={draft.published} onChange={(on) => set('published', on)} ariaLabel={t('products.published')} />
+                  </div>
+                  {hiddenByPlan && draft.published && (
+                    <p className="mt-1 text-xs text-amber-700 dark:text-amber-300" data-testid="product-hidden-note">{t('products.hiddenNote')}</p>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-4 px-4 py-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('products.soldOut')}</p>
+                  <ToggleSwitch checked={draft.soldOut} onChange={(on) => set('soldOut', on)} ariaLabel={t('products.soldOut')} />
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-slate-800 px-5 py-3">
+        <motion.div variants={FORM_PART} className="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-slate-800 px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-3">
           {product ? (
             <button type="button" onClick={remove} className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-400">
               <Trash2 className="h-4 w-4" /> {t('products.delete')}
             </button>
           ) : <span />}
-          {/* LT-568: not while Lighty still makes the product's picture - it would be saved without it. */}
-          <button type="button" onClick={save} disabled={saving || creating} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t('products.save')}
-          </button>
-        </div>
-      </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              {t('common.cancel')}
+            </button>
+            {/* LT-568: not while Lighty still makes the product's picture - it would be saved without it. */}
+            <button type="button" onClick={save} disabled={saving || creating} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t('products.save')}
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
       {dialog}
     </div>,
     document.body,

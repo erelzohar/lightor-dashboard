@@ -125,6 +125,36 @@ describe('the Products page (LT-540)', () => {
     expect(vi.mocked(updateProduct).mock.calls[0][1]).toMatchObject({ name: 'Golden ring', sample: false, price: 12050 });
   });
 
+  // LT-577: Erel's form card - the main picture beside the words, a tapped one becomes the main one.
+  it('makes a tapped picture the main one, saved first', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: [product({ images: [{ url: 'a.webp' }, { url: 'b.webp' }, { url: 'c.webp' }] })], limits: plan(10) });
+    vi.mocked(updateProduct).mockResolvedValue(product());
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    expect(within(dialog).getByTestId('product-cover').getAttribute('src')).toContain('a.webp');
+    const thumbs = within(dialog).getAllByRole('button', { name: /products\.form\.(mainPicture|makeMain)/ });
+    expect(thumbs.map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false', 'false']);
+    fireEvent.click(thumbs[2]);
+    expect(within(dialog).getByTestId('product-cover').getAttribute('src')).toContain('c.webp');
+    fireEvent.click(within(dialog).getByText('products.save'));
+    await waitFor(() => expect(updateProduct).toHaveBeenCalled());
+    expect(vi.mocked(updateProduct).mock.lastCall![1].images).toEqual([{ url: 'c.webp' }, { url: 'a.webp' }, { url: 'b.webp' }]);
+  });
+
+  it("opens a field's explanation with a tap, and closes it with another", async () => {
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    const about = within(dialog).getByRole('button', { name: /products\.form\.about.*products\.summary/ });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    fireEvent.click(about);
+    expect(screen.getByRole('tooltip').textContent).toBe('products.form.summaryTip');
+    expect(about.getAttribute('aria-describedby')).toBe(screen.getByRole('tooltip').id);
+    fireEvent.click(about);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
   it('lets Lighty fill in what is empty, and never what the owner wrote', async () => {
     vi.mocked(aiService.draftProduct).mockResolvedValue({ name: 'AI name', summary: 'AI line', description: 'AI words', category: 'AI kind' });
     render(<Products />);

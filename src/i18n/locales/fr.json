@@ -2601,6 +2601,16 @@
   },
   "products": {
     "title": "Produits",
+    "form": {
+      "picture": "Ajouter une photo",
+      "mainPicture": "La photo principale",
+      "makeMain": "En faire la photo principale",
+      "namePlaceholder": "ex. Bague en argent et turquoise",
+      "categoryTip": "Les produits d'une même catégorie s'affichent ensemble sur la page des produits du site.",
+      "summaryTip": "Une ligne sous le nom du produit, sur sa carte sur le site.",
+      "detailsTip": "Jusqu'à 6 détails courts, comme la matière, la taille ou la contenance. Ils s'affichent sur la page du produit.",
+      "about": "À propos : {{field}}"
+    },
     "views": {
       "title": "Produits les plus vus",
       "total": "Vues sur les 30 derniers jours : {{count}}",
