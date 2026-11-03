@@ -89,6 +89,8 @@ const ProductEditor: React.FC<{
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [drafting, setDrafting] = useState(false);
+  const [brief, setBrief] = useState('');
+  const [creating, setCreating] = useState(false);
   const [newDetail, setNewDetail] = useState('');
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
@@ -134,6 +136,41 @@ const ProductEditor: React.FC<{
       toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
     } finally {
       setDrafting(false);
+    }
+  };
+
+  // LT-568: a new product from the owner's few words. Lighty writes its texts and, when it has
+  // no picture yet, makes one with the editor's "create with AI" (the plan's monthly pictures).
+  // Like the picture's draft, nothing is stored until the owner saves.
+  const createFromWords = async () => {
+    const words = brief.trim();
+    if (words.length < 3) { toast.error(t('products.fromWords.tooShort')); return; }
+    const needsPicture = draft.images.length === 0;
+    setCreating(true);
+    try {
+      const filled = await aiService.draftProductFromText(words, language);
+      setDraft((d) => ({
+        ...d,
+        name: d.name.trim() ? d.name : filled.name,
+        summary: d.summary.trim() ? d.summary : filled.summary,
+        description: d.description.trim() ? d.description : filled.description,
+        category: d.category.trim() ? d.category : filled.category,
+      }));
+      if (needsPicture && filled.picture) {
+        try {
+          const url = await aiService.createImage(filled.picture, '4:3');
+          setDraft((d) => (d.images.length < MAX_PICTURES ? { ...d, images: [...d.images, { url }] } : d));
+        } catch (err) {
+          const res = (err as AxiosError<{ code?: string }>)?.response;
+          if (res?.data?.code === 'AI_IMAGES_PLUS') toast(t('products.fromWords.picturePlus'));
+          else toast.error(t(res?.status === 429 ? 'products.fromWords.pictureLimit' : 'products.fromWords.pictureFailed'));
+        }
+      }
+    } catch (err) {
+      const status = (err as AxiosError)?.response?.status;
+      toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -204,6 +241,32 @@ const ProductEditor: React.FC<{
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+          {!product && (
+            <div className="space-y-2 rounded-2xl border border-primary/20 bg-primary/5 p-4" data-testid="product-from-words">
+              <label className={label} htmlFor="product-words">{t('products.fromWords.label')}</label>
+              <textarea
+                id="product-words"
+                className={field}
+                rows={2}
+                maxLength={300}
+                value={brief}
+                placeholder={t('products.fromWords.placeholder')}
+                onChange={(e) => setBrief(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={createFromWords}
+                disabled={creating || brief.trim().length < 3}
+                className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
+                data-testid="create-from-words"
+              >
+                {creating ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                {t('products.fromWords.action')}
+              </button>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{t('products.fromWords.hint')}</p>
+            </div>
+          )}
+
           <div>
             <p className={label}>{t('products.pictures')}</p>
             <div className="flex flex-wrap gap-2">

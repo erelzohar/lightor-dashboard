@@ -2619,6 +2619,16 @@
     "removePicture": "Quitar la foto",
     "removeDetail": "Quitar este dato",
     "fillFromPicture": "Que Lighty lo complete desde la foto",
+    "fromWords": {
+      "label": "Unas palabras sobre el producto",
+      "placeholder": "Por ejemplo: una vela aromática en un tarro de vidrio, de vainilla",
+      "action": "Lighty crea el producto",
+      "hint": "Lighty escribe el nombre, el resumen, la descripción completa y la categoría, y prepara una foto adecuada. Puedes cambiarlo todo antes de guardar.",
+      "tooShort": "Escribe al menos unas palabras sobre el producto",
+      "picturePlus": "Lighty redactó el producto. Las fotos con IA vienen con Lightor+, y puedes añadir una foto tuya.",
+      "pictureLimit": "Lighty redactó el producto. Las fotos con IA de este mes se agotaron, y puedes añadir una foto tuya.",
+      "pictureFailed": "Lighty redactó el producto, pero la foto no se creó. Inténtalo de nuevo o añade una foto tuya."
+    },
     "published": "Aparece en el sitio",
     "soldOut": "Agotado",
     "save": "Guardar",

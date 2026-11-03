@@ -2619,6 +2619,16 @@
     "removePicture": "Retirer la photo",
     "removeDetail": "Retirer ce détail",
     "fillFromPicture": "Laisser Lighty remplir à partir de la photo",
+    "fromWords": {
+      "label": "Quelques mots sur le produit",
+      "placeholder": "Par exemple : une bougie parfumée dans un pot en verre, à la vanille",
+      "action": "Lighty crée le produit",
+      "hint": "Lighty écrit le nom, le résumé, la description complète et la catégorie, et prépare une photo adaptée. Tout reste modifiable avant d’enregistrer.",
+      "tooShort": "Écrivez au moins quelques mots sur le produit",
+      "picturePlus": "Lighty a rédigé le produit. Les photos IA sont incluses dans Lightor+, et vous pouvez ajouter votre propre photo.",
+      "pictureLimit": "Lighty a rédigé le produit. Les photos IA de ce mois sont épuisées, et vous pouvez ajouter votre propre photo.",
+      "pictureFailed": "Lighty a rédigé le produit, mais la photo n’a pas été créée. Réessayez ou ajoutez votre propre photo."
+    },
     "published": "Affiché sur le site",
     "soldOut": "Épuisé",
     "save": "Enregistrer",

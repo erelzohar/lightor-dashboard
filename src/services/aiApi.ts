@@ -191,6 +191,19 @@ export const aiService = {
     return response.data.data;
   },
 
+  /**
+   * LT-568: a product from the owner's few words - its texts, and a picture
+   * prompt for createImage. Stored nowhere until the owner saves. 400 = too
+   * short or too long, 429 = the AI budget is spent.
+   */
+  draftProductFromText: async (text: string, language: string): Promise<{ name: string; summary: string; description: string; category: string; picture: string }> => {
+    const response = await apiClient.post<{ success: boolean; data: { name: string; summary: string; description: string; category: string; picture?: string } }>(
+      `${globals.aiUrl}product-draft`,
+      { text, language }
+    );
+    return { ...response.data.data, picture: response.data.data.picture ?? '' };
+  },
+
   describeImage: async (image: string, language: string): Promise<string> => {
     const response = await apiClient.post<{ success: boolean; data: { alt: string } }>(
       `${globals.aiUrl}image-alt`,

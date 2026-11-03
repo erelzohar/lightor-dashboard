@@ -7,12 +7,13 @@ import { mostViewed } from '../../components/products/MostViewed';
 import { aiService } from '../../services/aiApi';
 import { uploadImage } from '../../services/imagesApi';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
+import toast from 'react-hot-toast';
 
 // One `t`, as the real hook keeps: the page reloads its list when it changes.
 const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) => (o ? `${key}:${JSON.stringify(o)}` : key), i18n: { language: 'he' } }));
 vi.mock('react-i18next', () => ({ useTranslation: () => i18n }));
 const site = vi.hoisted(() => ({ current: { subDomain: 'shop', defaultLanguage: 'he' } as Record<string, unknown> }));
-vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }) }));
 vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { webConfig_id: 'w1' } } }) }));
 const store = vi.hoisted(() => ({ dispatch: vi.fn(async (a: unknown) => a) }));
@@ -27,7 +28,7 @@ vi.mock('../../store/slices/webConfigSlice', () => ({
 const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true), isNativeApp: () => false }));
 vi.mock('../../lib/platform', () => platform);
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
-vi.mock('../../services/aiApi', () => ({ aiService: { draftProduct: vi.fn() } }));
+vi.mock('../../services/aiApi', () => ({ aiService: { draftProduct: vi.fn(), draftProductFromText: vi.fn(), createImage: vi.fn() } }));
 vi.mock('../../services/productsApi', async (original) => ({
   ...(await original<typeof import('../../services/productsApi')>()),
   listProducts: vi.fn(),
@@ -174,6 +175,73 @@ describe('the Products page (LT-540)', () => {
 });
 
 // LT-546 (Erel 2026-11-02): "write that only the first product shows after the free period".
+// LT-568 (Erel): a few words become a product - its texts, and a picture made like the editor's "create with AI".
+describe('a product from a few words (LT-568)', () => {
+  beforeEach(() => {
+    vi.mocked(aiService.createImage).mockReset();
+    vi.mocked(listProducts).mockResolvedValue({ products: [], limits: plan(10) });
+    vi.mocked(aiService.draftProductFromText).mockResolvedValue({
+      name: 'Vanilla candle', summary: 'A candle in a jar', description: 'Full words', category: 'Candles', picture: 'A candle in a glass jar, plain background',
+    });
+  });
+
+  const openNew = async () => {
+    render(<Products />);
+    await screen.findByTestId('products-empty');
+    fireEvent.click(screen.getByText('products.add'));
+    return screen.findByTestId('product-editor');
+  };
+
+  it('writes the new product and adds the picture Lighty made, saved with it', async () => {
+    vi.mocked(aiService.createImage).mockResolvedValue('https://api.lightor.app/api/images/temp/t1.webp');
+    vi.mocked(createProduct).mockResolvedValue(product({ _id: 'p9', name: 'Vanilla candle' }));
+    const dialog = await openNew();
+    fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a vanilla candle in a jar' } });
+    fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    await waitFor(() => expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle'));
+    expect(aiService.draftProductFromText).toHaveBeenCalledWith('a vanilla candle in a jar', 'he');
+    await waitFor(() => expect(aiService.createImage).toHaveBeenCalledWith('A candle in a glass jar, plain background', '4:3'));
+    // The thumbnails carry an empty alt (the form names them), so they are found as elements.
+    await waitFor(() => expect([...dialog.querySelectorAll('img')].some((img) => img.getAttribute('src')?.endsWith('/temp/t1.webp'))).toBe(true));
+    expect((within(dialog).getByLabelText('products.fieldDescription') as HTMLTextAreaElement).value).toBe('Full words');
+    fireEvent.click(within(dialog).getByText('products.save'));
+    await waitFor(() => expect(createProduct).toHaveBeenCalled());
+    expect(vi.mocked(createProduct).mock.calls[0][0]).toMatchObject({
+      name: 'Vanilla candle', category: 'Candles', images: [{ url: 'https://api.lightor.app/api/images/temp/t1.webp' }],
+    });
+  });
+
+  it('keeps the texts and says so when the plan makes no AI pictures', async () => {
+    vi.mocked(aiService.createImage).mockRejectedValue({ response: { status: 429, data: { code: 'AI_IMAGES_PLUS' } } });
+    const dialog = await openNew();
+    fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a vanilla candle' } });
+    fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith('products.fromWords.picturePlus'));
+    expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle');
+    expect(dialog.querySelectorAll('img')).toHaveLength(0);
+  });
+
+  it('spends no AI picture on a product that already has one', async () => {
+    vi.mocked(uploadImage).mockResolvedValue({ imageName: 'own.webp' });
+    const dialog = await openNew();
+    const input = dialog.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [new File(['x'], 'own.jpg', { type: 'image/jpeg' })] } });
+    await waitFor(() => expect(dialog.querySelectorAll('img')).toHaveLength(1));
+    fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a vanilla candle' } });
+    fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    await waitFor(() => expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle'));
+    expect(aiService.createImage).not.toHaveBeenCalled();
+  });
+
+  it('is only in a new product\'s form', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: [product()], limits: plan(10) });
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    expect(within(dialog).queryByTestId('product-from-words')).toBeNull();
+  });
+});
+
 describe('the switch that shows them on the site (LT-558)', () => {
   beforeEach(() => {
     vi.mocked(listProducts).mockResolvedValue({ products: [product()], limits: plan(10) });
