@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
+import { Eye, EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import { useTranslation } from 'react-i18next';
@@ -22,9 +22,10 @@ import { aiService } from '../services/aiApi';
 import globals from '../services/globals';
 import {
   createProduct, createProductsFromGallery, createProductsFromImages, deleteProduct, listProducts, minorToPrice, priceToMinor, reorderProducts, updateProduct,
-  type Product, type ProductInput, type ProductLimits,
+  type Product, type ProductInput, type ProductLimits, fetchProductViews, type ProductViews,
 } from '../services/productsApi';
 import { sortableA11y } from '../utils/sortableA11y';
+import MostViewed from '../components/products/MostViewed';
 import { currencySymbol } from '../utils/currency';
 import { siteUrlOf } from '../utils/siteUrl';
 import { isAiBusy } from '../lib/aiErrors';
@@ -332,7 +333,7 @@ const ProductEditor: React.FC<{
 /** LT-546: past the plan, which products the site shows and which it hides. */
 type SiteState = 'shown' | 'hidden';
 
-const SortableProduct: React.FC<{ product: Product; currency?: string; siteState?: SiteState; onOpen: (p: Product) => void }> = ({ product, currency, siteState, onOpen }) => {
+const SortableProduct: React.FC<{ product: Product; currency?: string; siteState?: SiteState; views?: number; onOpen: (p: Product) => void }> = ({ product, currency, siteState, views, onOpen }) => {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: product._id });
   const cover = product.images[0]?.url;
@@ -356,6 +357,13 @@ const SortableProduct: React.FC<{ product: Product; currency?: string; siteState
         <div className="p-3">
           <p className="font-medium text-gray-900 dark:text-white break-words">{product.name}</p>
           <p className="text-sm text-gray-500 dark:text-slate-400" dir="ltr">{typeof product.price === 'number' ? `${currencySymbol(currency)}${minorToPrice(product.price)}` : '\u00a0'}</p>
+          {/* LT-569: how often it was opened on the site, the last 30 days. */}
+          {views !== undefined && (
+            <p className="mt-1 inline-flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400" data-testid="product-views">
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+              {t('products.views.card', { count: views })}
+            </p>
+          )}
         </div>
       </button>
       <button
@@ -387,8 +395,16 @@ const Products: React.FC = () => {
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
   const [uploading, setUploading] = useState(false);
   const [savingShown, setSavingShown] = useState(false);
+  // LT-569: the views of the last 30 days; null until read, or when they cannot be.
+  const [views, setViews] = useState<ProductViews | null>(null);
   const manyRef = useRef<HTMLInputElement>(null);
   const { confirm: confirmConvert, dialog: convertDialog } = useConfirm();
+
+  useEffect(() => {
+    let live = true;
+    fetchProductViews().then((v) => { if (live) setViews(v); }).catch(() => undefined);
+    return () => { live = false; };
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -578,6 +594,9 @@ const Products: React.FC = () => {
         </div>
       )}
 
+      {/* LT-569: the most viewed, once the site shows products. */}
+      {views && webConfig?.catalog && (products?.length ?? 0) > 0 && <MostViewed products={products!} views={views} />}
+
       {galleryCount > 0 && !webConfig?.catalog && room > 0 && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3" data-testid="from-gallery">
           <p className="min-w-0 text-sm text-gray-700 dark:text-slate-200">{t('products.fromGallery.hint', { count: galleryCount })}</p>
@@ -617,7 +636,7 @@ const Products: React.FC = () => {
         >
           <SortableContext items={products.map((p) => p._id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5" data-tour="products" data-testid="products-grid">
-              {products.map((product) => <SortableProduct key={product._id} product={product} currency={webConfig?.currency} siteState={siteStateOf(product)} onOpen={setEditing} />)}
+              {products.map((product) => <SortableProduct key={product._id} product={product} currency={webConfig?.currency} siteState={siteStateOf(product)} views={views && webConfig?.catalog ? views.byProduct[product._id] ?? 0 : undefined} onOpen={setEditing} />)}
             </div>
           </SortableContext>
         </DndContext>

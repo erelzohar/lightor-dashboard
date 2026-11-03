@@ -62,6 +62,14 @@ export interface LeadStats {
   perDay: { date: string; count: number }[];
   /** The contact form's first multiple-choice question over the last 30 days: top 4 and the rest. */
   topic: { label: string; items: { value: string; count: number }[]; other: number } | null;
+  /** LT-569: the site's visits (a leads site): this month against last month to the same day and hour, the 30 days, the day counting began. Absent from an older API. */
+  visits?: {
+    thisMonth: number;
+    lastMonthToDate: number;
+    last30: number;
+    perDay: { date: string; count: number }[];
+    since: string | null;
+  };
 }
 
 const authHeaders = () => {

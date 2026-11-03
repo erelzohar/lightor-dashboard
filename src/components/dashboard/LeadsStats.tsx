@@ -19,6 +19,34 @@ const DAY = 24 * HOUR;
 export const monthChange = (thisMonth: number, lastMonth: number): number | null =>
   lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : null;
 
+/** "15.11" from "2026-11-15": the day the visits began to be counted. */
+const dayLabel = (day: string): string => {
+  const [, m, d] = day.split('-');
+  return `${Number(d)}.${Number(m)}`;
+};
+
+/**
+ * LT-569: what share of the visits left a lead over the last 30 days - the
+ * leads counted only from the day the visits were, so the first weeks are
+ * not inflated by leads from before it. Null without a visit.
+ */
+export const conversionRate = (stats: LeadStats): { rate: number; leads: number; visits: number } | null => {
+  const v = stats.visits;
+  if (!v || v.last30 <= 0) return null;
+  const leads = stats.perDay.filter((d) => !v.since || d.date >= v.since).reduce((sum, d) => sum + d.count, 0);
+  return { rate: Math.round((leads / v.last30) * 1000) / 10, leads, visits: v.last30 };
+};
+
+/** The visits began to be counted after last month's start: no month to compare with yet. */
+const comparable = (since: string | null, perDay: { date: string }[]): boolean => {
+  if (!since) return false;
+  const today = perDay[perDay.length - 1]?.date;
+  if (!today) return false;
+  const [y, m] = today.split('-').map(Number);
+  const lastMonthStart = new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 10);
+  return since <= lastMonthStart;
+};
+
 /**
  * The average response time as the owner reads it: minutes under an hour,
  * hours with one decimal (no ".0") under two days, whole days beyond — and
@@ -44,11 +72,38 @@ export const formatResponseTime = (ms: number | null, t: TFunction, language: st
  * (LT-272) so both homes read as one family: this month's inquiries against
  * last month's, how many still wait for an answer, how fast the owner
  * answers, and how many of the last 30 days' inquiries were handled. Two to a
- * row on phones, four across from lg.
+ * row on phones, four across from lg. LT-569: the site's visits and the
+ * share that left a lead join them - then three across from lg.
  */
 const LeadsStats: React.FC<LeadsStatsProps> = ({ stats, onOpenLeads }) => {
   const { t, i18n } = useTranslation();
   const { total, handled } = stats.last30;
+
+  const visits = stats.visits;
+  const conversion = conversionRate(stats);
+  const visitsCompared = !!visits && comparable(visits.since, visits.perDay);
+  // LT-569: the visits and the share that left a lead, beside the month's leads.
+  const visitCards: (StatsWidgetProps & { key: string })[] = visits ? [
+    {
+      key: 'visits',
+      label: t('dashboard.leadsStats.visits'),
+      value: String(visits.thisMonth),
+      change: visitsCompared ? monthChange(visits.thisMonth, visits.lastMonthToDate) : null,
+      sub: visitsCompared || !visits.since
+        ? t('dashboard.leadsStats.lastMonth', { count: visits.lastMonthToDate })
+        : t('dashboard.leadsStats.countedSince', { date: dayLabel(visits.since) }),
+      series: visits.perDay.map((d) => d.count),
+    },
+    {
+      key: 'conversion',
+      label: t('dashboard.leadsStats.conversion'),
+      value: conversion ? `${conversion.rate}%` : '-',
+      change: null,
+      ...(conversion
+        ? { sub: t('dashboard.leadsStats.conversionOf', { leads: conversion.leads, visits: conversion.visits }) }
+        : { hint: t('dashboard.leadsStats.conversionNotYet') }),
+    },
+  ] : [];
 
   const cards: (StatsWidgetProps & { key: string })[] = [
     {
@@ -61,6 +116,7 @@ const LeadsStats: React.FC<LeadsStatsProps> = ({ stats, onOpenLeads }) => {
       sub: t('dashboard.leadsStats.lastMonth', { count: stats.lastMonthToDate ?? stats.lastMonth }),
       series: stats.perDay.map((d) => d.count),
     },
+    ...visitCards,
     {
       key: 'waiting',
       label: t('dashboard.leadsStats.waiting'),
@@ -90,7 +146,7 @@ const LeadsStats: React.FC<LeadsStatsProps> = ({ stats, onOpenLeads }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="leads-stats">
+    <div className={`grid grid-cols-2 ${visits ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-3 sm:gap-4`} data-testid="leads-stats">
       {cards.map(({ key, ...card }, index) => (
         <motion.div
           key={key}

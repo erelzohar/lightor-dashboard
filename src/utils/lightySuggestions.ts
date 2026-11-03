@@ -13,7 +13,8 @@ import { parseIntervals } from './ownerSchedule';
  */
 export type SuggestKey =
   | 'today' | 'tomorrow' | 'tomorrowFree' | 'week' | 'weekAhead' | 'leads' | 'newLeads'
-  | 'regulars' | 'blockDay' | 'month' | 'lastMonth' | 'services' | 'howHours' | 'products' | 'addProduct';
+  | 'regulars' | 'blockDay' | 'month' | 'lastMonth' | 'services' | 'howHours' | 'products' | 'addProduct'
+  | 'topProducts' | 'visits';
 
 export interface Suggestion {
   key: SuggestKey;
@@ -73,9 +74,11 @@ const leadsChip = (waiting: number | null): Suggestion | null => {
   return waiting > 0 ? { key: 'newLeads', count: waiting } : null;
 };
 
+// LT-569: with products on the site, the most viewed of them.
 const productsChip = (facts: SuggestFacts): Suggestion | null => {
   if (!facts.catalog) return null;
-  return facts.productsTotal === 0 ? { key: 'addProduct' } : { key: 'products' };
+  if (facts.productsTotal === 0) return { key: 'addProduct' };
+  return { key: facts.productsTotal ? 'topProducts' : 'products' };
 };
 
 export const lightySuggestions = (facts: SuggestFacts, now = Date.now()): Suggestion[] => {
@@ -89,6 +92,8 @@ export const lightySuggestions = (facts: SuggestFacts, now = Date.now()): Sugges
     list.push(
       leadsChip(facts.waitingLeads),
       { key: clock.day <= LAST_MONTH_UNTIL ? 'lastMonth' : 'month' },
+      // LT-569: a leads site's visits are counted.
+      { key: 'visits' },
       productsChip(facts),
       { key: 'services' },
       { key: 'howHours' },

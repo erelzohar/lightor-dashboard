@@ -111,6 +111,8 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
           { key: 'products.add', target: at('add-product') },
           { key: 'products.many', target: at('add-products') },
           { key: 'products.list', target: at('products') },
+          // LT-569: the most viewed, once the site shows products.
+          { key: 'products.views', target: at('most-viewed') },
         ],
       };
     case '/portfolio':

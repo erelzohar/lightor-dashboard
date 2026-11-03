@@ -81,3 +81,16 @@ export const priceToMinor = (text: string): number | null | undefined => {
 
 export const minorToPrice = (price: number | undefined): string =>
   typeof price === 'number' ? String(price / 100) : '';
+
+/** LT-569: how often the products were opened on the site, the last 30 days. */
+export interface ProductViews {
+  total: number;
+  /** Views by product id. */
+  byProduct: Record<string, number>;
+  /** 30 of the business's days, oldest first, today last. */
+  perDay: { date: string; count: number }[];
+  /** The day the views began to be counted ('YYYY-MM-DD'), or null before the first. */
+  since: string | null;
+}
+
+export const fetchProductViews = async (): Promise<ProductViews> => (await apiClient.get(`${URL}views`)).data.data;

@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Products from '../../pages/Products';
-import { createProduct, createProductsFromGallery, createProductsFromImages, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
+import { createProduct, createProductsFromGallery, createProductsFromImages, fetchProductViews, listProducts, minorToPrice, priceToMinor, updateProduct, type Product } from '../../services/productsApi';
+import { mostViewed } from '../../components/products/MostViewed';
 import { aiService } from '../../services/aiApi';
 import { uploadImage } from '../../services/imagesApi';
 import { updateWebConfig } from '../../store/slices/webConfigSlice';
@@ -36,6 +37,8 @@ vi.mock('../../services/productsApi', async (original) => ({
   updateProduct: vi.fn(),
   deleteProduct: vi.fn(),
   reorderProducts: vi.fn(),
+  // LT-569: none read unless a test gives some.
+  fetchProductViews: vi.fn(async () => { throw new Error('no views'); }),
 }));
 
 const product = (over: Partial<Product> = {}): Product => ({
@@ -312,5 +315,63 @@ describe('products past the plan (LT-546)', () => {
     page();
     await screen.findByText('Product 0');
     expect(screen.queryByTestId('products-after-trial')).toBeNull();
+  });
+});
+
+describe('the most viewed products (LT-569)', () => {
+  const three = [
+    product({ _id: 'a', slug: 'a', name: 'Ring', order: 0 }),
+    product({ _id: 'b', slug: 'b', name: 'Necklace', order: 1 }),
+    product({ _id: 'c', slug: 'c', name: 'Bracelet', order: 2 }),
+  ];
+  const perDay = Array.from({ length: 30 }, (_, i) => ({ date: `2026-10-${String(i + 2).padStart(2, '0')}`, count: 0 }));
+  const views = (byProduct: Record<string, number>, since: string | null = '2026-10-02') =>
+    ({ total: Object.values(byProduct).reduce((a, b) => a + b, 0), byProduct, perDay, since });
+
+  beforeEach(() => {
+    site.current = { _id: 'w1', subDomain: 'shop', defaultLanguage: 'he', catalog: true, components: {} };
+    vi.mocked(listProducts).mockResolvedValue({ products: three, limits: plan(10) });
+  });
+  afterEach(() => {
+    site.current = { subDomain: 'shop', defaultLanguage: 'he' };
+    vi.mocked(fetchProductViews).mockRejectedValue(new Error('no views'));
+  });
+
+  it('ranks the opened products, most first, and leaves out those never opened', () => {
+    expect(mostViewed(three, views({ b: 9, a: 3 })).map((r) => [r.product.name, r.views])).toEqual([['Necklace', 9], ['Ring', 3]]);
+  });
+
+  it('draws them as bars with the total, and each card says its views', async () => {
+    vi.mocked(fetchProductViews).mockResolvedValue(views({ b: 9, a: 3 }));
+    render(<Products />);
+    const card = await screen.findByTestId('most-viewed');
+    const rows = within(card).getAllByTestId('most-viewed-row');
+    expect(rows.map((r) => r.textContent)).toEqual(['Necklace9', 'Ring3']);
+    expect(screen.getByTestId('most-viewed-total').textContent).toBe('products.views.total:{"count":12}');
+    expect(screen.getAllByTestId('product-views').map((p) => p.textContent)).toEqual([
+      'products.views.card:{"count":3}', 'products.views.card:{"count":9}', 'products.views.card:{"count":0}',
+    ]);
+  });
+
+  it('says from when while the counting is younger than the 30 days, and when none was opened yet', async () => {
+    vi.mocked(fetchProductViews).mockResolvedValue(views({}, '2026-10-20'));
+    render(<Products />);
+    expect(await screen.findByTestId('most-viewed-empty')).toBeTruthy();
+    expect(screen.getByTestId('most-viewed-total').textContent).toContain('products.views.since:{"date":"20.10"}');
+  });
+
+  it('is not there before the site shows products, nor when the views cannot be read', async () => {
+    vi.mocked(fetchProductViews).mockResolvedValue(views({ a: 1 }));
+    site.current = { _id: 'w1', subDomain: 'shop', defaultLanguage: 'he', components: {} };
+    const { unmount } = render(<Products />);
+    await screen.findByText('Ring');
+    expect(screen.queryByTestId('most-viewed')).toBeNull();
+    expect(screen.queryByTestId('product-views')).toBeNull();
+    unmount();
+    site.current = { _id: 'w1', subDomain: 'shop', defaultLanguage: 'he', catalog: true, components: {} };
+    vi.mocked(fetchProductViews).mockRejectedValue(new Error('down'));
+    render(<Products />);
+    await screen.findByText('Ring');
+    expect(screen.queryByTestId('most-viewed')).toBeNull();
   });
 });

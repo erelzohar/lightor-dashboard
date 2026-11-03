@@ -864,7 +864,12 @@
       "hours": "{{value}} h",
       "days": "{{value}} j",
       "handled": "Traitées",
-      "handledOf": "{{handled}} sur {{total}} en 30 jours"
+      "handledOf": "{{handled}} sur {{total}} en 30 jours",
+      "visits": "Visites du site ce mois-ci",
+      "countedSince": "Comptées depuis le {{date}}",
+      "conversion": "Taux de conversion",
+      "conversionOf": "{{leads}} demandes pour {{visits}} visites en 30 jours",
+      "conversionNotYet": "Mesuré dès la première visite du site"
     },
     "leadsChart": {
       "title": "Demandes sur les 30 derniers jours",
@@ -2167,7 +2172,9 @@
       "newLeads": "Passe en revue mes nouvelles demandes avec moi",
       "lastMonth": "Résume le mois dernier",
       "products": "Quels produits et prix sont sur mon site ?",
-      "addProduct": "Ajoute-moi un nouveau produit"
+      "addProduct": "Ajoute-moi un nouveau produit",
+      "topProducts": "Quels produits sont les plus vus ?",
+      "visits": "Combien de visites sur mon site ce mois-ci ?"
     },
     "momentum": {
       "leads": "Les demandes sont en hausse de {{pct}}% par rapport à la semaine dernière ⚡",
@@ -2361,7 +2368,7 @@
       },
       "statsLeads": {
         "title": "Vos demandes",
-        "body": "Combien de demandes sont arrivées, et combien attendent une réponse."
+        "body": "Combien de demandes sont arrivées, combien attendent une réponse, combien de visites sur le site et quelle part a laissé une demande."
       },
       "nav": {
         "title": "Toutes les pages",
@@ -2502,6 +2509,10 @@
       "list": {
         "title": "Ordonner les produits",
         "body": "Faites glisser pour changer l'ordre. Les premiers s'affichent sur la page d'accueil."
+      },
+      "views": {
+        "title": "Les plus vus",
+        "body": "Les produits que les visiteurs ouvrent le plus sur le site depuis 30 jours, et les vues de chacun."
       }
     }
   },
@@ -2567,6 +2578,13 @@
   },
   "products": {
     "title": "Produits",
+    "views": {
+      "title": "Produits les plus vus",
+      "total": "Vues sur les 30 derniers jours : {{count}}",
+      "since": "comptées depuis le {{date}}",
+      "empty": "Aucun produit n'a encore été vu sur le site. Chaque page produit ouverte sera comptée ici.",
+      "card": "Vues : {{count}}"
+    },
     "description": "Les produits de votre site. Les personnes intéressées laissent une demande, qui vous parvient avec le nom du produit.",
     "count": "{{used}} sur {{max}} produits.",
     "onePageNote": "Avec cette offre, le produit s'affiche sur la page d'accueil, sans page propre.",

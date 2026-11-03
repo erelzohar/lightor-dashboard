@@ -864,7 +864,12 @@
       "hours": "{{value}} hours",
       "days": "{{value}} days",
       "handled": "Handled",
-      "handledOf": "{{handled}} of {{total}} in 30 days"
+      "handledOf": "{{handled}} of {{total}} in 30 days",
+      "visits": "Site visits this month",
+      "countedSince": "Counted since {{date}}",
+      "conversion": "Conversion rate",
+      "conversionOf": "{{leads}} inquiries from {{visits}} visits in 30 days",
+      "conversionNotYet": "Measured from the site's first visit"
     },
     "leadsChart": {
       "title": "Inquiries in the last 30 days",
@@ -2167,7 +2172,9 @@
       "newLeads": "Go over my new leads with me",
       "lastMonth": "Sum up last month",
       "products": "What products and prices are on my site?",
-      "addProduct": "Add a new product for me"
+      "addProduct": "Add a new product for me",
+      "topProducts": "Which products are viewed most?",
+      "visits": "How many visited my site this month?"
     },
     "momentum": {
       "leads": "Inquiries are up {{pct}}% on last week ⚡",
@@ -2361,7 +2368,7 @@
       },
       "statsLeads": {
         "title": "Your inquiries",
-        "body": "How many inquiries came in, and how many are waiting for a reply."
+        "body": "How many inquiries came in, how many are waiting for a reply, how many visited the site and what share left an inquiry."
       },
       "nav": {
         "title": "All the pages",
@@ -2502,6 +2509,10 @@
       "list": {
         "title": "Order the products",
         "body": "Drag to change the order. The first ones show on the home page."
+      },
+      "views": {
+        "title": "Most viewed",
+        "body": "Which products visitors open most on the site over the last 30 days, and each product's views."
       }
     }
   },
@@ -2567,6 +2578,13 @@
   },
   "products": {
     "title": "Products",
+    "views": {
+      "title": "Most viewed products",
+      "total": "Views in the last 30 days: {{count}}",
+      "since": "counted since {{date}}",
+      "empty": "No product has been viewed on the site yet. Every product page opened will count here.",
+      "card": "Views: {{count}}"
+    },
     "description": "The products on your site. Anyone interested leaves an inquiry, and it reaches you with the product's name.",
     "count": "{{used}} of {{max}} products.",
     "onePageNote": "On this plan the product shows on the home page, without a page of its own.",

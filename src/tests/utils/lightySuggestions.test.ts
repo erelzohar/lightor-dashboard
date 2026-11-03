@@ -96,7 +96,9 @@ describe("Lighty's ready questions (LT-566)", () => {
 
   it('asks about products on a products site, or to add one when there are none', () => {
     expect(keys(facts())).not.toContain('products');
-    expect(keys(facts({ catalog: true, productsTotal: 4 }))).toContain('products');
+    // LT-569: with products, the most viewed of them; without the summary, the products.
+    expect(keys(facts({ catalog: true, productsTotal: 4 }))).toContain('topProducts');
+    expect(keys(facts({ catalog: true }))).toContain('products');
     expect(keys(facts({ catalog: true, productsTotal: 0 }))).toContain('addProduct');
   });
 
@@ -109,7 +111,7 @@ describe("Lighty's ready questions (LT-566)", () => {
 
     it('asks nothing about bookings or the calendar', () => {
       const list = keys(leads({ waitingLeads: 2 }));
-      expect(list).toEqual(['newLeads', 'lastMonth', 'services', 'howHours']);
+      expect(list).toEqual(['newLeads', 'lastMonth', 'visits', 'services', 'howHours']);
     });
 
     it("asks for last month's summary in the month's first days", () => {
@@ -118,7 +120,9 @@ describe("Lighty's ready questions (LT-566)", () => {
     });
 
     it('asks about products when it shows them', () => {
-      expect(keys(leads({ catalog: true, productsTotal: 3 }))).toContain('products');
+      expect(keys(leads({ catalog: true, productsTotal: 3 }))).toContain('topProducts');
+      // Five at most: the hours question gives way.
+      expect(keys(leads({ waitingLeads: 1, catalog: true, productsTotal: 3 }))).toEqual(['newLeads', 'lastMonth', 'visits', 'topProducts', 'services']);
     });
   });
 });
