@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle, Ban, Bell, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, ListPlus, Loader2,
-  MessageCircleReply, MessageSquare, Package, PackagePlus, Pencil, Settings2, StickyNote, Store, Undo2, UserPlus, Users, X, type LucideIcon,
+  MessageCircleReply, MessageSquare, Package, Send, PackagePlus, Pencil, Settings2, StickyNote, Store, Undo2, UserPlus, Users, X, type LucideIcon,
 } from 'lucide-react';
 import { israeliPhoneKind, toE164, whatsAppHref } from '../../utils/phone';
 import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
@@ -304,7 +304,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
         const links = replyLinks(items[0]?.phone, draft);
         // Opening the phone's app is the owner's answer: the lead moves out of "new" (once).
         const sent = () => { if (status === 'pending') void answer('confirm'); };
-        const link = 'inline-flex flex-1 sm:flex-none justify-center items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium shadow-sm';
+        const link = 'inline-flex justify-center items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap shadow-sm';
         return (
           <>
             <p className="mt-3 flex items-start gap-1.5 rounded-xl bg-gray-50 dark:bg-slate-800/50 px-2.5 py-2 text-xs text-gray-600 dark:text-slate-300">
@@ -313,13 +313,15 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {links.whatsApp && (
-                <a href={links.whatsApp} target="_blank" rel="noopener noreferrer" onClick={sent} className={`${link} bg-green-600 text-white`}>
-                  {t('lighty.action.sendWhatsApp')}
+                <a href={links.whatsApp} target="_blank" rel="noopener noreferrer" onClick={sent} aria-label={t('lighty.action.sendWhatsApp')} className={`${link} bg-green-600 text-white`}>
+                  <Send className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+                  WhatsApp
                 </a>
               )}
               {links.sms && (
-                <a href={links.sms} onClick={sent} className={`${link} border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200`}>
-                  {t('lighty.action.sendSms')}
+                <a href={links.sms} onClick={sent} aria-label={t('lighty.action.sendSms')} className={`${link} border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200`}>
+                  <Send className="w-4 h-4 rtl:-scale-x-100" aria-hidden="true" />
+                  SMS
                 </a>
               )}
               {open && (
