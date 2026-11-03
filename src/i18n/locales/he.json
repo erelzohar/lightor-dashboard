@@ -1907,7 +1907,9 @@
       "saveFailed": "לא הצלחנו לעדכן את הליד",
       "deleteFailed": "לא הצלחנו למחוק את הליד"
     },
-    "aboutProduct": "על המוצר: {{name}}"
+    "aboutProduct": "על המוצר: {{name}}",
+    "answerWithLighty": "לענות עם Lighty",
+    "answerWithLightyAsk": "תכתוב תשובה לליד של {{name}} מ-{{when}}"
   },
   "siteEditor": {
     "title": "עיצוב האתר",

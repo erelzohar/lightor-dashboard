@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Leads from '../../pages/Leads';
 
 /** The page reads its filter from the address (LT-288), so it renders inside a router. */
@@ -260,5 +260,25 @@ describe('Leads page', () => {
       await waitFor(() => expect(addLeadToCustomer).toHaveBeenCalledWith('l1', { customerId: 'c3' }));
       expect(fetchCustomers).toHaveBeenCalledWith(expect.objectContaining({ limit: 8 }));
     });
+  });
+  // LT-572 (Erel): a lead not yet closed has "answer with Lighty", which opens his page with the request sent.
+  it('answers a lead with Lighty: his page opens with the request; a closed lead has no such button', async () => {
+    vi.mocked(fetchLeads).mockResolvedValue(page([lead('l1', 'Dana Levi'), lead('l3', 'Old One', { status: 'closed' })]) as never);
+    const Where = () => {
+      const location = useLocation();
+      return <p data-testid="where">{location.pathname}|{JSON.stringify(location.state)}</p>;
+    };
+    render(
+      <MemoryRouter initialEntries={['/leads']}>
+        <Routes>
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/lighty" element={<Where />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const cards = await screen.findAllByTestId('lead-card');
+    expect(within(cards[1]).queryByRole('button', { name: /leads.answerWithLighty/ })).toBeNull();
+    fireEvent.click(within(cards[0]).getByRole('button', { name: /leads.answerWithLighty/ }));
+    expect(screen.getByTestId('where')).toHaveTextContent('/lighty|{"lightyMessage":"leads.answerWithLightyAsk"}');
   });
 });

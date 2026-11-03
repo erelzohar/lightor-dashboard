@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -21,6 +21,7 @@ import { formatPhoneForDisplay, telHref, whatsAppHref } from '../utils/phone';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { pop } from '../components/ui/pop-button';
 import { LEAD_STATUS_TINT as STATUS_TINT } from '../utils/leadStatus';
+import LightyIcon from '../components/lighty/LightyIcon';
 
 const PAGE_SIZE = 20;
 
@@ -99,6 +100,12 @@ const Leads: React.FC = () => {
     i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
   const formatWhen = (iso: string) =>
     new Date(iso).toLocaleString(locale, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const navigate = useNavigate();
+  // LT-572 (Erel): a lead not yet closed can be answered with Lighty - his page
+  // opens with the request sent, and he drafts the answer on a card the owner
+  // sends from their own phone (LT-567).
+  const answerWithLighty = (lead: Lead) =>
+    navigate('/lighty', { state: { lightyMessage: t('leads.answerWithLightyAsk', { name: lead.name, when: formatWhen(lead.createdAt) }) } });
 
   const changeStatus = async (lead: Lead, next: LeadStatus) => {
     if (lead.status === next) return;
@@ -234,6 +241,16 @@ const Leads: React.FC = () => {
                     <MessageCircle size={15} />
                     {t('leads.whatsapp')}
                   </a>
+                  {lead.status !== 'closed' && (
+                    <button
+                      type="button"
+                      onClick={() => answerWithLighty(lead)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-violet-200 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-200 text-sm font-medium hover:border-violet-300 transition-colors"
+                    >
+                      <LightyIcon className="w-4 h-4" />
+                      {t('leads.answerWithLighty')}
+                    </button>
+                  )}
                   {lead.customerId ? (
                     <button
                       type="button"

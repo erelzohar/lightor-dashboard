@@ -1907,7 +1907,9 @@
       "saveFailed": "No se pudo actualizar la consulta",
       "deleteFailed": "No se pudo eliminar la consulta"
     },
-    "aboutProduct": "Sobre: {{name}}"
+    "aboutProduct": "Sobre: {{name}}",
+    "answerWithLighty": "Responder con Lighty",
+    "answerWithLightyAsk": "Escribe una respuesta al contacto de {{name}} del {{when}}"
   },
   "siteEditor": {
     "title": "Diseño del sitio",

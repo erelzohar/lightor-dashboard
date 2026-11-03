@@ -1907,7 +1907,9 @@
       "saveFailed": "Could not update the inquiry",
       "deleteFailed": "Could not delete the inquiry"
     },
-    "aboutProduct": "About: {{name}}"
+    "aboutProduct": "About: {{name}}",
+    "answerWithLighty": "Answer with Lighty",
+    "answerWithLightyAsk": "Write an answer to the lead from {{name}}, {{when}}"
   },
   "siteEditor": {
     "title": "Site design",

@@ -1907,7 +1907,9 @@
       "saveFailed": "تعذر تحديث الاستفسار",
       "deleteFailed": "تعذر حذف الاستفسار"
     },
-    "aboutProduct": "بخصوص: {{name}}"
+    "aboutProduct": "بخصوص: {{name}}",
+    "answerWithLighty": "الرد مع Lighty",
+    "answerWithLightyAsk": "اكتب ردًا على استفسار {{name}} من {{when}}"
   },
   "siteEditor": {
     "title": "تصميم الموقع",

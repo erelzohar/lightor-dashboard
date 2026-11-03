@@ -1907,7 +1907,9 @@
       "saveFailed": "Impossible de mettre à jour la demande",
       "deleteFailed": "Impossible de supprimer la demande"
     },
-    "aboutProduct": "Au sujet de : {{name}}"
+    "aboutProduct": "Au sujet de : {{name}}",
+    "answerWithLighty": "Répondre avec Lighty",
+    "answerWithLightyAsk": "Écris une réponse à la demande de {{name}} du {{when}}"
   },
   "siteEditor": {
     "title": "Design du site",
