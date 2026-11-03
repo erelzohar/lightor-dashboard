@@ -110,6 +110,47 @@ export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk'
 export const DECOR_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
 /** LT-531: the heroes that draw their own backdrop; a background chip would do nothing there. */
 export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage'];
+
+/**
+ * LT-570 (Erel 2026-11-03): the ten designs that move only on Lightor+, Pro
+ * and the free days, by the section they lay out, and the two backdrops among
+ * them. On the free plan the live site holds them still and the curve shows as
+ * a masonry (lightor-front services/planMotion.ts); the pick stays the owner's.
+ */
+export const MOTION_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
+  hero: ['parallax', 'expand'],
+  gallery: ['clothesline', 'cascade', 'curve'],
+  portfolio: ['clothesline', 'cascade', 'curve'],
+  products: ['belt', 'hanger', 'coverflow'],
+};
+export const MOTION_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
+export const movesOnPaidPlans = (section: string, value: unknown): boolean =>
+  typeof value === 'string' && (MOTION_LAYOUTS[section] ?? []).includes(value);
+
+type MotionSite = {
+  design?: Record<string, unknown>;
+  blocks?: Array<{ type?: string; variant?: string; mod?: { hidden?: boolean } }>;
+};
+const MOTION_TOKENS: Record<string, string> = { hero: 'heroLayout', gallery: 'portfolioLayout', products: 'productsLayout' };
+
+/**
+ * The moving designs the live site draws, as it resolves them: a shown block's
+ * own variant, else the design's token (lightor-front ComposedPage), and the
+ * backdrop wherever the hero draws one.
+ */
+export const motionDesignsOf = (config: unknown): string[] => {
+  const { design = {}, blocks } = (config ?? {}) as MotionSite;
+  const shown = Array.isArray(blocks) && blocks.length
+    ? blocks.filter((b) => b && !b.mod?.hidden && b.type && MOTION_TOKENS[b.type]).map((b) => [b.type!, b.variant ?? design[MOTION_TOKENS[b.type!]]] as const)
+    : Object.entries(MOTION_TOKENS).map(([section, token]) => [section, design[token]] as const);
+  const found = shown.filter(([section, value]) => movesOnPaidPlans(section, value)).map(([, value]) => value as string);
+  // The site's full-screen heroes draw no backdrop (lightor-front Hero.tsx FULL_HEROES).
+  const hero = shown.find(([section]) => section === 'hero');
+  const decor = String(design.decor ?? '');
+  if (hero && MOTION_BACKGROUNDS.includes(decor) && !['parallax', 'expand', 'aero'].includes(String(hero[1]))) found.push(decor);
+  return [...new Set(found)];
+};
+
 export const HERO_BACKGROUND_NAMES: Named = {
   fog: { he: 'ערפל', en: 'Fog' },
   clouds: { he: 'עננים', en: 'Clouds' },

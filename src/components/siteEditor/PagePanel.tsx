@@ -5,7 +5,8 @@ import ColorPicker from '../ui/ColorPicker';
 import Select from '../ui/Select';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { getAt, setAt } from '../../utils/editorPaths';
-import { BUTTON_STYLES, CARD_STYLES, FONTS, PRESETS, RADII, THEMES, optionLabel } from '../../utils/editorOptions';
+import { BUTTON_STYLES, CARD_STYLES, FONTS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, PRESETS, RADII, THEMES, motionDesignsOf, optionLabel } from '../../utils/editorOptions';
+import { MotionNote } from './MotionPlan';
 import SiteChat from './SiteChat';
 import { aiService } from '../../services/aiApi';
 import { STYLES, stylePicture, withLook } from '../../lib/styles';
@@ -33,6 +34,8 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
   const lang = vocabLang(i18n.language);
   const design = (getAt(config, 'design') ?? {}) as Record<string, string | undefined>;
   const [usage, setUsage] = useState<number | null>(null);
+  // LT-570: the free plan holds the site's moving designs still.
+  const [motionHeld, setMotionHeld] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -41,9 +44,13 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
       const limit = e?.limits?.aiTokensPerMonth;
       const used = e?.usage?.aiTokensThisMonth;
       if (alive && limit && typeof used === 'number') setUsage(Math.min(100, Math.round((used / limit) * 100)));
+      if (alive && e?.limits?.motionDesigns === false) setMotionHeld(true);
     });
     return () => { alive = false; };
   }, []);
+  const moving = motionHeld
+    ? motionDesignsOf(config).map((v) => optionLabel(MOTION_BACKGROUNDS.includes(v) ? HERO_BACKGROUND_NAMES : LAYOUTS, v, lang))
+    : [];
 
   // LT-426: the style being fetched, and whether the last try failed.
   const [restyling, setRestyling] = useState<string | null>(null);
@@ -147,6 +154,12 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
         </div>
         {styleFailed && <p className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{t('siteEditor.theme.styleFailed')}</p>}
         <p className="mt-1 text-sm text-light-gray">{t('siteEditor.theme.presetHint')}</p>
+        {/* LT-570: a style can bring them; the site's own, as the live site draws them. */}
+        {moving.length > 0 && (
+          <div className="mt-2">
+            <MotionNote text={t('siteEditor.motion.notice', { designs: moving.join(', ') })} testId="motion-notice" />
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">

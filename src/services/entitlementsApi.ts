@@ -30,6 +30,11 @@ export interface PlanLimits {
   ownerTextDigestOnly?: boolean;
   /** LT-489: the editor's "create with AI" picture - Plus. Absent on an older API, which reads as allowed. */
   aiImagesInEditor?: boolean;
+  /**
+   * LT-570: whether the live site moves its moving designs (editorOptions
+   * MOTION_LAYOUTS); false on the free plan. Absent on an older API: moving.
+   */
+  motionDesigns?: boolean;
 }
 
 export interface MyEntitlements {

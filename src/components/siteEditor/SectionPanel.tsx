@@ -5,7 +5,9 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, heroBackgroundOf, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, OWN_BACKDROP_HEROES, heroBackgroundOf, movesOnPaidPlans, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { canOfferPurchases } from '../../lib/platform';
+import { MotionNote, PlusMark, useMotionHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
@@ -53,6 +55,12 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
   const block = blockById(config, section);
   const composed = !!block && !def.outsideBlocks;
   const design = (getAt(config, 'design') ?? {}) as Record<string, unknown>;
+  // LT-570: on the free plan the moving designs stand still on the live site.
+  // In the app (nothing is sold there, LT-130) one is offered only as the current pick.
+  const held = useMotionHeld();
+  const sells = canOfferPurchases();
+  const offered = (moving: boolean, selected: boolean) => selected || !moving || !held || sells;
+  const marked = (moving: boolean) => moving && (!held || sells);
 
   const current: string | undefined = composed
     ? (block?.variant ?? DEFAULT_VARIANT[type])
@@ -147,12 +155,18 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.layout')}</p>
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.layout')}>
-            {def.variants.map((v) => (
+            {def.variants.filter((v) => offered(movesOnPaidPlans(type, v), current === v)).map((v) => (
               <button key={v} type="button" role="radio" aria-checked={current === v} className={chip(current === v)} onClick={() => setVariant(v)}>
                 {optionLabel(LAYOUTS, v, lang)}
+                {marked(movesOnPaidPlans(type, v)) && <PlusMark on={current === v} />}
               </button>
             ))}
           </div>
+          {held && movesOnPaidPlans(type, current) && (
+            <div className="mt-2">
+              <MotionNote text={t(current === 'curve' ? 'siteEditor.motion.curveNote' : 'siteEditor.motion.stillNote')} />
+            </div>
+          )}
         </div>
       )}
 
@@ -167,6 +181,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
             {HERO_BACKGROUNDS.map((v) => {
               const decor = getAt(config, 'design.decor');
               const on = heroBackgroundOf(getAt(config, 'components.hero.bgType'), decor) === v;
+              if (!offered(MOTION_BACKGROUNDS.includes(v), on)) return null;
               // LT-531: the two that live in design.decor, and the others clear them.
               const pick = () => {
                 if (DECOR_BACKGROUNDS.includes(v)) return onUpdate(setAt(config, 'design.decor', v));
@@ -176,10 +191,16 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
               return (
                 <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={pick}>
                   {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
+                  {marked(MOTION_BACKGROUNDS.includes(v)) && <PlusMark on={on} />}
                 </button>
               );
             })}
           </div>
+          {held && MOTION_BACKGROUNDS.includes(heroBackgroundOf(getAt(config, 'components.hero.bgType'), getAt(config, 'design.decor'))) && (
+            <div className="mt-2">
+              <MotionNote text={t('siteEditor.motion.stillNote')} />
+            </div>
+          )}
         </div>
       )}
 
