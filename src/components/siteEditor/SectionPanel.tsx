@@ -5,7 +5,7 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, OWN_BACKDROP_HEROES, heroBackgroundOf, movesOnPaidPlans, optionLabel, sectionDef } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, OWN_BACKDROP_HEROES, blockLookOf, heroBackgroundOf, movesOnPaidPlans, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
 import { canOfferPurchases } from '../../lib/platform';
 import { MotionNote, PlusMark, useMotionHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
@@ -62,13 +62,14 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
   const offered = (moving: boolean, selected: boolean) => selected || !moving || !held || sells;
   const marked = (moving: boolean) => moving && (!held || sells);
 
+  // The look the site draws (LT-573), so the lit chip is the one on screen.
   const current: string | undefined = composed
-    ? (block?.variant ?? DEFAULT_VARIANT[type])
-    : def.designToken ? (design[def.designToken] as string | undefined) : undefined;
+    ? blockLookOf(type, block?.variant, design)
+    : def.designToken ? ((design[def.designToken] as string | undefined) ?? DEFAULT_VARIANT[type]) : undefined;
 
   const setVariant = (value: string) => {
     if (composed && block) {
-      onUpdate(patchBlock(config, block.id, { variant: value === DEFAULT_VARIANT[type] ? undefined : value }));
+      onUpdate(patchBlock(config, block.id, { variant: variantToStore(type, value) }));
     } else if (def.designToken) {
       onUpdate(setAt(config, `design.${def.designToken}`, value));
     }

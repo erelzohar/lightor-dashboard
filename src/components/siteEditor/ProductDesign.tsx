@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import { getAt, setAt } from '../../utils/editorPaths';
-import { CARD_LAYOUTS, LAYOUTS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, optionLabel } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, LAYOUTS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, blockLookOf, optionLabel } from '../../utils/editorOptions';
 import { vocabLang } from './labels';
 
 /**
@@ -26,11 +26,11 @@ export const previewProductsOf = (config: unknown): PreviewProduct[] => {
 
 const designOf = (config: unknown): Record<string, unknown> => (getAt(config, 'design') ?? {}) as Record<string, unknown>;
 
-/** How the home page lays its products out: its block's own look, else the design's. */
+/** How the home page lays its products out: its block's own look, else the design's (as the site draws it). */
 const homeLayoutOf = (config: unknown): string | undefined => {
   // Not through getAt: to it 'blocks.<id>' names one block, and 'blocks' alone none.
   const blocks = ((config as { blocks?: unknown } | null)?.blocks ?? []) as Array<{ type?: string; variant?: string }>;
-  return blocks.find((b) => b.type === 'products')?.variant ?? (designOf(config).productsLayout as string | undefined);
+  return blockLookOf('products', blocks.find((b) => b.type === 'products')?.variant, designOf(config));
 };
 
 /** The products page's layout as the site draws it: its own, else the home page's when still, else tiles. */

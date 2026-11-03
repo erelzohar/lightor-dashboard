@@ -629,6 +629,33 @@ describe('the site editor (LT-249)', () => {
       fireEvent.click(screen.getByRole('radio', { name: 'בנטו' }));
       await waitFor(() => expect(screen.queryByTestId('product-card-choices')).toBeNull());
     });
+
+    // LT-573: a built site keeps its style's layout in the design too, and the
+    // site draws it whenever the block has no look of its own
+    // (lightor-front ComposedPage: `variant ?? design.productsLayout`, then the quiet tiles).
+    it("the quiet tiles reach the preview, and the products page, on a site whose style drew the bento", async () => {
+      withProducts(true, 'bento');
+      state.webConfig.data = { ...state.webConfig.data, design: { stylePreset: 'electric', productsLayout: 'bento' } } as unknown as WebConfig;
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_SELECT', kind: 'section', path: null, section: 'b3', sectionType: 'products', count: 1, fields: [] });
+      const layouts = within(await screen.findByRole('radiogroup', { name: 'siteEditor.section.layout' }));
+      expect(layouts.getByRole('radio', { checked: true })).toHaveTextContent('בנטו');
+
+      fireEvent.click(layouts.getByRole('radio', { name: 'אריחים שקטים' }));
+      const drawn = () => {
+        const config = lastConfig() as unknown as { design: Record<string, unknown>; blocks: Array<{ type: string; variant?: string }> };
+        return config.blocks.find((b) => b.type === 'products')?.variant ?? config.design.productsLayout ?? 'well';
+      };
+      await waitFor(() => expect(drawn()).toBe('well'));
+      expect(layouts.getByRole('radio', { checked: true })).toHaveTextContent('אריחים שקטים');
+
+      // The products page takes the home section's look until the owner picks its own (LT-545).
+      await fromSite({ type: 'LT_PAGE', path: '/products' });
+      expect(await screen.findByTestId('products-page-panel')).toBeInTheDocument();
+      const pageLayouts = within(screen.getByRole('radiogroup', { name: 'siteEditor.products.layout' }));
+      expect(pageLayouts.getByRole('radio', { checked: true })).toHaveTextContent('אריחים שקטים');
+    });
   });
 
   describe('the style pictures', () => {

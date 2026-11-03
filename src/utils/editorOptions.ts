@@ -358,8 +358,43 @@ export const SECTION_HINTS: Named = {
   footer: { he: 'סוף הדף', en: 'The bottom of the page' },
 };
 
-/** A block variant that stands for "the default look" — stored as no variant at all. */
+/**
+ * LT-573: the design token the site draws a block by when the block has no
+ * look of its own (lightor-front ComposedPage: `variant ?? design.<token>`).
+ * An AI edit of the token drops the block's own look for it (lightor-back
+ * composer SHADOWED_BY_VARIANT), so a block with none is common.
+ */
+export const BLOCK_TOKEN: Record<string, string> = {
+  hero: 'heroLayout', gallery: 'portfolioLayout', products: 'productsLayout', quote: 'testimonialsLayout',
+  faq: 'faqStyle', schedule: 'scheduleStyle', contact: 'contactLayout', footer: 'footerLayout',
+};
+
+/** The look the site draws for a block with no look of its own and no token to go by. */
 export const DEFAULT_VARIANT: Record<string, string> = { products: 'well', interlude: 'photo', bookingBand: 'plain', ledger: 'ledger', manifesto: 'display' };
+
+/**
+ * LT-573: the look the site draws for a block: its own, else the design's
+ * token, else its default. Every interlude but the split is drawn as the photo
+ * (the styles store 'full').
+ */
+export const blockLookOf = (type: string, variant: unknown, design: Record<string, unknown>): string | undefined => {
+  const token = BLOCK_TOKEN[type];
+  const fromDesign = token ? design[token] : undefined;
+  const look = typeof variant === 'string' && variant ? variant
+    : typeof fromDesign === 'string' && fromDesign ? fromDesign
+    : DEFAULT_VARIANT[type];
+  if (type === 'interlude') return look === 'split' ? 'split' : 'photo';
+  return look;
+};
+
+/**
+ * The look a pick is stored as. A default the site draws the same without a
+ * look is stored as none; where a design token stands behind the block, none
+ * would draw the token, so the pick is stored as it is (LT-573: the quiet tiles
+ * on a site whose style drew the conveyor).
+ */
+export const variantToStore = (type: string, value: string): string | undefined =>
+  value === DEFAULT_VARIANT[type] && !BLOCK_TOKEN[type] ? undefined : value;
 
 export const sectionDef = (type: string | null | undefined): SectionDef =>
   (type && SECTIONS[type]) || { label: { he: 'אזור', en: 'Section' } };
