@@ -2157,6 +2157,13 @@
     "thinking": "Lighty חושב…",
     "placeholder": "שאלו את Lighty…",
     "send": "שליחה",
+    "attach": {
+      "button": "צירוף תמונות",
+      "remove": "הסרת התמונה",
+      "failed": "לא הצלחנו להעלות את התמונה. אפשר לנסות שוב.",
+      "tooMany": "אפשר לצרף עד {{max}} תמונות להודעה אחת.",
+      "defaultMessage": "מוצר מהתמונות האלה"
+    },
     "newChat": "שיחה חדשה",
     "conversation": "השיחה עם Lighty",
     "loadingThread": "טוען את השיחה…",
@@ -2272,7 +2279,8 @@
         "instagram": "Instagram",
         "facebook": "Facebook",
         "tiktok": "TikTok",
-        "x": "X"
+        "x": "X",
+        "pictures": "תמונות"
       },
       "value": {
         "shown": "מוצג באתר",

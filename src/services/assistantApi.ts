@@ -59,7 +59,8 @@ export type LightyActionStatus = 'pending' | 'running' | 'done' | 'declined' | '
 export interface LightyAction {
   id: string;
   kind: LightyActionKind;
-  card: { items: LightyActionItem[]; texts: number; notes: { key: string; count?: number }[] };
+  /** LT-568: `pictures`, the ones a new product gets (attached to the owner's message). */
+  card: { items: LightyActionItem[]; texts: number; notes: { key: string; count?: number }[]; pictures?: string[] };
   status: LightyActionStatus;
   expiresAt: string;
   undoUntil?: string;
@@ -71,6 +72,8 @@ export interface LightyAction {
 export interface LightyTurn {
   role: 'user' | 'assistant';
   content: string;
+  /** LT-568: the pictures the owner attached to their message (stored upload names). */
+  images?: string[];
   handoff?: string;
   actions?: LightyAction[];
   createdAt?: string;
@@ -91,10 +94,11 @@ const answer = async (id: string, verb: 'confirm' | 'decline' | 'undo'): Promise
 };
 
 export const assistantService = {
-  chat: async (message: string): Promise<{ reply: string; handoff?: string; actions?: LightyAction[] }> => {
+  // LT-568: `images`, the owner's uploads attached to this message (at most 6).
+  chat: async (message: string, images: string[] = []): Promise<{ reply: string; handoff?: string; actions?: LightyAction[] }> => {
     const response = await apiClient.post<{ success: boolean; data: { reply: string; handoff?: string; actions?: LightyAction[] } }>(
       `${globals.assistantUrl}chat`,
-      { message, language: language(), actionCards: true }
+      { message, language: language(), actionCards: true, ...(images.length ? { images } : {}) }
     );
     return response.data.data;
   },

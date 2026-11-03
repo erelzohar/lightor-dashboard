@@ -33,6 +33,10 @@ vi.mock('../../services/leadsApi', () => ({ fetchLeadStats: vi.fn(async () => ({
 vi.mock('../../services/assistantApi', () => ({
   assistantService: { chat: vi.fn(), thread: vi.fn(), clear: vi.fn(async () => undefined), confirm: vi.fn(), decline: vi.fn(), undo: vi.fn() },
 }));
+// LT-568: pictures attached to a message, uploaded as on the products page.
+const { uploadImage } = vi.hoisted(() => ({ uploadImage: vi.fn() }));
+vi.mock('../../services/imagesApi', () => ({ uploadImage }));
+vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
 const { dispatch } = vi.hoisted(() => ({ dispatch: vi.fn() }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => dispatch }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'u1' } } }) }));
@@ -79,7 +83,7 @@ describe("Lighty's page (LT-253)", () => {
     // Not today's question: which day it asks about goes by the hour (LT-566).
     fireEvent.click(screen.getByText('lighty.suggest.regulars'));
 
-    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.regulars');
+    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.regulars', []);
     expect(await screen.findByText('2 תורים')).toHaveProperty('tagName', 'STRONG');
     expect(lightTick).toHaveBeenCalledTimes(1); // LT-268: Lighty answered
     expect(screen.getByText('10:00 דנה').tagName).toBe('LI');
@@ -109,7 +113,7 @@ describe("Lighty's page (LT-253)", () => {
     vi.mocked(assistantService.thread).mockResolvedValue([{ role: 'assistant', content: 'Earlier answer' }]);
     vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 429 } });
     renderPage({ lightyMessage: 'When am I free tomorrow?' });
-    await waitFor(() => expect(assistantService.chat).toHaveBeenCalledWith('When am I free tomorrow?'));
+    await waitFor(() => expect(assistantService.chat).toHaveBeenCalledWith('When am I free tomorrow?', []));
     expect(await screen.findByRole('alert')).toHaveTextContent('lighty.budget');
     expect(lightTick).not.toHaveBeenCalled(); // a refusal is not an answer
     expect(screen.getByText('When am I free tomorrow?')).toBeInTheDocument();
@@ -131,7 +135,8 @@ describe("Lighty's page (LT-253)", () => {
       // The new answer: whole for screen readers at once, typed for the eye.
       const srOnly = await screen.findByText('A brand new answer that Lighty writes out for you.', { selector: '.sr-only' });
       expect(srOnly).toBeInTheDocument();
-      await waitFor(() => expect(document.querySelector('.sr-only')).toBeNull(), { timeout: 3000 });
+      // In the conversation: the composer keeps its own hidden label and file input (LT-568).
+      await waitFor(() => expect(screen.getByRole('log').querySelector('.sr-only')).toBeNull(), { timeout: 3000 });
       expect(screen.getByText('A brand new answer that Lighty writes out for you.')).toBeInTheDocument();
     } finally {
       typewriterConfig.enabled = false;
@@ -147,7 +152,7 @@ describe("Lighty's page (LT-253)", () => {
     fireEvent.keyDown(box, { key: 'Enter', shiftKey: true });
     expect(assistantService.chat).not.toHaveBeenCalled();
     fireEvent.keyDown(box, { key: 'Enter' });
-    expect(assistantService.chat).toHaveBeenCalledWith('line one');
+    expect(assistantService.chat).toHaveBeenCalledWith('line one', []);
   });
   // LT-479 (Erel): a message sent before the thread was in got replaced by it.
   it('shows a loader while the conversation loads, and sends nothing until it is in', async () => {
@@ -167,7 +172,7 @@ describe("Lighty's page (LT-253)", () => {
     expect(screen.queryByTestId('lighty-thread-loading')).toBeNull();
     expect(box).toHaveValue('What is on today?');
     fireEvent.click(screen.getByRole('button', { name: 'lighty.send' }));
-    expect(assistantService.chat).toHaveBeenCalledWith('What is on today?');
+    expect(assistantService.chat).toHaveBeenCalledWith('What is on today?', []);
     expect(await screen.findByText('Earlier answer')).toBeInTheDocument();
     expect(screen.getByText('What is on today?')).toBeInTheDocument();
   });
@@ -189,7 +194,7 @@ describe("Lighty's page (LT-253)", () => {
     box.focus();
     fireEvent.change(box, { target: { value: 'second' } });
     fireEvent.keyDown(box, { key: 'Enter' });
-    expect(assistantService.chat).toHaveBeenLastCalledWith('second');
+    expect(assistantService.chat).toHaveBeenLastCalledWith('second', []);
     expect(document.activeElement).not.toBe(box);
   });
 });
@@ -211,7 +216,7 @@ describe("Lighty's ready questions follow the business (LT-566)", () => {
     const chip = await screen.findByTestId('lighty-suggest-newLeads');
     expect(chip).toHaveTextContent('lighty.suggest.newLeads4');
     fireEvent.click(chip);
-    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.newLeads');
+    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.newLeads', []);
   });
 
   it('leaves the leads question out when none are waiting', async () => {
@@ -352,5 +357,64 @@ describe("Lighty's text (LT-253)", () => {
     const card = await screen.findByTestId('lighty-action');
     expect(card).toHaveTextContent('lighty.action.declined');
     expect(within(card).queryByRole('button')).toBeNull();
+  });
+});
+
+describe('pictures attached in the chat (LT-568)', () => {
+  const picture = (name: string) => new File(['x'], name, { type: 'image/jpeg' });
+  let uploads = 0;
+  beforeEach(() => {
+    vi.mocked(assistantService.chat).mockReset().mockResolvedValue({ reply: 'Confirm it on the card.' });
+    vi.mocked(assistantService.thread).mockReset().mockResolvedValue([]);
+    uploads = 0;
+    uploadImage.mockReset().mockImplementation(async () => ({ imageName: `up${++uploads}.webp` }));
+  });
+
+  const attach = async (...names: string[]) => {
+    fireEvent.change(screen.getByTestId('lighty-attach'), { target: { files: names.map(picture) } });
+  };
+
+  it('sends the pictures with the words, and shows them in the owner\'s bubble', async () => {
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    await attach('a.jpg', 'b.jpg');
+    await waitFor(() => expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(2));
+    fireEvent.change(screen.getByLabelText('lighty.placeholder'), { target: { value: 'A product please' } });
+    fireEvent.click(screen.getByRole('button', { name: 'lighty.send' }));
+    await waitFor(() => expect(assistantService.chat).toHaveBeenCalledWith('A product please', ['up1.webp', 'up2.webp']));
+    expect(screen.getByTestId('owner-pictures').querySelectorAll('img')).toHaveLength(2);
+    expect(screen.queryByTestId('lighty-attached')).toBeNull();
+  });
+
+  it('sends pictures with no words as a product request, and one can be taken off first', async () => {
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    await attach('a.jpg', 'b.jpg');
+    await waitFor(() => expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(2));
+    fireEvent.click(screen.getAllByRole('button', { name: 'lighty.attach.remove' })[0]);
+    const send = screen.getByRole('button', { name: 'lighty.send' }) as HTMLButtonElement;
+    expect(send.disabled).toBe(false);
+    fireEvent.click(send);
+    await waitFor(() => expect(assistantService.chat).toHaveBeenCalledWith('lighty.attach.defaultMessage', ['up2.webp']));
+  });
+
+  it('takes six pictures at most, and says so', async () => {
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    await attach('1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg');
+    await waitFor(() => expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(6));
+    expect(uploadImage).toHaveBeenCalledTimes(6);
+    expect(screen.getByRole('alert')).toHaveTextContent('lighty.attach.tooMany');
+  });
+
+  it('keeps the pictures for the next try when Lighty could not answer', async () => {
+    vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 500 } });
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    await attach('a.jpg');
+    await waitFor(() => expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(1));
+    fireEvent.click(screen.getByRole('button', { name: 'lighty.send' }));
+    expect(await screen.findByText('lighty.failed')).toBeInTheDocument();
+    expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(1);
   });
 });

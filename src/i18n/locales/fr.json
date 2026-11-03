@@ -2157,6 +2157,13 @@
     "thinking": "Lighty réfléchit…",
     "placeholder": "Demandez à Lighty…",
     "send": "Envoyer",
+    "attach": {
+      "button": "Joindre des photos",
+      "remove": "Retirer la photo",
+      "failed": "La photo n’a pas pu être envoyée. Réessayez.",
+      "tooMany": "Un message accepte jusqu’à {{max}} photos.",
+      "defaultMessage": "Un produit à partir de ces photos"
+    },
     "newChat": "Nouvelle discussion",
     "conversation": "Discussion avec Lighty",
     "loadingThread": "Chargement de la conversation…",
@@ -2272,7 +2279,8 @@
         "instagram": "Instagram",
         "facebook": "Facebook",
         "tiktok": "TikTok",
-        "x": "X"
+        "x": "X",
+        "pictures": "Photos"
       },
       "value": {
         "shown": "Visible sur le site",

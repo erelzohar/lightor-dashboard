@@ -2157,6 +2157,13 @@
     "thinking": "Lighty is thinking…",
     "placeholder": "Ask Lighty…",
     "send": "Send",
+    "attach": {
+      "button": "Attach pictures",
+      "remove": "Remove the picture",
+      "failed": "The picture didn't upload. Please try again.",
+      "tooMany": "A message takes up to {{max}} pictures.",
+      "defaultMessage": "A product from these pictures"
+    },
     "newChat": "New chat",
     "conversation": "Conversation with Lighty",
     "loadingThread": "Loading the conversation…",
@@ -2272,7 +2279,8 @@
         "instagram": "Instagram",
         "facebook": "Facebook",
         "tiktok": "TikTok",
-        "x": "X"
+        "x": "X",
+        "pictures": "Pictures"
       },
       "value": {
         "shown": "Shown on the site",

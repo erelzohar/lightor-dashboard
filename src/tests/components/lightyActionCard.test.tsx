@@ -197,4 +197,17 @@ describe("Lighty's action card (LT-561)", () => {
     render(<LightyActionCard action={card({ kind: 'appointment_move', card: { items: [{ customer: 'דנה', service: 'ג׳ל', date: '2026-11-10', time: '10:00', newDate: '2026-11-10', newTime: '11:00' }, { customer: 'מיכל', service: 'ג׳ל', date: '2026-11-10', time: '11:00', newDate: '2026-11-10', newTime: '12:00' }], texts: 2, notes: [] } })} onChange={vi.fn()} />);
     expect(screen.getByText('הזזת 2 תורים')).toBeInTheDocument();
   });
+
+  // LT-568: the pictures attached in the chat are the new product's, and the card shows them.
+  it("shows a new product's pictures, and no note sending the owner to the products page", () => {
+    const { container } = render(<LightyActionCard action={card({ kind: 'product_add', card: {
+      items: [{ subject: 'ספל', field: 'show', before: null, after: 'no' }, { subject: 'ספל', field: 'pictures', before: null, after: '2' }],
+      texts: 0, notes: [{ key: 'draftProduct' }], pictures: ['mug1.webp', 'mug2.webp'],
+    } })} onChange={vi.fn()} />);
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('MISSING:');
+    expect(text).toContain('תמונות');
+    expect(text).not.toContain('תמונות מוסיפים בדף המוצרים.');
+    expect([...screen.getByTestId('card-pictures').querySelectorAll('img')].map((i) => i.getAttribute('src')?.split('/').pop())).toEqual(['mug1.webp', 'mug2.webp']);
+  });
 });

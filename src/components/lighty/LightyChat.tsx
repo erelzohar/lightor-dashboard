@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
+import globals from '../../services/globals';
 
 /**
  * LT-253 — Lighty's face and voice wherever the owner talks to the AI: the
@@ -115,10 +116,17 @@ export const LightyBubble: React.FC<{ children: React.ReactNode; thinking?: bool
   </div>
 );
 
-/** The owner's side. */
-export const OwnerBubble: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+/** The owner's side, with the pictures they attached (LT-568). */
+export const OwnerBubble: React.FC<{ children: React.ReactNode; images?: string[] }> = ({ children, images }) => (
   <div className="flex justify-end">
-    <div className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-ee-md bg-primary text-white px-3 py-2 text-sm">{children}</div>
+    <div className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-ee-md bg-primary text-white px-3 py-2 text-sm">
+      {images?.length ? (
+        <div className="mb-1.5 flex flex-wrap gap-1.5" data-testid="owner-pictures">
+          {images.map((name) => <img key={name} src={`${globals.imagesUrl}${name}`} alt="" className="h-16 w-16 rounded-lg object-cover" />)}
+        </div>
+      ) : null}
+      {children}
+    </div>
   </div>
 );
 

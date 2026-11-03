@@ -2,8 +2,11 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
-import { Palette, RotateCcw } from 'lucide-react';
+import { ImagePlus, Loader2, Palette, RotateCcw, X } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import { assistantService, type LightyAction, type LightyTurn } from '../services/assistantApi';
+import { uploadImage } from '../services/imagesApi';
+import globals from '../services/globals';
 import { isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -43,6 +46,9 @@ const Lighty3D = lazyOr(() => import('../components/lighty/Lighty3D'), StillLigh
  * proposes comes as a card under his answer, done only on the owner's
  * confirm; what it changed is read again for the other pages.
  */
+// LT-568: a message carries at most a product's pictures.
+const MAX_PICTURES = 6;
+
 const LightyPage: React.FC = () => {
   const { t } = useTranslation();
   // Every page names the window (LT-444): without this the tab kept the
@@ -64,6 +70,9 @@ const LightyPage: React.FC = () => {
   const [freshTurn, setFreshTurn] = useState<LightyTurn | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [input, setInput] = useState('');
+  // LT-568: pictures for the next message, uploaded as the products page does (a product's six at most).
+  const [pictures, setPictures] = useState<string[]>([]);
+  const [attaching, setAttaching] = useState(false);
   const [busy, setBusy] = useState(false);
   // LT-385: his mood here too - how the week is going.
   const momentum = useMomentum();
@@ -110,18 +119,41 @@ const LightyPage: React.FC = () => {
     if (touch && document.activeElement === inputRef.current) inputRef.current?.blur();
   };
 
+  const attach = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = [...(e.target.files ?? [])];
+    e.target.value = '';
+    if (!files.length) return;
+    const room = MAX_PICTURES - pictures.length;
+    setError(files.length > room ? t('lighty.attach.tooMany', { max: MAX_PICTURES }) : null);
+    setAttaching(true);
+    try {
+      for (const file of files.slice(0, Math.max(0, room))) {
+        const small = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true });
+        const { imageName } = await uploadImage(small, 'photo');
+        setPictures((all) => (all.length < MAX_PICTURES ? [...all, imageName] : all));
+      }
+    } catch {
+      setError(t('lighty.attach.failed'));
+    } finally {
+      setAttaching(false);
+    }
+  };
+
   const send = async (text: string) => {
-    const ask = text.trim();
+    // Pictures with no words still say what they are for (LT-568).
+    const images = pictures;
+    const ask = text.trim() || (images.length ? t('lighty.attach.defaultMessage') : '');
     // Not before the conversation so far is in (LT-479): it would replace
     // the message just sent.
-    if (!ask || busy || !loaded) return;
+    if (!ask || busy || !loaded || attaching) return;
     closeKeyboard();
     setInput('');
+    setPictures([]);
     setError(null);
-    setTurns((all) => [...all, { role: 'user', content: ask }]);
+    setTurns((all) => [...all, { role: 'user', content: ask, ...(images.length ? { images } : {}) }]);
     setBusy(true);
     try {
-      const { reply, handoff, actions } = await assistantService.chat(ask);
+      const { reply, handoff, actions } = await assistantService.chat(ask, images);
       const answer: LightyTurn = { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}), ...(actions?.length ? { actions } : {}) };
       setTurns((all) => [...all, answer]);
       setFreshTurn(answer);
@@ -130,6 +162,8 @@ const LightyPage: React.FC = () => {
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
       setError(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'lighty.budget' : 'lighty.failed'));
+      // The pictures wait for the next try.
+      if (images.length) setPictures(images);
     } finally {
       setBusy(false);
       void refreshUsage();
@@ -223,7 +257,7 @@ const LightyPage: React.FC = () => {
         {!loaded && <LightyThreadLoading />}
         {empty && <div className="mt-2">{chips}</div>}
         {turns.map((turn, i) => turn.role === 'user' ? (
-          <OwnerBubble key={i}>{turn.content}</OwnerBubble>
+          <OwnerBubble key={i} images={turn.images}>{turn.content}</OwnerBubble>
         ) : (
           <React.Fragment key={i}>
           <LightyBubble>
@@ -253,11 +287,44 @@ const LightyPage: React.FC = () => {
 
       {!empty && turns.length > 0 && !busy && <div className="pb-2">{chips}</div>}
 
+      {pictures.length > 0 && (
+        <div className="flex flex-wrap gap-2 pb-2" data-testid="lighty-attached">
+          {pictures.map((name) => (
+            <div key={name} className="relative h-14 w-14 overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+              <img src={`${globals.imagesUrl}${name}`} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setPictures((all) => all.filter((n) => n !== name))}
+                aria-label={t('lighty.attach.remove')}
+                className="absolute end-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <form
         data-tour="lighty-input"
         className="flex items-end gap-2 rounded-3xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm focus-within:ring-2 focus-within:ring-violet-300/50"
         onSubmit={(e) => { e.preventDefault(); void send(input); }}
       >
+        <label
+          className={`w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-full text-gray-500 dark:text-slate-400 hover:text-primary hover:bg-violet-50 dark:hover:bg-slate-800 focus-within:ring-2 focus-within:ring-violet-300 ${attaching || busy || pictures.length >= MAX_PICTURES ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
+        >
+          {attaching ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <ImagePlus className="w-5 h-5" aria-hidden="true" />}
+          <span className="sr-only">{t('lighty.attach.button')}</span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            onChange={attach}
+            disabled={attaching || busy || pictures.length >= MAX_PICTURES}
+            data-testid="lighty-attach"
+          />
+        </label>
         <textarea
           ref={inputRef}
           value={input}
@@ -276,7 +343,7 @@ const LightyPage: React.FC = () => {
         />
         <button
           type="submit"
-          disabled={busy || !loaded || !input.trim()}
+          disabled={busy || !loaded || attaching || (!input.trim() && !pictures.length)}
           aria-label={t('lighty.send')}
           className={`w-10 h-10 ${lightySendButton}`}
         >

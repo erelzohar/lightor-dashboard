@@ -2157,6 +2157,13 @@
     "thinking": "Lighty يفكر…",
     "placeholder": "اسأل Lighty…",
     "send": "إرسال",
+    "attach": {
+      "button": "إرفاق صور",
+      "remove": "إزالة الصورة",
+      "failed": "لم نتمكن من رفع الصورة. حاول مرة أخرى.",
+      "tooMany": "يمكن إرفاق حتى {{max}} صور برسالة واحدة.",
+      "defaultMessage": "منتج من هذه الصور"
+    },
     "newChat": "محادثة جديدة",
     "conversation": "المحادثة مع Lighty",
     "loadingThread": "جارٍ تحميل المحادثة…",
@@ -2272,7 +2279,8 @@
         "instagram": "Instagram",
         "facebook": "Facebook",
         "tiktok": "TikTok",
-        "x": "X"
+        "x": "X",
+        "pictures": "الصور"
       },
       "value": {
         "shown": "ظاهر في الموقع",

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { israeliPhoneKind, toE164, whatsAppHref } from '../../utils/phone';
 import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
+import globals from '../../services/globals';
 
 /**
  * LT-561 — a change Lighty proposed, as the server wrote it from the owner's
@@ -156,6 +157,14 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
     if (field === 'minutes') return <Chip tone={tone}>{minutes(Number(v))}</Chip>;
     if (field === 'show') return <Chip tone={tone}>{t(v === 'yes' ? 'lighty.action.value.shown' : 'lighty.action.value.draft')}</Chip>;
     if (field === 'soldOut') return <Chip tone={tone}>{t(v === 'yes' ? 'lighty.action.value.soldOut' : 'lighty.action.value.inStock')}</Chip>;
+    // LT-568: a new product's pictures, the ones attached to the owner's message.
+    if (field === 'pictures' && action.card.pictures?.length) {
+      return (
+        <span className="flex flex-wrap gap-1.5" data-testid="card-pictures">
+          {action.card.pictures.map((name) => <img key={name} src={`${globals.imagesUrl}${name}`} alt="" className="h-12 w-12 rounded-lg object-cover" />)}
+        </span>
+      );
+    }
     if (field && TEXT_FIELDS.has(field)) {
       const link = /^https:\/\//.test(v);
       return (
