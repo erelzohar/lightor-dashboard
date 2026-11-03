@@ -33,7 +33,7 @@ const panel = (config: object, section: string, sectionType: string) => render(
 );
 const shelf = (variant: string) => ({ design: {}, blocks: [{ id: 'p1', type: 'products', variant }] });
 const layouts = () => screen.getByRole('radiogroup', { name: 'siteEditor.section.layout' });
-const marked = (name: string) => !!within(layouts()).getByRole('radio', { name }).querySelector('[data-testid="plus-mark"]');
+const marked = (name: string) => !!within(layouts()).getByRole('radio', { name }).querySelector('[data-testid="paid-mark"]');
 
 describe('the moving designs a site draws (LT-570)', () => {
   it('reads them as the live site does: a shown block\'s variant, else the design\'s own', () => {
@@ -78,7 +78,7 @@ describe('the section panel on the free plan', () => {
 
   it('says nothing under a still layout', async () => {
     panel(shelf('list'), 'p1', 'products');
-    await screen.findAllByTestId('plus-mark');
+    await screen.findAllByTestId('paid-mark');
     expect(screen.queryByTestId('motion-note')).toBeNull();
   });
 
@@ -86,9 +86,9 @@ describe('the section panel on the free plan', () => {
     panel({ design: { decor: 'sonar' }, components: { hero: { visible: true } } }, 'hero', 'hero');
     const group = screen.getByRole('radiogroup', { name: 'siteEditor.section.heroBackground' });
     expect(await screen.findByTestId('motion-note')).toHaveTextContent('siteEditor.motion.stillNote');
-    expect(within(group).getByRole('radio', { name: 'Sonar' }).querySelector('[data-testid="plus-mark"]')).not.toBeNull();
-    expect(within(group).getByRole('radio', { name: 'Liquid metal' }).querySelector('[data-testid="plus-mark"]')).not.toBeNull();
-    expect(within(group).getByRole('radio', { name: 'Fog' }).querySelector('[data-testid="plus-mark"]')).toBeNull();
+    expect(within(group).getByRole('radio', { name: 'Sonar' }).querySelector('[data-testid="paid-mark"]')).not.toBeNull();
+    expect(within(group).getByRole('radio', { name: 'Liquid metal' }).querySelector('[data-testid="paid-mark"]')).not.toBeNull();
+    expect(within(group).getByRole('radio', { name: 'Fog' }).querySelector('[data-testid="paid-mark"]')).toBeNull();
   });
 
   it('in the app offers none it holds still but the current pick, unmarked, and sells nothing', async () => {
@@ -107,7 +107,7 @@ describe('on a plan with motion', () => {
   it('marks the moving layouts and says nothing more', async () => {
     plan.motionDesigns = true;
     panel(shelf('belt'), 'p1', 'products');
-    await screen.findAllByTestId('plus-mark');
+    await screen.findAllByTestId('paid-mark');
     expect(marked('Conveyor')).toBe(true);
     await new Promise((r) => setTimeout(r, 0));
     expect(screen.queryByTestId('motion-note')).toBeNull();

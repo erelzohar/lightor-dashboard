@@ -7,7 +7,7 @@ import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
 import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, OWN_BACKDROP_HEROES, blockLookOf, heroBackgroundOf, movesOnPaidPlans, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
 import { canOfferPurchases } from '../../lib/platform';
-import { MotionNote, PlusMark, useMotionHeld } from './MotionPlan';
+import { MotionNote, PaidMark, useMotionHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
@@ -159,7 +159,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
             {def.variants.filter((v) => offered(movesOnPaidPlans(type, v), current === v)).map((v) => (
               <button key={v} type="button" role="radio" aria-checked={current === v} className={chip(current === v)} onClick={() => setVariant(v)}>
                 {optionLabel(LAYOUTS, v, lang)}
-                {marked(movesOnPaidPlans(type, v)) && <PlusMark on={current === v} />}
+                {marked(movesOnPaidPlans(type, v)) && <PaidMark on={current === v} />}
               </button>
             ))}
           </div>
@@ -192,7 +192,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
               return (
                 <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={pick}>
                   {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
-                  {marked(MOTION_BACKGROUNDS.includes(v)) && <PlusMark on={on} />}
+                  {marked(MOTION_BACKGROUNDS.includes(v)) && <PaidMark on={on} />}
                 </button>
               );
             })}

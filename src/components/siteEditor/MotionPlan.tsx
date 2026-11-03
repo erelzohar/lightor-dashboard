@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Pause } from 'lucide-react';
+import { Crown, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
-import { PLAN_NAMES } from '../../services/paddleApi';
 import { canOfferPurchases } from '../../lib/platform';
 
 /**
@@ -24,14 +23,18 @@ export const useMotionHeld = (): boolean => {
 };
 
 /**
- * The paid plans' mark on a moving design's chip. For the eye only: the chip
- * keeps the design's name, and the note under the chips says it in words.
+ * The paid plans' mark on a moving design's chip: a crown (Erel 2026-11-04,
+ * "a crown or a diamond" in place of the plan's name). For the eye only: the
+ * chip keeps the design's name, and the note under the chips says it in words.
  */
-export const PlusMark: React.FC<{ on: boolean }> = ({ on }) => (
-  // dir="ltr": on a right-to-left page the plus would stand before the name.
-  <span aria-hidden="true" dir="ltr" className={`ms-1.5 rounded-full px-1.5 py-px text-[10px] font-semibold ${on ? 'bg-white/25 text-white' : 'bg-primary/10 text-primary'}`} data-testid="plus-mark">
-    {PLAN_NAMES.plus}
-  </span>
+export const PaidMark: React.FC<{ on: boolean }> = ({ on }) => (
+  <Crown
+    aria-hidden="true"
+    data-testid="paid-mark"
+    className={`ms-1.5 inline-block h-3.5 w-3.5 align-[-2px] ${on ? 'text-amber-200' : 'text-amber-500 dark:text-amber-400'}`}
+    fill="currentColor"
+    strokeWidth={1.5}
+  />
 );
 
 /** What the live site shows on the free plan; on the web, the way to the plans (in the app a fact only, LT-130). */
