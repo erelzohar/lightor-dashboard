@@ -23,6 +23,8 @@ vi.mock('../../hooks/useAppSelector', () => ({
 vi.mock('../../services/assistantApi', () => ({
   assistantService: { chat: vi.fn(), thread: vi.fn(async () => []), clear: vi.fn() },
 }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => vi.fn() }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: null as null } }) }));
 
 describe('the 3D Lighty failing to load (LT-315)', () => {
   it("leaves his page standing, with the still Lighty", async () => {

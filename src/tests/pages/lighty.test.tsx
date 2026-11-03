@@ -27,8 +27,11 @@ vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: { conversion: 'book' } } }),
 }));
 vi.mock('../../services/assistantApi', () => ({
-  assistantService: { chat: vi.fn(), thread: vi.fn(), clear: vi.fn(async () => undefined) },
+  assistantService: { chat: vi.fn(), thread: vi.fn(), clear: vi.fn(async () => undefined), confirm: vi.fn(), decline: vi.fn(), undo: vi.fn() },
 }));
+const { dispatch } = vi.hoisted(() => ({ dispatch: vi.fn() }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => dispatch }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'u1' } } }) }));
 vi.mock('../../lib/platform', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/platform')>()),
   isNativeApp: vi.fn(() => false),
@@ -254,5 +257,40 @@ describe("Lighty's text (LT-253)", () => {
     expect(link).toHaveAttribute('href', '/schedule-vacations');
     expect(link.closest('strong')).not.toBeNull();
     expect(screen.queryByText(/\]\(/)).toBeNull();
+  });
+  // LT-561: a change Lighty proposes comes as a card under his answer; the confirm updates it in place.
+  it('shows a proposed change as a card, and confirming it updates the card and the other pages\' data', async () => {
+    const pending = {
+      id: 'act1',
+      kind: 'appointment_cancel' as const,
+      card: { items: [{ customer: 'דנה', service: 'ג׳ל', date: '2026-11-10', time: '11:00' }], texts: 1, notes: [] as { key: string }[] },
+      status: 'pending' as const,
+      expiresAt: new Date(Date.now() + 600_000).toISOString(),
+    };
+    vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'הכנתי ביטול, אשרו בכרטיס.', actions: [pending] });
+    vi.mocked(assistantService.confirm).mockResolvedValue({ ...pending, status: 'done' });
+    dispatch.mockClear();
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('lighty.placeholder'), { target: { value: 'תבטל את דנה' } });
+    fireEvent.submit(screen.getByPlaceholderText('lighty.placeholder').closest('form')!);
+    const card = await screen.findByTestId('lighty-action');
+    expect(card).toHaveTextContent('lighty.action.title.cancelOne');
+    fireEvent.click(within(card).getByRole('button', { name: /lighty.action.confirm/ }));
+    expect(await within(card).findByText('lighty.action.done')).toBeInTheDocument();
+    expect(assistantService.confirm).toHaveBeenCalledWith('act1');
+    // The calendar is read again.
+    expect(dispatch).toHaveBeenCalled();
+  });
+
+  it('a card from the conversation so far shows as it ended', async () => {
+    vi.mocked(assistantService.thread).mockResolvedValue([
+      { role: 'user', content: 'תחסום את שישי' },
+      { role: 'assistant', content: 'הכנתי.', actions: [{ id: 'old', kind: 'vacation_add', card: { items: [{ title: 'חופש', from: '2026-11-13', to: '2026-11-13' }], texts: 0, notes: [] as { key: string }[] }, status: 'declined', expiresAt: new Date(Date.now() - 1000).toISOString() }] },
+    ]);
+    renderPage();
+    const card = await screen.findByTestId('lighty-action');
+    expect(card).toHaveTextContent('lighty.action.declined');
+    expect(within(card).queryByRole('button')).toBeNull();
   });
 });

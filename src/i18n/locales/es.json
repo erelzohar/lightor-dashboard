@@ -2134,7 +2134,7 @@
   },
   "lighty": {
     "hello": "¡Hola! Soy Lighty",
-    "intro": "Pregúntame por tus citas, tus horas libres, tus clientes y tus contactos.",
+    "intro": "Pregúntame por tus citas, tus horas libres, tus clientes y tus contactos, o pídeme que cambie cosas. Cada cambio ocurre solo después de que lo confirmes.",
     "subtitle": "Tu asistente inteligente",
     "thinking": "Lighty está pensando…",
     "placeholder": "Pregúntale a Lighty…",
@@ -2156,7 +2156,7 @@
       "week": "Resume mi semana",
       "leads": "¿Hay contactos sin atender?",
       "regulars": "¿Quiénes son mis clientes habituales?",
-      "howBlock": "¿Cómo bloqueo un día?",
+      "blockDay": "Bloquéame el próximo viernes",
       "month": "Resume mi mes",
       "services": "¿Cuáles son mis servicios y precios?",
       "howHours": "¿Cómo cambio mi horario?"
@@ -2164,6 +2164,62 @@
     "momentum": {
       "leads": "Las consultas suben un {{pct}}% respecto a la semana pasada ⚡",
       "income": "Los ingresos suben un {{pct}}% respecto a la semana pasada ⚡"
+    },
+    "action": {
+      "title": {
+        "vacation_add": "Añadir días libres",
+        "vacation_remove": "Quitar días libres",
+        "hours": "Cambiar el horario",
+        "booking_rules": "Cambiar las reglas de reserva",
+        "appointment_book": "Reservar una cita",
+        "appointment_move": "Cambiar una cita",
+        "cancelOne": "Cancelar una cita",
+        "cancelMany": "Cancelar {{count}} citas",
+        "completeOne": "Marcar una cita como hecha",
+        "completeMany": "Marcar {{count}} citas como hechas",
+        "leadStatusOne": "Cambiar el estado de un contacto",
+        "leadStatusMany": "Cambiar el estado de {{count}} contactos",
+        "lead_to_customer": "Añadir un contacto a los clientes",
+        "customer_note": "Añadir una nota a un cliente",
+        "block": "Bloquear a un cliente",
+        "unblock": "Desbloquear a un cliente"
+      },
+      "closed": "Cerrado",
+      "regular": "el horario habitual",
+      "anyTime": "en cualquier momento",
+      "oneHour": "1 hora",
+      "hoursN": "{{count}} horas",
+      "minutesN": "{{count}} minutos",
+      "oneDay": "1 día",
+      "daysN": "{{count}} días",
+      "cancelUntil": "Plazo de cancelación antes de la cita",
+      "bookAhead": "Reservar con antelación",
+      "reason": "Motivo: {{reason}}",
+      "textsNone": "No se envía ningún mensaje a los clientes.",
+      "textsOne": "El cliente recibe un mensaje por SMS o WhatsApp.",
+      "textsMany": "{{count}} clientes reciben un mensaje por SMS o WhatsApp.",
+      "note": {
+        "bookingsInside": "Las citas ya reservadas en ese tiempo se mantienen: {{count}}",
+        "outsideHours": "Esa hora está fuera del horario.",
+        "upcomingCancelled": "También se cancelan sus próximas citas: {{count}}",
+        "upcomingStay": "Sus próximas citas se mantienen: {{count}}"
+      },
+      "confirm": "Confirmar",
+      "decline": "No",
+      "done": "Hecho",
+      "donePartly": "Hecho en parte: {{count}} no se pudieron hacer",
+      "undo": "Deshacer",
+      "untold": "Clientes que no recibieron mensaje porque se agotaron los mensajes de hoy: {{count}}",
+      "declined": "No se confirmó y nada cambió.",
+      "expired": "Pasó el tiempo para confirmar y nada cambió. Puedes pedírselo a Lighty otra vez.",
+      "undone": "El cambio se deshizo.",
+      "failed": {
+        "changed": "No se hizo: algo cambió mientras tanto, por ejemplo la hora ya está ocupada. Puedes pedírselo a Lighty otra vez.",
+        "refused": "No se hizo: el sistema no permitió este cambio. Puedes hacerlo en su página.",
+        "gone": "No se hizo: ya no existe.",
+        "failed": "No se hizo: algo salió mal. Inténtalo de nuevo."
+      },
+      "sendFailed": "No se pudo enviar tu respuesta. Inténtalo de nuevo."
     }
   },
   "forgotPassword": {
@@ -2264,7 +2320,7 @@
     "lighty": {
       "input": {
         "title": "Pregúntame",
-        "body": "Escribe lo que quieras saber: qué tienes hoy, quiénes son tus clientes habituales, cuántas consultas llegaron."
+        "body": "Escribe lo que quieras saber o cambiar: qué tienes hoy, bloquear un día, cancelar o mover una cita. Un cambio ocurre solo después de que lo confirmes en su tarjeta."
       },
       "chips": {
         "title": "Preguntas listas",

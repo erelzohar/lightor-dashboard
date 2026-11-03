@@ -2134,7 +2134,7 @@
   },
   "lighty": {
     "hello": "Hi! I'm Lighty",
-    "intro": "Ask me about your appointments, free times, customers and leads.",
+    "intro": "Ask me about your appointments, free times, customers and leads, or ask me to change things. Every change happens only after you confirm it.",
     "subtitle": "Your smart assistant",
     "thinking": "Lighty is thinking…",
     "placeholder": "Ask Lighty…",
@@ -2156,7 +2156,7 @@
       "week": "Sum up my week",
       "leads": "Any leads I haven't handled?",
       "regulars": "Who are my regular customers?",
-      "howBlock": "How do I block a day?",
+      "blockDay": "Block this coming Friday for me",
       "month": "Sum up my month",
       "services": "What are my services and prices?",
       "howHours": "How do I change my hours?"
@@ -2164,6 +2164,62 @@
     "momentum": {
       "leads": "Inquiries are up {{pct}}% on last week ⚡",
       "income": "Income is up {{pct}}% on last week ⚡"
+    },
+    "action": {
+      "title": {
+        "vacation_add": "Add days off",
+        "vacation_remove": "Remove days off",
+        "hours": "Change the opening hours",
+        "booking_rules": "Change the booking rules",
+        "appointment_book": "Book an appointment",
+        "appointment_move": "Change an appointment",
+        "cancelOne": "Cancel an appointment",
+        "cancelMany": "Cancel {{count}} appointments",
+        "completeOne": "Mark an appointment done",
+        "completeMany": "Mark {{count}} appointments done",
+        "leadStatusOne": "Change a lead's status",
+        "leadStatusMany": "Change the status of {{count}} leads",
+        "lead_to_customer": "Add a lead to the customers",
+        "customer_note": "Add a note to a customer",
+        "block": "Block a customer",
+        "unblock": "Unblock a customer"
+      },
+      "closed": "Closed",
+      "regular": "the regular hours",
+      "anyTime": "any time",
+      "oneHour": "1 hour",
+      "hoursN": "{{count}} hours",
+      "minutesN": "{{count}} minutes",
+      "oneDay": "1 day",
+      "daysN": "{{count}} days",
+      "cancelUntil": "Cancellation window before the appointment",
+      "bookAhead": "Booking ahead",
+      "reason": "Reason: {{reason}}",
+      "textsNone": "No message is sent to customers.",
+      "textsOne": "The customer gets a message about it by SMS or WhatsApp.",
+      "textsMany": "{{count}} customers get a message about it by SMS or WhatsApp.",
+      "note": {
+        "bookingsInside": "Appointments already booked in this time stay: {{count}}",
+        "outsideHours": "This time is outside the opening hours.",
+        "upcomingCancelled": "Their upcoming appointments are cancelled too: {{count}}",
+        "upcomingStay": "Their upcoming appointments stay: {{count}}"
+      },
+      "confirm": "Confirm",
+      "decline": "No",
+      "done": "Done",
+      "donePartly": "Partly done: {{count}} could not be done",
+      "undo": "Undo",
+      "untold": "Customers who got no message, because today's messages are used up: {{count}}",
+      "declined": "Not confirmed, and nothing changed.",
+      "expired": "The time to confirm has passed, and nothing changed. You can ask Lighty again.",
+      "undone": "The change was undone.",
+      "failed": {
+        "changed": "Not done: something changed meanwhile, such as the time being taken. You can ask Lighty again.",
+        "refused": "Not done: the system did not allow this change. You can make it on its page.",
+        "gone": "Not done: it no longer exists.",
+        "failed": "Not done: something went wrong. Please try again."
+      },
+      "sendFailed": "Your answer could not be sent. Please try again."
     }
   },
   "forgotPassword": {
@@ -2264,7 +2320,7 @@
     "lighty": {
       "input": {
         "title": "Ask me",
-        "body": "Write what you'd like to know: what's on today, who your regulars are, how many inquiries came in."
+        "body": "Write what you'd like to know or change: what's on today, blocking a day, cancelling or moving an appointment. A change happens only after you confirm it on its card."
       },
       "chips": {
         "title": "Ready questions",

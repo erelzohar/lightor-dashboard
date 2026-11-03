@@ -2134,7 +2134,7 @@
   },
   "lighty": {
     "hello": "Salut ! Je suis Lighty",
-    "intro": "Posez-moi vos questions sur vos rendez-vous, vos créneaux libres, vos clients et vos demandes.",
+    "intro": "Posez-moi vos questions sur vos rendez-vous, vos créneaux libres, vos clients et vos demandes, ou demandez-moi de changer des choses. Chaque changement n’a lieu qu’après votre confirmation.",
     "subtitle": "Votre assistant intelligent",
     "thinking": "Lighty réfléchit…",
     "placeholder": "Demandez à Lighty…",
@@ -2156,7 +2156,7 @@
       "week": "Résume ma semaine",
       "leads": "Des demandes non traitées ?",
       "regulars": "Qui sont mes clients réguliers ?",
-      "howBlock": "Comment bloquer une journée ?",
+      "blockDay": "Bloque-moi vendredi prochain",
       "month": "Résume mon mois",
       "services": "Quels sont mes services et tarifs ?",
       "howHours": "Comment changer mes horaires ?"
@@ -2164,6 +2164,62 @@
     "momentum": {
       "leads": "Les demandes sont en hausse de {{pct}}% par rapport à la semaine dernière ⚡",
       "income": "Les revenus sont en hausse de {{pct}}% par rapport à la semaine dernière ⚡"
+    },
+    "action": {
+      "title": {
+        "vacation_add": "Ajouter des jours de congé",
+        "vacation_remove": "Retirer des jours de congé",
+        "hours": "Changer les horaires",
+        "booking_rules": "Changer les règles de réservation",
+        "appointment_book": "Prendre un rendez-vous",
+        "appointment_move": "Modifier un rendez-vous",
+        "cancelOne": "Annuler un rendez-vous",
+        "cancelMany": "Annuler {{count}} rendez-vous",
+        "completeOne": "Marquer un rendez-vous comme fait",
+        "completeMany": "Marquer {{count}} rendez-vous comme faits",
+        "leadStatusOne": "Changer le statut d’une demande",
+        "leadStatusMany": "Changer le statut de {{count}} demandes",
+        "lead_to_customer": "Ajouter une demande aux clients",
+        "customer_note": "Ajouter une note à un client",
+        "block": "Bloquer un client",
+        "unblock": "Débloquer un client"
+      },
+      "closed": "Fermé",
+      "regular": "les horaires habituels",
+      "anyTime": "à tout moment",
+      "oneHour": "1 heure",
+      "hoursN": "{{count}} heures",
+      "minutesN": "{{count}} minutes",
+      "oneDay": "1 jour",
+      "daysN": "{{count}} jours",
+      "cancelUntil": "Délai d’annulation avant le rendez-vous",
+      "bookAhead": "Réservation à l’avance",
+      "reason": "Motif : {{reason}}",
+      "textsNone": "Aucun message n’est envoyé aux clients.",
+      "textsOne": "Le client reçoit un message par SMS ou WhatsApp.",
+      "textsMany": "{{count}} clients reçoivent un message par SMS ou WhatsApp.",
+      "note": {
+        "bookingsInside": "Les rendez-vous déjà pris pendant ce temps restent : {{count}}",
+        "outsideHours": "Cette heure est en dehors des horaires.",
+        "upcomingCancelled": "Ses prochains rendez-vous sont aussi annulés : {{count}}",
+        "upcomingStay": "Ses prochains rendez-vous restent : {{count}}"
+      },
+      "confirm": "Confirmer",
+      "decline": "Non",
+      "done": "Fait",
+      "donePartly": "Fait en partie : {{count}} n’ont pas pu être faits",
+      "undo": "Annuler le changement",
+      "untold": "Clients sans message, car les messages du jour sont épuisés : {{count}}",
+      "declined": "Non confirmé, rien n’a changé.",
+      "expired": "Le délai de confirmation est passé, rien n’a changé. Vous pouvez redemander à Lighty.",
+      "undone": "Le changement a été annulé.",
+      "failed": {
+        "changed": "Non fait : quelque chose a changé entre-temps, par exemple l’heure a été prise. Vous pouvez redemander à Lighty.",
+        "refused": "Non fait : le système n’a pas permis ce changement. Vous pouvez le faire sur sa page.",
+        "gone": "Non fait : cela n’existe plus.",
+        "failed": "Non fait : un problème est survenu. Réessayez."
+      },
+      "sendFailed": "Votre réponse n’a pas pu être envoyée. Réessayez."
     }
   },
   "forgotPassword": {
@@ -2264,7 +2320,7 @@
     "lighty": {
       "input": {
         "title": "Demandez-moi",
-        "body": "Écrivez ce que vous voulez savoir : votre journée, vos clients fidèles, le nombre de demandes."
+        "body": "Écrivez ce que vous voulez savoir ou changer : votre journée, bloquer un jour, annuler ou déplacer un rendez-vous. Un changement n’a lieu qu’après votre confirmation sur sa carte."
       },
       "chips": {
         "title": "Questions prêtes",

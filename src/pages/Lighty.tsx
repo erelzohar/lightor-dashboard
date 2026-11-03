@@ -3,10 +3,16 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
 import { Palette, RotateCcw } from 'lucide-react';
-import { assistantService, type LightyTurn } from '../services/assistantApi';
+import { assistantService, type LightyAction, type LightyTurn } from '../services/assistantApi';
 import { isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchWebConfig } from '../store/slices/webConfigSlice';
+import { fetchVacations } from '../store/slices/vacationsSlice';
+import { fetchAppointments } from '../store/slices/appointmentsSlice';
+import { LightyActionCard } from '../components/lighty/LightyActionCard';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
 import { LightyBubble, LightyThreadLoading, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
@@ -25,7 +31,7 @@ const StillLighty: React.FC<{ className?: string }> = ({ className = '' }) => (
 );
 const Lighty3D = lazyOr(() => import('../components/lighty/Lighty3D'), StillLighty);
 
-const BOOKING_SUGGESTIONS = ['today', 'tomorrowFree', 'week', 'leads', 'regulars', 'howBlock'] as const;
+const BOOKING_SUGGESTIONS = ['today', 'tomorrowFree', 'week', 'leads', 'regulars', 'blockDay'] as const;
 const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;
 
 /**
@@ -35,7 +41,9 @@ const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;
  * big and waving on an empty conversation, small once it starts; he runs
  * while he thinks (LT-258) and cheers when an answer lands. A website
  * request comes back with a button to the site editor; a question typed into
- * the floating Lighty arrives here and is sent at once.
+ * the floating Lighty arrives here and is sent at once. LT-561: a change he
+ * proposes comes as a card under his answer, done only on the owner's
+ * confirm; what it changed is read again for the other pages.
  */
 const LightyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -46,6 +54,9 @@ const LightyPage: React.FC = () => {
   const location = useLocation();
   const keyboardOpen = useVirtualKeyboard();
   const webConfig = useAppSelector((state) => state.webConfig.data);
+  const { auth } = useAuth();
+  const userId = auth.user?._id;
+  const dispatch = useAppDispatch();
   const suggestions = isLeadsSite(webConfig) ? LEADS_SUGGESTIONS : BOOKING_SUGGESTIONS;
 
   const [turns, setTurns] = useState<LightyTurn[]>([]);
@@ -111,8 +122,8 @@ const LightyPage: React.FC = () => {
     setTurns((all) => [...all, { role: 'user', content: ask }]);
     setBusy(true);
     try {
-      const { reply, handoff } = await assistantService.chat(ask);
-      const answer: LightyTurn = { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}) };
+      const { reply, handoff, actions } = await assistantService.chat(ask);
+      const answer: LightyTurn = { role: 'assistant', content: reply, ...(handoff ? { handoff } : {}), ...(actions?.length ? { actions } : {}) };
       setTurns((all) => [...all, answer]);
       setFreshTurn(answer);
       lightTick();
@@ -134,6 +145,19 @@ const LightyPage: React.FC = () => {
     void send(initial);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial, loaded]);
+
+  // A card's new state in its turn; a change done or undone is read again for the other pages.
+  const updateAction = (next: LightyAction) => {
+    setTurns((all) => all.map((turn) => (turn.actions?.some((a) => a.id === next.id)
+      ? { ...turn, actions: turn.actions.map((a) => (a.id === next.id ? next : a)) }
+      : turn)));
+    if (next.status !== 'done' && next.status !== 'undone') return;
+    if (['vacation_add', 'vacation_remove', 'hours', 'booking_rules'].includes(next.kind) && webConfig?._id) void dispatch(fetchWebConfig(webConfig._id));
+    if (next.kind === 'vacation_add' || next.kind === 'vacation_remove') void dispatch(fetchVacations());
+    if (next.kind.startsWith('appointment_') || next.kind === 'customer_block') {
+      if (userId) void dispatch(fetchAppointments({ user_id: userId, limit: 5000 }));
+    }
+  };
 
   const clear = async () => {
     setTurns([]);
@@ -200,7 +224,8 @@ const LightyPage: React.FC = () => {
         {turns.map((turn, i) => turn.role === 'user' ? (
           <OwnerBubble key={i}>{turn.content}</OwnerBubble>
         ) : (
-          <LightyBubble key={i}>
+          <React.Fragment key={i}>
+          <LightyBubble>
             <LightyTyped text={turn.content} animate={turn === freshTurn} onType={scrollToEnd} />
             {turn.handoff && (
               <button
@@ -213,6 +238,12 @@ const LightyPage: React.FC = () => {
               </button>
             )}
           </LightyBubble>
+          {turn.actions?.map((action) => (
+            <div key={action.id} className="ms-10 max-w-[85%]">
+              <LightyActionCard action={action} onChange={updateAction} />
+            </div>
+          ))}
+          </React.Fragment>
         ))}
         {busy && <LightyTyping />}
         {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>}
