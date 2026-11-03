@@ -381,7 +381,8 @@ const ProductEditor: React.FC<{
               <Trash2 className="h-4 w-4" /> {t('products.delete')}
             </button>
           ) : <span />}
-          <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+          {/* LT-568: not while Lighty still makes the product's picture - it would be saved without it. */}
+          <button type="button" onClick={save} disabled={saving || creating} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('products.save')}
           </button>

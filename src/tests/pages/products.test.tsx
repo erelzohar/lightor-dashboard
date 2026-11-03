@@ -198,11 +198,14 @@ describe('a product from a few words (LT-568)', () => {
     const dialog = await openNew();
     fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a vanilla candle in a jar' } });
     fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    // No saving before the picture is in: it would be saved without it.
+    expect((within(dialog).getByText('products.save').closest('button') as HTMLButtonElement).disabled).toBe(true);
     await waitFor(() => expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Vanilla candle'));
     expect(aiService.draftProductFromText).toHaveBeenCalledWith('a vanilla candle in a jar', 'he');
     await waitFor(() => expect(aiService.createImage).toHaveBeenCalledWith('A candle in a glass jar, plain background', '4:3'));
     // The thumbnails carry an empty alt (the form names them), so they are found as elements.
     await waitFor(() => expect([...dialog.querySelectorAll('img')].some((img) => img.getAttribute('src')?.endsWith('/temp/t1.webp'))).toBe(true));
+    await waitFor(() => expect((within(dialog).getByText('products.save').closest('button') as HTMLButtonElement).disabled).toBe(false));
     expect((within(dialog).getByLabelText('products.fieldDescription') as HTMLTextAreaElement).value).toBe('Full words');
     fireEvent.click(within(dialog).getByText('products.save'));
     await waitFor(() => expect(createProduct).toHaveBeenCalled());
