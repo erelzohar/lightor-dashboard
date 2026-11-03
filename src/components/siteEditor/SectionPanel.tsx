@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, ShoppingBag, Trash2, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -5,9 +6,9 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, MOTION_BACKGROUNDS, OWN_BACKDROP_HEROES, blockLookOf, heroBackgroundOf, movesOnPaidPlans, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, FREE_DEFAULTS, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, PAID_BACKGROUNDS, blockLookOf, heroBackgroundOf, isPaidDesign, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
 import { canOfferPurchases } from '../../lib/platform';
-import { MotionNote, PaidMark, useMotionHeld } from './MotionPlan';
+import { PaidMark, PaidNote, usePaidDesignsHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
@@ -55,17 +56,21 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
   const block = blockById(config, section);
   const composed = !!block && !def.outsideBlocks;
   const design = (getAt(config, 'design') ?? {}) as Record<string, unknown>;
-  // LT-570: on the free plan the moving designs stand still on the live site.
-  // In the app (nothing is sold there, LT-130) one is offered only as the current pick.
-  const held = useMotionHeld();
+  // LT-570: a plan without the paid designs (the free one) shows each one's
+  // section default, so the lit chip is that one, as on the site; a paid
+  // design tapped there is not put on the site, its note says where it is.
+  // In the app (nothing is sold there, LT-130) that plan is not offered them.
+  const held = usePaidDesignsHeld();
   const sells = canOfferPurchases();
-  const offered = (moving: boolean, selected: boolean) => selected || !moving || !held || sells;
-  const marked = (moving: boolean) => moving && (!held || sells);
+  const offered = (paid: boolean) => !paid || !held || sells;
+  const marked = (paid: boolean) => paid && (!held || sells);
+  const [asked, setAsked] = useState<string | null>(null);
 
   // The look the site draws (LT-573), so the lit chip is the one on screen.
-  const current: string | undefined = composed
+  const drawn: string | undefined = composed
     ? blockLookOf(type, block?.variant, design)
     : def.designToken ? ((design[def.designToken] as string | undefined) ?? DEFAULT_VARIANT[type]) : undefined;
+  const current = held && isPaidDesign(type, drawn) ? FREE_DEFAULTS[type] : drawn;
 
   const setVariant = (value: string) => {
     if (composed && block) {
@@ -156,16 +161,27 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.layout')}</p>
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.layout')}>
-            {def.variants.filter((v) => offered(movesOnPaidPlans(type, v), current === v)).map((v) => (
-              <button key={v} type="button" role="radio" aria-checked={current === v} className={chip(current === v)} onClick={() => setVariant(v)}>
+            {def.variants.filter((v) => offered(isPaidDesign(type, v))).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={current === v}
+                className={chip(current === v)}
+                onClick={() => {
+                  if (held && isPaidDesign(type, v)) return setAsked(v);
+                  setAsked(null);
+                  setVariant(v);
+                }}
+              >
                 {optionLabel(LAYOUTS, v, lang)}
-                {marked(movesOnPaidPlans(type, v)) && <PaidMark on={current === v} />}
+                {marked(isPaidDesign(type, v)) && <PaidMark on={current === v} />}
               </button>
             ))}
           </div>
-          {held && movesOnPaidPlans(type, current) && (
+          {asked && isPaidDesign(type, asked) && (
             <div className="mt-2">
-              <MotionNote text={t(current === 'curve' ? 'siteEditor.motion.curveNote' : 'siteEditor.motion.stillNote')} />
+              <PaidNote />
             </div>
           )}
         </div>
@@ -181,10 +197,14 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.heroBackground')}>
             {HERO_BACKGROUNDS.map((v) => {
               const decor = getAt(config, 'design.decor');
-              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType'), decor) === v;
-              if (!offered(MOTION_BACKGROUNDS.includes(v), on)) return null;
+              // LT-570: a paid backdrop on the free plan shows the hero's own background.
+              const shown = held && PAID_BACKGROUNDS.includes(String(decor)) ? 'none' : decor;
+              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType'), shown) === v;
+              if (!offered(PAID_BACKGROUNDS.includes(v))) return null;
               // LT-531: the two that live in design.decor, and the others clear them.
               const pick = () => {
+                if (held && PAID_BACKGROUNDS.includes(v)) return setAsked(v);
+                setAsked(null);
                 if (DECOR_BACKGROUNDS.includes(v)) return onUpdate(setAt(config, 'design.decor', v));
                 const plain = DECOR_BACKGROUNDS.includes(String(decor)) ? setAt(config, 'design.decor', 'none') : config;
                 return onUpdate(setAt(plain, 'components.hero.bgType', v));
@@ -192,14 +212,14 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
               return (
                 <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={pick}>
                   {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
-                  {marked(MOTION_BACKGROUNDS.includes(v)) && <PaidMark on={on} />}
+                  {marked(PAID_BACKGROUNDS.includes(v)) && <PaidMark on={on} />}
                 </button>
               );
             })}
           </div>
-          {held && MOTION_BACKGROUNDS.includes(heroBackgroundOf(getAt(config, 'components.hero.bgType'), getAt(config, 'design.decor'))) && (
+          {asked && PAID_BACKGROUNDS.includes(asked) && (
             <div className="mt-2">
-              <MotionNote text={t('siteEditor.motion.stillNote')} />
+              <PaidNote />
             </div>
           )}
         </div>

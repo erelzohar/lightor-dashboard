@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Crown, Pause } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
@@ -7,10 +7,11 @@ import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { canOfferPurchases } from '../../lib/platform';
 
 /**
- * LT-570: whether the owner's plan holds the moving designs still on the live
- * site (the free plan). False until the answer comes, and on an older API.
+ * LT-570: whether the owner's plan is without the paid designs (the free
+ * one), whose site shows their sections' defaults. False until the answer
+ * comes, and on an older API.
  */
-export const useMotionHeld = (): boolean => {
+export const usePaidDesignsHeld = (): boolean => {
   const [held, setHeld] = useState(false);
   useEffect(() => {
     let alive = true;
@@ -23,9 +24,9 @@ export const useMotionHeld = (): boolean => {
 };
 
 /**
- * The paid plans' mark on a moving design's chip: a crown (Erel 2026-11-04,
- * "a crown or a diamond" in place of the plan's name). For the eye only: the
- * chip keeps the design's name, and the note under the chips says it in words.
+ * The paid designs' mark on a chip: a crown (Erel 2026-11-04, "a crown or a
+ * diamond" in place of the plan's name). For the eye only: the chip keeps the
+ * design's name, and the note under the chips says it in words.
  */
 export const PaidMark: React.FC<{ on: boolean }> = ({ on }) => (
   <Crown
@@ -37,17 +38,17 @@ export const PaidMark: React.FC<{ on: boolean }> = ({ on }) => (
   />
 );
 
-/** What the live site shows on the free plan; on the web, the way to the plans (in the app a fact only, LT-130). */
-export const MotionNote: React.FC<{ text: string; testId?: string }> = ({ text, testId = 'motion-note' }) => {
+/** A paid design, tapped on the free plan: where it is, and the way to the plans. Never in the app (LT-130). */
+export const PaidNote: React.FC = () => {
   const { t } = useTranslation();
   const { guardLinkClick } = useLeaveGuard();
   return (
-    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-primary/20 bg-primary/5 p-3 text-xs text-gray-600 dark:text-slate-300" data-testid={testId}>
-      <Pause className="w-3.5 h-3.5 shrink-0 text-primary" aria-hidden="true" />
-      <span>{text}</span>
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-amber-300/60 bg-amber-50 p-3 text-xs text-gray-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-slate-200" data-testid="paid-note" role="status">
+      <Crown className="w-3.5 h-3.5 shrink-0 text-amber-500 dark:text-amber-400" fill="currentColor" strokeWidth={1.5} aria-hidden="true" />
+      <span>{t('siteEditor.paidDesign.note')}</span>
       {canOfferPurchases() && (
         <Link to="/account" onClick={(e) => guardLinkClick(e, '/account')} className="font-medium text-primary underline">
-          {t('siteEditor.motion.upgrade')}
+          {t('siteEditor.paidDesign.upgrade')}
         </Link>
       )}
     </p>

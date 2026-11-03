@@ -2149,11 +2149,9 @@
       "contentHint": "Las fotos, el precio y la descripción de cada producto se editan en la página Productos."
     },
     "liveSiteHint": "Tu sitio publicado, tal como se guardó. Se abre en una pestaña nueva.",
-    "motion": {
-      "stillNote": "En el plan gratuito este diseño se ve en tu sitio sin movimiento.",
-      "curveNote": "En el plan gratuito esta galería se ve en tu sitio como mosaico.",
-      "notice": "Tu sitio tiene diseños con movimiento: {{designs}}. En el plan gratuito se ven en tu sitio sin movimiento.",
-      "upgrade": "Mejora tu plan para recuperar el movimiento"
+    "paidDesign": {
+      "note": "Este diseño es parte de los planes Lightor+ y Lightor Pro.",
+      "upgrade": "Mejorar plan"
     }
   },
   "lighty": {

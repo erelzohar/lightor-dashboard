@@ -156,6 +156,24 @@ describe('the site editor (LT-249)', () => {
     expect(state.webConfig.data).not.toHaveProperty('assistant');
   });
 
+  it('tells the preview of a free plan to show the sections\' defaults for the paid designs (LT-570)', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValue({ plan: 'free', limits: { motionDesigns: false } } as never);
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await waitFor(() => expect((lastPosted('PREVIEW_DATA')?.[0] as { config: { motion?: boolean } } | undefined)?.config.motion).toBe(false));
+    expect(state.webConfig.data).not.toHaveProperty('motion');
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(null);
+  });
+
+  it('sends no such word for a plan with them', async () => {
+    vi.mocked(fetchMyEntitlements).mockResolvedValue({ plan: 'plus', limits: { motionDesigns: true } } as never);
+    renderEditor();
+    await fromSite({ type: 'LT_READY' });
+    await waitFor(() => expect((lastPosted('PREVIEW_DATA')?.[0] as { config: { assistant?: boolean } } | undefined)?.config.assistant).toBe(true));
+    expect((lastPosted('PREVIEW_DATA')?.[0] as { config: { motion?: boolean } }).config.motion).toBeUndefined();
+    vi.mocked(fetchMyEntitlements).mockResolvedValue(null);
+  });
+
   it('a click on the site opens the field; typing updates the draft and the preview; undo takes it back', async () => {
     renderEditor();
     await fromSite({ type: 'LT_READY' });

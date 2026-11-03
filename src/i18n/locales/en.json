@@ -2149,11 +2149,9 @@
       "contentHint": "Each product's pictures, price and description are edited on the Products page."
     },
     "liveSiteHint": "Your live site, as last saved. Opens in a new tab.",
-    "motion": {
-      "stillNote": "On the free plan this design shows on your site without motion.",
-      "curveNote": "On the free plan this gallery shows on your site as a masonry.",
-      "notice": "Your site has designs that move: {{designs}}. On the free plan they show on your site without motion.",
-      "upgrade": "Upgrade to bring the motion back"
+    "paidDesign": {
+      "note": "This design is part of the Lightor+ and Lightor Pro plans.",
+      "upgrade": "Upgrade"
     }
   },
   "lighty": {

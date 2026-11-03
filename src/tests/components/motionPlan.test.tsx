@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import SectionPanel from '../../components/siteEditor/SectionPanel';
-import PagePanel from '../../components/siteEditor/PagePanel';
-import { motionDesignsOf } from '../../utils/editorOptions';
+import { FREE_DEFAULTS, PAID_LAYOUTS, isPaidDesign } from '../../utils/editorOptions';
 
 const { t, plan, app } = vi.hoisted(() => ({
-  t: (k: string, o?: Record<string, unknown>) => (o ? `${k} ${JSON.stringify(o)}` : k),
+  t: (k: string) => k,
   plan: { motionDesigns: false as boolean | undefined },
   app: { native: false },
 }));
@@ -16,133 +15,119 @@ vi.mock('react-i18next', () => ({
 }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'en', direction: 'ltr', isDarkMode: false }) }));
 vi.mock('../../services/entitlementsApi', () => ({
-  fetchMyEntitlements: () => Promise.resolve({ plan: 'free', limits: { motionDesigns: plan.motionDesigns, aiTokensPerMonth: null }, usage: {} }),
+  fetchMyEntitlements: () => Promise.resolve({ plan: 'free', limits: { motionDesigns: plan.motionDesigns }, usage: {} }),
 }));
 vi.mock('../../lib/platform', async (orig) => ({ ...(await orig<typeof import('../../lib/platform')>()), canOfferPurchases: () => !app.native }));
-vi.mock('../../components/siteEditor/SiteChat', () => ({ default: (): null => null }));
 
 beforeEach(() => {
   plan.motionDesigns = false;
   app.native = false;
 });
 
-const panel = (config: object, section: string, sectionType: string) => render(
-  <MemoryRouter>
-    <SectionPanel config={config} section={section} sectionType={sectionType} fields={[]} onUpdate={vi.fn()} onSelectField={vi.fn()} />
-  </MemoryRouter>
-);
+const panel = (config: object, section: string, sectionType: string, onUpdate = vi.fn()) => {
+  render(
+    <MemoryRouter>
+      <SectionPanel config={config} section={section} sectionType={sectionType} fields={[]} onUpdate={onUpdate} onSelectField={vi.fn()} />
+    </MemoryRouter>
+  );
+  return onUpdate;
+};
 const shelf = (variant: string) => ({ design: {}, blocks: [{ id: 'p1', type: 'products', variant }] });
 const layouts = () => screen.getByRole('radiogroup', { name: 'siteEditor.section.layout' });
-const marked = (name: string) => !!within(layouts()).getByRole('radio', { name }).querySelector('[data-testid="paid-mark"]');
+const chipOf = (name: string) => within(layouts()).getByRole('radio', { name });
+const crowned = (name: string) => !!chipOf(name).querySelector('[data-testid="paid-mark"]');
+// The plan arrives a moment after the panel draws.
+const settled = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
-describe('the moving designs a site draws (LT-570)', () => {
-  it('reads them as the live site does: a shown block\'s variant, else the design\'s own', () => {
-    expect(motionDesignsOf({
-      design: { portfolioLayout: 'cascade', decor: 'sonar' },
-      blocks: [
-        { type: 'hero', variant: 'parallax' },
-        { type: 'gallery' },
-        { type: 'products', variant: 'belt' },
-        { type: 'gallery', variant: 'curve', mod: { hidden: true } },
-      ],
-    })).toEqual(['parallax', 'cascade', 'belt']);
-  });
-
-  it('counts a backdrop only where the hero draws one', () => {
-    expect(motionDesignsOf({ design: { decor: 'metal' }, blocks: [{ type: 'hero', variant: 'centered' }] })).toEqual(['metal']);
-    expect(motionDesignsOf({ design: { decor: 'metal' }, blocks: [{ type: 'hero', variant: 'expand' }] })).toEqual(['expand']);
-  });
-
-  it('reads a page from before the blocks by its design', () => {
-    expect(motionDesignsOf({ design: { heroLayout: 'expand', portfolioLayout: 'clothesline', productsLayout: 'hanger' } })).toEqual(['expand', 'clothesline', 'hanger']);
-    expect(motionDesignsOf({ design: { heroLayout: 'split', portfolioLayout: 'grid' } })).toEqual([]);
+describe('the paid designs (LT-570)', () => {
+  it('give way to one default per section, which is never paid itself', () => {
+    expect(FREE_DEFAULTS).toEqual({ hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well' });
+    for (const [section, paid] of Object.entries(PAID_LAYOUTS)) {
+      expect(paid.length).toBeGreaterThan(0);
+      expect(isPaidDesign(section, FREE_DEFAULTS[section])).toBe(false);
+    }
   });
 });
 
 describe('the section panel on the free plan', () => {
-  it('marks the moving layouts and says what the live site shows, with the way to the plans', async () => {
+  it('lights the design the site shows, and crowns the paid ones', async () => {
     panel(shelf('belt'), 'p1', 'products');
-    const note = await screen.findByTestId('motion-note');
-    expect(note).toHaveTextContent('siteEditor.motion.stillNote');
-    expect(within(note).getByRole('link', { name: 'siteEditor.motion.upgrade' })).toHaveAttribute('href', '/account');
-    expect(marked('Conveyor')).toBe(true);
-    expect(marked('Clothes rail')).toBe(true);
-    expect(marked('Coverflow')).toBe(true);
-    expect(marked('Quiet tiles')).toBe(false);
+    await settled();
+    expect(chipOf('Quiet tiles')).toHaveAttribute('aria-checked', 'true');
+    expect(chipOf('Conveyor')).toHaveAttribute('aria-checked', 'false');
+    expect(crowned('Conveyor')).toBe(true);
+    expect(crowned('Clothes rail')).toBe(true);
+    expect(crowned('Coverflow')).toBe(true);
+    expect(crowned('Quiet tiles')).toBe(false);
   });
 
-  it('says the curve shows as a masonry', async () => {
+  it('does not put a paid design on the site: it says where it is, with the way to the plans', async () => {
+    const onUpdate = panel(shelf('list'), 'p1', 'products');
+    await settled();
+    expect(screen.queryByTestId('paid-note')).toBeNull();
+    fireEvent.click(chipOf('Clothes rail'));
+    expect(onUpdate).not.toHaveBeenCalled();
+    const note = screen.getByTestId('paid-note');
+    expect(note).toHaveTextContent('siteEditor.paidDesign.note');
+    expect(within(note).getByRole('link', { name: 'siteEditor.paidDesign.upgrade' })).toHaveAttribute('href', '/account');
+    // A design of the plan goes on as ever, and the note goes.
+    fireEvent.click(chipOf('Bento'));
+    expect(onUpdate).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('paid-note')).toBeNull();
+  });
+
+  it('lights the masonry for a curve, and the full image for an opening hero', async () => {
     panel({ design: {}, blocks: [{ id: 'g1', type: 'gallery', variant: 'curve' }] }, 'g1', 'gallery');
-    expect(await screen.findByTestId('motion-note')).toHaveTextContent('siteEditor.motion.curveNote');
+    await settled();
+    expect(chipOf('Masonry')).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('says nothing under a still layout', async () => {
-    panel(shelf('list'), 'p1', 'products');
-    await screen.findAllByTestId('paid-mark');
-    expect(screen.queryByTestId('motion-note')).toBeNull();
-  });
-
-  it('marks the two moving backdrops and speaks of the one in use', async () => {
-    panel({ design: { decor: 'sonar' }, components: { hero: { visible: true } } }, 'hero', 'hero');
+  it('shows the hero\'s own background for a paid backdrop, and holds the paid ones back', async () => {
+    const onUpdate = panel({ design: { decor: 'sonar' }, components: { hero: { visible: true, bgType: 'clouds' } } }, 'hero', 'hero');
+    await settled();
     const group = screen.getByRole('radiogroup', { name: 'siteEditor.section.heroBackground' });
-    expect(await screen.findByTestId('motion-note')).toHaveTextContent('siteEditor.motion.stillNote');
-    expect(within(group).getByRole('radio', { name: 'Sonar' }).querySelector('[data-testid="paid-mark"]')).not.toBeNull();
-    expect(within(group).getByRole('radio', { name: 'Liquid metal' }).querySelector('[data-testid="paid-mark"]')).not.toBeNull();
-    expect(within(group).getByRole('radio', { name: 'Fog' }).querySelector('[data-testid="paid-mark"]')).toBeNull();
+    expect(within(group).getByRole('radio', { name: 'Clouds' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(group).getByRole('radio', { name: 'Sonar' })).toHaveAttribute('aria-checked', 'false');
+    fireEvent.click(within(group).getByRole('radio', { name: 'Liquid metal' }));
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(screen.getByTestId('paid-note')).toBeTruthy();
   });
 
-  it('in the app offers none it holds still but the current pick, unmarked, and sells nothing', async () => {
+  it('in the app offers no paid design, marks nothing and sells nothing', async () => {
     app.native = true;
     panel(shelf('belt'), 'p1', 'products');
-    const note = await screen.findByTestId('motion-note');
-    expect(within(note).queryByRole('link')).toBeNull();
+    await settled();
+    expect(within(layouts()).queryByRole('radio', { name: 'Conveyor' })).toBeNull();
     expect(within(layouts()).queryByRole('radio', { name: 'Clothes rail' })).toBeNull();
-    expect(within(layouts()).queryByRole('radio', { name: 'Coverflow' })).toBeNull();
-    expect(marked('Conveyor')).toBe(false);
-    expect(within(layouts()).getByRole('radio', { name: 'Quiet tiles' })).toBeTruthy();
+    expect(chipOf('Quiet tiles')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.queryByTestId('paid-mark')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'siteEditor.paidDesign.upgrade' })).toBeNull();
   });
 });
 
-describe('on a plan with motion', () => {
-  it('marks the moving layouts and says nothing more', async () => {
+describe('on a plan with the paid designs', () => {
+  it('crowns them and puts them on like any other', async () => {
+    plan.motionDesigns = true;
+    const onUpdate = panel(shelf('list'), 'p1', 'products');
+    await settled();
+    expect(crowned('Conveyor')).toBe(true);
+    fireEvent.click(chipOf('Conveyor'));
+    expect(onUpdate).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('paid-note')).toBeNull();
+  });
+
+  it('lights the paid design the site has', async () => {
     plan.motionDesigns = true;
     panel(shelf('belt'), 'p1', 'products');
-    await screen.findAllByTestId('paid-mark');
-    expect(marked('Conveyor')).toBe(true);
-    await new Promise((r) => setTimeout(r, 0));
-    expect(screen.queryByTestId('motion-note')).toBeNull();
+    await settled();
+    expect(chipOf('Conveyor')).toHaveAttribute('aria-checked', 'true');
   });
 
   it('keeps them all in the app', async () => {
     plan.motionDesigns = true;
     app.native = true;
     panel(shelf('belt'), 'p1', 'products');
-    await new Promise((r) => setTimeout(r, 0));
+    await settled();
     expect(within(layouts()).getByRole('radio', { name: 'Coverflow' })).toBeTruthy();
-  });
-});
-
-describe('the page panel', () => {
-  const page = (config: object) => render(<MemoryRouter><PagePanel config={config} onUpdate={vi.fn()} /></MemoryRouter>);
-  const festive = { design: { stylePreset: 'festive', decor: 'metal' }, blocks: [{ id: 'h', type: 'hero', variant: 'centered' }, { id: 'p', type: 'products', variant: 'belt' }] };
-
-  it('names the site\'s moving designs on the free plan', async () => {
-    page(festive);
-    const notice = await screen.findByTestId('motion-notice');
-    expect(notice).toHaveTextContent('siteEditor.motion.notice');
-    expect(notice).toHaveTextContent('Conveyor, Liquid metal');
-    expect(within(notice).getByRole('link', { name: 'siteEditor.motion.upgrade' })).toBeTruthy();
-  });
-
-  it('says nothing on a plan with motion, or on a site with none', async () => {
-    plan.motionDesigns = true;
-    const paid = page(festive);
-    await new Promise((r) => setTimeout(r, 0));
-    expect(screen.queryByTestId('motion-notice')).toBeNull();
-    paid.unmount();
-    plan.motionDesigns = false;
-    page({ design: {}, blocks: [{ id: 'p', type: 'products', variant: 'well' }] });
-    await new Promise((r) => setTimeout(r, 0));
-    expect(screen.queryByTestId('motion-notice')).toBeNull();
   });
 });

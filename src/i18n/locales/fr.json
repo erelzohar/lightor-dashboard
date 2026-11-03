@@ -2149,11 +2149,9 @@
       "contentHint": "Les photos, le prix et la description de chaque produit se modifient sur la page Produits."
     },
     "liveSiteHint": "Votre site en ligne, tel qu'enregistré. S'ouvre dans un nouvel onglet.",
-    "motion": {
-      "stillNote": "Avec le forfait gratuit, ce design s'affiche sur votre site sans mouvement.",
-      "curveNote": "Avec le forfait gratuit, cette galerie s'affiche sur votre site en mosaïque.",
-      "notice": "Votre site a des designs animés : {{designs}}. Avec le forfait gratuit, ils s'affichent sur votre site sans mouvement.",
-      "upgrade": "Passez au forfait supérieur pour retrouver le mouvement"
+    "paidDesign": {
+      "note": "Ce design fait partie des forfaits Lightor+ et Lightor Pro.",
+      "upgrade": "Changer de forfait"
     }
   },
   "lighty": {

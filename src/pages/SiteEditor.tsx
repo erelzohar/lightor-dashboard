@@ -163,12 +163,22 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // LT-312: a Plus site's corner is Lighty, not the contact button — the
   // preview shows it as the live site does (the draft itself carries no plan).
   const [plus, setPlus] = useState(false);
+  // LT-570: on a plan without the paid designs the site shows their sections'
+  // defaults; the preview says so too (`motion: false`), as the server does.
+  const [paidDesigns, setPaidDesigns] = useState(true);
   useEffect(() => {
     let live = true;
-    void fetchMyEntitlements().then((e) => { if (live) setPlus(!!e && e.plan !== 'free'); });
+    void fetchMyEntitlements().then((e) => {
+      if (!live) return;
+      setPlus(!!e && e.plan !== 'free');
+      setPaidDesigns(e?.limits?.motionDesigns !== false);
+    });
     return () => { live = false; };
   }, []);
-  const previewConfig = useMemo(() => (plus ? { ...draft.value, assistant: true } : draft.value), [draft.value, plus]);
+  const previewConfig = useMemo(
+    () => ({ ...draft.value, ...(plus ? { assistant: true } : {}), ...(paidDesigns ? {} : { motion: false }) }),
+    [draft.value, plus, paidDesigns]
+  );
   const bridge = usePreviewBridge({ iframeRef, siteOrigin, config: previewConfig, selection, onSelect: selectFromSite });
   scrollRef.current = bridge.scrollTo;
 
