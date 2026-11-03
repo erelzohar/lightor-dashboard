@@ -22,6 +22,7 @@ import { bindNotificationTaps } from '../../services/pushClient';
 import { useTranslation } from 'react-i18next';
 import { greetingEmoji, greetingFor } from '../../lib/greeting';
 import { useMomentum } from '../../hooks/useMomentum';
+import { useLightySuggestions } from '../../hooks/useLightySuggestions';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 
 // Pages that deliberately bleed to the edges: they already cancel the
@@ -45,6 +46,9 @@ const Layout: React.FC = () => {
   const { auth, updateUser } = useAuth();
   // LT-385: how the week is going against last week - Lighty's mood, on every screen.
   const momentum = useMomentum(!!auth.user);
+  // LT-566: the floating Lighty's ready questions, worked out while his card is open.
+  const [floatingOpen, setFloatingOpen] = useState(false);
+  const floatingSuggestions = useLightySuggestions(floatingOpen && !!auth.user);
   const momentumNote = momentum.mood > 0 && momentum.kind && momentum.pct !== null
     ? t(`lighty.momentum.${momentum.kind}`, { pct: momentum.pct })
     : undefined;
@@ -198,6 +202,8 @@ const Layout: React.FC = () => {
           note={momentumNote}
           onSend={(msg) => leaveTo('/lighty', { lightyMessage: msg })}
           onOpenPage={() => leaveTo('/lighty')}
+          suggestions={floatingSuggestions}
+          onOpenChange={setFloatingOpen}
         />
       )}
 

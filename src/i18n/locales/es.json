@@ -2159,7 +2159,13 @@
       "blockDay": "Bloquéame el próximo viernes",
       "month": "Resume mi mes",
       "services": "¿Cuáles son mis servicios y precios?",
-      "howHours": "¿Cómo cambio mi horario?"
+      "howHours": "¿Cómo cambio mi horario?",
+      "tomorrow": "¿Qué tengo mañana?",
+      "weekAhead": "¿Qué me espera esta semana?",
+      "newLeads": "Repasa conmigo los contactos nuevos",
+      "lastMonth": "Resume el mes pasado",
+      "products": "¿Qué productos y precios hay en mi sitio?",
+      "addProduct": "Agrégame un producto nuevo"
     },
     "momentum": {
       "leads": "Las consultas suben un {{pct}}% respecto a la semana pasada ⚡",

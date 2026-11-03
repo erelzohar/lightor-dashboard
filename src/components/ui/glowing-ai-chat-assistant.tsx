@@ -7,6 +7,8 @@ import { impact, lightTick } from '../../lib/haptics';
 import { lazyOr } from '../../lib/lazyOr';
 import { DRAG_START_PX, cardPlacement, clampOffset, readOffset, saveOffset, type Home, type Offset } from '../../utils/floatingLighty';
 import type { Mood } from '../../utils/momentum';
+import type { Suggestion } from '../../utils/lightySuggestions';
+import { SuggestionChip } from '../lighty/SuggestionChip';
 
 // three.js and the 1.8 MB model load after the page, never in its way. If
 // their chunk cannot load, nothing renders and his still face (shown until
@@ -25,11 +27,18 @@ interface FloatingAiAssistantProps {
   mood?: Mood;
   /** LT-385: why, in a line ("Inquiries are up 42% on last week"): under the greeting, or once a session elsewhere. */
   note?: string;
+  /** LT-566: Lighty's ready questions for this business (useLightySuggestions); the first few show. */
+  suggestions?: Suggestion[];
+  /** LT-566: the card opened or closed - the questions are worked out only while it is open. */
+  onOpenChange?: (open: boolean) => void;
 }
+
+const DEFAULT_QUICK: Suggestion[] = [{ key: 'today' }, { key: 'week' }, { key: 'leads' }];
 
 const NOTE_KEY = 'lighty.momentumSaid';
 
-const QUICK = ['today', 'week', 'leads'] as const;
+/** LT-566: the floating card's first few of Lighty's ready questions. */
+const QUICK = 3;
 const CARD_W = 340;
 const isRtlDefault = (direction: 'ltr' | 'rtl') => direction === 'rtl';
 
@@ -52,8 +61,10 @@ const GREETING_FADE_MS = 350;
  * LT-385: his `mood` reaches the 3D Lighty, and the `note` saying why joins
  * the home page's greeting - elsewhere he says it once a session.
  */
-export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting, mood = 0, note }: FloatingAiAssistantProps) {
+export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', greeting, mood = 0, note, suggestions = DEFAULT_QUICK, onOpenChange }: FloatingAiAssistantProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  useEffect(() => { onOpenChange?.(isChatOpen); }, [isChatOpen, onOpenChange]);
+  const quick = suggestions.slice(0, QUICK);
   const [modelReady, setModelReady] = useState(false);
   // A note away from the home page: said once a session (per note), not on every page.
   const [aside, setAside] = useState<string | undefined>();
@@ -218,15 +229,13 @@ export function FloatingAiAssistant({ onSend, onOpenPage, direction = 'ltr', gre
             </div>
             <LightyBubble avatar={36}>{t('lighty.floatingHello')}</LightyBubble>
             <div className="flex flex-wrap gap-1.5">
-              {QUICK.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => ask(t(`lighty.suggest.${key}`))}
-                  className="px-3 py-1.5 rounded-full text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800/50 text-violet-700 dark:text-violet-200 hover:bg-violet-100 dark:hover:bg-violet-900/50"
-                >
-                  {t(`lighty.suggest.${key}`)}
-                </button>
+              {quick.map((s) => (
+                <SuggestionChip
+                  key={s.key}
+                  suggestion={s}
+                  onAsk={ask}
+                  className="px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border-violet-200 dark:border-violet-800/50 hover:bg-violet-100 dark:hover:bg-violet-900/50"
+                />
               ))}
             </div>
             <form className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 p-1.5 focus-within:ring-2 focus-within:ring-violet-300/50" onSubmit={(e) => { e.preventDefault(); ask(message); }}>

@@ -2159,7 +2159,13 @@
       "blockDay": "Block this coming Friday for me",
       "month": "Sum up my month",
       "services": "What are my services and prices?",
-      "howHours": "How do I change my hours?"
+      "howHours": "How do I change my hours?",
+      "tomorrow": "What do I have tomorrow?",
+      "weekAhead": "What's ahead this week?",
+      "newLeads": "Go over my new leads with me",
+      "lastMonth": "Sum up last month",
+      "products": "What products and prices are on my site?",
+      "addProduct": "Add a new product for me"
     },
     "momentum": {
       "leads": "Inquiries are up {{pct}}% on last week ⚡",

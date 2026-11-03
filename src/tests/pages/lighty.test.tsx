@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import LightyPage from '../../pages/Lighty';
@@ -7,6 +7,7 @@ import { FloatingAiAssistant } from '../../components/ui/glowing-ai-chat-assista
 import { typewriterConfig } from '../../components/lighty/LightyTyped';
 import { LightyText } from '../../components/lighty/LightyChat';
 import { isNativeApp } from '../../lib/platform';
+import { fetchLeadStats } from '../../services/leadsApi';
 
 /**
  * LT-253 — Lighty's page: the conversation so far, ready questions, the
@@ -23,9 +24,12 @@ vi.mock('../../hooks/useVirtualKeyboard', () => ({ useVirtualKeyboard: () => fal
 vi.mock('../../services/entitlementsApi', () => ({
   fetchMyEntitlements: vi.fn(async () => ({ plan: 'plus', limits: { aiTokensPerMonth: 1000 }, usage: { aiTokensThisMonth: 250 } })),
 }));
+const { store } = vi.hoisted(() => ({ store: { current: { webConfig: { data: { conversion: 'book' } } } as Record<string, unknown> } }));
 vi.mock('../../hooks/useAppSelector', () => ({
-  useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: { conversion: 'book' } } }),
+  useAppSelector: (selector: (s: unknown) => unknown) => selector(store.current),
 }));
+// LT-566: the new leads the ready questions go by.
+vi.mock('../../services/leadsApi', () => ({ fetchLeadStats: vi.fn(async () => ({ waiting: 0 })) }));
 vi.mock('../../services/assistantApi', () => ({
   assistantService: { chat: vi.fn(), thread: vi.fn(), clear: vi.fn(async () => undefined), confirm: vi.fn(), decline: vi.fn(), undo: vi.fn() },
 }));
@@ -72,9 +76,10 @@ describe("Lighty's page (LT-253)", () => {
     vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'מחר יש לך **2 תורים**.\n- 10:00 דנה\n- 12:30 מיכל\n[ליומן](/appointments?date=2026-10-13)' });
     renderPage();
     expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('lighty.suggest.today'));
+    // Not today's question: which day it asks about goes by the hour (LT-566).
+    fireEvent.click(screen.getByText('lighty.suggest.regulars'));
 
-    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.today');
+    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.regulars');
     expect(await screen.findByText('2 תורים')).toHaveProperty('tagName', 'STRONG');
     expect(lightTick).toHaveBeenCalledTimes(1); // LT-268: Lighty answered
     expect(screen.getByText('10:00 דנה').tagName).toBe('LI');
@@ -189,7 +194,62 @@ describe("Lighty's page (LT-253)", () => {
   });
 });
 
+describe("Lighty's ready questions follow the business (LT-566)", () => {
+  beforeEach(() => {
+    vi.mocked(assistantService.thread).mockReset().mockResolvedValue([]);
+    vi.mocked(assistantService.chat).mockReset().mockResolvedValue({ reply: 'ok' });
+    dispatch.mockClear();
+  });
+  afterEach(() => {
+    store.current = { webConfig: { data: { conversion: 'book' } } };
+    vi.mocked(fetchLeadStats).mockResolvedValue({ waiting: 0 } as never);
+  });
+
+  it('puts the new leads up with their number; the chip sends the question alone', async () => {
+    vi.mocked(fetchLeadStats).mockResolvedValue({ waiting: 4 } as never);
+    renderPage();
+    const chip = await screen.findByTestId('lighty-suggest-newLeads');
+    expect(chip).toHaveTextContent('lighty.suggest.newLeads4');
+    fireEvent.click(chip);
+    expect(assistantService.chat).toHaveBeenCalledWith('lighty.suggest.newLeads');
+  });
+
+  it('leaves the leads question out when none are waiting', async () => {
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    await waitFor(() => expect(fetchLeadStats).toHaveBeenCalled());
+    expect(screen.queryByTestId('lighty-suggest-newLeads')).toBeNull();
+    expect(screen.queryByTestId('lighty-suggest-leads')).toBeNull();
+  });
+
+  it('reads the bookings when no page has yet', async () => {
+    store.current = { webConfig: { data: { conversion: 'book' } }, appointments: { appointments: [], loaded: false, loading: false } };
+    renderPage();
+    await screen.findByText('lighty.hello');
+    expect(dispatch).toHaveBeenCalled();
+  });
+
+  it('asks a leads site nothing about the calendar', async () => {
+    store.current = { webConfig: { data: { conversion: 'lead' } } };
+    renderPage();
+    await screen.findByText('lighty.hello');
+    expect(screen.queryByTestId('lighty-suggest-today')).toBeNull();
+    expect(screen.queryByTestId('lighty-suggest-blockDay')).toBeNull();
+    expect(screen.getByTestId('lighty-suggest-services')).toBeInTheDocument();
+  });
+});
+
 describe('the floating Lighty (LT-253)', () => {
+  it("shows the first three of the business's questions, the number on the chip (LT-566)", () => {
+    const onSend = vi.fn();
+    render(<FloatingAiAssistant onSend={onSend} suggestions={[{ key: 'newLeads', count: 2 }, { key: 'tomorrow' }, { key: 'week' }, { key: 'regulars' }]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'lighty.ask' }));
+    expect(screen.getByTestId('lighty-suggest-newLeads')).toHaveTextContent('2');
+    expect(screen.queryByTestId('lighty-suggest-regulars')).toBeNull();
+    fireEvent.click(screen.getByTestId('lighty-suggest-tomorrow'));
+    expect(onSend).toHaveBeenCalledWith('lighty.suggest.tomorrow');
+  });
+
   it('asks a ready question or opens his page', () => {
     const onSend = vi.fn();
     const onOpenPage = vi.fn();

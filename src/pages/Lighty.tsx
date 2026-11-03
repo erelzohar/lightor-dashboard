@@ -14,7 +14,8 @@ import { fetchVacations } from '../store/slices/vacationsSlice';
 import { fetchAppointments, fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
 import { LightyActionCard } from '../components/lighty/LightyActionCard';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
-import { isLeadsSite } from '../utils/siteMode';
+import { useLightySuggestions } from '../hooks/useLightySuggestions';
+import { SuggestionChip } from '../components/lighty/SuggestionChip';
 import { LightyBubble, LightyThreadLoading, LightyTyping, OwnerBubble } from '../components/lighty/LightyChat';
 import { lightTick } from '../lib/haptics';
 import { isNativeApp } from '../lib/platform';
@@ -30,9 +31,6 @@ const StillLighty: React.FC<{ className?: string }> = ({ className = '' }) => (
   <img src="/lighty-avatar.webp" alt="" draggable={false} data-testid="lighty-still" className={`object-contain select-none ${className}`} />
 );
 const Lighty3D = lazyOr(() => import('../components/lighty/Lighty3D'), StillLighty);
-
-const BOOKING_SUGGESTIONS = ['today', 'tomorrowFree', 'week', 'leads', 'regulars', 'blockDay'] as const;
-const LEADS_SUGGESTIONS = ['leads', 'month', 'services', 'howHours'] as const;
 
 /**
  * LT-253 — Lighty, the owner's business chat (lightor-ai-split-plan.md §3):
@@ -57,7 +55,8 @@ const LightyPage: React.FC = () => {
   const { auth, refreshUser } = useAuth();
   const userId = auth.user?._id;
   const dispatch = useAppDispatch();
-  const suggestions = isLeadsSite(webConfig) ? LEADS_SUGGESTIONS : BOOKING_SUGGESTIONS;
+  // LT-566: the ready questions follow the business - what applies, and what is happening now.
+  const suggestions = useLightySuggestions();
 
   const [turns, setTurns] = useState<LightyTurn[]>([]);
   // The answer that just arrived types itself out (LT-271); the thread loaded
@@ -172,16 +171,14 @@ const LightyPage: React.FC = () => {
 
   const chips = (
     <div data-tour="lighty-chips" className={`flex gap-2 ${empty ? 'flex-wrap justify-center' : 'overflow-x-auto pb-1 [scrollbar-width:none]'}`}>
-      {suggestions.map((key) => (
-        <button
-          key={key}
-          type="button"
+      {suggestions.map((s) => (
+        <SuggestionChip
+          key={s.key}
+          suggestion={s}
           disabled={busy}
-          onClick={() => void send(t(`lighty.suggest.${key}`))}
-          className="shrink-0 px-3.5 py-2 rounded-full text-sm bg-white dark:bg-slate-800 border border-violet-200 dark:border-violet-800/60 text-violet-700 dark:text-violet-200 hover:bg-violet-50 dark:hover:bg-violet-900/30 disabled:opacity-50 whitespace-nowrap"
-        >
-          {t(`lighty.suggest.${key}`)}
-        </button>
+          onAsk={(text) => void send(text)}
+          className="shrink-0 px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border-violet-200 dark:border-violet-800/60 hover:bg-violet-50 dark:hover:bg-violet-900/30 disabled:opacity-50"
+        />
       ))}
     </div>
   );
