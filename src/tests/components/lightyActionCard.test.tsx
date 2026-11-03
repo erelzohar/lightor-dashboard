@@ -153,4 +153,28 @@ describe("Lighty's action card (LT-561)", () => {
     expect([...item.querySelectorAll('[dir="ltr"]')].map((c) => c.textContent)).toEqual(['09:00–11:00', '12:00–14:00']);
     expect(item).toHaveTextContent(/09:00–11:00.*12:00–14:00.*←.*סגור/);
   });
+  // LT-564: phase 2's kinds - fields now and after, an add shows only what it will be.
+  it("draws a service, a product, the alerts and the business's details", () => {
+    const kinds: LightyAction[] = [
+      card({ id: 's1', kind: 'service_add', card: { items: [{ subject: 'ג׳ל', field: 'price', before: null, after: '150' }, { subject: 'ג׳ל', field: 'minutes', before: null, after: '45' }], texts: 0, notes: [] } }),
+      card({ id: 's2', kind: 'service_edit', card: { items: [{ subject: 'ג׳ל', field: 'price', before: '150', after: '170' }], texts: 0, notes: [] } }),
+      card({ id: 'p1', kind: 'product_add', card: { items: [{ subject: 'נר', field: 'price', before: null, after: '49.9 ₪' }, { subject: 'נר', field: 'show', before: null, after: 'no' }], texts: 0, notes: [{ key: 'noPicture' }, { key: 'draftProduct' }] } }),
+      card({ id: 'p2', kind: 'product_edit', card: { items: [{ subject: 'נר', field: 'soldOut', before: 'no', after: 'yes' }], texts: 0, notes: [] } }),
+      card({ id: 'a1', kind: 'alerts', card: { items: [{ event: 'cancellation', channel: 'phone', before: 'off', after: 'on' }], texts: 0, notes: [] } }),
+      card({ id: 'b1', kind: 'business_details', card: { items: [{ field: 'city', before: 'תל אביב', after: 'חיפה' }, { field: 'instagram', before: null, after: 'https://instagram.com/noy' }], texts: 0, notes: [] } }),
+    ];
+    const { container } = render(<>{kinds.map((k) => <LightyActionCard key={k.id} action={k} onChange={vi.fn()} />)}</>);
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('MISSING:');
+    expect(text).toContain('הוספת שירות: ג׳ל');
+    expect(text).toMatch(/מחיר150משך45 דקות/);
+    expect(text).toMatch(/שינוי שירות: ג׳למחיר150.*←.*170/);
+    expect(text).toContain('הוספת מוצר: נר');
+    expect(text).toContain('טיוטה');
+    expect(text).toContain('תמונות מוסיפים בדף המוצרים.');
+    expect(text).toMatch(/מלאיבמלאי.*←.*אזל מהמלאי/);
+    expect(text).toMatch(/ביטול תורב-WhatsApp:כבוי.*←.*פעיל/);
+    expect(text).toMatch(/עירתל אביב.*←.*חיפה/);
+    expect(container.querySelector('span[dir="ltr"]')).not.toBeNull();
+  });
 });

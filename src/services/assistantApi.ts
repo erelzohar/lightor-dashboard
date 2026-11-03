@@ -15,7 +15,9 @@ import i18n from '../i18n/config';
 export type LightyActionKind =
   | 'vacation_add' | 'vacation_remove' | 'hours' | 'booking_rules'
   | 'appointment_book' | 'appointment_move' | 'appointment_cancel' | 'appointment_complete'
-  | 'lead_status' | 'lead_to_customer' | 'customer_note' | 'customer_block';
+  | 'lead_status' | 'lead_to_customer' | 'customer_note' | 'customer_block'
+  // LT-564, phase 2.
+  | 'service_add' | 'service_edit' | 'product_add' | 'product_edit' | 'alerts' | 'business_details';
 
 /** One line of a card, as the server wrote it from the owner's data. */
 export interface LightyActionItem {
@@ -43,6 +45,11 @@ export interface LightyActionItem {
   reason?: string;
   block?: boolean;
   phone?: string;
+  /** LT-564: a field of a service, a product or the business, or an alert's event and channel. */
+  subject?: string;
+  field?: string;
+  event?: string;
+  channel?: string;
 }
 
 export type LightyActionStatus = 'pending' | 'running' | 'done' | 'declined' | 'expired' | 'failed' | 'undone';

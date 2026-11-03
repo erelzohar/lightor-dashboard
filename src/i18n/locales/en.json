@@ -2182,7 +2182,13 @@
         "lead_to_customer": "Add a lead to the customers",
         "customer_note": "Add a note to a customer",
         "block": "Block a customer",
-        "unblock": "Unblock a customer"
+        "unblock": "Unblock a customer",
+        "service_add": "Add a service: {{name}}",
+        "service_edit": "Change a service: {{name}}",
+        "product_add": "Add a product: {{name}}",
+        "product_edit": "Change a product: {{name}}",
+        "alerts": "Change your alerts",
+        "business_details": "Change the business details"
       },
       "closed": "Closed",
       "regular": "Back to the regular hours",
@@ -2202,7 +2208,9 @@
         "bookingsInside": "Appointments already booked in this time stay: {{count}}",
         "outsideHours": "This time is outside the opening hours.",
         "upcomingCancelled": "Their upcoming appointments are cancelled too: {{count}}",
-        "upcomingStay": "Their upcoming appointments stay: {{count}}"
+        "upcomingStay": "Their upcoming appointments stay: {{count}}",
+        "noPicture": "Pictures are added on the products page.",
+        "draftProduct": "The product is saved as a draft and stays off the site until you choose to show it."
       },
       "confirm": "Confirm",
       "decline": "No",
@@ -2219,7 +2227,39 @@
         "gone": "Not done: it no longer exists.",
         "failed": "Not done: something went wrong. Please try again."
       },
-      "sendFailed": "Your answer could not be sent. Please try again."
+      "sendFailed": "Your answer could not be sent. Please try again.",
+      "field": {
+        "name": "Name",
+        "price": "Price",
+        "minutes": "Length",
+        "summary": "Short description",
+        "description": "Description",
+        "category": "Category",
+        "show": "On the site",
+        "soldOut": "Stock",
+        "businessName": "Business name",
+        "street": "Street",
+        "city": "City",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "x": "X"
+      },
+      "value": {
+        "shown": "Shown on the site",
+        "draft": "Draft",
+        "soldOut": "Sold out",
+        "inStock": "In stock",
+        "removed": "Removed",
+        "none": "None",
+        "on": "On",
+        "off": "Off"
+      },
+      "channel": {
+        "app": "In the app",
+        "email": "By email",
+        "phone": "By WhatsApp"
+      }
     }
   },
   "forgotPassword": {

@@ -2182,7 +2182,13 @@
         "lead_to_customer": "إضافة استفسار إلى العملاء",
         "customer_note": "إضافة ملاحظة لعميل",
         "block": "حظر عميل",
-        "unblock": "إلغاء حظر عميل"
+        "unblock": "إلغاء حظر عميل",
+        "service_add": "إضافة خدمة: {{name}}",
+        "service_edit": "تغيير خدمة: {{name}}",
+        "product_add": "إضافة منتج: {{name}}",
+        "product_edit": "تغيير منتج: {{name}}",
+        "alerts": "تغيير تنبيهاتك",
+        "business_details": "تغيير تفاصيل العمل"
       },
       "closed": "مغلق",
       "regular": "العودة إلى الساعات العادية",
@@ -2202,7 +2208,9 @@
         "bookingsInside": "المواعيد المحجوزة مسبقًا في هذا الوقت تبقى: {{count}}",
         "outsideHours": "هذا الوقت خارج ساعات العمل.",
         "upcomingCancelled": "تُلغى مواعيده القادمة أيضًا: {{count}}",
-        "upcomingStay": "تبقى مواعيده القادمة: {{count}}"
+        "upcomingStay": "تبقى مواعيده القادمة: {{count}}",
+        "noPicture": "تُضاف الصور في صفحة المنتجات.",
+        "draftProduct": "يُحفظ المنتج كمسودة ولا يظهر في الموقع حتى تختاروا إظهاره."
       },
       "confirm": "تأكيد",
       "decline": "لا",
@@ -2219,7 +2227,39 @@
         "gone": "لم يتم: لم يعد موجودًا.",
         "failed": "لم يتم: حدث خطأ ما. حاولوا مرة أخرى."
       },
-      "sendFailed": "تعذّر إرسال ردكم. حاولوا مرة أخرى."
+      "sendFailed": "تعذّر إرسال ردكم. حاولوا مرة أخرى.",
+      "field": {
+        "name": "الاسم",
+        "price": "السعر",
+        "minutes": "المدة",
+        "summary": "وصف قصير",
+        "description": "الوصف",
+        "category": "الفئة",
+        "show": "في الموقع",
+        "soldOut": "المخزون",
+        "businessName": "اسم العمل",
+        "street": "الشارع",
+        "city": "المدينة",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "x": "X"
+      },
+      "value": {
+        "shown": "ظاهر في الموقع",
+        "draft": "مسودة",
+        "soldOut": "نفد من المخزون",
+        "inStock": "متوفر",
+        "removed": "سيُزال",
+        "none": "لا يوجد",
+        "on": "مفعّل",
+        "off": "متوقف"
+      },
+      "channel": {
+        "app": "في التطبيق",
+        "email": "بالبريد الإلكتروني",
+        "phone": "عبر WhatsApp"
+      }
     }
   },
   "forgotPassword": {

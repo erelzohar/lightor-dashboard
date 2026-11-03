@@ -2182,7 +2182,13 @@
         "lead_to_customer": "הוספת ליד ללקוחות",
         "customer_note": "הוספת הערה ללקוח",
         "block": "חסימת לקוח",
-        "unblock": "ביטול החסימה של לקוח"
+        "unblock": "ביטול החסימה של לקוח",
+        "service_add": "הוספת שירות: {{name}}",
+        "service_edit": "שינוי שירות: {{name}}",
+        "product_add": "הוספת מוצר: {{name}}",
+        "product_edit": "שינוי מוצר: {{name}}",
+        "alerts": "שינוי ההתראות שלך",
+        "business_details": "שינוי פרטי העסק"
       },
       "closed": "סגור",
       "regular": "חוזר לשעות הרגילות",
@@ -2202,7 +2208,9 @@
         "bookingsInside": "תורים שכבר נקבעו בזמן הזה נשארים: {{count}}",
         "outsideHours": "השעה מחוץ לשעות הפעילות.",
         "upcomingCancelled": "גם התורים הקרובים שלו יבוטלו: {{count}}",
-        "upcomingStay": "התורים הקרובים שלו נשארים: {{count}}"
+        "upcomingStay": "התורים הקרובים שלו נשארים: {{count}}",
+        "noPicture": "תמונות מוסיפים בדף המוצרים.",
+        "draftProduct": "המוצר יישמר כטיוטה ולא יופיע באתר עד שתבחרו להציג אותו."
       },
       "confirm": "אישור",
       "decline": "לא",
@@ -2219,7 +2227,39 @@
         "gone": "לא בוצע: הפריט כבר לא קיים.",
         "failed": "לא בוצע: משהו השתבש. נסו שוב."
       },
-      "sendFailed": "לא הצלחנו לשלוח את התשובה. נסו שוב."
+      "sendFailed": "לא הצלחנו לשלוח את התשובה. נסו שוב.",
+      "field": {
+        "name": "שם",
+        "price": "מחיר",
+        "minutes": "משך",
+        "summary": "תיאור קצר",
+        "description": "תיאור",
+        "category": "קטגוריה",
+        "show": "באתר",
+        "soldOut": "מלאי",
+        "businessName": "שם העסק",
+        "street": "רחוב",
+        "city": "עיר",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "x": "X"
+      },
+      "value": {
+        "shown": "מוצג באתר",
+        "draft": "טיוטה",
+        "soldOut": "אזל מהמלאי",
+        "inStock": "במלאי",
+        "removed": "יוסר",
+        "none": "אין",
+        "on": "פעיל",
+        "off": "כבוי"
+      },
+      "channel": {
+        "app": "באפליקציה",
+        "email": "במייל",
+        "phone": "ב-WhatsApp"
+      }
     }
   },
   "forgotPassword": {

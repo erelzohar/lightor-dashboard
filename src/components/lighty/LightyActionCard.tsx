@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AlertTriangle, Ban, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, Loader2,
-  MessageSquare, Settings2, StickyNote, Undo2, UserPlus, Users, X, type LucideIcon,
+  AlertTriangle, Ban, Bell, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, ListPlus, Loader2,
+  MessageSquare, Package, PackagePlus, Pencil, Settings2, StickyNote, Store, Undo2, UserPlus, Users, X, type LucideIcon,
 } from 'lucide-react';
 import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
 
@@ -41,7 +41,16 @@ const ICONS: Record<LightyActionKind, LucideIcon> = {
   lead_to_customer: UserPlus,
   customer_note: StickyNote,
   customer_block: Ban,
+  service_add: ListPlus,
+  service_edit: Pencil,
+  product_add: PackagePlus,
+  product_edit: Package,
+  alerts: Bell,
+  business_details: Store,
 };
+
+/** Fields whose values are free text: they wrap, a chip would not. */
+const TEXT_FIELDS = new Set(['name', 'summary', 'description', 'businessName', 'street', 'city', 'instagram', 'facebook', 'tiktok', 'x', 'category']);
 
 type Tone = 'old' | 'new' | 'closed' | 'plain';
 const TONES: Record<Tone, string> = {
@@ -121,8 +130,45 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
     </span>
   );
 
+  /** One field's value as the card shows it (LT-564). */
+  const value = (field: string | undefined, v: string | null | undefined, tone: 'old' | 'new'): React.ReactNode => {
+    if (v === null || v === undefined || v === '') {
+      return <Chip tone={tone === 'old' ? 'old' : 'closed'}>{t(tone === 'old' ? 'lighty.action.value.none' : 'lighty.action.value.removed')}</Chip>;
+    }
+    if (field === 'minutes') return <Chip tone={tone}>{minutes(Number(v))}</Chip>;
+    if (field === 'show') return <Chip tone={tone}>{t(v === 'yes' ? 'lighty.action.value.shown' : 'lighty.action.value.draft')}</Chip>;
+    if (field === 'soldOut') return <Chip tone={tone}>{t(v === 'yes' ? 'lighty.action.value.soldOut' : 'lighty.action.value.inStock')}</Chip>;
+    if (field && TEXT_FIELDS.has(field)) {
+      const link = /^https:\/\//.test(v);
+      return (
+        <span dir={link ? 'ltr' : undefined} className={`inline-block max-w-full rounded-md px-2 py-0.5 text-xs font-medium break-words ${TONES[tone]}`}>{v}</span>
+      );
+    }
+    return <Chip tone={tone} ltr={/^[\d.,\s₪$€£]+$/.test(v)}>{v}</Chip>;
+  };
+  const adds = action.kind === 'service_add' || action.kind === 'product_add';
+
   const row = (item: LightyActionItem): { head: React.ReactNode; body: React.ReactNode } => {
     switch (action.kind) {
+      case 'service_add':
+      case 'service_edit':
+      case 'product_add':
+      case 'product_edit':
+      case 'business_details':
+        return {
+          head: t(`lighty.action.field.${item.field}`),
+          body: adds ? value(item.field, item.after, 'new') : change(value(item.field, item.before, 'old'), value(item.field, item.after, 'new')),
+        };
+      case 'alerts':
+        return {
+          head: t(`account.notifications.${item.event}`),
+          body: (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-gray-600 dark:text-slate-300">{t(`lighty.action.channel.${item.channel}`)}:</span>
+              {change(<Chip tone="old">{t(`lighty.action.value.${item.before}`)}</Chip>, <Chip tone={item.after === 'on' ? 'new' : 'closed'}>{t(`lighty.action.value.${item.after}`)}</Chip>)}
+            </div>
+          ),
+        };
       case 'vacation_add':
       case 'vacation_remove': {
         const range = <>{item.from && dateLabel(item.from, lang)}{item.to && item.to !== item.from ? <> – {dateLabel(item.to, lang)}</> : null}</>;
@@ -186,7 +232,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
       case 'appointment_complete': return several ? t('lighty.action.title.completeMany', { count: items.length }) : t('lighty.action.title.completeOne');
       case 'lead_status': return several ? t('lighty.action.title.leadStatusMany', { count: items.length }) : t('lighty.action.title.leadStatusOne');
       case 'customer_block': return items[0]?.block === false ? t('lighty.action.title.unblock') : t('lighty.action.title.block');
-      default: return t(`lighty.action.title.${action.kind}`);
+      default: return t(`lighty.action.title.${action.kind}`, { name: items[0]?.subject ?? '' });
     }
   })();
 

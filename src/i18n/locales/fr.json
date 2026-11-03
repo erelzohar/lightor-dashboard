@@ -2182,7 +2182,13 @@
         "lead_to_customer": "Ajouter une demande aux clients",
         "customer_note": "Ajouter une note à un client",
         "block": "Bloquer un client",
-        "unblock": "Débloquer un client"
+        "unblock": "Débloquer un client",
+        "service_add": "Ajouter un service : {{name}}",
+        "service_edit": "Modifier un service : {{name}}",
+        "product_add": "Ajouter un produit : {{name}}",
+        "product_edit": "Modifier un produit : {{name}}",
+        "alerts": "Modifier vos alertes",
+        "business_details": "Modifier les informations de l’entreprise"
       },
       "closed": "Fermé",
       "regular": "Retour aux horaires habituels",
@@ -2202,7 +2208,9 @@
         "bookingsInside": "Les rendez-vous déjà pris pendant ce temps restent : {{count}}",
         "outsideHours": "Cette heure est en dehors des horaires.",
         "upcomingCancelled": "Ses prochains rendez-vous sont aussi annulés : {{count}}",
-        "upcomingStay": "Ses prochains rendez-vous restent : {{count}}"
+        "upcomingStay": "Ses prochains rendez-vous restent : {{count}}",
+        "noPicture": "Les photos s’ajoutent sur la page des produits.",
+        "draftProduct": "Le produit est enregistré comme brouillon et n’apparaît pas sur le site tant que vous ne choisissez pas de l’afficher."
       },
       "confirm": "Confirmer",
       "decline": "Non",
@@ -2219,7 +2227,39 @@
         "gone": "Non fait : cela n’existe plus.",
         "failed": "Non fait : un problème est survenu. Réessayez."
       },
-      "sendFailed": "Votre réponse n’a pas pu être envoyée. Réessayez."
+      "sendFailed": "Votre réponse n’a pas pu être envoyée. Réessayez.",
+      "field": {
+        "name": "Nom",
+        "price": "Prix",
+        "minutes": "Durée",
+        "summary": "Description courte",
+        "description": "Description",
+        "category": "Catégorie",
+        "show": "Sur le site",
+        "soldOut": "Stock",
+        "businessName": "Nom de l’entreprise",
+        "street": "Rue",
+        "city": "Ville",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "x": "X"
+      },
+      "value": {
+        "shown": "Visible sur le site",
+        "draft": "Brouillon",
+        "soldOut": "Épuisé",
+        "inStock": "En stock",
+        "removed": "Retiré",
+        "none": "Aucun",
+        "on": "Activé",
+        "off": "Désactivé"
+      },
+      "channel": {
+        "app": "Dans l’app",
+        "email": "Par e-mail",
+        "phone": "Par WhatsApp"
+      }
     }
   },
   "forgotPassword": {

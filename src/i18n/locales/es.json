@@ -2182,7 +2182,13 @@
         "lead_to_customer": "Añadir un contacto a los clientes",
         "customer_note": "Añadir una nota a un cliente",
         "block": "Bloquear a un cliente",
-        "unblock": "Desbloquear a un cliente"
+        "unblock": "Desbloquear a un cliente",
+        "service_add": "Añadir un servicio: {{name}}",
+        "service_edit": "Cambiar un servicio: {{name}}",
+        "product_add": "Añadir un producto: {{name}}",
+        "product_edit": "Cambiar un producto: {{name}}",
+        "alerts": "Cambiar tus avisos",
+        "business_details": "Cambiar los datos del negocio"
       },
       "closed": "Cerrado",
       "regular": "Vuelve al horario habitual",
@@ -2202,7 +2208,9 @@
         "bookingsInside": "Las citas ya reservadas en ese tiempo se mantienen: {{count}}",
         "outsideHours": "Esa hora está fuera del horario.",
         "upcomingCancelled": "También se cancelan sus próximas citas: {{count}}",
-        "upcomingStay": "Sus próximas citas se mantienen: {{count}}"
+        "upcomingStay": "Sus próximas citas se mantienen: {{count}}",
+        "noPicture": "Las fotos se añaden en la página de productos.",
+        "draftProduct": "El producto se guarda como borrador y no aparece en el sitio hasta que elijas mostrarlo."
       },
       "confirm": "Confirmar",
       "decline": "No",
@@ -2219,7 +2227,39 @@
         "gone": "No se hizo: ya no existe.",
         "failed": "No se hizo: algo salió mal. Inténtalo de nuevo."
       },
-      "sendFailed": "No se pudo enviar tu respuesta. Inténtalo de nuevo."
+      "sendFailed": "No se pudo enviar tu respuesta. Inténtalo de nuevo.",
+      "field": {
+        "name": "Nombre",
+        "price": "Precio",
+        "minutes": "Duración",
+        "summary": "Descripción corta",
+        "description": "Descripción",
+        "category": "Categoría",
+        "show": "En el sitio",
+        "soldOut": "Existencias",
+        "businessName": "Nombre del negocio",
+        "street": "Calle",
+        "city": "Ciudad",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "tiktok": "TikTok",
+        "x": "X"
+      },
+      "value": {
+        "shown": "Visible en el sitio",
+        "draft": "Borrador",
+        "soldOut": "Agotado",
+        "inStock": "En existencias",
+        "removed": "Se quita",
+        "none": "Ninguno",
+        "on": "Activado",
+        "off": "Desactivado"
+      },
+      "channel": {
+        "app": "En la app",
+        "email": "Por email",
+        "phone": "Por WhatsApp"
+      }
     }
   },
   "forgotPassword": {

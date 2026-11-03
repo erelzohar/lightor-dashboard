@@ -11,7 +11,7 @@ import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchWebConfig } from '../store/slices/webConfigSlice';
 import { fetchVacations } from '../store/slices/vacationsSlice';
-import { fetchAppointments } from '../store/slices/appointmentsSlice';
+import { fetchAppointments, fetchAppointmentTypes } from '../store/slices/appointmentsSlice';
 import { LightyActionCard } from '../components/lighty/LightyActionCard';
 import { useVirtualKeyboard } from '../hooks/useVirtualKeyboard';
 import { isLeadsSite } from '../utils/siteMode';
@@ -54,7 +54,7 @@ const LightyPage: React.FC = () => {
   const location = useLocation();
   const keyboardOpen = useVirtualKeyboard();
   const webConfig = useAppSelector((state) => state.webConfig.data);
-  const { auth } = useAuth();
+  const { auth, refreshUser } = useAuth();
   const userId = auth.user?._id;
   const dispatch = useAppDispatch();
   const suggestions = isLeadsSite(webConfig) ? LEADS_SUGGESTIONS : BOOKING_SUGGESTIONS;
@@ -157,6 +157,10 @@ const LightyPage: React.FC = () => {
     if (next.kind.startsWith('appointment_') || next.kind === 'customer_block') {
       if (userId) void dispatch(fetchAppointments({ user_id: userId, limit: 5000 }));
     }
+    // LT-564: the services, the site's details, the owner's alerts.
+    if ((next.kind === 'service_add' || next.kind === 'service_edit') && webConfig?._id) void dispatch(fetchAppointmentTypes({ webConfig_id: webConfig._id }));
+    if (next.kind === 'business_details' && webConfig?._id) void dispatch(fetchWebConfig(webConfig._id));
+    if (next.kind === 'alerts') void refreshUser();
   };
 
   const clear = async () => {
