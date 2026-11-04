@@ -155,6 +155,42 @@ describe('the Products page (LT-540)', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
+  // LT-578 (Erel): another picture with Lighty while the product has room for one.
+  it('makes another picture of the product from its words, a different angle, kept with it', async () => {
+    vi.mocked(aiService.createImage).mockReset().mockResolvedValue('https://api.lightor.app/api/images/tmp-ai-2.webp');
+    vi.mocked(updateProduct).mockResolvedValue(product());
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    const make = within(dialog).getByTestId('make-picture');
+    expect(make.textContent).toBe('products.morePicture.another');
+    fireEvent.click(make);
+    await waitFor(() => expect(aiService.createImage).toHaveBeenCalledWith(expect.stringMatching(/^Ring\. another angle/), '4:3', 'product'));
+    await waitFor(() => expect(within(dialog).getAllByRole('button', { name: /products\.form\.(mainPicture|makeMain)/ })).toHaveLength(2));
+    fireEvent.click(within(dialog).getByText('products.save'));
+    await waitFor(() => expect(updateProduct).toHaveBeenCalled());
+    expect(vi.mocked(updateProduct).mock.lastCall![1].images).toEqual([{ url: 'a.webp' }, { url: 'https://api.lightor.app/api/images/tmp-ai-2.webp' }]);
+  });
+
+  it("says when the month's pictures are used, and waits for a name; none past six pictures", async () => {
+    vi.mocked(aiService.createImage).mockReset().mockRejectedValue({ response: { status: 429 } });
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    fireEvent.click(within(dialog).getByTestId('make-picture'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('products.morePicture.limit'));
+    fireEvent.change(within(dialog).getByLabelText('products.name'), { target: { value: '' } });
+    expect((within(dialog).getByTestId('make-picture') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('offers no new picture to a product with six', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: [product({ images: [1, 2, 3, 4, 5, 6].map((n) => ({ url: `${n}.webp` })) })], limits: plan(10) });
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    expect(within(dialog).queryByTestId('make-picture')).toBeNull();
+  });
+
   it('lets Lighty fill in what is empty, and never what the owner wrote', async () => {
     vi.mocked(aiService.draftProduct).mockResolvedValue({ name: 'AI name', summary: 'AI line', description: 'AI words', category: 'AI kind' });
     render(<Products />);

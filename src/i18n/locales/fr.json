@@ -2249,6 +2249,7 @@
         "upcomingCancelled": "Ses prochains rendez-vous sont aussi annulés : {{count}}",
         "upcomingStay": "Ses prochains rendez-vous restent : {{count}}",
         "noPicture": "Les photos s’ajoutent sur la page des produits.",
+        "aiPicture": "Lighty a créé une photo du produit, sur les photos IA du mois. Vous pouvez la changer sur la page des produits.",
         "draftProduct": "Le produit est enregistré comme brouillon et n’apparaît pas sur le site tant que vous ne choisissez pas de l’afficher.",
         "ownPhone": "Lightor n’envoie rien : le message s’ouvre sur votre téléphone avec le texte prêt, et part de votre propre numéro."
       },
@@ -2601,6 +2602,13 @@
   },
   "products": {
     "title": "Produits",
+    "morePicture": {
+      "first": "Lighty crée une photo",
+      "another": "Une autre photo avec Lighty",
+      "needsName": "Écrivez d'abord le nom du produit",
+      "limit": "Les photos IA du mois sont épuisées. Vous pouvez ajouter votre propre photo.",
+      "failed": "La photo n'a pas pu être créée cette fois. Réessayez."
+    },
     "form": {
       "picture": "Ajouter une photo",
       "mainPicture": "La photo principale",

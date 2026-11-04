@@ -119,10 +119,8 @@ const LightyPage: React.FC = () => {
     if (touch && document.activeElement === inputRef.current) inputRef.current?.blur();
   };
 
-  const attach = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = [...(e.target.files ?? [])];
-    e.target.value = '';
-    if (!files.length) return;
+  const attachFiles = async (files: File[]) => {
+    if (!files.length || attaching || busy) return;
     const room = MAX_PICTURES - pictures.length;
     setError(files.length > room ? t('lighty.attach.tooMany', { max: MAX_PICTURES }) : null);
     setAttaching(true);
@@ -137,6 +135,21 @@ const LightyPage: React.FC = () => {
     } finally {
       setAttaching(false);
     }
+  };
+
+  const attach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = [...(e.target.files ?? [])];
+    e.target.value = '';
+    void attachFiles(files);
+  };
+
+  // LT-578 (Erel): a picture pasted into the box is attached, as the button does. Text pastes as text;
+  // a copy that carries both (a picture from a web page) keeps its text and attaches the picture.
+  const pasteFiles = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const files = [...e.clipboardData.files].filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return;
+    if (!e.clipboardData.getData('text/plain')) e.preventDefault();
+    void attachFiles(files);
   };
 
   const send = async (text: string) => {
@@ -329,6 +342,7 @@ const LightyPage: React.FC = () => {
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onPaste={pasteFiles}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();

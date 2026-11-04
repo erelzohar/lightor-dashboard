@@ -2249,6 +2249,7 @@
         "upcomingCancelled": "Their upcoming appointments are cancelled too: {{count}}",
         "upcomingStay": "Their upcoming appointments stay: {{count}}",
         "noPicture": "Pictures are added on the products page.",
+        "aiPicture": "Lighty made a picture for the product, out of this month's AI pictures. You can change it on the products page.",
         "draftProduct": "The product is saved as a draft and stays off the site until you choose to show it.",
         "ownPhone": "Lightor sends nothing: the message opens on your phone with the text ready, and goes from your own number."
       },
@@ -2601,6 +2602,13 @@
   },
   "products": {
     "title": "Products",
+    "morePicture": {
+      "first": "Lighty makes a picture",
+      "another": "Another picture with Lighty",
+      "needsName": "Write the product's name first",
+      "limit": "This month's AI pictures are used up. You can add a picture of your own.",
+      "failed": "The picture was not made this time. Try again."
+    },
     "form": {
       "picture": "Upload a picture",
       "mainPicture": "The main picture",

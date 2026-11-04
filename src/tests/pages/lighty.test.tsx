@@ -407,6 +407,22 @@ describe('pictures attached in the chat (LT-568)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('lighty.attach.tooMany');
   });
 
+  // LT-578 (Erel): paste a picture straight into the box.
+  it('attaches a pasted picture, and leaves a pasted text as text', async () => {
+    renderPage();
+    expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+    const box = screen.getByLabelText('lighty.placeholder');
+    const files = [picture('shot.png'), new File(['t'], 'notes.txt', { type: 'text/plain' })];
+    const pasted = fireEvent.paste(box, { clipboardData: { files, getData: () => '' } });
+    expect(pasted).toBe(false); // the picture is not pasted into the text
+    await waitFor(() => expect(screen.getByTestId('lighty-attached').querySelectorAll('img')).toHaveLength(1));
+    expect(uploadImage).toHaveBeenCalledTimes(1);
+
+    const text = fireEvent.paste(box, { clipboardData: { files: [], getData: () => 'hello' } });
+    expect(text).toBe(true);
+    expect(uploadImage).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the pictures for the next try when Lighty could not answer', async () => {
     vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 500 } });
     renderPage();

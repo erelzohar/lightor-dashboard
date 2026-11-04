@@ -233,6 +233,26 @@ const ProductEditor: React.FC<{
     }
   };
 
+  // LT-578 (Erel): Lighty makes another picture of the product from its words, out of the plan's
+  // monthly AI pictures, while it has room for one. The first is its shot alone; a later one another
+  // angle, so the pictures differ. Kept only when the owner saves, like an uploaded one.
+  const [picturing, setPicturing] = useState(false);
+  const pictureSubject = [draft.name.trim(), draft.summary.trim()].filter(Boolean).join(', ');
+  const makePicture = async () => {
+    if (!pictureSubject || draft.images.length >= MAX_PICTURES) return;
+    setPicturing(true);
+    try {
+      const shot = draft.images.length ? 'another angle or a close-up detail of the same product, unlike its other pictures' : 'the product alone on a plain light background';
+      const url = await aiService.createImage(`${pictureSubject}. ${shot}`, '4:3', 'product');
+      setDraft((d) => (d.images.length < MAX_PICTURES ? { ...d, images: [...d.images, { url }] } : d));
+    } catch (err) {
+      const status = (err as AxiosError)?.response?.status;
+      toast.error(t(status === 429 ? 'products.morePicture.limit' : 'products.morePicture.failed'));
+    } finally {
+      setPicturing(false);
+    }
+  };
+
   const save = async () => {
     const price = priceToMinor(draft.price);
     if (!draft.name.trim()) { toast.error(t('products.nameRequired')); return; }
@@ -387,6 +407,19 @@ const ProductEditor: React.FC<{
                     {pictureInput}
                   </label>
                 )}
+                {draft.images.length < MAX_PICTURES && (
+                  <button
+                    type="button"
+                    onClick={makePicture}
+                    disabled={picturing || creating || !pictureSubject}
+                    title={pictureSubject ? undefined : t('products.morePicture.needsName')}
+                    className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold disabled:opacity-60 ${pop('default')}`}
+                    data-testid="make-picture"
+                  >
+                    {picturing ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                    {t(draft.images.length ? 'products.morePicture.another' : 'products.morePicture.first')}
+                  </button>
+                )}
                 {draft.images.length > 0 && (
                   // LT-542 (Erel): a button, not a line of purple text.
                   <button
@@ -523,7 +556,7 @@ const ProductEditor: React.FC<{
               {t('common.cancel')}
             </button>
             {/* LT-568: not while Lighty still makes the product's picture - it would be saved without it. */}
-            <button type="button" onClick={save} disabled={saving || creating} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+            <button type="button" onClick={save} disabled={saving || creating || picturing} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('products.save')}
             </button>
