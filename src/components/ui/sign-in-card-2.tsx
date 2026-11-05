@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { canOfferPurchases } from '../../lib/platform';
+import { hasSignedInBefore } from '../../services/sessionHint';
 
 function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -49,6 +50,8 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
   // a remembered one 180 days; the owner can still untick it.
   const [rememberMe, setRememberMe] = useState(true);
   const socialCount = [true, !!onAppleLogin, !!onFacebookLogin].filter(Boolean).length;
+  // LT-593: "welcome back" only on a device that has signed in before.
+  const [returning] = useState(hasSignedInBefore);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -126,7 +129,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 transition={{ delay: 0.2 }}
                 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
               >
-                {t('login.welcome')}
+                {t(returning ? 'login.welcomeBack' : 'login.welcome')}
               </motion.h1>
 
               <motion.p

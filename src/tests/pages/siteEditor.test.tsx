@@ -125,6 +125,27 @@ describe('the site editor (LT-249)', () => {
     expect(within(button).getByText('siteEditor.saveShort')).toHaveClass('sm:hidden');
   });
 
+  // LT-594 (Erel): on a wide screen the panel steps aside so the site shows bigger; a click on the site brings it back.
+  it('hides the edit panel on a wide screen, and a click on the site brings it back', async () => {
+    renderEditor();
+    const aside = () => document.querySelector('aside[data-tour="editor-panel"]') as HTMLElement;
+    const toggle = screen.getByTestId('panel-toggle');
+    expect(toggle).toHaveAttribute('aria-label', 'siteEditor.hidePanel');
+    expect(aside().className).toContain('md:flex');
+    fireEvent.click(toggle);
+    expect(aside().className).toContain('md:hidden');
+    expect(aside().className).not.toContain('md:flex');
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(toggle).toHaveAttribute('aria-label', 'siteEditor.showPanel');
+    await fromSite({ type: 'LT_READY' });
+    await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero', count: 1 });
+    await waitFor(() => expect(aside().className).toContain('md:flex'));
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    expect(aside().className).toContain('md:flex');
+  });
+
   // LT-444: the tab kept the previous page's title.
   it('names the window', () => {
     document.title = 'Gallery';

@@ -9,7 +9,7 @@ import type { Product } from '../../services/productsApi';
 
 const { t } = vi.hoisted(() => ({ t: (k: string, o?: Record<string, unknown>) => (o ? `${k}:${JSON.stringify(o)}` : k) }));
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t, i18n: { language: 'en' } }),
+  useTranslation: () => ({ t, i18n: { language: 'en', dir: () => 'ltr' } }),
   initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
@@ -32,17 +32,64 @@ describe('the categories panel (LT-587)', () => {
   it('renames a category for all its products, and says when the new name joins another', async () => {
     const onChanged = vi.fn();
     render(<CategoriesPanel products={products} onChanged={onChanged} />);
-    fireEvent.click(screen.getByText('products.categoriesPanel.title:{"count":2}'));
-    const rows = within(screen.getByTestId('categories-panel')).getAllByRole('listitem');
-    fireEvent.click(within(rows[0]).getByText('products.categoriesPanel.rename'));
-    const input = screen.getByRole('textbox');
+    // LT-592: every category is a pill with its number of products beside the name.
+    const pills = screen.getAllByTestId('category-pill');
+    expect(pills).toHaveLength(2);
+    expect(within(pills[0]).getByRole('textbox')).toHaveValue('טבעת');
+    expect(within(pills[0]).getByRole('textbox')).toHaveAttribute('readonly');
+    expect(pills[0].textContent).toContain('(2)');
+    expect(pills[1].textContent).toContain('(1)');
+    fireEvent.click(screen.getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"טבעת"}' }));
+    const input = within(pills[0]).getByRole('textbox');
+    await waitFor(() => expect(input).not.toHaveAttribute('readonly'));
     fireEvent.change(input, { target: { value: 'שרשראות' } });
     expect(screen.getByTestId('category-joins')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '' } });
+    expect(screen.getByTestId('category-clears')).toBeInTheDocument();
     fireEvent.change(input, { target: { value: 'טבעות' } });
     expect(screen.queryByTestId('category-joins')).toBeNull();
+    expect(screen.queryByTestId('category-clears')).toBeNull();
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(renameCategory).toHaveBeenCalledWith('טבעת', 'טבעות'));
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
+    await waitFor(() => expect(input).toHaveAttribute('readonly'));
+  });
+
+  it('one pill open at a time; the check saves, Escape puts the name back, an unchanged name saves nothing', async () => {
+    render(<CategoriesPanel products={products} onChanged={vi.fn()} />);
+    const [first, second] = screen.getAllByTestId('category-pill');
+    fireEvent.click(screen.getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"טבעת"}' }));
+    await waitFor(() => expect(first).toHaveAttribute('data-editing', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"שרשראות"}' }));
+    await waitFor(() => expect(second).toHaveAttribute('data-editing', 'true'));
+    expect(first).not.toHaveAttribute('data-editing');
+    const input = within(second).getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'עגילים' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(input).toHaveValue('שרשראות');
+    expect(second).not.toHaveAttribute('data-editing');
+    fireEvent.click(within(second).getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"שרשראות"}' }));
+    await waitFor(() => expect(second).toHaveAttribute('data-editing', 'true'));
+    fireEvent.click(within(second).getByRole('button', { name: 'common.save' }));
+    await waitFor(() => expect(second).not.toHaveAttribute('data-editing'));
+    expect(renameCategory).not.toHaveBeenCalled();
+    fireEvent.click(within(second).getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"שרשראות"}' }));
+    fireEvent.change(within(second).getByRole('textbox'), { target: { value: ' עגילים ' } });
+    fireEvent.click(within(second).getByRole('button', { name: 'common.save' }));
+    await waitFor(() => expect(renameCategory).toHaveBeenCalledWith('שרשראות', 'עגילים'));
+  });
+
+  it('a failed save keeps the pill open with the words typed', async () => {
+    renameCategory.mockRejectedValueOnce(new Error('down'));
+    render(<CategoriesPanel products={products} onChanged={vi.fn()} />);
+    const [first] = screen.getAllByTestId('category-pill');
+    fireEvent.click(screen.getByRole('button', { name: 'products.categoriesPanel.renameOne:{"name":"טבעת"}' }));
+    const input = within(first).getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'טבעות' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(renameCategory).toHaveBeenCalled());
+    await waitFor(() => expect(first).toHaveAttribute('data-editing', 'true'));
+    expect(input).toHaveValue('טבעות');
   });
 
   it('draws nothing for products without categories', () => {

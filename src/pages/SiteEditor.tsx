@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink, LayoutGrid, Layers, Loader2, Monitor, Palette, Plus, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
+  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink, LayoutGrid, Layers, Loader2, Monitor, Palette, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Plus, Redo2, RotateCcw, Save, Smartphone, Undo2, X, CheckCircle2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { AxiosError } from 'axios';
@@ -147,10 +147,16 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const previewUrl = import.meta.env.PROD && liveSite ? liveSite : CLIENT_APP_URL;
   const siteOrigin = useMemo(() => new URL(previewUrl).origin, [previewUrl]);
 
+  // LT-594 (Erel): on a wide screen the panel can step aside so the site shows bigger; whatever is
+  // picked to edit (a click on the site, a tab) brings it back.
+  const [panelHidden, setPanelHidden] = useState(false);
   const select = useCallback((next: SiteSelection | null) => {
     setSelection(next);
     setAdding(null);
-    if (next) setPageOpen(false);
+    if (next) {
+      setPageOpen(false);
+      setPanelHidden(false);
+    }
   }, []);
   // On a phone the panel opens over the lower screen: bring what was tapped to the top.
   const scrollRef = useRef<(target: { path?: string | null; section?: string | null; block?: 'start' | 'center' }) => void>(() => undefined);
@@ -573,6 +579,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     setAdding(null);
     setSiteTab(tab);
     setPageOpen(true);
+    setPanelHidden(false);
   };
   const toggleAdd = () => {
     setBarMenuOpen?.(false);
@@ -583,6 +590,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
     }
     setSelection(null);
     setAdding({ after: null });
+    setPanelHidden(false);
   };
   const designTab = { id: 'design', label: t('siteEditor.pageSettings'), Icon: Palette, tile: 'from-pink-400 to-fuchsia-500', active: sheetOpen && !adding && !selection && siteTab === 'design', onClick: () => openSite('design') };
   // LT-545: on the products' pages, the page's own design and the site's; there are no sections to add.
@@ -690,6 +698,22 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         {hasPages && <div className="hidden xl:block shrink-0" data-tour="editor-pages" data-testid="page-switcher">{pageSwitcher(false)}</div>}
         <div className="flex items-center gap-1 xl:justify-self-end">
           <div className="hidden md:flex items-center gap-1 me-2">
+            {!inBar && (
+              <button
+                type="button"
+                className={`${iconButton} ${panelHidden ? 'text-primary' : ''}`}
+                onClick={() => setPanelHidden((h) => !h)}
+                title={t(panelHidden ? 'siteEditor.showPanel' : 'siteEditor.hidePanel')}
+                aria-label={t(panelHidden ? 'siteEditor.showPanel' : 'siteEditor.hidePanel')}
+                aria-pressed={panelHidden}
+                data-testid="panel-toggle"
+              >
+                {/* The panel is at the row's end: the right in LTR, the left in RTL. */}
+                {direction === 'rtl'
+                  ? (panelHidden ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />)
+                  : (panelHidden ? <PanelRightOpen className="w-4 h-4" /> : <PanelRightClose className="w-4 h-4" />)}
+              </button>
+            )}
             <button type="button" className={`${iconButton} ${pickedDevice === 'desktop' ? 'text-primary' : ''}`} onClick={() => setDevice('desktop')} title={t('siteEditor.desktop')} aria-label={t('siteEditor.desktop')} aria-pressed={pickedDevice === 'desktop'}>
               <Monitor className="w-4 h-4" />
             </button>
@@ -772,7 +796,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         {!inBar && (
         <aside
           data-tour="editor-panel"
-          className={`${sheetOpen ? 'flex' : 'hidden'} md:flex flex-col fixed md:static inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-auto z-40 max-h-[62vh] md:max-h-none md:w-[380px] shrink-0 rounded-t-3xl md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/80 md:dark:bg-slate-800/80 shadow-2xl md:shadow-lg border-t md:border border-gray-100 dark:border-slate-700/50 overflow-hidden`}
+          className={`${sheetOpen ? 'flex' : 'hidden'} ${panelHidden ? 'md:hidden' : 'md:flex'} flex-col fixed md:static inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-auto z-40 max-h-[62vh] md:max-h-none md:w-[380px] shrink-0 rounded-t-3xl md:rounded-3xl bg-white dark:bg-slate-900 md:bg-white/80 md:dark:bg-slate-800/80 shadow-2xl md:shadow-lg border-t md:border border-gray-100 dark:border-slate-700/50 overflow-hidden`}
           aria-label={heading}
         >
           {panelHeader}
