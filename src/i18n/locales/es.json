@@ -2163,7 +2163,7 @@
       "layout": "Disposición",
       "card": "Tarjeta de producto",
       "cardHint": "La tarjeta se aplica en todo el sitio: el inicio, la página de productos y \"Más productos\" en una página de producto.",
-      "noCards": "Esta disposición no tiene tarjetas. Elige \"Quiet tiles\" o \"Swapping picture\" para elegir una.",
+      "noCards": "Este diseño no tiene tarjetas de producto",
       "preview": "Producto mostrado",
       "contentHint": "Las fotos, el precio y la descripción de cada producto se editan en la página Productos."
     },

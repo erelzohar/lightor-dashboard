@@ -581,6 +581,19 @@ describe('the site editor (LT-249)', () => {
       await fromSite({ type: 'LT_READY' });
       expect(screen.queryByTestId('page-switcher')).toBeNull();
       expect(screen.queryByTestId('page-switcher-short')).toBeNull();
+      expect(screen.getByTestId('editor-bar').className).not.toContain('xl:grid');
+    });
+
+    it('keeps the switcher in a middle column of its own, so the link beside it never moves it (LT-586)', async () => {
+      withProducts();
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      const bar = screen.getByTestId('editor-bar');
+      expect(bar.className).toContain('xl:grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)]');
+      const parts = Array.from(bar.children);
+      expect(parts).toHaveLength(3);
+      expect(parts[1]).toBe(screen.getByTestId('page-switcher'));
+      expect(parts[0].contains(screen.getByTestId('live-site-link'))).toBe(true);
     });
 
     it("moves the preview to the products page, offers its layout and the card, and the link follows", async () => {

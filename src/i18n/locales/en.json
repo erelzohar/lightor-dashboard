@@ -2163,7 +2163,7 @@
       "layout": "Layout",
       "card": "Product card",
       "cardHint": "The card applies across the site: the home page, the products page and \"More products\" on a product page.",
-      "noCards": "This layout has no cards. Pick \"Quiet tiles\" or \"Swapping picture\" to choose one.",
+      "noCards": "This design has no product cards",
       "preview": "Product shown",
       "contentHint": "Each product's pictures, price and description are edited on the Products page."
     },

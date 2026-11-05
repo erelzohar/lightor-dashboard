@@ -652,8 +652,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
 
   return (
     <div className="flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-gradient-to-br from-violet-50 via-slate-50 to-indigo-50/70 dark:from-slate-950 dark:via-violet-950/10 dark:to-slate-950">
-      {/* ── Top bar ── */}
-      <header className="h-14 md:h-16 flex items-center justify-between gap-2 px-3 md:px-6 shrink-0">
+      {/* ── Top bar ── LT-586 (Erel): on a wide screen the page switcher has a middle column of its own, so
+          nothing beside it (the live link that grows and shrinks with the page, the unsaved note, the save
+          button's words) moves it. */}
+      <header className={`h-14 md:h-16 flex items-center justify-between gap-2 px-3 md:px-6 shrink-0 ${hasPages ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] xl:gap-4' : ''}`} data-testid="editor-bar">
         <div className="flex items-center gap-2 min-w-0">
           <Palette className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
           <div className="min-w-0">
@@ -686,7 +688,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         </div>
         {/* In the bar where it has room (a wide screen); under it otherwise. */}
         {hasPages && <div className="hidden xl:block shrink-0" data-tour="editor-pages" data-testid="page-switcher">{pageSwitcher(false)}</div>}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 xl:justify-self-end">
           <div className="hidden md:flex items-center gap-1 me-2">
             <button type="button" className={`${iconButton} ${pickedDevice === 'desktop' ? 'text-primary' : ''}`} onClick={() => setDevice('desktop')} title={t('siteEditor.desktop')} aria-label={t('siteEditor.desktop')} aria-pressed={pickedDevice === 'desktop'}>
               <Monitor className="w-4 h-4" />
