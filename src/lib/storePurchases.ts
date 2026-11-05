@@ -79,10 +79,27 @@ export const syncStore = async (): Promise<void> => {
 
 export type PurchaseOutcome = 'done' | 'cancelled';
 
-export const buyStoreProduct = async (userId: string, product: PurchasesStoreProduct): Promise<PurchaseOutcome> => {
+/** Google Play: a free trial the owner can take with this product (Play offers only the trials one is eligible for). */
+export const hasFreeTrial = (product: PurchasesStoreProduct | undefined): boolean => !!product?.defaultOption?.freePhase;
+
+/**
+ * Buys a product. `replacing` is the subscription it takes the place of (Lightor+
+ * up to Pro): on Google Play the old one is named and Pro is charged in full
+ * today (LT-589, also inside a free trial); on the App Store both are in one
+ * subscription group, so the store itself makes it an upgrade.
+ */
+export const buyStoreProduct = async (userId: string, product: PurchasesStoreProduct, replacing?: PurchasesStoreProduct): Promise<PurchaseOutcome> => {
   const Purchases = await ready(userId);
   try {
-    await Purchases.purchaseStoreProduct({ product });
+    if (replacing && nativePlatform() === 'android') {
+      const { STORE_REPLACEMENT_MODE } = await plugin();
+      await Purchases.purchaseStoreProduct({
+        product,
+        storeProductChangeInfo: { oldProductIdentifier: replacing.identifier.split(':')[0], replacementMode: STORE_REPLACEMENT_MODE.CHARGE_FULL_PRICE },
+      });
+    } else {
+      await Purchases.purchaseStoreProduct({ product });
+    }
   } catch (error) {
     if ((error as { userCancelled?: boolean | null })?.userCancelled) return 'cancelled';
     throw error;

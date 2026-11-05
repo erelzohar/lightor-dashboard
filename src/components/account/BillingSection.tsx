@@ -763,8 +763,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             {/* LT-580: in the apps, the stores' plans. */}
             {!canSell && storePlans}
 
-            {/* On sale all through the free days (LT-458): the server starts
-                such a subscription with its first charge at the grant's end. */}
+            {/* On sale all through the free days (LT-458): Lightor+ is first
+                charged at the grant's end, Lightor Pro today (LT-589). */}
             {!canSell ? null : awaitingWebhook ? (
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Loader2 size={16} className="animate-spin shrink-0" />

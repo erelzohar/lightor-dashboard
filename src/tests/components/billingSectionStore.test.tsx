@@ -60,6 +60,7 @@ const store = vi.hoisted(() => ({
 }));
 vi.mock('../../lib/storePurchases', () => ({
   storeSalesOn: () => store.on,
+  hasFreeTrial: (product?: { defaultOption?: { freePhase?: unknown } | null }) => !!product?.defaultOption?.freePhase,
   loadStoreOffers: vi.fn(async () => store.offers),
   buyStoreProduct: vi.fn(async () => 'done'),
   restoreStore: vi.fn(async () => undefined),
@@ -71,9 +72,14 @@ vi.mock('../../services/entitlementsApi', () => ({
 }));
 
 const w = window as unknown as { Capacitor?: unknown };
-const inApp = () => {
-  w.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'ios' };
+const inApp = (platform: 'ios' | 'android' = 'ios') => {
+  w.Capacitor = { isNativePlatform: () => true, getPlatform: () => platform };
 };
+const DAY = 864e5;
+const freeDaysLeft = (days: number) => ({
+  until: new Date(Date.now() + days * DAY).toISOString(),
+  upgradeFrom: new Date(Date.now() + (days - 7) * DAY).toISOString(),
+});
 
 import { buyStoreProduct, loadStoreOffers, restoreStore } from '../../lib/storePurchases';
 
@@ -89,6 +95,11 @@ beforeEach(() => {
   authState.subscription = { status: 'free' };
   entitlementsState.data = { ...freeEntitlements(), bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35 }, store: { billedBy: null, products, packBookings: 100 } };
   store.on = true;
+  store.offers = {
+    plans: { plus: { identifier: 'plus_m', priceString: '₪89.90' }, pro: { identifier: 'pro_m', priceString: '₪119.90' } },
+    pack: { identifier: 'pack_100', priceString: '₪34.90' },
+  };
+  t.mockClear();
   inApp();
 });
 afterEach(() => {
@@ -124,12 +135,70 @@ describe('BillingSection with the stores (LT-580)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
-  it("opens in the free days' last week only, since the store charges at once", async () => {
-    entitlementsState.data = { ...entitlementsState.data, pilot: { until: new Date(Date.now() + 20 * 864e5).toISOString(), upgradeFrom: new Date(Date.now() + 13 * 864e5).toISOString() } };
+  // LT-589 (Erel 2026-11-05): both plans on show in the free days; Pro is
+  // paid today; Lightor+ (what the free days are) is locked on the iPhone
+  // until their last 3 days, and is then paid from that day.
+  it('on the iPhone in the free days: Lightor+ marked as already theirs and locked until 3 days before the end, Pro paid today', async () => {
+    entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
     render(<BillingSection />);
-    expect(await screen.findByTestId('store-not-yet')).toHaveTextContent('billing.store.opensOn');
-    expect(loadStoreOffers).not.toHaveBeenCalled();
-    expect(screen.queryByTestId('store-plans')).toBeNull();
+    const plus = await screen.findByTestId('store-plan-plus');
+    expect(screen.getByTestId('store-plus-current')).toHaveTextContent('billing.store.inFreeDays');
+    expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusLocked');
+    const lockedButton = screen.getByTestId('store-buy-plus');
+    expect(lockedButton).toBeDisabled();
+    expect(lockedButton).toHaveTextContent('billing.store.opensOnShort');
+    expect(t).toHaveBeenCalledWith('billing.store.plusLocked', expect.objectContaining({ days: 3 }));
+    expect(plus).toHaveTextContent('₪89.90');
+
+    expect(screen.getByTestId('store-note-pro')).toHaveTextContent('billing.store.proPaysNow');
+    expect(screen.getByTestId('store-buy-pro')).not.toBeDisabled();
+    fireEvent.click(screen.getByTestId('store-buy-pro'));
+    await waitFor(() => expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' })));
+  });
+
+  it("on the iPhone in the free days' last 3 days: Lightor+ opens, paid from today", async () => {
+    entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(2) };
+    render(<BillingSection />);
+    await screen.findByTestId('store-plan-plus');
+    expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusPaysNow');
+    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
+    expect(screen.getByTestId('store-buy-plus')).toHaveTextContent('billing.store.subscribe');
+  });
+
+  it("on Android with Play's trial: Lightor+ open all through the free days, first charged at their end", async () => {
+    inApp('android');
+    store.offers = { ...store.offers, plans: { ...(store.offers.plans as object), plus: { identifier: 'plus_m:monthly', priceString: '₪89.90', defaultOption: { freePhase: { billingPeriod: { iso8601: 'P3D' } } } } } };
+    entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
+    render(<BillingSection />);
+    await screen.findByTestId('store-plan-plus');
+    expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusDeferred');
+    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
+  });
+
+  it("on Android without a trial to take: locked like the iPhone's", async () => {
+    inApp('android');
+    entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
+    render(<BillingSection />);
+    await screen.findByTestId('store-plan-plus');
+    expect(screen.getByTestId('store-buy-plus')).toBeDisabled();
+  });
+
+  it('after the free days, both plans open with no notes', async () => {
+    render(<BillingSection />);
+    await screen.findByTestId('store-plan-plus');
+    expect(screen.queryByTestId('store-note-plus')).toBeNull();
+    expect(screen.queryByTestId('store-plus-current')).toBeNull();
+    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
+  });
+
+  it('moves a store Lightor+ up to Pro, naming the subscription it replaces', async () => {
+    authState.subscription = { status: 'active', plan: 'plus', provider: 'google' };
+    entitlementsState.data = { ...entitlementsState.data, plan: 'plus', store: { billedBy: 'google', products, packBookings: 100 } };
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByTestId('store-upgrade')).toHaveTextContent('billing.store.upgradeNote');
+    fireEvent.click(screen.getByTestId('store-upgrade-pro'));
+    await waitFor(() =>
+      expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' }), expect.objectContaining({ identifier: 'plus_m' })));
   });
 
   it('restores purchases on request', async () => {
