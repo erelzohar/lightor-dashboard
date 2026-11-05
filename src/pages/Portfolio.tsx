@@ -225,11 +225,24 @@ const Portfolio: React.FC = () => {
         }
     };
 
-    // A picture's title and (LT-346) its description for screen readers.
+    // A picture's title and its description. LT-581: the description is the one
+    // text, shown on the site and read by screen readers, so an older `alt` goes.
     const handleUpdateItem = async (url: string, edit: PortfolioItemEdit) => {
         const newItems = items.map(item =>
-            item.url === url ? { ...item, title: edit.title, alt: edit.alt } : item
+            item.url === url ? { ...item, title: edit.title, description: edit.description, alt: undefined } : item
         );
+        setItems(newItems);
+        try {
+            await saveUpdatedItems(newItems);
+        } catch (e) {
+            setItems(items);
+        }
+    };
+
+    // LT-581: the picture changed with AI takes the original's place, its title and
+    // description kept; saving the gallery keeps the new picture for good.
+    const handleReplaceImage = async (url: string, newUrl: string) => {
+        const newItems = items.map(item => (item.url === url ? { ...item, url: newUrl } : item));
         setItems(newItems);
         try {
             await saveUpdatedItems(newItems);
@@ -374,6 +387,7 @@ const Portfolio: React.FC = () => {
                                     item={item}
                                     onRemove={handleRemoveImage}
                                     onUpdate={handleUpdateItem}
+                                    onReplace={handleReplaceImage}
                                     siteLanguage={webConfig?.defaultLanguage || 'he'}
                                 />
                             ))}

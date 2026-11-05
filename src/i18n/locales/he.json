@@ -599,11 +599,13 @@
     "showOnWebsite": "הצג באתר",
     "visibilityUpdateSuccess": "הנראות עודכנה בהצלחה",
     "altLabel": "תיאור התמונה",
-    "altPlaceholder": "מה רואים בתמונה? (נקרא למבקרים עיוורים)",
+    "altPlaceholder": "תיאור קצר של התמונה",
     "altSuggest": "הצעה",
     "altSuggestFailed": "לא הצלחנו להציע תיאור. נסו שוב או כתבו בעצמכם.",
     "altSuggestBudget": "נגמרה מכסת הבינה המלאכותית לחודש. אפשר לכתוב את התיאור בעצמכם.",
-    "altMissing": "אין תיאור"
+    "altMissing": "אין תיאור",
+    "aiEdit": "עריכה עם AI",
+    "aiEditTitle": "עריכת התמונה עם AI"
   },
   "scheduleVacations": {
     "title": "ניהול זמנים וחופשות",
@@ -2040,7 +2042,10 @@
       "aiEditFailed": "לא הצלחנו לערוך את התמונה, נסו שוב",
       "aiEditTooBig": "אפשר לערוך תמונות עד 4MB",
       "aiBefore": "לפני",
-      "aiAfter": "אחרי"
+      "aiAfter": "אחרי",
+      "aiCompare": "התמונה המקורית מול התמונה הערוכה",
+      "aiCompareHandle": "הזזת קו ההשוואה",
+      "aiCompareHint": "גוררים את הקו כדי להשוות בין לפני לאחרי."
     },
     "section": {
       "heroBackground": "אפקט רקע",

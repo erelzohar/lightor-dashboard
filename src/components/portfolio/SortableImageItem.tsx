@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Trash2, Edit2, Check, X as XIcon, GripVertical, Sparkles, Loader2 } from 'lucide-react';
+import { Trash2, Edit2, Check, X as XIcon, GripVertical, Sparkles, Loader2, Wand2 } from 'lucide-react';
 import { PortfolioItem } from '../../types';
 import globals from '../../services/globals';
 import { useTranslation } from 'react-i18next';
 import { useConfirm } from '../../hooks/useConfirm';
 import { aiService } from '../../services/aiApi';
 import { isAiBusy } from '../../lib/aiErrors';
+import AiPictureBox from '../siteEditor/AiPictureBox';
 
-/** LT-346: what the owner edits on a picture — its title and its description for screen readers. */
-export interface PortfolioItemEdit { title: string; alt: string }
+/**
+ * What the owner edits on a picture: its title and its description. LT-581
+ * (Erel): the description visitors see is what screen readers read too, so
+ * the owner writes one text, not one for screen readers.
+ */
+export interface PortfolioItemEdit { title: string; description: string }
 
 interface Props {
     item: PortfolioItem;
     onRemove: (url: string) => void;
     onUpdate: (url: string, edit: PortfolioItemEdit) => void;
+    /** LT-581: the picture changed with AI takes the place of `url`. */
+    onReplace?: (url: string, newUrl: string) => void;
     /** The site's language: the description is written in it. */
     siteLanguage: string;
 }
@@ -29,15 +37,16 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting?: boolean;
     isEditing?: boolean;
     editTitle?: string;
-    editAlt?: string;
+    editDescription?: string;
     suggesting?: boolean;
     onEditClick?: () => void;
+    onAiEditClick?: () => void;
     onRemoveClick?: () => void;
     onSave?: () => void;
     onCancelEdit?: () => void;
     onTitleChange?: (title: string) => void;
-    onAltChange?: (alt: string) => void;
-    onSuggestAlt?: () => void;
+    onDescriptionChange?: (description: string) => void;
+    onSuggestDescription?: () => void;
     style?: React.CSSProperties;
     attributes?: any;
     listeners?: any;
@@ -48,15 +57,16 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     isSorting,
     isEditing,
     editTitle,
-    editAlt,
+    editDescription,
     suggesting,
     onEditClick,
+    onAiEditClick,
     onRemoveClick,
     onSave,
     onCancelEdit,
     onTitleChange,
-    onAltChange,
-    onSuggestAlt,
+    onDescriptionChange,
+    onSuggestDescription,
     style,
     attributes,
     listeners
@@ -88,7 +98,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
             >
                 <img
                     src={imageUrl}
-                    alt={item.alt || item.title || ''}
+                    alt={item.description || item.alt || item.title || ''}
                     draggable={false}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 select-none pointer-events-none"
                 />
@@ -100,6 +110,18 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                 <div className={`flex justify-end gap-2 ${isSorting || isDragging ? 'pointer-events-none' : 'pointer-events-auto'}`}>
                     {!isEditing && (
                         <>
+                            {/* LT-581: editing the picture with AI, as in the site editor. */}
+                            {onAiEditClick && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onAiEditClick(); }}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 touch-manipulation"
+                                    style={{ background: 'rgba(11,19,38,0.8)', backdropFilter: 'blur(8px)' }}
+                                    aria-label={t('portfolio.aiEdit')}
+                                    title={t('portfolio.aiEdit')}
+                                >
+                                    <Wand2 size={15} />
+                                </button>
+                            )}
                             <button
                                 onClick={(e) => { e.stopPropagation(); onEditClick?.(); }}
                                 className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 touch-manipulation"
@@ -141,10 +163,10 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                     if (e.key === 'Escape') onCancelEdit?.();
                                 }}
                             />
-                            {/* LT-346: the picture's description for visitors who cannot see it. */}
+                            {/* The picture's description: shown on the site, and read to visitors who cannot see it. */}
                             <textarea
-                                value={editAlt}
-                                onChange={e => onAltChange?.(e.target.value)}
+                                value={editDescription}
+                                onChange={e => onDescriptionChange?.(e.target.value)}
                                 rows={2}
                                 maxLength={300}
                                 className="w-full bg-white/20 text-white placeholder-white/50 border border-white/20 rounded-lg px-3 py-1.5 text-xs leading-snug resize-none focus:outline-none focus:border-primary transition-colors pointer-events-auto"
@@ -157,7 +179,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                             <div className="flex justify-end gap-2">
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); onSuggestAlt?.(); }}
+                                    onClick={(e) => { e.stopPropagation(); onSuggestDescription?.(); }}
                                     disabled={suggesting}
                                     className="me-auto inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs transition-colors cursor-pointer touch-manipulation disabled:opacity-60"
                                 >
@@ -190,8 +212,8 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                     </span>
                                 )}
                             </span>
-                            {/* LT-346: a nudge — a picture without a description is silent to a screen reader. */}
-                            {!item.alt && (
+                            {/* LT-346: a nudge - a picture without a description says little to anyone. */}
+                            {!item.description && !item.alt && (
                                 <span className="ms-auto shrink-0 rounded-full bg-amber-500/80 px-2 py-0.5 text-[0.625rem] font-semibold text-white">
                                     {t('portfolio.altMissing')}
                                 </span>
@@ -204,7 +226,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     );
 });
 
-const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, siteLanguage }) => {
+const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, onReplace, siteLanguage }) => {
     const { t } = useTranslation();
     const { confirm, dialog } = useConfirm();
     const askRemove = async () => {
@@ -228,21 +250,32 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, siteLang
 
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState(item.title || '');
-    const [editAlt, setEditAlt] = useState(item.alt || '');
+    // A picture described before LT-581 kept its text as `alt`: it opens as the description.
+    const descriptionOf = () => item.description || item.alt || '';
+    const [editDescription, setEditDescription] = useState(descriptionOf);
     const [suggesting, setSuggesting] = useState(false);
+    const [aiOpen, setAiOpen] = useState(false);
+    const aiTitleId = useId();
+
+    useEffect(() => {
+        if (!aiOpen) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setAiOpen(false); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [aiOpen]);
 
     const handleCancelEdit = () => {
         setEditTitle(item.title || '');
-        setEditAlt(item.alt || '');
+        setEditDescription(descriptionOf());
         setIsEditing(false);
     };
 
     // LT-346: the AI looks at the picture and drafts its description; the
-    // owner reads it and saves (or changes it) — nothing is stored here.
-    const handleSuggestAlt = async () => {
+    // owner reads it and saves (or changes it) - nothing is stored here.
+    const handleSuggestDescription = async () => {
         setSuggesting(true);
         try {
-            setEditAlt(await aiService.describeImage(item.url, siteLanguage));
+            setEditDescription(await aiService.describeImage(item.url, siteLanguage));
         } catch (err) {
             const status = (err as AxiosError)?.response?.status;
             toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'portfolio.altSuggestBudget' : 'portfolio.altSuggestFailed'));
@@ -271,28 +304,50 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, siteLang
             isSorting={isSorting}
             isEditing={isEditing}
             editTitle={editTitle}
-            editAlt={editAlt}
+            editDescription={editDescription}
             suggesting={suggesting}
             onEditClick={() => {
                 setIsEditing(true);
                 setEditTitle(item.title || '');
-                setEditAlt(item.alt || '');
+                setEditDescription(descriptionOf());
             }}
+            onAiEditClick={onReplace ? () => setAiOpen(true) : undefined}
             onRemoveClick={() => void askRemove()}
             onSave={() => {
-                onUpdate(item.url, { title: editTitle.trim(), alt: editAlt.trim() });
+                onUpdate(item.url, { title: editTitle.trim(), description: editDescription.trim() });
                 setIsEditing(false);
             }}
             onCancelEdit={handleCancelEdit}
             onTitleChange={setEditTitle}
-            onAltChange={setEditAlt}
-            onSuggestAlt={handleSuggestAlt}
+            onDescriptionChange={setEditDescription}
+            onSuggestDescription={handleSuggestDescription}
             style={style}
             attributes={attributes}
             listeners={listeners}
         />
         {/* Beside the card, not in it: the card carries the drag's listeners. */}
         {dialog}
+        {aiOpen && createPortal(
+            <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 sm:items-center sm:p-6" onClick={() => setAiOpen(false)}>
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={aiTitleId}
+                    data-testid="gallery-ai-edit"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex max-h-[92dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-2xl bg-white p-5 dark:bg-slate-900 sm:rounded-2xl"
+                >
+                    <div className="flex items-center justify-between gap-3">
+                        <h2 id={aiTitleId} className="text-lg font-bold text-gray-900 dark:text-white">{t('portfolio.aiEditTitle')}</h2>
+                        <button type="button" onClick={() => setAiOpen(false)} aria-label={t('common.cancel')} className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800">
+                            <XIcon size={18} />
+                        </button>
+                    </div>
+                    <AiPictureBox value={item.url} aspect="4:3" editOnly onUse={(url) => { onReplace?.(item.url, url); setAiOpen(false); }} />
+                </div>
+            </div>,
+            document.body,
+        )}
         </>
     );
 };

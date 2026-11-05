@@ -598,12 +598,14 @@
     "visibilityHiddenDesc": "Non visible par les clients",
     "showOnWebsite": "Afficher sur le site",
     "visibilityUpdateSuccess": "Visibilité mise à jour avec succès",
-    "altLabel": "Description de l'image",
-    "altPlaceholder": "Que montre l'image ? (lue aux visiteurs aveugles)",
+    "altLabel": "Description de la photo",
+    "altPlaceholder": "Une courte description de la photo",
     "altSuggest": "Suggérer",
     "altSuggestFailed": "Impossible de suggérer une description. Réessayez ou écrivez-la vous-même.",
     "altSuggestBudget": "Le quota d'IA du mois est épuisé. Vous pouvez écrire la description vous-même.",
-    "altMissing": "Sans description"
+    "altMissing": "Sans description",
+    "aiEdit": "Modifier avec l’IA",
+    "aiEditTitle": "Modifier la photo avec l’IA"
   },
   "scheduleVacations": {
     "title": "Horaires et congés",
@@ -2040,7 +2042,10 @@
       "aiEditFailed": "Impossible de modifier l’image, veuillez réessayer",
       "aiEditTooBig": "Seules les images jusqu’à 4 Mo peuvent être modifiées",
       "aiBefore": "Avant",
-      "aiAfter": "Après"
+      "aiAfter": "Après",
+      "aiCompare": "La photo d’origine face à la photo modifiée",
+      "aiCompareHandle": "Déplacer la ligne de comparaison",
+      "aiCompareHint": "Faites glisser la ligne pour comparer avant et après."
     },
     "section": {
       "heroBackground": "Effet d'arrière-plan",

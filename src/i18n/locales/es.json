@@ -598,12 +598,14 @@
     "visibilityHiddenDesc": "No visible para los clientes",
     "showOnWebsite": "Mostrar en el sitio",
     "visibilityUpdateSuccess": "Visibilidad actualizada correctamente",
-    "altLabel": "Descripción de la imagen",
-    "altPlaceholder": "¿Qué muestra la imagen? (se lee a visitantes ciegos)",
+    "altLabel": "Descripción de la foto",
+    "altPlaceholder": "Una breve descripción de la foto",
     "altSuggest": "Sugerir",
     "altSuggestFailed": "No pudimos sugerir una descripción. Inténtalo de nuevo o escríbela tú.",
     "altSuggestBudget": "Se agotó la cuota de IA de este mes. Puedes escribir la descripción tú mismo.",
-    "altMissing": "Sin descripción"
+    "altMissing": "Sin descripción",
+    "aiEdit": "Editar con IA",
+    "aiEditTitle": "Editar la foto con IA"
   },
   "scheduleVacations": {
     "title": "Horarios y vacaciones",
@@ -2040,7 +2042,10 @@
       "aiEditFailed": "No pudimos editar la imagen, inténtalo de nuevo",
       "aiEditTooBig": "Solo se pueden editar imágenes de hasta 4 MB",
       "aiBefore": "Antes",
-      "aiAfter": "Después"
+      "aiAfter": "Después",
+      "aiCompare": "La foto original frente a la editada",
+      "aiCompareHandle": "Mover la línea de comparación",
+      "aiCompareHint": "Arrastra la línea para comparar antes y después."
     },
     "section": {
       "heroBackground": "Efecto de fondo",

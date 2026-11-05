@@ -599,11 +599,13 @@
     "showOnWebsite": "إظهار على الموقع",
     "visibilityUpdateSuccess": "تم تحديث الظهور بنجاح",
     "altLabel": "وصف الصورة",
-    "altPlaceholder": "ماذا تُظهر الصورة؟ (يُقرأ للزوار المكفوفين)",
+    "altPlaceholder": "وصف قصير للصورة",
     "altSuggest": "اقتراح",
     "altSuggestFailed": "تعذّر اقتراح وصف. حاول مجددًا أو اكتبه بنفسك.",
     "altSuggestBudget": "نفدت حصة الذكاء الاصطناعي لهذا الشهر. يمكنك كتابة الوصف بنفسك.",
-    "altMissing": "بلا وصف"
+    "altMissing": "بلا وصف",
+    "aiEdit": "تعديل بالذكاء الاصطناعي",
+    "aiEditTitle": "تعديل الصورة بالذكاء الاصطناعي"
   },
   "scheduleVacations": {
     "title": "ساعات العمل والإجازات",
@@ -2040,7 +2042,10 @@
       "aiEditFailed": "تعذّر تعديل الصورة، حاول مرة أخرى",
       "aiEditTooBig": "يمكن تعديل الصور حتى 4 ميجابايت فقط",
       "aiBefore": "قبل",
-      "aiAfter": "بعد"
+      "aiAfter": "بعد",
+      "aiCompare": "الصورة الأصلية مقابل الصورة المعدّلة",
+      "aiCompareHandle": "تحريك خط المقارنة",
+      "aiCompareHint": "اسحب الخط للمقارنة بين قبل وبعد."
     },
     "section": {
       "heroBackground": "تأثير الخلفية",

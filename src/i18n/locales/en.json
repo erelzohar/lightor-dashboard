@@ -599,11 +599,13 @@
     "showOnWebsite": "Show on website",
     "visibilityUpdateSuccess": "Visibility updated successfully",
     "altLabel": "Picture description",
-    "altPlaceholder": "What does the picture show? (read to blind visitors)",
+    "altPlaceholder": "A short description of the picture",
     "altSuggest": "Suggest",
     "altSuggestFailed": "We couldn't suggest a description. Try again, or write one yourself.",
     "altSuggestBudget": "This month's AI allowance is used up. You can write the description yourself.",
-    "altMissing": "No description"
+    "altMissing": "No description",
+    "aiEdit": "Edit with AI",
+    "aiEditTitle": "Edit the picture with AI"
   },
   "scheduleVacations": {
     "title": "Schedule & Vacations",
@@ -2040,7 +2042,10 @@
       "aiEditFailed": "We could not edit the picture, please try again",
       "aiEditTooBig": "Pictures up to 4MB can be edited",
       "aiBefore": "Before",
-      "aiAfter": "After"
+      "aiAfter": "After",
+      "aiCompare": "The original picture against the edited one",
+      "aiCompareHandle": "Move the comparison line",
+      "aiCompareHint": "Drag the line to compare before and after."
     },
     "section": {
       "heroBackground": "Background effect",
