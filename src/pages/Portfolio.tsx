@@ -225,11 +225,12 @@ const Portfolio: React.FC = () => {
         }
     };
 
-    // A picture's title and its description. LT-581: the description is the one
-    // text, shown on the site and read by screen readers, so an older `alt` goes.
+    // A picture's title. LT-582 (Erel): a gallery picture has a title only, and the
+    // title is its alt on the site, so an older `alt` goes; a stored description
+    // stays in the data, unseen.
     const handleUpdateItem = async (url: string, edit: PortfolioItemEdit) => {
         const newItems = items.map(item =>
-            item.url === url ? { ...item, title: edit.title, description: edit.description, alt: undefined } : item
+            item.url === url ? { ...item, title: edit.title, alt: undefined } : item
         );
         setItems(newItems);
         try {
@@ -239,8 +240,8 @@ const Portfolio: React.FC = () => {
         }
     };
 
-    // LT-581: the picture changed with AI takes the original's place, its title and
-    // description kept; saving the gallery keeps the new picture for good.
+    // LT-581: the picture changed with AI takes the original's place, its title
+    // kept; saving the gallery keeps the new picture for good.
     const handleReplaceImage = async (url: string, newUrl: string) => {
         const newItems = items.map(item => (item.url === url ? { ...item, url: newUrl } : item));
         setItems(newItems);
@@ -388,7 +389,6 @@ const Portfolio: React.FC = () => {
                                     onRemove={handleRemoveImage}
                                     onUpdate={handleUpdateItem}
                                     onReplace={handleReplaceImage}
-                                    siteLanguage={webConfig?.defaultLanguage || 'he'}
                                 />
                             ))}
                         </SortableContext>

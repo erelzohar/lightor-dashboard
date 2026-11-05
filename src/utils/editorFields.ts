@@ -47,7 +47,6 @@ const RULES: Rule[] = [
   [/^components\.about\.features\.(\d+)\.description$/, (m) => ({ ...para('featureDescription'), n: item(m) })],
   [/^components\.portfolio\.items\.(\d+)\.url$/, (m) => ({ ...image('galleryImage'), n: item(m) })],
   [/^components\.portfolio\.items\.(\d+)\.title$/, (m) => ({ ...line('galleryTitle', 80), n: item(m) })],
-  [/^components\.portfolio\.items\.(\d+)\.description$/, (m) => ({ ...para('galleryDescription'), n: item(m) })],
   [/^components\.testimonials\.items\.(\d+)\.text$/, (m) => ({ ...para('quoteText', 1000), n: item(m) })],
   [/^components\.testimonials\.items\.(\d+)\.name$/, (m) => ({ ...line('quoteName', 100), n: item(m) })],
   [/^components\.faq\.items\.(\d+)\.question$/, (m) => ({ ...line('faqQuestion', 300), n: item(m) })],

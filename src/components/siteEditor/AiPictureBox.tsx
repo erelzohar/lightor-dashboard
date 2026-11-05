@@ -11,6 +11,13 @@ export type AiAspect = '16:9' | '4:3' | '1:1';
 
 const ASPECT_CLASS: Record<AiAspect, string> = { '16:9': 'aspect-video', '4:3': 'aspect-[4/3]', '1:1': 'aspect-square' };
 
+/**
+ * LT-582 (Erel): a side's label shows only while that side is in sight. Within
+ * this much (in percent) of an edge only one picture is left, and its own
+ * label with it - the line has gone past the other one's label by then.
+ */
+const LABEL_EDGE = 15;
+
 interface AiPictureBoxProps {
   /** The picture there now ('' = none): what "edit with AI" changes. */
   value: string;
@@ -38,6 +45,8 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
   const [aiEditing, setAiEditing] = useState(editOnly);
   // LT-489: on the free plan the month's AI pictures are the build's; the editor makes none.
   const [aiLocked, setAiLocked] = useState(false);
+  // Where the before/after line is, 0 (all "after") to 100 (all "before"); every new picture starts in the middle.
+  const [split, setSplit] = useState(50);
 
   useEffect(() => {
     let alive = true;
@@ -53,7 +62,9 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
     setAiError(null);
     setAiResult(null);
     try {
-      setAiResult(await (aiEditing ? aiService.editImage(value, aiPrompt.trim()) : aiService.createImage(aiPrompt.trim(), aspect)));
+      const url = await (aiEditing ? aiService.editImage(value, aiPrompt.trim()) : aiService.createImage(aiPrompt.trim(), aspect));
+      setSplit(50);
+      setAiResult(url);
     } catch (err) {
       const response = (err as { response?: { status?: number; data?: { code?: string } } })?.response;
       if (response?.data?.code === 'AI_IMAGES_PLUS') setAiLocked(true);
@@ -127,17 +138,23 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
                 className={`${ASPECT_CLASS[aspect]} rounded-xl bg-gray-100 dark:bg-slate-800`}
                 label={t('siteEditor.image.aiCompare')}
                 handleLabel={t('siteEditor.image.aiCompareHandle')}
+                value={split}
+                onValueChange={setSplit}
                 data-testid="ai-before-after"
               >
                 <DiffItem1><img src={resolveImage(value)} alt={t('siteEditor.image.aiBefore')} /></DiffItem1>
                 <DiffItem2><img src={resolveImage(aiResult)} alt={t('siteEditor.image.aiAfter')} /></DiffItem2>
                 <DiffResizer />
-                <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 z-[3] rounded-full bg-black/55 px-2 py-0.5 text-xs font-medium text-white">
-                  {t('siteEditor.image.aiBefore')}
-                </span>
-                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-2 z-[3] rounded-full bg-primary/85 px-2 py-0.5 text-xs font-medium text-white">
-                  {t('siteEditor.image.aiAfter')}
-                </span>
+                {split > LABEL_EDGE && (
+                  <span aria-hidden="true" data-testid="ai-before-label" className="pointer-events-none absolute left-2 top-2 z-[3] rounded-full bg-black/55 px-2 py-0.5 text-xs font-medium text-white">
+                    {t('siteEditor.image.aiBefore')}
+                  </span>
+                )}
+                {split < 100 - LABEL_EDGE && (
+                  <span aria-hidden="true" data-testid="ai-after-label" className="pointer-events-none absolute right-2 top-2 z-[3] rounded-full bg-primary/85 px-2 py-0.5 text-xs font-medium text-white">
+                    {t('siteEditor.image.aiAfter')}
+                  </span>
+                )}
               </Diff>
               <p className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.image.aiCompareHint')}</p>
             </div>

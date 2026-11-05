@@ -204,14 +204,6 @@ export const aiService = {
     );
     return { ...response.data.data, picture: response.data.data.picture ?? '' };
   },
-
-  describeImage: async (image: string, language: string): Promise<string> => {
-    const response = await apiClient.post<{ success: boolean; data: { alt: string } }>(
-      `${globals.aiUrl}image-alt`,
-      { image, language }
-    );
-    return response.data.data.alt;
-  },
 };
 
 export interface ElementField {

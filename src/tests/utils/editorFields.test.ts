@@ -41,6 +41,22 @@ describe('editor fields (LT-249)', () => {
     expect(sectionFieldsFromConfig(config, 'k7', 'manifesto')).toEqual([{ path: 'blocks.k7.props.text', kind: 'text' }]);
   });
 
+  it('lists a gallery picture by its picture and title only (LT-582: no description)', () => {
+    const config = {
+      components: {
+        portfolio: {
+          visible: true, title: 'Work', description: 'Our work',
+          items: [{ url: 'a.webp', title: 'Cake', description: 'An older caption' }, { url: 'b.webp', title: 'Bread', description: '' }],
+        },
+      },
+    };
+    expect(sectionFieldsFromConfig(config, 'g1', 'gallery').map((f) => f.path)).toEqual([
+      'components.portfolio.title', 'components.portfolio.description',
+      'components.portfolio.items.0.url', 'components.portfolio.items.0.title',
+      'components.portfolio.items.1.url', 'components.portfolio.items.1.title',
+    ]);
+  });
+
   it('names what an AI answer changed: texts by field, then the look', () => {
     const before = { components: { hero: { title: 'A', subtitle: 'B', bgType: 'fog' } }, design: { stylePreset: 'luxe' } };
     const after = { components: { hero: { title: 'A2', subtitle: 'B', bgType: 'gradient' } }, design: { stylePreset: 'bistro' } };

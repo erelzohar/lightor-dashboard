@@ -55,6 +55,34 @@ describe('ImagePanel - editing a picture with AI (LT-519)', () => {
     expect(onChange).toHaveBeenCalledWith('https://api.lightor.app/api/images/tmp-ai-2.webp');
   });
 
+  it('labels only the side in sight: at an edge only that picture\'s label is left (LT-582)', async () => {
+    vi.mocked(aiService.editImage).mockResolvedValue('https://api.lightor.app/api/images/tmp-ai-3.webp');
+    openEdit();
+    run('a brighter background');
+    const compare = await screen.findByTestId('ai-before-after');
+    const labels = () => [screen.queryByTestId('ai-before-label'), screen.queryByTestId('ai-after-label')].map((el) => el?.textContent ?? null);
+    // In the middle, both.
+    expect(labels()).toEqual(['siteEditor.image.aiBefore', 'siteEditor.image.aiAfter']);
+    // The line at the left edge: the whole picture is the edited one.
+    fireEvent.keyDown(compare, { key: 'Home' });
+    expect(labels()).toEqual([null, 'siteEditor.image.aiAfter']);
+    // At the right edge: the whole picture is the original.
+    fireEvent.keyDown(compare, { key: 'End' });
+    expect(labels()).toEqual(['siteEditor.image.aiBefore', null]);
+    // Near an edge, not on it: the line has passed the other label already.
+    fireEvent.keyDown(compare, { key: 'Home' });
+    fireEvent.keyDown(compare, { key: 'ArrowRight', shiftKey: true });
+    expect(screen.getByRole('slider')).toHaveAttribute('aria-valuenow', '10');
+    expect(labels()).toEqual([null, 'siteEditor.image.aiAfter']);
+    fireEvent.keyDown(compare, { key: 'ArrowRight', shiftKey: true });
+    expect(labels()).toEqual(['siteEditor.image.aiBefore', 'siteEditor.image.aiAfter']);
+    // Another try starts in the middle again.
+    fireEvent.keyDown(compare, { key: 'End' });
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditAgain'));
+    await waitFor(() => expect(screen.getByRole('slider')).toHaveAttribute('aria-valuenow', '50'));
+    expect(labels()).toEqual(['siteEditor.image.aiBefore', 'siteEditor.image.aiAfter']);
+  });
+
   it('says a picture is too large, the limit and a failure apart', async () => {
     const refuse = (status: number, code?: string) => vi.mocked(aiService.editImage).mockRejectedValueOnce({ response: { status, data: { code } } });
     openEdit();
