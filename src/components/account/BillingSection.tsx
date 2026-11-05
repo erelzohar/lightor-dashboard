@@ -31,6 +31,8 @@ import PlainPlans from './PlainPlans';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
+import { storeSalesOn } from '../../lib/storePurchases';
+import StorePlans from './StorePlans';
 import { lazyOr } from '../../lib/lazyOr';
 
 // Activation is webhook-driven, so after a completed checkout the server is
@@ -100,6 +102,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   // since each of those is managing a purchase made outside Apple. The usage
   // meter stays — it is the account's own usage, not an offer.
   const canSell = canOfferPurchases();
+  // LT-580: in the apps the plans and the booking packs are the stores' (RevenueCat), when on.
+  const storeSales = storeSalesOn();
   // Paddle's customer portal (LT-265) is for an account Paddle knows as a
   // customer: /auth/me says so with customerId, and the statuses stand in for
   // a record without one. Should Paddle not know it after all, the server
@@ -140,6 +144,17 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     };
   }, []);
 
+  // LT-580: after a store purchase or restore the server has read RevenueCat: the account again.
+  const reloadAccount = async () => {
+    await refreshUser();
+    const data = await fetchMyEntitlements();
+    if (data) setEntitlements(data);
+  };
+  const storePlans = storeSales && entitlements && !complimentary
+    ? <StorePlans entitlements={entitlements} leadsSite={leadsSite} onChanged={reloadAccount} />
+    : null;
+  const billedByStore = !!entitlements?.store?.billedBy;
+
   const appointmentCap = entitlements?.limits.monthlyAppointments ?? null;
   const appointmentsUsed = entitlements?.usage.appointmentsThisMonth ?? 0;
   const capRatio = appointmentCap ? Math.min(appointmentsUsed / appointmentCap, 1) : 0;
@@ -162,8 +177,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const extras = bookings?.kind === 'plus' ? bookings.extras : undefined;
   // LT-504: Lightor+ has no extras; its period closes at the 200.
   const onPlus = entitlements?.plan === 'plus' && isPaid;
-  const plusFull = onPlus && bookings?.kind === 'plus' && bookings.used >= bookings.included;
-  const includedClosed = extras?.closed === true || plusFull;
+  // LT-580: an app subscription's booking packs keep the site open past the included bookings.
+  const packsOpen = bookings?.packs ? !bookings.packs.closed : false;
+  const plusFull = onPlus && bookings?.kind === 'plus' && bookings.used >= bookings.included && !packsOpen;
+  const includedClosed = extras?.closed === true || plusFull || bookings?.packs?.closed === true;
   const bookingsRatio = bookings && bookings.included > 0 ? Math.min(bookings.used / bookings.included, 1) : 0;
   const extraBookings = bookings ? Math.max(0, bookings.used - bookings.included) : 0;
   const freeMonthFull = bookings?.kind === 'freePeriod' && bookings.used >= bookings.included;
@@ -624,7 +641,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     : t('billing.cancelScheduledDescNoDate')}
                 </p>
                 {meters}
-                {canSell && (
+                {/* LT-580: renewing again is the store's, from its page. */}
+                {billedByStore && storePlans}
+                {canSell && !billedByStore && (
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="primary"
@@ -660,8 +679,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {meters}
                 {/* What the plan includes (LT-465), in place of "no monthly limits". */}
                 {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
+                {/* LT-580: an app subscription is managed in its store, with its booking packs. */}
+                {billedByStore && storePlans}
                 {/* LT-504: to the other plan, on the web only (LT-130). */}
-                {canSell && currentPlan && (
+                {canSell && !billedByStore && currentPlan && (
                   <div>
                     <Button
                       variant={currentPlan === 'plus' ? 'primary' : 'outline'}
@@ -674,8 +695,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                     </Button>
                   </div>
                 )}
-                {manageButton && <div>{manageButton}</div>}
-                {canSell && (
+                {manageButton && !billedByStore && <div>{manageButton}</div>}
+                {canSell && !billedByStore && (
                   <button
                     type="button"
                     onClick={() => setCancelModalOpen(true)}
@@ -738,6 +759,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('billing.freePeriodPending')}</p>
             )}
             {meters}
+
+            {/* LT-580: in the apps, the stores' plans. */}
+            {!canSell && storePlans}
 
             {/* On sale all through the free days (LT-458): the server starts
                 such a subscription with its first charge at the grant's end. */}

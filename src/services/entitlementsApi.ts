@@ -77,6 +77,12 @@ export interface MyEntitlements {
    * is charged for them). Optional so an older API still parses.
    */
   bookingTerms?: { included: number; plusIncluded?: number; extraAgorot: number | null };
+  /**
+   * LT-580: the apps' store - who bills the subscription now ('apple' /
+   * 'google', null for the web's card or none), which store products sell
+   * each plan and the booking pack, and a pack's bookings. Absent on an older API.
+   */
+  store?: { billedBy: 'apple' | 'google' | null; products: { plus: string[]; pro: string[]; bookingPack: string[] }; packBookings: number };
   /** LT-521: what the plan hides now (older than `limits.historyMonths`); an upgrade brings it back. Absent on an older API. */
   hiddenHistory?: { bookings: number; leads: number };
   /** LT-458: Paddle is retrying a failed payment - no bookings, inquiries or reminders until it is paid. */
@@ -92,6 +98,10 @@ export interface BookingsMeter {
   extraAgorot: number | null;
   /** LT-465, a subscriber's period only; absent on an older API. */
   extras?: ExtrasSwitch;
+  /** LT-580: the booking packs' bookings left past the included ones, a pack's size, and whether booking is closed now. */
+  packs?: { left: number; size: number; closed: boolean };
+  /** LT-580: 'apple' / 'google' when the app's store bills the subscription. */
+  billedBy?: 'apple' | 'google';
 }
 
 /**
@@ -103,7 +113,7 @@ export interface ExtrasSwitch {
   chosen: boolean;
   on: boolean;
   // LT-466: an unpaid extras charge, and the free days with a card (the choice is kept, it starts with the first payment).
-  blockedBy: 'billingOff' | 'notSubscribed' | 'paymentFailed' | 'chargeFailed' | 'cancelScheduled' | 'trialing' | null;
+  blockedBy: 'billingOff' | 'notSubscribed' | 'paymentFailed' | 'chargeFailed' | 'cancelScheduled' | 'trialing' | 'storeBilled' | null;
   changedAt: string | null;
   closed: boolean;
 }
