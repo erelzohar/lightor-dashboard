@@ -2737,6 +2737,26 @@
       "hiddenBody": "They stay saved here, and you can bring them back at any time.",
       "savedShown": "Your products are on the site again",
       "savedHidden": "Your products are hidden from the site"
+    },
+    "colors": "Colours",
+    "sizes": "Sizes",
+    "colorSwatch": "Colour swatch",
+    "colorName": "Colour name",
+    "colorPlaceholder": "e.g. Red",
+    "addColor": "Add colour",
+    "sizePlaceholder": "e.g. M, then Enter",
+    "removeOption": "Remove {{name}}",
+    "categoriesPanel": {
+      "title": "Categories ({{count}})",
+      "hint": "A new name changes every product in the category. Another category's name joins the two.",
+      "count": "{{count}} products",
+      "rename": "Rename",
+      "newName": "New name for {{name}}",
+      "joins": "Joins the category \"{{name}}\"",
+      "clears": "With no name, the products keep no category",
+      "renamed": "The category changed on {{count}} products",
+      "joined": "{{count}} products moved to \"{{name}}\"",
+      "cleared": "The category came off {{count}} products"
     }
   }
 }

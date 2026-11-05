@@ -23,7 +23,8 @@ export interface Lead {
    * LT-540: the product it is about, as it was then. `url` (LT-542) is where
    * the site shows it now; absent once the site no longer does.
    */
-  product?: { name: string; price?: number; url?: string };
+  /** LT-588: `options`, the colour and size the visitor picked ("אדום, M"). */
+  product?: { name: string; price?: number; url?: string; options?: string };
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;

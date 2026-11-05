@@ -12,6 +12,12 @@ export interface ProductImage {
   alt?: string;
 }
 
+/** LT-588: a colour a product comes in: its name (what the visitor reads) and its swatch (#rrggbb). */
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
 export interface Product {
   _id: string;
   slug: string;
@@ -23,6 +29,9 @@ export interface Product {
   images: ProductImage[];
   details: string[];
   category?: string;
+  /** LT-588: what a visitor may pick on the site; the inquiry carries the pick. */
+  colors?: ProductColor[];
+  sizes?: string[];
   status: 'draft' | 'published';
   availability: 'in_stock' | 'out_of_stock';
   /** Made by a site build and not checked by the owner yet. */
@@ -66,6 +75,10 @@ export const updateProduct = async (id: string, input: ProductInput & { sample?:
 export const deleteProduct = async (id: string): Promise<void> => {
   await apiClient.delete(`${URL}${id}`);
 };
+
+/** LT-587: a category renamed for all its products (to an existing name: the two become one; to nothing: none). */
+export const renameCategory = async (from: string, to: string): Promise<number> =>
+  (await apiClient.patch(`${URL}categories`, { from, to })).data.data.changed;
 
 export const reorderProducts = async (ids: string[]): Promise<void> => {
   await apiClient.put(`${URL}order`, { ids });

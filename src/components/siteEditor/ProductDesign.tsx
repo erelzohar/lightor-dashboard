@@ -64,6 +64,31 @@ const pic = 'rounded bg-gray-300 dark:bg-slate-500';
 const line = 'h-1 rounded-full bg-gray-300 dark:bg-slate-500';
 
 const CardThumb: React.FC<{ card: string }> = ({ card }) => {
+  // LT-588: the details sliding up over the card; the pictures with colours and sizes under them.
+  if (card === 'reveal') {
+    return (
+      <div className="relative h-full overflow-hidden rounded-md border border-gray-300 bg-white dark:border-slate-500 dark:bg-slate-800">
+        <div className={`${pic} h-3/5 rounded-none`} />
+        <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end gap-0.5 bg-white/95 p-1 dark:bg-slate-700/95">
+          <div className={`${line} w-2/3`} />
+          <div className="h-1.5 rounded-full bg-primary/70" />
+        </div>
+      </div>
+    );
+  }
+  if (card === 'options') {
+    return (
+      <div className="flex h-full flex-col gap-1">
+        <div className={`${pic} flex-1`} />
+        <div className="flex gap-0.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-700 dark:bg-slate-300" />
+        </div>
+        <div className="h-1.5 rounded-full bg-primary/70" />
+      </div>
+    );
+  }
   if (card === 'framed') {
     return (
       <div className="flex h-full flex-col gap-1 rounded-md border border-gray-300 bg-white p-1 dark:border-slate-500 dark:bg-slate-800">
@@ -89,6 +114,22 @@ const CardThumb: React.FC<{ card: string }> = ({ card }) => {
 };
 
 const PageThumb: React.FC<{ layout: string }> = ({ layout }) => {
+  // LT-588: one picture with its dots, the words and the tags beside it.
+  if (layout === 'detail') {
+    return (
+      <div className="flex h-full gap-1">
+        <div className="flex flex-1 flex-col gap-0.5">
+          <div className={`${pic} flex-1`} />
+          <div className="flex justify-center gap-0.5"><span className="h-1 w-1 rounded-full bg-primary/70" /><span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-slate-500" /></div>
+        </div>
+        <div className="flex flex-1 flex-col gap-1 pt-0.5">
+          <div className={`${line} w-full`} />
+          <div className="flex gap-0.5"><div className="h-1.5 flex-1 rounded-full bg-primary/70" /><div className="h-1.5 flex-1 rounded-full border border-gray-300 dark:border-slate-500" /></div>
+          <div className="flex gap-0.5"><div className={`${line} w-1/3`} /><div className={`${line} w-1/3`} /></div>
+        </div>
+      </div>
+    );
+  }
   if (layout === 'hero') {
     return (
       <div className="flex h-full flex-col items-center gap-1">
@@ -175,7 +216,7 @@ export function ProductCardPicker<T>({ config, onUpdate }: PanelProps<T>) {
         labelOf={(value) => optionLabel(PRODUCT_CARDS, value, lang)}
         thumb={(value) => <CardThumb card={value} />}
         onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productCard', value))}
-        columns="grid-cols-4"
+        columns="grid-cols-3"
         testId="product-card-choices"
       />
       <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.products.cardHint')}</p>
@@ -254,7 +295,7 @@ export function ProductPagePanel<T>({ config, onUpdate, slug, onPreview }: Panel
           labelOf={(value) => optionLabel(PRODUCT_PAGE_LAYOUTS, value, lang)}
           thumb={(value) => <PageThumb layout={value} />}
           onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productPageLayout', value))}
-          columns="grid-cols-3"
+          columns="grid-cols-2"
           testId="product-page-choices"
         />
       </div>

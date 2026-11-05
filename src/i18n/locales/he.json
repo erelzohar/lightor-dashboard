@@ -2737,6 +2737,26 @@
       "hiddenBody": "הם נשמרים כאן, ואפשר להחזיר אותם בכל רגע.",
       "savedShown": "המוצרים מוצגים שוב באתר",
       "savedHidden": "המוצרים הוסתרו מהאתר"
+    },
+    "colors": "צבעים",
+    "sizes": "מידות",
+    "colorSwatch": "גוון הצבע",
+    "colorName": "שם הצבע",
+    "colorPlaceholder": "למשל: אדום",
+    "addColor": "הוספת צבע",
+    "sizePlaceholder": "למשל: M, ואז Enter",
+    "removeOption": "הסרת {{name}}",
+    "categoriesPanel": {
+      "title": "קטגוריות ({{count}})",
+      "hint": "שינוי שם מתעדכן בכל המוצרים של הקטגוריה. שם של קטגוריה אחרת מאחד את השתיים.",
+      "count": "{{count}} מוצרים",
+      "rename": "שינוי שם",
+      "newName": "שם חדש ל{{name}}",
+      "joins": "תאוחד עם הקטגוריה \"{{name}}\"",
+      "clears": "בלי שם, המוצרים יישארו בלי קטגוריה",
+      "renamed": "הקטגוריה עודכנה ב-{{count}} מוצרים",
+      "joined": "{{count}} מוצרים עברו לקטגוריה \"{{name}}\"",
+      "cleared": "הקטגוריה הוסרה מ-{{count}} מוצרים"
     }
   }
 }

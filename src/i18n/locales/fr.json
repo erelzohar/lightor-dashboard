@@ -2737,6 +2737,26 @@
       "hiddenBody": "Ils restent enregistrés ici, et vous pouvez les remettre à tout moment.",
       "savedShown": "Vos produits sont de nouveau sur le site",
       "savedHidden": "Vos produits sont masqués sur le site"
+    },
+    "colors": "Couleurs",
+    "sizes": "Tailles",
+    "colorSwatch": "Teinte",
+    "colorName": "Nom de la couleur",
+    "colorPlaceholder": "ex. : Rouge",
+    "addColor": "Ajouter une couleur",
+    "sizePlaceholder": "ex. : M, puis Entrée",
+    "removeOption": "Retirer {{name}}",
+    "categoriesPanel": {
+      "title": "Catégories ({{count}})",
+      "hint": "Un nouveau nom change tous les produits de la catégorie. Le nom d'une autre catégorie réunit les deux.",
+      "count": "{{count}} produits",
+      "rename": "Renommer",
+      "newName": "Nouveau nom pour {{name}}",
+      "joins": "Rejoint la catégorie « {{name}} »",
+      "clears": "Sans nom, les produits restent sans catégorie",
+      "renamed": "La catégorie a changé sur {{count}} produits",
+      "joined": "{{count}} produits sont passés dans « {{name}} »",
+      "cleared": "La catégorie a été retirée de {{count}} produits"
     }
   }
 }

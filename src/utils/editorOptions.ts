@@ -44,16 +44,20 @@ export const PRODUCT_CARDS: Named = {
   framed: { he: 'במסגרת', en: 'Framed' },
   overlay: { he: 'טקסט על התמונה', en: 'Words on the picture' },
   button: { he: 'עם כפתור', en: 'With a button' },
+  // LT-588
+  reveal: { he: 'פרטים שנחשפים', en: 'Details revealed' },
+  options: { he: 'צבעים ומידות', en: 'Colours and sizes' },
 };
 export const PRODUCT_PAGE_LAYOUTS: Named = {
   side: { he: 'תמונות בצד', en: 'Pictures beside' },
   hero: { he: 'תמונה גדולה מעל', en: 'Large picture above' },
   gallery: { he: 'גלריה ופרטים צמודים', en: 'Gallery, details in view' },
+  detail: { he: 'דף חנות', en: 'Shop page' },
 };
-/** The products page's own layouts: the still ones (the moving ones suit a handful). */
-export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list'];
-/** The layouts that draw a card per product. */
-export const CARD_LAYOUTS = ['well', 'swap'];
+/** The products page's own layouts: the still ones (the moving ones suit a handful); LT-588 by category. */
+export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list', 'rows', 'shelves', 'shop'];
+/** The layouts that draw a card per product (the owner's card). */
+export const CARD_LAYOUTS = ['well', 'swap', 'shop'];
 
 export const FONTS: Named = {
   inter: { he: 'Inter', en: 'Inter' },
@@ -123,9 +127,11 @@ export const PAID_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
   gallery: ['clothesline', 'cascade', 'curve'],
   portfolio: ['clothesline', 'cascade', 'curve'],
   products: ['belt', 'hanger', 'coverflow', 'orbit'],
+  // LT-588: the highlights that switch their pictures by themselves.
+  features: ['stack'],
 };
 export const PAID_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
-export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well' };
+export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles' };
 export const isPaidDesign = (section: string, value: unknown): boolean =>
   typeof value === 'string' && (PAID_LAYOUTS[section] ?? []).includes(value);
 
@@ -171,6 +177,7 @@ export const LAYOUTS: Named = {
   steps: { he: 'שורת שלבים', en: 'Steps in a row' },
   pinned: { he: 'פתקים נעוצים', en: 'Pinned notes' },
   orbs: { he: 'עיגולים', en: 'Medallions' },
+  stack: { he: 'רשימה עם תמונות', en: 'List with pictures' },
   // products
   well: { he: 'אריחים שקטים', en: 'Quiet tiles' },
   list: { he: 'רשימה עם מחירים', en: 'List with prices' },
@@ -179,6 +186,10 @@ export const LAYOUTS: Named = {
   hanger: { he: 'קולב', en: 'Clothes rail' },
   coverflow: { he: 'קלפים בתלת ממד', en: 'Coverflow' },
   orbit: { he: 'מסלול', en: 'Orbit' },
+  drops: { he: 'כרטיס מוצרים', en: 'Products card' },
+  rows: { he: 'שורה לכל קטגוריה', en: 'A row per category' },
+  shelves: { he: 'כרטיס לכל קטגוריה', en: 'A card per category' },
+  shop: { he: 'חנות עם סינון', en: 'Shop with filters' },
   // gallery
   grid: { he: 'רשת', en: 'Grid' },
   masonry: { he: 'פסיפס', en: 'Masonry' },
@@ -278,11 +289,11 @@ export const SECTIONS: Record<string, SectionDef> = {
     designToken: 'aboutLayout', visibleKey: 'about',
   },
   intro: { label: { he: 'אודות', en: 'About' }, variants: ['plain', 'manifesto', 'columns'] },
-  features: { label: { he: 'יתרונות', en: 'Highlights' }, variants: ['tiles', 'bento', 'band', 'wall', 'timeline', 'sticky', 'orbs'] },
+  features: { label: { he: 'יתרונות', en: 'Highlights' }, variants: ['tiles', 'bento', 'band', 'wall', 'timeline', 'sticky', 'orbs', 'stack'] },
   visit: { label: { he: 'פרטי ביקור', en: 'Visit' } },
   portfolio: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS, designToken: 'portfolioLayout', visibleKey: 'portfolio' },
   gallery: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS },
-  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit'], designToken: 'productsLayout' },
+  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit', 'drops'], designToken: 'productsLayout' },
   testimonials: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS, designToken: 'testimonialsLayout', visibleKey: 'testimonials' },
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },

@@ -285,12 +285,12 @@ const Leads: React.FC = () => {
                     className="flex w-fit max-w-full items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
                   >
                     <ShoppingBag size={15} className="shrink-0" aria-hidden="true" />
-                    <span className="min-w-0 break-words [overflow-wrap:anywhere]">{t('leads.aboutProduct', { name: lead.product.name })}</span>
+                    <span className="min-w-0 break-words [overflow-wrap:anywhere]">{t('leads.aboutProduct', { name: lead.product.options ? `${lead.product.name} (${lead.product.options})` : lead.product.name })}</span>
                     <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
                   </a>
                 ) : (
                   <p className="text-sm font-medium text-primary break-words" data-testid="lead-product">
-                    {t('leads.aboutProduct', { name: lead.product.name })}
+                    {t('leads.aboutProduct', { name: lead.product.options ? `${lead.product.name} (${lead.product.options})` : lead.product.name })}
                   </p>
                 ))}
                 {lead.message && (

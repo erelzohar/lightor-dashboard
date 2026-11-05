@@ -23,8 +23,10 @@ import { aiService } from '../services/aiApi';
 import globals from '../services/globals';
 import {
   createProduct, createProductsFromGallery, createProductsFromImages, deleteProduct, listProducts, minorToPrice, priceToMinor, reorderProducts, updateProduct,
-  type Product, type ProductInput, type ProductLimits, fetchProductViews, type ProductViews,
+  type Product, type ProductColor, type ProductInput, type ProductLimits, fetchProductViews, type ProductViews,
 } from '../services/productsApi';
+import ProductOptionsField from '../components/products/ProductOptionsField';
+import CategoriesPanel from '../components/products/CategoriesPanel';
 import { sortableA11y } from '../utils/sortableA11y';
 import MostViewed from '../components/products/MostViewed';
 import { currencySymbol } from '../utils/currency';
@@ -114,6 +116,8 @@ interface Draft {
   price: string;
   category: string;
   details: string[];
+  colors: ProductColor[];
+  sizes: string[];
   images: { url: string; alt?: string }[];
   published: boolean;
   soldOut: boolean;
@@ -126,6 +130,8 @@ const draftOf = (p: Product | null): Draft => ({
   price: minorToPrice(p?.price),
   category: p?.category ?? '',
   details: p?.details ?? [],
+  colors: p?.colors ?? [],
+  sizes: p?.sizes ?? [],
   images: p?.images ?? [],
   published: (p?.status ?? 'published') === 'published',
   soldOut: p?.availability === 'out_of_stock',
@@ -263,6 +269,8 @@ const ProductEditor: React.FC<{
       description: draft.description.trim(),
       category: draft.category.trim(),
       details: draft.details,
+      colors: draft.colors,
+      sizes: draft.sizes,
       images: draft.images,
       price,
       status: draft.published ? 'published' : 'draft',
@@ -524,6 +532,18 @@ const ProductEditor: React.FC<{
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDetail(); } }}
                   />
                 )}
+              </motion.div>
+
+              {/* LT-588: what it comes in, for the visitor to pick on the site. */}
+              <motion.div variants={FORM_PART}>
+                <ProductOptionsField
+                  colors={draft.colors}
+                  sizes={draft.sizes}
+                  onColors={(colors: ProductColor[]) => set('colors', colors)}
+                  onSizes={(sizes: string[]) => set('sizes', sizes)}
+                  labelClass={label}
+                  fieldClass={field}
+                />
               </motion.div>
 
               <motion.div variants={FORM_PART} className="divide-y divide-gray-100 dark:divide-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
@@ -835,6 +855,9 @@ const Products: React.FC = () => {
 
       {/* LT-569: the most viewed, once the site shows products. */}
       {views && webConfig?.catalog && (products?.length ?? 0) > 0 && <MostViewed products={products!} views={views} />}
+
+      {/* LT-587: the categories, each renamed once for all its products. */}
+      {products && <CategoriesPanel products={products} onChanged={() => void load()} />}
 
       {galleryCount > 0 && !webConfig?.catalog && room > 0 && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3" data-testid="from-gallery">
