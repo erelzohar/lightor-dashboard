@@ -113,7 +113,7 @@ export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk'
 /** LT-531: these two are `design.decor`, which the site draws in place of `bgType`. */
 export const DECOR_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
 /** LT-531: the heroes that draw their own backdrop; a background chip would do nothing there. */
-export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage'];
+export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage', 'slant'];
 
 /**
  * LT-570 (Erel 2026-11-03/04): the paid designs, by the section they lay out
@@ -129,9 +129,11 @@ export const PAID_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
   products: ['belt', 'hanger', 'coverflow', 'orbit'],
   // LT-588: the highlights that switch their pictures by themselves.
   features: ['stack'],
+  // LT-591: the contact section with floating bubbles.
+  contact: ['bubbles'],
 };
 export const PAID_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
-export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles' };
+export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles', contact: 'split' };
 export const isPaidDesign = (section: string, value: unknown): boolean =>
   typeof value === 'string' && (PAID_LAYOUTS[section] ?? []).includes(value);
 
@@ -267,12 +269,12 @@ export interface SectionDef {
   outsideBlocks?: boolean;
 }
 
-const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage'];
+const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage', 'slant'];
 const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
 const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight', 'editorial'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
 const SCHEDULE_STYLES = ['card', 'flat', 'inset', 'split'];
-const CONTACT_LAYOUTS = ['split', 'stacked', 'poster', 'editorial', 'statement', 'band', 'cards'];
+const CONTACT_LAYOUTS = ['split', 'stacked', 'poster', 'editorial', 'statement', 'band', 'cards', 'bubbles'];
 const FOOTER_LAYOUTS = ['columns', 'minimal', 'line', 'ticker'];
 
 /** By block type on a composed page, by section key on a legacy one (the keys overlap where the section is the same). */
