@@ -102,6 +102,8 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   const [textAllowed, setTextAllowed] = useState<boolean | null>(null);
   // LT-489: on the free plan the phone carries the morning digest only.
   const [textDigestOnly, setTextDigestOnly] = useState(false);
+  // LT-600: no WhatsApp at all in the free days - the option is not shown, not even locked.
+  const [noWhatsApp, setNoWhatsApp] = useState(false);
   const [permission, setPermission] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,6 +112,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
       if (!alive) return;
       setTextAllowed(entitlements?.limits.ownerTextAlerts ?? null);
       setTextDigestOnly(entitlements?.limits.ownerTextDigestOnly === true);
+      setNoWhatsApp(entitlements?.limits.whatsapp === false);
     });
     pushPermission().then((state) => {
       if (alive) setPermission(state);
@@ -133,14 +136,14 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({ leadsSite = false
   const user = auth.user;
   const channels = (event: NotifyEvent): EventChannels => user?.notifyChannels?.[event] ?? DEFAULT_CHANNELS;
   const phone = user?.phone?.trim() ?? '';
-  const planLocked = textAllowed === false;
+  const planLocked = textAllowed === false || noWhatsApp;
   // In the app a locked option is hidden rather than shown pointing at the
   // plans - that would be a call to buy (LT-130, App Store 3.1.1).
-  const phoneShown = !planLocked || canOfferPurchases();
+  const phoneShown = !planLocked || (canOfferPurchases() && !noWhatsApp);
   const phoneUsable = !planLocked && Boolean(phone);
   // The same, for given events: on the free plan only the digest goes by phone (LT-489).
   const lockedFor = (events: NotifyEvent[]) => planLocked || (textDigestOnly && events.some((event) => event !== 'morningDigest'));
-  const shownFor = (events: NotifyEvent[]) => !lockedFor(events) || canOfferPurchases();
+  const shownFor = (events: NotifyEvent[]) => !lockedFor(events) || (canOfferPurchases() && !noWhatsApp);
   const usableFor = (events: NotifyEvent[]) => !lockedFor(events) && Boolean(phone);
 
   const bookingsDiffer = (['app', 'email'] as const).some(

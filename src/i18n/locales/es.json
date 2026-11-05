@@ -2270,8 +2270,8 @@
       "bookAhead": "Reservar con antelación",
       "reason": "Motivo: {{reason}}",
       "textsNone": "No se envía ningún mensaje a los clientes.",
-      "textsOne": "El cliente recibe un mensaje por SMS o WhatsApp.",
-      "textsMany": "{{count}} clientes reciben un mensaje por SMS o WhatsApp.",
+      "textsOne": "El cliente recibe un mensaje.",
+      "textsMany": "{{count}} clientes reciben un mensaje.",
       "note": {
         "bookingsInside": "Las citas ya reservadas en ese tiempo se mantienen: {{count}}",
         "outsideHours": "Esa hora está fuera del horario.",

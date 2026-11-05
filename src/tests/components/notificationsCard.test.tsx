@@ -317,6 +317,33 @@ describe('NotificationsCard', () => {
     });
   });
 
+  // LT-600 (Erel 2026-11-06): "תוריד את האופציה להודעות וואטסאפ בתקופת נסיון".
+  describe('the free days: no WhatsApp at all', () => {
+    const freeDays = () =>
+      ({ plan: 'plus', limits: { ownerTextAlerts: false, whatsapp: false }, usage: {} }) as unknown as MyEntitlements;
+    const phoneEverywhere = () =>
+      channelsOf({ cancellation: on(true, true, true), reschedule: on(true, true, true), morningDigest: on(true, false, true), newLead: on(true, false, true) });
+
+    for (const [where, setUp] of [['on the web', onTheWeb], ['in the app', (): void => undefined]] as const) {
+      it(`${where}: no WhatsApp chip, no last-minute switch, no word about the plans`, async () => {
+        setUp();
+        vi.mocked(fetchMyEntitlements).mockResolvedValue(freeDays());
+        vi.mocked(getCurrentUser).mockResolvedValue(user({ notifyChannels: phoneEverywhere() }));
+        await renderCard();
+
+        await waitFor(() => expect(screen.queryByTestId('notification-morningDigest-phone')).not.toBeInTheDocument());
+        expect(screen.queryByTestId('notification-newLead-phone')).not.toBeInTheDocument();
+        expect(screen.queryByRole('switch', { name: 'account.notifications.lastMinute' })).not.toBeInTheDocument();
+        expect(screen.queryByTestId('notification-phone-hint')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('notification-digest-only-hint')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('notification-phone-line')).not.toBeInTheDocument();
+        // The summary promises the app and email only, though the account's phone switches are on.
+        expect(screen.queryByTestId('notification-summary-phone')).not.toBeInTheDocument();
+        expect(chip('notification-morningDigest-app')).toBeInTheDocument();
+      });
+    }
+  });
+
   describe('the app', () => {
     it('says on the web whether a phone with the app is connected', async () => {
       onTheWeb();

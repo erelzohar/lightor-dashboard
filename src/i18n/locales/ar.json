@@ -2270,8 +2270,8 @@
       "bookAhead": "الحجز مسبقًا",
       "reason": "السبب: {{reason}}",
       "textsNone": "لن تُرسل رسالة للعملاء.",
-      "textsOne": "سيتلقى العميل رسالة بذلك عبر SMS أو WhatsApp.",
-      "textsMany": "سيتلقى {{count}} عملاء رسالة بذلك عبر SMS أو WhatsApp.",
+      "textsOne": "سيتلقى العميل رسالة بذلك.",
+      "textsMany": "سيتلقى {{count}} عملاء رسالة بذلك.",
       "note": {
         "bookingsInside": "المواعيد المحجوزة مسبقًا في هذا الوقت تبقى: {{count}}",
         "outsideHours": "هذا الوقت خارج ساعات العمل.",

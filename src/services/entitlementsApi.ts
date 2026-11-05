@@ -35,6 +35,11 @@ export interface PlanLimits {
    * MOTION_LAYOUTS); false on the free plan. Absent on an older API: moving.
    */
   motionDesigns?: boolean;
+  /**
+   * LT-600: false in the free days - no WhatsApp to the customers or the
+   * owner, so the Account page offers none. Absent on an older API: offered.
+   */
+  whatsapp?: boolean;
 }
 
 export interface MyEntitlements {

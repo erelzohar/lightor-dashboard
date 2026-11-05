@@ -49,7 +49,7 @@ describe("Lighty's action card (LT-561)", () => {
     render(<LightyActionCard action={card({})} onChange={onChange} />);
     expect(screen.getByText('ביטול תור')).toBeInTheDocument();
     expect(screen.getByRole('listitem')).toHaveTextContent(/דנה כהן.*11:00.*ג׳ל/);
-    expect(screen.getByText('הלקוח יקבל הודעה על זה ב-SMS או WhatsApp.')).toBeInTheDocument();
+    expect(screen.getByText('הלקוח יקבל הודעה על זה.')).toBeInTheDocument();
     expect(assistantService.confirm).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'אישור' }));

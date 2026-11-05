@@ -2270,8 +2270,8 @@
       "bookAhead": "Booking ahead",
       "reason": "Reason: {{reason}}",
       "textsNone": "No message is sent to customers.",
-      "textsOne": "The customer gets a message about it by SMS or WhatsApp.",
-      "textsMany": "{{count}} customers get a message about it by SMS or WhatsApp.",
+      "textsOne": "The customer gets a message about it.",
+      "textsMany": "{{count}} customers get a message about it.",
       "note": {
         "bookingsInside": "Appointments already booked in this time stay: {{count}}",
         "outsideHours": "This time is outside the opening hours.",

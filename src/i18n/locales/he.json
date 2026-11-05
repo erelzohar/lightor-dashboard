@@ -2270,8 +2270,8 @@
       "bookAhead": "קביעת תורים מראש",
       "reason": "סיבה: {{reason}}",
       "textsNone": "לא תישלח הודעה ללקוחות.",
-      "textsOne": "הלקוח יקבל הודעה על זה ב-SMS או WhatsApp.",
-      "textsMany": "{{count}} לקוחות יקבלו הודעה על זה ב-SMS או WhatsApp.",
+      "textsOne": "הלקוח יקבל הודעה על זה.",
+      "textsMany": "{{count}} לקוחות יקבלו הודעה על זה.",
       "note": {
         "bookingsInside": "תורים שכבר נקבעו בזמן הזה נשארים: {{count}}",
         "outsideHours": "השעה מחוץ לשעות הפעילות.",
