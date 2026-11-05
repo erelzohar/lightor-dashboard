@@ -116,12 +116,13 @@ export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'ae
  * (first the ten that move), and the two backdrops among them. A plan without
  * them (the free one) shows each one's section default (FREE_DEFAULTS, the
  * same as lightor-front services/paidDesigns.ts); the owner's pick is kept.
+ * LT-583: the products' orbit (it turns by itself) joins them.
  */
 export const PAID_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
   hero: ['parallax', 'expand'],
   gallery: ['clothesline', 'cascade', 'curve'],
   portfolio: ['clothesline', 'cascade', 'curve'],
-  products: ['belt', 'hanger', 'coverflow'],
+  products: ['belt', 'hanger', 'coverflow', 'orbit'],
 };
 export const PAID_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
 export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well' };
@@ -168,6 +169,8 @@ export const LAYOUTS: Named = {
   columns: { he: 'עמודות', en: 'Columns' },
   tiles: { he: 'אריחים', en: 'Tiles' },
   steps: { he: 'שורת שלבים', en: 'Steps in a row' },
+  pinned: { he: 'פתקים נעוצים', en: 'Pinned notes' },
+  orbs: { he: 'עיגולים', en: 'Medallions' },
   // products
   well: { he: 'אריחים שקטים', en: 'Quiet tiles' },
   list: { he: 'רשימה עם מחירים', en: 'List with prices' },
@@ -175,6 +178,7 @@ export const LAYOUTS: Named = {
   belt: { he: 'מסוע', en: 'Conveyor' },
   hanger: { he: 'קולב', en: 'Clothes rail' },
   coverflow: { he: 'קלפים בתלת ממד', en: 'Coverflow' },
+  orbit: { he: 'מסלול', en: 'Orbit' },
   // gallery
   grid: { he: 'רשת', en: 'Grid' },
   masonry: { he: 'פסיפס', en: 'Masonry' },
@@ -274,11 +278,11 @@ export const SECTIONS: Record<string, SectionDef> = {
     designToken: 'aboutLayout', visibleKey: 'about',
   },
   intro: { label: { he: 'אודות', en: 'About' }, variants: ['plain', 'manifesto', 'columns'] },
-  features: { label: { he: 'יתרונות', en: 'Highlights' }, variants: ['tiles', 'bento', 'band', 'wall', 'timeline', 'sticky'] },
+  features: { label: { he: 'יתרונות', en: 'Highlights' }, variants: ['tiles', 'bento', 'band', 'wall', 'timeline', 'sticky', 'orbs'] },
   visit: { label: { he: 'פרטי ביקור', en: 'Visit' } },
   portfolio: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS, designToken: 'portfolioLayout', visibleKey: 'portfolio' },
   gallery: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS },
-  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow'], designToken: 'productsLayout' },
+  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit'], designToken: 'productsLayout' },
   testimonials: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS, designToken: 'testimonialsLayout', visibleKey: 'testimonials' },
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },
@@ -297,7 +301,7 @@ export const SECTIONS: Record<string, SectionDef> = {
   manifesto: { label: { he: 'הצהרה', en: 'Statement' }, variants: ['display', 'ruled', 'outline', 'marker', 'soft'] },
   stats: { label: { he: 'מספרים', en: 'Numbers' } },
   pullQuote: { label: { he: 'ציטוט', en: 'Quote' } },
-  process: { label: { he: 'שלבים', en: 'Steps' }, variants: ['steps', 'rail', 'grid'] },
+  process: { label: { he: 'שלבים', en: 'Steps' }, variants: ['steps', 'rail', 'grid', 'pinned'] },
   hours: { label: { he: 'שעות פתיחה', en: 'Opening hours' }, variants: ['table', 'strip'] },
   photoPair: { label: { he: 'זוג תמונות', en: 'Photo pair' }, variants: ['offset', 'stacked'] },
   beforeAfter: { label: { he: 'לפני ואחרי', en: 'Before & after' } },

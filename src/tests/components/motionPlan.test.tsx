@@ -58,6 +58,7 @@ describe('the section panel on the free plan', () => {
     expect(crowned('Conveyor')).toBe(true);
     expect(crowned('Clothes rail')).toBe(true);
     expect(crowned('Coverflow')).toBe(true);
+    expect(crowned('Orbit')).toBe(true);
     expect(crowned('Quiet tiles')).toBe(false);
   });
 

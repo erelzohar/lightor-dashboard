@@ -128,3 +128,18 @@ describe('a default look the site draws without a token', () => {
     expect(layouts.getByRole('radio', { checked: true })).toHaveTextContent('Photo');
   });
 });
+
+describe('the looks from LT-583', () => {
+  it('offers the orbit for the products, the medallions for the highlights and the pinned notes for the steps', () => {
+    const products = panel(site({ id: 'b3', type: 'products', variant: 'well' }));
+    expect(products.layouts.getByRole('radio', { name: 'Orbit' })).toBeInTheDocument();
+    fireEvent.click(products.layouts.getByRole('radio', { name: 'Orbit' }));
+    expect(lastBlock(products.onUpdate).variant).toBe('orbit');
+  });
+
+  it.each([['features', 'tiles', 'Medallions', 'orbs'], ['process', 'steps', 'Pinned notes', 'pinned']])('puts the %s in its new look', (type, from, name, variant) => {
+    const { onUpdate, layouts } = panel(site({ id: 'b3', type, variant: from }));
+    fireEvent.click(layouts.getByRole('radio', { name }));
+    expect(lastBlock(onUpdate).variant).toBe(variant);
+  });
+});
