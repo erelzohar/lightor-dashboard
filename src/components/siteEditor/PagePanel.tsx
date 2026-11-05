@@ -10,6 +10,7 @@ import SiteChat from './SiteChat';
 import { aiService } from '../../services/aiApi';
 import { STYLES, stylePicture, withLook } from '../../lib/styles';
 import { vocabLang } from './labels';
+import { ButtonSample, CardSample, CornerSample, FontSample, ThemeSample, useSampleFonts } from './ThemeSamples';
 
 interface PagePanelProps<T> {
   config: T;
@@ -109,7 +110,8 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
     );
   };
 
-  const select = (key: string, names: Record<string, { he: string; en: string }>, label: string) => (
+  // LT-595: each choice with a small sample beside its name, as the site draws it.
+  const select = (key: string, names: Record<string, { he: string; en: string }>, label: string, sample?: (value: string) => React.ReactNode) => (
     <Select
       id={`site-theme-${key}`}
       label={label}
@@ -117,12 +119,20 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
       onChange={(e) => setToken(key, e.target.value)}
       options={[
         { value: '', label: t('siteEditor.theme.byStyle') },
-        ...Object.keys(names).map((v) => ({ value: v, label: optionLabel(names, v, lang) })),
+        ...Object.keys(names).map((v) => {
+          const name = optionLabel(names, v, lang);
+          return sample
+            ? { value: v, text: name, selected: name, label: <span className="flex min-w-0 items-center gap-2.5">{sample(v)}<span className="truncate">{name}</span></span> }
+            : { value: v, label: name };
+        }),
       ]}
     />
   );
 
   const primary = String(getAt(config, 'pallete.colorPrimary') ?? '#7c3aed');
+  // The fonts as the site draws them: its own language's faces (an RTL site draws each family's Hebrew face).
+  const siteRtl = /^(he|ar)/.test(String(getAt(config, 'defaultLanguage') ?? 'he'));
+  useSampleFonts();
 
   return (
     <div className="flex flex-col gap-5" data-testid="page-panel">
@@ -150,12 +160,12 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {select('headingFont', FONTS, t('siteEditor.theme.headingFont'))}
-        {select('bodyFont', FONTS, t('siteEditor.theme.bodyFont'))}
-        {select('buttonStyle', BUTTON_STYLES, t('siteEditor.theme.buttons'))}
-        {select('borderRadius', RADII, t('siteEditor.theme.corners'))}
-        {select('cardStyle', CARD_STYLES, t('siteEditor.theme.cards'))}
-        {select('defaultTheme', THEMES, t('siteEditor.theme.mode'))}
+        {select('headingFont', FONTS, t('siteEditor.theme.headingFont'), (v) => <FontSample font={v} rtl={siteRtl} />)}
+        {select('bodyFont', FONTS, t('siteEditor.theme.bodyFont'), (v) => <FontSample font={v} rtl={siteRtl} body />)}
+        {select('buttonStyle', BUTTON_STYLES, t('siteEditor.theme.buttons'), (v) => <ButtonSample style={v} color={primary} />)}
+        {select('borderRadius', RADII, t('siteEditor.theme.corners'), (v) => <CornerSample radius={v} />)}
+        {select('cardStyle', CARD_STYLES, t('siteEditor.theme.cards'), (v) => <CardSample card={v} />)}
+        {select('defaultTheme', THEMES, t('siteEditor.theme.mode'), (v) => <ThemeSample mode={v} />)}
       </div>
 
       {usage !== null && (

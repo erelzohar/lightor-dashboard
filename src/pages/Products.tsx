@@ -183,13 +183,21 @@ const ProductEditor: React.FC<{
     }
   };
 
-  // Lighty reads the first picture; nothing is stored until the owner saves.
+  // Lighty reads the first picture; nothing is stored until the owner saves. LT-596 (Erel: a
+  // product named "chargers and cables" came back as the display table in its picture): with
+  // whatever the form already says, which the draft keeps to.
   const fillFromPicture = async () => {
     const image = draft.images[0]?.url;
     if (!image) return;
     setDrafting(true);
     try {
-      const filled = await aiService.draftProduct(image, language);
+      const filled = await aiService.draftProduct(image, language, {
+        name: draft.name.trim(),
+        summary: draft.summary.trim(),
+        description: draft.description.trim(),
+        category: draft.category.trim(),
+        details: draft.details.map((d) => d.trim()).filter(Boolean),
+      });
       setDraft((d) => ({
         ...d,
         name: d.name.trim() ? d.name : filled.name,

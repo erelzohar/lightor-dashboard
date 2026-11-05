@@ -103,10 +103,15 @@ describe('colours and sizes on the product form (LT-588)', () => {
     const onColors = vi.fn();
     const onSizes = vi.fn();
     const { rerender } = render(<ProductOptionsField colors={[]} sizes={[]} onColors={onColors} onSizes={onSizes} labelClass="" fieldClass="" />);
-    fireEvent.change(screen.getByLabelText('products.colorSwatch'), { target: { value: '#cc2233' } });
-    fireEvent.change(screen.getByLabelText('products.colorName'), { target: { value: 'אדום' } });
+    // LT-598: the swatch is the editor's colour picker: a tap opens it, a colour there is the new one's.
+    fireEvent.click(screen.getByRole('button', { name: 'products.colorSwatch' }));
+    const picker = screen.getByRole('dialog', { name: /colorPicker.title/ });
+    fireEvent.click(within(picker).getAllByRole('button', { name: '#3366CC' })[0]);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: /colorPicker.title/ })).toBeNull();
+    fireEvent.change(screen.getByLabelText('products.colorName'), { target: { value: 'כחול' } });
     fireEvent.click(screen.getByLabelText('products.addColor'));
-    expect(onColors).toHaveBeenCalledWith([{ name: 'אדום', hex: '#cc2233' }]);
+    expect(onColors).toHaveBeenCalledWith([{ name: 'כחול', hex: '#3366cc' }]);
     fireEvent.change(screen.getByLabelText('products.sizes'), { target: { value: 'M' } });
     fireEvent.keyDown(screen.getByLabelText('products.sizes'), { key: 'Enter' });
     expect(onSizes).toHaveBeenCalledWith(['M']);

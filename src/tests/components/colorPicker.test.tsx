@@ -28,6 +28,27 @@ describe('the colour field (LT-384)', () => {
     expect(dialog()).toBeNull();
   });
 
+  // LT-598: the product's form closes on Escape too; Escape in the picker closes the picker alone.
+  it('Escape closes the picker, and nothing under it', () => {
+    const under = vi.fn();
+    document.addEventListener('keydown', under);
+    render(<Field />);
+    fireEvent.click(swatch());
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(dialog()).toBeNull();
+    expect(under).not.toHaveBeenCalled();
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(under).toHaveBeenCalledTimes(1);
+    document.removeEventListener('keydown', under);
+  });
+
+  it('a compact swatch for a row of fields, its label for screen readers only (LT-598)', () => {
+    render(<ColorPicker compact label="Swatch" color="#112233" onChange={vi.fn()} />);
+    expect(swatch()).toHaveClass('w-10', 'h-10');
+    expect(swatch()).toHaveAccessibleName('Swatch');
+    expect(screen.getByText('Swatch')).toHaveClass('sr-only');
+  });
+
   it('opens the picker on a tap; a grid colour applies live and the swatch follows', () => {
     const onChange = vi.fn();
     render(<Field onChange={onChange} />);

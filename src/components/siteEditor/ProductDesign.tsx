@@ -6,6 +6,7 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import { getAt, setAt } from '../../utils/editorPaths';
 import { CARD_LAYOUTS, LAYOUTS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, blockLookOf, optionLabel } from '../../utils/editorOptions';
 import { vocabLang } from './labels';
+import DesignChoices from './DesignChoices';
 
 /**
  * LT-545 (Erel: design the products' card, their page and a product's page):
@@ -52,150 +53,6 @@ export const productPageLayoutOf = (config: unknown): string => {
 };
 
 const label = 'mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300';
-const chip = (on: boolean) =>
-  `px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-    on
-      ? 'bg-primary text-white border-primary'
-      : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:border-primary/50'
-  }`;
-
-// ── The little pictures of each choice ──
-const pic = 'rounded bg-gray-300 dark:bg-slate-500';
-const line = 'h-1 rounded-full bg-gray-300 dark:bg-slate-500';
-
-const CardThumb: React.FC<{ card: string }> = ({ card }) => {
-  // LT-588: the details sliding up over the card; the pictures with colours and sizes under them.
-  if (card === 'reveal') {
-    return (
-      <div className="relative h-full overflow-hidden rounded-md border border-gray-300 bg-white dark:border-slate-500 dark:bg-slate-800">
-        <div className={`${pic} h-3/5 rounded-none`} />
-        <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end gap-0.5 bg-white/95 p-1 dark:bg-slate-700/95">
-          <div className={`${line} w-2/3`} />
-          <div className="h-1.5 rounded-full bg-primary/70" />
-        </div>
-      </div>
-    );
-  }
-  if (card === 'options') {
-    return (
-      <div className="flex h-full flex-col gap-1">
-        <div className={`${pic} flex-1`} />
-        <div className="flex gap-0.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-          <span className="h-1.5 w-1.5 rounded-full bg-slate-700 dark:bg-slate-300" />
-        </div>
-        <div className="h-1.5 rounded-full bg-primary/70" />
-      </div>
-    );
-  }
-  if (card === 'framed') {
-    return (
-      <div className="flex h-full flex-col gap-1 rounded-md border border-gray-300 bg-white p-1 dark:border-slate-500 dark:bg-slate-800">
-        <div className={`${pic} flex-1`} />
-        <div className={`${line} w-3/4`} />
-      </div>
-    );
-  }
-  if (card === 'overlay') {
-    return (
-      <div className={`${pic} relative h-full`}>
-        <div className="absolute inset-x-1.5 bottom-1.5 h-1 rounded-full bg-white/90" />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-full flex-col gap-1">
-      <div className={`${pic} flex-1`} />
-      <div className={`${line} w-3/4`} />
-      {card === 'button' ? <div className="h-1.5 rounded-full bg-primary/70" /> : <div className={`${line} w-1/3`} />}
-    </div>
-  );
-};
-
-const PageThumb: React.FC<{ layout: string }> = ({ layout }) => {
-  // LT-588: one picture with its dots, the words and the tags beside it.
-  if (layout === 'detail') {
-    return (
-      <div className="flex h-full gap-1">
-        <div className="flex flex-1 flex-col gap-0.5">
-          <div className={`${pic} flex-1`} />
-          <div className="flex justify-center gap-0.5"><span className="h-1 w-1 rounded-full bg-primary/70" /><span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-slate-500" /></div>
-        </div>
-        <div className="flex flex-1 flex-col gap-1 pt-0.5">
-          <div className={`${line} w-full`} />
-          <div className="flex gap-0.5"><div className="h-1.5 flex-1 rounded-full bg-primary/70" /><div className="h-1.5 flex-1 rounded-full border border-gray-300 dark:border-slate-500" /></div>
-          <div className="flex gap-0.5"><div className={`${line} w-1/3`} /><div className={`${line} w-1/3`} /></div>
-        </div>
-      </div>
-    );
-  }
-  if (layout === 'hero') {
-    return (
-      <div className="flex h-full flex-col items-center gap-1">
-        <div className={`${pic} h-5 w-full`} />
-        <div className={`${line} w-2/3`} />
-        <div className={`${line} w-1/2`} />
-      </div>
-    );
-  }
-  const words = (
-    <div className="flex flex-1 flex-col gap-1 pt-0.5">
-      <div className={`${line} w-full`} />
-      <div className={`${line} w-2/3`} />
-      <div className="h-1.5 w-2/3 rounded-full bg-primary/70" />
-    </div>
-  );
-  if (layout === 'gallery') {
-    return (
-      <div className="flex h-full gap-1">
-        <div className="flex flex-1 flex-col gap-0.5">
-          <div className={`${pic} flex-1`} />
-          <div className={`${pic} flex-1`} />
-        </div>
-        {words}
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-full gap-1">
-      <div className={`${pic} flex-1`} />
-      {words}
-    </div>
-  );
-};
-
-/** A row of choices with a little picture each. */
-const ThumbChoices: React.FC<{
-  name: string;
-  values: string[];
-  current: string;
-  labelOf: (value: string) => string;
-  thumb: (value: string) => React.ReactNode;
-  onPick: (value: string) => void;
-  columns: string;
-  testId: string;
-}> = ({ name, values, current, labelOf, thumb, onPick, columns, testId }) => (
-  <div className={`grid gap-2 ${columns}`} role="radiogroup" aria-label={name} data-testid={testId}>
-    {values.map((value) => (
-      <button
-        key={value}
-        type="button"
-        role="radio"
-        aria-checked={current === value}
-        onClick={() => onPick(value)}
-        className={`flex flex-col gap-1.5 rounded-xl border p-1.5 text-center text-[11px] leading-tight transition-colors ${
-          current === value
-            ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
-            : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:border-primary/50'
-        }`}
-      >
-        <span className="block h-12 w-full rounded-lg bg-gray-100 p-1.5 dark:bg-slate-700/60" aria-hidden="true">{thumb(value)}</span>
-        <span className="break-words">{labelOf(value)}</span>
-      </button>
-    ))}
-  </div>
-);
 
 interface PanelProps<T> {
   config: T;
@@ -209,14 +66,15 @@ export function ProductCardPicker<T>({ config, onUpdate }: PanelProps<T>) {
   return (
     <div>
       <p className={label}>{t('siteEditor.products.card')}</p>
-      <ThumbChoices
+      {/* LT-595: a picture of each card, drawn by the site. */}
+      <DesignChoices
         name={t('siteEditor.products.card')}
+        group="card"
         values={Object.keys(PRODUCT_CARDS)}
         current={productCardOf(config)}
         labelOf={(value) => optionLabel(PRODUCT_CARDS, value, lang)}
-        thumb={(value) => <CardThumb card={value} />}
         onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productCard', value))}
-        columns="grid-cols-3"
+        language={i18n.language || 'he'}
         testId="product-card-choices"
       />
       <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.products.cardHint')}</p>
@@ -249,13 +107,16 @@ export function ProductsPagePanel<T>({ config, onUpdate }: PanelProps<T>) {
     <div className="flex flex-col gap-5" data-testid="products-page-panel">
       <div>
         <p className={label}>{t('siteEditor.products.layout')}</p>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.products.layout')}>
-          {PRODUCTS_PAGE_LAYOUTS.map((value) => (
-            <button key={value} type="button" role="radio" aria-checked={layout === value} className={chip(layout === value)} onClick={() => onUpdate((prev) => setAt(prev, 'design.productsPageLayout', value))}>
-              {optionLabel(LAYOUTS, value, lang)}
-            </button>
-          ))}
-        </div>
+        <DesignChoices
+          name={t('siteEditor.products.layout')}
+          group="productsPage"
+          values={PRODUCTS_PAGE_LAYOUTS}
+          current={layout}
+          labelOf={(value) => optionLabel(LAYOUTS, value, lang)}
+          onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productsPageLayout', value))}
+          language={i18n.language || 'he'}
+          testId="products-page-choices"
+        />
       </div>
       {CARD_LAYOUTS.includes(layout)
         ? <ProductCardPicker config={config} onUpdate={onUpdate} />
@@ -288,14 +149,14 @@ export function ProductPagePanel<T>({ config, onUpdate, slug, onPreview }: Panel
       )}
       <div>
         <p className={label}>{t('siteEditor.products.layout')}</p>
-        <ThumbChoices
+        <DesignChoices
           name={t('siteEditor.products.layout')}
+          group="productPage"
           values={Object.keys(PRODUCT_PAGE_LAYOUTS)}
           current={productPageLayoutOf(config)}
           labelOf={(value) => optionLabel(PRODUCT_PAGE_LAYOUTS, value, lang)}
-          thumb={(value) => <PageThumb layout={value} />}
           onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productPageLayout', value))}
-          columns="grid-cols-2"
+          language={i18n.language || 'he'}
           testId="product-page-choices"
         />
       </div>

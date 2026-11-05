@@ -39,6 +39,8 @@ export type DropdownItem = {
   label: ReactNode;
   /** The words typeahead matches when `label` is not a string. */
   text?: string;
+  /** LT-595: what the closed box shows for this item, when not its label (a sample stays in the list). */
+  selected?: ReactNode;
   hint?: string;
   disabled?: boolean;
 };
@@ -403,7 +405,7 @@ export const Dropdown = forwardRef<HTMLButtonElement, DropdownProps>(function Dr
       >
         {icon && <span className="flex shrink-0 items-center text-gray-400 dark:text-gray-500">{icon}</span>}
         <span id={valueId} className={cn('min-w-0 flex-1 truncate', !selectedItem && 'text-gray-400 dark:text-gray-500')}>
-          {selectedItem ? selectedItem.label : placeholder}
+          {selectedItem ? (selectedItem.selected ?? selectedItem.label) : placeholder}
         </span>
         <motion.svg
           aria-hidden

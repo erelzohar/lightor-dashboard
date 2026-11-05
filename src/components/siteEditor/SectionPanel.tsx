@@ -8,12 +8,13 @@ import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
 import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, FREE_DEFAULTS, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, PAID_BACKGROUNDS, blockLookOf, heroBackgroundOf, isPaidDesign, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
 import { canOfferPurchases } from '../../lib/platform';
-import { PaidMark, PaidNote, usePaidDesignsHeld } from './MotionPlan';
+import { PaidNote, usePaidDesignsHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
 import type { SiteField } from '../../hooks/usePreviewBridge';
 import AiBox from './AiBox';
 import AddPhotoButton from './AddPhotoButton';
 import { fieldLabel, vocabLang } from './labels';
+import DesignChoices, { pictureGroup } from './DesignChoices';
 
 interface SectionPanelProps<T> {
   config: T;
@@ -160,25 +161,22 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
       {def.variants && def.variants.length > 0 && (composed || def.designToken) && (
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.layout')}</p>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.layout')}>
-            {def.variants.filter((v) => offered(isPaidDesign(type, v))).map((v) => (
-              <button
-                key={v}
-                type="button"
-                role="radio"
-                aria-checked={current === v}
-                className={chip(current === v)}
-                onClick={() => {
-                  if (held && isPaidDesign(type, v)) return setAsked(v);
-                  setAsked(null);
-                  setVariant(v);
-                }}
-              >
-                {optionLabel(LAYOUTS, v, lang)}
-                {marked(isPaidDesign(type, v)) && <PaidMark on={current === v} />}
-              </button>
-            ))}
-          </div>
+          {/* LT-595: a picture of each look, drawn by the site, its name under it. */}
+          <DesignChoices
+            name={t('siteEditor.section.layout')}
+            group={pictureGroup(type)}
+            values={def.variants.filter((v) => offered(isPaidDesign(type, v)))}
+            current={current}
+            labelOf={(v) => optionLabel(LAYOUTS, v, lang)}
+            marked={(v) => marked(isPaidDesign(type, v))}
+            language={i18n.language || 'he'}
+            onPick={(v) => {
+              if (held && isPaidDesign(type, v)) return setAsked(v);
+              setAsked(null);
+              setVariant(v);
+            }}
+            testId="layout-choices"
+          />
           {asked && isPaidDesign(type, asked) && (
             <div className="mt-2">
               <PaidNote />
@@ -194,29 +192,32 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
       {type === 'hero' && !OWN_BACKDROP_HEROES.includes(String(block?.variant ?? getAt(config, 'design.heroLayout'))) && (
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t('siteEditor.section.heroBackground')}</p>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('siteEditor.section.heroBackground')}>
-            {HERO_BACKGROUNDS.map((v) => {
-              const decor = getAt(config, 'design.decor');
-              // LT-570: a paid backdrop on the free plan shows the hero's own background.
-              const shown = held && PAID_BACKGROUNDS.includes(String(decor)) ? 'none' : decor;
-              const on = heroBackgroundOf(getAt(config, 'components.hero.bgType'), shown) === v;
-              if (!offered(PAID_BACKGROUNDS.includes(v))) return null;
-              // LT-531: the two that live in design.decor, and the others clear them.
-              const pick = () => {
-                if (held && PAID_BACKGROUNDS.includes(v)) return setAsked(v);
-                setAsked(null);
-                if (DECOR_BACKGROUNDS.includes(v)) return onUpdate(setAt(config, 'design.decor', v));
-                const plain = DECOR_BACKGROUNDS.includes(String(decor)) ? setAt(config, 'design.decor', 'none') : config;
-                return onUpdate(setAt(plain, 'components.hero.bgType', v));
-              };
-              return (
-                <button key={v} type="button" role="radio" aria-checked={on} className={chip(on)} onClick={pick}>
-                  {optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
-                  {marked(PAID_BACKGROUNDS.includes(v)) && <PaidMark on={on} />}
-                </button>
-              );
-            })}
-          </div>
+          {(() => {
+            const decor = getAt(config, 'design.decor');
+            // LT-570: a paid backdrop on the free plan shows the hero's own background.
+            const shown = held && PAID_BACKGROUNDS.includes(String(decor)) ? 'none' : decor;
+            // LT-531: the two that live in design.decor, and the others clear them.
+            const pick = (v: string) => {
+              if (held && PAID_BACKGROUNDS.includes(v)) return setAsked(v);
+              setAsked(null);
+              if (DECOR_BACKGROUNDS.includes(v)) return onUpdate(setAt(config, 'design.decor', v));
+              const plain = DECOR_BACKGROUNDS.includes(String(decor)) ? setAt(config, 'design.decor', 'none') : config;
+              return onUpdate(setAt(plain, 'components.hero.bgType', v));
+            };
+            return (
+              <DesignChoices
+                name={t('siteEditor.section.heroBackground')}
+                group="herobg"
+                values={HERO_BACKGROUNDS.filter((v) => offered(PAID_BACKGROUNDS.includes(v)))}
+                current={heroBackgroundOf(getAt(config, 'components.hero.bgType'), shown)}
+                labelOf={(v) => optionLabel(HERO_BACKGROUND_NAMES, v, lang)}
+                marked={(v) => marked(PAID_BACKGROUNDS.includes(v))}
+                language={i18n.language || 'he'}
+                onPick={pick}
+                testId="hero-background-choices"
+              />
+            );
+          })()}
           {asked && PAID_BACKGROUNDS.includes(asked) && (
             <div className="mt-2">
               <PaidNote />

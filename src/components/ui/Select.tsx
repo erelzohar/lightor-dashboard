@@ -3,6 +3,10 @@ import Dropdown from "./dropdown";
 
 export interface SelectOption {
   label: string | JSX.Element;
+  /** LT-595: the words of a label that is an element (typeahead and the list's search read them). */
+  text?: string;
+  /** LT-595: what the closed box shows, when not the label (the list's sample stays in the list). */
+  selected?: string | JSX.Element;
   value: string | number;
   /** Shown but not selectable (LT-178: a second address question). */
   disabled?: boolean;
@@ -68,6 +72,8 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
     const items = options.map((opt) => ({
       value: String(opt.value),
       label: opt.label,
+      text: opt.text,
+      selected: opt.selected,
       disabled: opt.disabled,
     }));
 

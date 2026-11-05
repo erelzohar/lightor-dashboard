@@ -2,6 +2,7 @@ import React, { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react';
 import type { ProductColor } from '../../services/productsApi';
+import ColorPicker from '../ui/ColorPicker';
 
 const MAX_COLORS = 12;
 const MAX_SIZES = 16;
@@ -57,7 +58,8 @@ const ProductOptionsField: React.FC<{
         )}
         {colors.length < MAX_COLORS && (
           <div className="flex items-center gap-2">
-            <input type="color" value={hex} onChange={(e) => setHex(e.target.value)} aria-label={t('products.colorSwatch')} className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-gray-200 bg-white p-1 dark:border-slate-600 dark:bg-slate-800" />
+            {/* LT-598 (Erel): the same colour picker as the editor's main colour. */}
+            <ColorPicker compact color={hex} onChange={setHex} label={t('products.colorSwatch')} />
             <input
               id={`${id}-color`}
               className={fieldClass}

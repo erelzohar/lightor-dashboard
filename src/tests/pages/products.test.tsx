@@ -202,7 +202,8 @@ describe('the Products page (LT-540)', () => {
     fireEvent.click(fill);
     await waitFor(() => expect((within(dialog).getByLabelText('products.summary') as HTMLInputElement).value).toBe('AI line'));
     expect((within(dialog).getByLabelText('products.name') as HTMLInputElement).value).toBe('Ring');
-    expect(aiService.draftProduct).toHaveBeenCalledWith('a.webp', 'he');
+    // LT-596: with what the form already says, which the draft keeps to.
+    expect(aiService.draftProduct).toHaveBeenCalledWith('a.webp', 'he', expect.objectContaining({ name: 'Ring', summary: '', category: '' }));
   });
 
   it('makes a draft from each picture, within what the plan has left', async () => {

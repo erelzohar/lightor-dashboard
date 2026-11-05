@@ -213,12 +213,16 @@ export const AppleColorPicker: React.FC<AppleColorPickerProps> = ({ isOpen, onCl
     if (!isOpen) return;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialogRef.current?.focus();
+    // LT-598: Escape closes the picker only, not the form it opened from (the product's form
+    // listens on the document): caught first, on the way down, and stopped there.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      onCloseRef.current();
     };
-    window.addEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
     return () => {
-      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keydown', onKey, true);
       opener?.focus();
     };
   }, [isOpen]);

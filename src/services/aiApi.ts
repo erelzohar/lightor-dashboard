@@ -183,11 +183,18 @@ export const aiService = {
    * readers, in the site's language, from the picture itself. Nothing is
    * saved: the owner edits it first. 429 = the AI budget is spent.
    */
-  /** LT-540: Lighty's draft of a product from its picture; stored nowhere until the owner saves. */
-  draftProduct: async (image: string, language: string): Promise<{ name: string; summary: string; description: string; category: string }> => {
+  /**
+   * LT-540: Lighty's draft of a product from its picture; stored nowhere until the owner saves.
+   * LT-596: with what the form already says (`known`), which the draft keeps to.
+   */
+  draftProduct: async (
+    image: string,
+    language: string,
+    known?: { name?: string; summary?: string; description?: string; category?: string; details?: string[] },
+  ): Promise<{ name: string; summary: string; description: string; category: string }> => {
     const response = await apiClient.post<{ success: boolean; data: { name: string; summary: string; description: string; category: string } }>(
       `${globals.aiUrl}product-draft`,
-      { image, language }
+      { image, language, ...(known ? { known } : {}) }
     );
     return response.data.data;
   },
