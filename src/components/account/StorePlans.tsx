@@ -1,21 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Check, ExternalLink, Loader2, Lock, Package, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import type { MyEntitlements } from '../../services/entitlementsApi';
-import { PLAN_NAMES } from '../../services/paddleApi';
+import { PLAN_NAMES, type UpgradePlan } from '../../services/paddleApi';
 import { nativePlatform } from '../../lib/platform';
 import {
   buyStoreProduct,
   hasFreeTrial,
   loadStoreOffers,
   manageStoreUrl,
+  offerFor,
   restoreStore,
   type StoreOffers,
-  type StorePlan,
 } from '../../lib/storePurchases';
+import type { CardExtra } from '../ui/pricing-section-3';
+
+// LT-602: the web's plan cards, with the stores' prices; their own chunk, as on the web.
+const PricingSection = lazy(() => import('../ui/pricing-section-3'));
 
 const TERMS_URL = 'https://lightor.app/terms.html';
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -37,6 +41,9 @@ const PRIVACY_URL = 'https://lightor.app/privacy.html';
  * days' last 3 days, and is paid from that day.
  * Prices are the store's own, in the owner's money. Shown only where
  * `storeSalesOn()`; a subscription paid on the web is left to the web.
+ *
+ * LT-602 (Erel 2026-11-06): the plans are the web's cards, monthly and
+ * yearly, each yearly product the store sells beside its monthly one.
  */
 const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; onChanged: () => Promise<void> }> = ({ entitlements, leadsSite = false, onChanged }) => {
   const { t, i18n } = useTranslation();
@@ -100,8 +107,10 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
   if (subscribed) {
     const packs = entitlements.bookings?.packs;
     const pack = offers?.pack;
-    const pro = offers?.plans.pro;
-    const plus = offers?.plans.plus;
+    // Pro for the same period as the Lightor+ it replaces (LT-602), else the monthly one.
+    const sub = auth.user?.subscription as { interval?: string; priceId?: string } | undefined;
+    const pro = offerFor(offers, 'pro', sub?.interval === 'year' ? 'year' : 'month') ?? offerFor(offers, 'pro', 'month');
+    const replacing = sub?.priceId ?? offerFor(offers, 'plus', 'month')?.identifier;
     return (
       <div className="space-y-3" data-testid="store-subscribed">
         <p className="text-sm text-gray-600 dark:text-gray-300">{t('billing.store.billedBy', { store: storeName })}</p>
@@ -112,7 +121,7 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
             <Button
               className="mt-3"
               size="sm"
-              onClick={() => void run('upgrade', () => buyStoreProduct(userId, pro, plus), 'billing.activated')}
+              onClick={() => void run('upgrade', () => buyStoreProduct(userId, pro, replacing), 'billing.activated')}
               disabled={busy !== null}
               data-testid="store-upgrade-pro"
             >
@@ -159,72 +168,71 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
     );
   }
 
-  const plans: StorePlan[] = ['plus', 'pro'];
-  const terms = entitlements.bookingTerms;
-  const bookingsOf = (plan: StorePlan) => (plan === 'plus' ? terms?.plusIncluded : terms?.included);
+  // The store's products as the cards' offers: the product id stands in for a price id.
+  const cards: UpgradePlan[] = (offers?.plans ?? []).map(({ plan, interval, product }) => ({
+    plan,
+    interval,
+    priceId: product.identifier,
+    formatted: product.priceString,
+    amount: product.price,
+    currency: product.currencyCode,
+    productName: product.title,
+  }));
+  const productOf = (card: UpgradePlan) => offers?.plans.find((offer) => offer.product.identifier === card.priceId)?.product;
+  const opensAt = freeDaysEnd ? new Date(freeDaysEnd.getTime() - APPLE_PLUS_OPEN_DAYS * DAY_MS) : null;
+  const extraFor = (card: UpgradePlan): CardExtra | null => {
+    if (!inFreeDays) return null;
+    if (card.plan === 'pro') return { note: <span data-testid="store-note-pro">{t('billing.store.proPaysNow', { plan: PLAN_NAMES.pro })}</span> };
+    // Lightor+ in the free days: first charged at their end where the store can defer it (Play's trial), else from their last 3 days.
+    const deferred = nativePlatform() === 'android' && hasFreeTrial(productOf(card));
+    const locked = !deferred && !!opensAt && Date.now() < opensAt.getTime();
+    const badge = (
+      <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-500/10 dark:text-green-300" data-testid="store-plus-current">
+        <Check className="h-3.5 w-3.5 shrink-0" />
+        {t('billing.store.inFreeDays', { date: day(freeDaysEnd!) })}
+      </p>
+    );
+    const note = deferred
+      ? t('billing.store.plusDeferred', { date: day(freeDaysEnd!) })
+      : locked
+        ? t('billing.store.plusLocked', { date: day(opensAt!), days: APPLE_PLUS_OPEN_DAYS })
+        : t('billing.store.plusPaysNow');
+    return {
+      badge,
+      note: <span data-testid="store-note-plus">{note}</span>,
+      ...(locked ? { disabled: true, icon: <Lock size={16} aria-hidden="true" />, label: t('billing.store.opensOnShort', { date: day(opensAt!) }) } : {}),
+    };
+  };
+  const loading = (
+    <div className="flex items-center gap-2 text-sm text-gray-500">
+      <Loader2 size={16} className="animate-spin shrink-0" />
+      {t('billing.loadingPlans')}
+    </div>
+  );
   return (
     <div className="space-y-3" data-testid="store-plans">
       {failed ? (
         <p className="text-sm text-gray-500">{t('billing.plansUnavailable')}</p>
       ) : !offers ? (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Loader2 size={16} className="animate-spin shrink-0" />
-          {t('billing.loadingPlans')}
-        </div>
+        loading
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {plans.map((plan) => {
-            const product = offers.plans[plan];
-            if (!product) return null;
-            const bookings = bookingsOf(plan);
-            // Lightor+ in the free days: first charged at their end where the store can defer it (Play's trial), else from their last 3 days.
-            const deferred = plan === 'plus' && inFreeDays && nativePlatform() === 'android' && hasFreeTrial(product);
-            const opensAt = freeDaysEnd ? new Date(freeDaysEnd.getTime() - APPLE_PLUS_OPEN_DAYS * DAY_MS) : null;
-            const locked = plan === 'plus' && inFreeDays && !deferred && !!opensAt && Date.now() < opensAt.getTime();
-            const note = !inFreeDays
-              ? null
-              : plan === 'pro'
-                ? t('billing.store.proPaysNow', { plan: PLAN_NAMES.pro })
-                : deferred
-                  ? t('billing.store.plusDeferred', { date: day(freeDaysEnd!) })
-                  : locked
-                    ? t('billing.store.plusLocked', { date: day(opensAt!), days: APPLE_PLUS_OPEN_DAYS })
-                    : t('billing.store.plusPaysNow');
-            return (
-              <div key={plan} className="flex flex-col gap-2 rounded-2xl border border-gray-200 p-4 dark:border-slate-700" data-testid={`store-plan-${plan}`}>
-                <p className="font-semibold text-gray-900 dark:text-white"><bdi>{PLAN_NAMES[plan]}</bdi></p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  <bdi>{product.priceString}</bdi>
-                  <span className="ms-1 text-sm font-normal text-gray-500 dark:text-gray-400">{t('billing.store.perMonth')}</span>
-                </p>
-                {!leadsSite && bookings ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('billing.store.bookingsAMonth', { count: bookings })}</p>
-                ) : null}
-                {plan === 'plus' && inFreeDays && (
-                  <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-500/10 dark:text-green-300" data-testid="store-plus-current">
-                    <Check className="h-3.5 w-3.5 shrink-0" />
-                    {t('billing.store.inFreeDays', { date: day(freeDaysEnd!) })}
-                  </p>
-                )}
-                {note && <p className="text-xs leading-5 text-gray-600 dark:text-gray-300" data-testid={`store-note-${plan}`}>{note}</p>}
-                <Button
-                  className="mt-auto"
-                  variant={plan === 'pro' ? 'primary' : 'outline'}
-                  onClick={() => void run(plan, () => buyStoreProduct(userId, product), 'billing.activated')}
-                  disabled={busy !== null || locked}
-                  leftIcon={locked ? <Lock size={14} /> : undefined}
-                  data-testid={`store-buy-${plan}`}
-                >
-                  {busy === plan
-                    ? t('billing.opening')
-                    : locked
-                      ? t('billing.store.opensOnShort', { date: day(opensAt!) })
-                      : t('billing.store.subscribe', { plan: PLAN_NAMES[plan] })}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
+        <Suspense fallback={loading}>
+          <PricingSection
+            plans={cards}
+            leadsSite={leadsSite}
+            locale={dateLocale}
+            extraPrice=""
+            opening={busy}
+            actionLabel={t(inFreeDays ? 'billing.subscribe' : 'billing.upgrade')}
+            onFreePlan={!inFreeDays}
+            store
+            cardExtra={extraFor}
+            onChoose={(card) => {
+              const product = productOf(card);
+              if (product) void run(card.priceId, () => buyStoreProduct(userId, product), 'billing.activated');
+            }}
+          />
+        </Suspense>
       )}
       {/* App Store 3.1.2: what the subscription is, that it renews, how to cancel, and the terms. */}
       <p className="text-xs leading-5 text-gray-500 dark:text-gray-400" data-testid="store-terms">

@@ -23,6 +23,10 @@ import { VerticalCutReveal } from './vertical-cut-reveal';
  * - no blur in the reveal: blur stalls WebKit on phones;
  * - framer-motion, already in the bundle, not `motion` as a second copy;
  * - no `TimelineContent`: `whileInView` does its job.
+ *
+ * LT-602 (Erel 2026-11-06): the apps show the same cards, with the stores'
+ * prices (`StorePlans`): their bookings rows name the booking packs, and each
+ * card can carry a note, a badge and a locked button (`cardExtra`).
  */
 export interface PricingSectionProps {
   plans: UpgradePlan[];
@@ -38,6 +42,18 @@ export interface PricingSectionProps {
   /** The account is on the free plan itself, not in its free days. */
   onFreePlan: boolean;
   onChoose: (plan: UpgradePlan) => void;
+  /** LT-602: sold in the app's store: the paid plans' bookings rows name the booking packs. */
+  store?: boolean;
+  /** LT-602: what a card adds for the offer it shows: a badge, a note, its button's word, a lock. */
+  cardExtra?: (offer: UpgradePlan) => CardExtra | null;
+}
+
+export interface CardExtra {
+  badge?: React.ReactNode;
+  note?: React.ReactNode;
+  label?: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
 }
 
 type Interval = 'month' | 'year';
@@ -112,6 +128,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({
   actionLabel,
   onFreePlan,
   onChoose,
+  store = false,
+  cardExtra,
 }) => {
   const { t } = useTranslation();
   const [interval, setInterval] = useState<Interval>('month');
@@ -138,6 +156,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 
   const card = (column: Column, order: number) => {
     const chosen = column === 'free' ? undefined : offer(column, shown);
+    const extra = chosen && cardExtra ? cardExtra(chosen) : null;
     // Erel 2026-11-01: Pro, as the best value.
     const highlighted = column === 'pro';
     return (
@@ -203,7 +222,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                       <Icon className="h-3 w-3" aria-hidden="true" />
                     </span>
                     <span className={highlighted ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
-                      {t(`billing.pricing.rows.${row}.${column}`, { price: extraPrice })}
+                      {t(`billing.pricing.rows.${row}.${store && row === 'bookings' && column !== 'free' ? `${column}Store` : column}`, { price: extraPrice })}
                     </span>
                   </li>
                 );
@@ -212,19 +231,31 @@ const PricingSection: React.FC<PricingSectionProps> = ({
           </div>
         </div>
         {chosen ? (
-          <button
-            type="button"
-            onClick={() => onChoose(chosen)}
-            disabled={opening !== null}
-            className={cn(
-              'w-full rounded-xl px-4 py-3 font-semibold transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-60',
-              highlighted
-                ? 'bg-white text-primary-dark shadow-md hover:opacity-90'
-                : 'bg-gradient-to-t from-gray-900 to-gray-700 text-white shadow-md hover:opacity-90 dark:from-white dark:to-gray-200 dark:text-gray-900'
+          <div className="space-y-3">
+            {extra?.badge}
+            {extra?.note && (
+              <p className={cn('text-xs leading-5', highlighted ? 'text-white' : 'text-gray-600 dark:text-gray-300')}>{extra.note}</p>
             )}
-          >
-            {opening === chosen.priceId ? t('billing.opening') : actionLabel}
-          </button>
+            <button
+              type="button"
+              onClick={() => onChoose(chosen)}
+              disabled={opening !== null || !!extra?.disabled}
+              data-testid={`pricing-buy-${column}`}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-60',
+                highlighted
+                  ? 'bg-white text-primary-dark shadow-md hover:opacity-90'
+                  : 'bg-gradient-to-t from-gray-900 to-gray-700 text-white shadow-md hover:opacity-90 dark:from-white dark:to-gray-200 dark:text-gray-900'
+              )}
+            >
+              {opening === chosen.priceId ? t('billing.opening') : (
+                <>
+                  {extra?.icon}
+                  {extra?.label ?? actionLabel}
+                </>
+              )}
+            </button>
+          </div>
         ) : column === 'free' && onFreePlan ? (
           <p className="py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300" data-testid="pricing-current">
             {t('billing.pricing.current')}

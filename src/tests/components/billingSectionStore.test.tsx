@@ -50,18 +50,29 @@ const freeEntitlements = (): Record<string, unknown> => ({
 // A custom element jsdom cannot run: its update throws. The number itself is what matters here.
 vi.mock('@number-flow/react', () => ({ default: ({ value }: { value: number }) => <span>{value}</span> }));
 
-// LT-580: the stores, played by the test.
+// LT-580: the stores, played by the test; LT-602: monthly and yearly.
+const product = (identifier: string, price: number, period: string, over: Record<string, unknown> = {}) => ({
+  identifier, price, priceString: `₪${price.toFixed(2)}`, currencyCode: 'ILS', title: identifier, subscriptionPeriod: period, ...over,
+});
+const offersOf = (plusOver: Record<string, unknown> = {}) => ({
+  plans: [
+    { plan: 'plus', interval: 'month', product: product('plus_m', 89.9, 'P1M', plusOver) },
+    { plan: 'pro', interval: 'month', product: product('pro_m', 119.9, 'P1M') },
+    { plan: 'plus', interval: 'year', product: product('plus_y', 899, 'P1Y', plusOver) },
+    { plan: 'pro', interval: 'year', product: product('pro_y', 1199, 'P1Y') },
+  ],
+  pack: { identifier: 'pack_100', priceString: '₪34.90' },
+});
 const store = vi.hoisted(() => ({
   on: true,
-  offers: {
-    plans: { plus: { identifier: 'plus_m', priceString: '₪89.90' }, pro: { identifier: 'pro_m', priceString: '₪119.90' } },
-    pack: { identifier: 'pack_100', priceString: '₪34.90' },
-  } as Record<string, unknown>,
+  offers: {} as Record<string, unknown>,
 }));
 vi.mock('../../lib/storePurchases', () => ({
   storeSalesOn: () => store.on,
   hasFreeTrial: (product?: { defaultOption?: { freePhase?: unknown } | null }) => !!product?.defaultOption?.freePhase,
   loadStoreOffers: vi.fn(async () => store.offers),
+  offerFor: (offers: { plans: { plan: string; interval: string; product: unknown }[] } | null, plan: string, interval: string) =>
+    offers?.plans.find((o) => o.plan === plan && o.interval === interval)?.product,
   buyStoreProduct: vi.fn(async () => 'done'),
   restoreStore: vi.fn(async () => undefined),
   manageStoreUrl: vi.fn(async () => 'https://apps.apple.com/account/subscriptions'),
@@ -95,10 +106,7 @@ beforeEach(() => {
   authState.subscription = { status: 'free' };
   entitlementsState.data = { ...freeEntitlements(), bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35 }, store: { billedBy: null, products, packBookings: 100 } };
   store.on = true;
-  store.offers = {
-    plans: { plus: { identifier: 'plus_m', priceString: '₪89.90' }, pro: { identifier: 'pro_m', priceString: '₪119.90' } },
-    pack: { identifier: 'pack_100', priceString: '₪34.90' },
-  };
+  store.offers = offersOf();
   t.mockClear();
   inApp();
 });
@@ -114,14 +122,17 @@ afterEach(() => {
 describe('BillingSection with the stores (LT-580)', () => {
   it("offers both plans at the store's prices, with the renewal terms, and buys one", async () => {
     render(<BillingSection />);
-    expect(await screen.findByTestId('store-plan-plus')).toHaveTextContent('₪89.90');
-    expect(screen.getByTestId('store-plan-pro')).toHaveTextContent('₪119.90');
-    expect(screen.getByTestId('store-plan-plus')).toHaveTextContent('billing.store.bookingsAMonth');
+    expect(await screen.findByTestId('pricing-card-plus')).toHaveTextContent('89.9');
+    expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('119.9');
+    // The web's cards (LT-602), their bookings rows naming the packs.
+    expect(screen.getByTestId('pricing-card-plus')).toHaveTextContent('billing.pricing.rows.bookings.plusStore');
+    expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('billing.pricing.rows.bookings.proStore');
+    expect(screen.getByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.rows.bookings.free');
     expect(screen.getByTestId('store-terms')).toHaveTextContent('billing.store.renewal');
     expect(loadStoreOffers).toHaveBeenCalledWith('u1', products);
     expect(fetchUpgradePlans).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByTestId('store-buy-pro'));
+    fireEvent.click(screen.getByTestId('pricing-buy-pro'));
     await waitFor(() => expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' })));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('billing.activated', expect.anything()));
     expect(authState.refreshUser).toHaveBeenCalled();
@@ -130,7 +141,7 @@ describe('BillingSection with the stores (LT-580)', () => {
   it('says nothing was bought when the owner cancels the store sheet', async () => {
     vi.mocked(buyStoreProduct).mockResolvedValueOnce('cancelled');
     render(<BillingSection />);
-    fireEvent.click(await screen.findByTestId('store-buy-plus'));
+    fireEvent.click(await screen.findByTestId('pricing-buy-plus'));
     await waitFor(() => expect(buyStoreProduct).toHaveBeenCalled());
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -141,64 +152,90 @@ describe('BillingSection with the stores (LT-580)', () => {
   it('on the iPhone in the free days: Lightor+ marked as already theirs and locked until 3 days before the end, Pro paid today', async () => {
     entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
     render(<BillingSection />);
-    const plus = await screen.findByTestId('store-plan-plus');
+    const plus = await screen.findByTestId('pricing-card-plus');
     expect(screen.getByTestId('store-plus-current')).toHaveTextContent('billing.store.inFreeDays');
     expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusLocked');
-    const lockedButton = screen.getByTestId('store-buy-plus');
+    const lockedButton = screen.getByTestId('pricing-buy-plus');
     expect(lockedButton).toBeDisabled();
     expect(lockedButton).toHaveTextContent('billing.store.opensOnShort');
     expect(t).toHaveBeenCalledWith('billing.store.plusLocked', expect.objectContaining({ days: 3 }));
-    expect(plus).toHaveTextContent('₪89.90');
+    expect(plus).toHaveTextContent('89.9');
 
     expect(screen.getByTestId('store-note-pro')).toHaveTextContent('billing.store.proPaysNow');
-    expect(screen.getByTestId('store-buy-pro')).not.toBeDisabled();
-    fireEvent.click(screen.getByTestId('store-buy-pro'));
+    expect(screen.getByTestId('pricing-buy-pro')).not.toBeDisabled();
+    fireEvent.click(screen.getByTestId('pricing-buy-pro'));
     await waitFor(() => expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' })));
   });
 
   it("on the iPhone in the free days' last 3 days: Lightor+ opens, paid from today", async () => {
     entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(2) };
     render(<BillingSection />);
-    await screen.findByTestId('store-plan-plus');
+    await screen.findByTestId('pricing-card-plus');
     expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusPaysNow');
-    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
-    expect(screen.getByTestId('store-buy-plus')).toHaveTextContent('billing.store.subscribe');
+    expect(screen.getByTestId('pricing-buy-plus')).not.toBeDisabled();
+    expect(screen.getByTestId('pricing-buy-plus')).toHaveTextContent('billing.subscribe');
   });
 
   it("on Android with Play's trial: Lightor+ open all through the free days, first charged at their end", async () => {
     inApp('android');
-    store.offers = { ...store.offers, plans: { ...(store.offers.plans as object), plus: { identifier: 'plus_m:monthly', priceString: '₪89.90', defaultOption: { freePhase: { billingPeriod: { iso8601: 'P3D' } } } } } };
+    store.offers = offersOf({ defaultOption: { freePhase: { billingPeriod: { iso8601: 'P3D' } } } });
     entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
     render(<BillingSection />);
-    await screen.findByTestId('store-plan-plus');
+    await screen.findByTestId('pricing-card-plus');
     expect(screen.getByTestId('store-note-plus')).toHaveTextContent('billing.store.plusDeferred');
-    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
+    expect(screen.getByTestId('pricing-buy-plus')).not.toBeDisabled();
   });
 
   it("on Android without a trial to take: locked like the iPhone's", async () => {
     inApp('android');
     entitlementsState.data = { ...entitlementsState.data, pilot: freeDaysLeft(20) };
     render(<BillingSection />);
-    await screen.findByTestId('store-plan-plus');
-    expect(screen.getByTestId('store-buy-plus')).toBeDisabled();
+    await screen.findByTestId('pricing-card-plus');
+    expect(screen.getByTestId('pricing-buy-plus')).toBeDisabled();
   });
 
   it('after the free days, both plans open with no notes', async () => {
     render(<BillingSection />);
-    await screen.findByTestId('store-plan-plus');
+    await screen.findByTestId('pricing-card-plus');
     expect(screen.queryByTestId('store-note-plus')).toBeNull();
     expect(screen.queryByTestId('store-plus-current')).toBeNull();
-    expect(screen.getByTestId('store-buy-plus')).not.toBeDisabled();
+    expect(screen.getByTestId('pricing-buy-plus')).not.toBeDisabled();
   });
 
   it('moves a store Lightor+ up to Pro, naming the subscription it replaces', async () => {
-    authState.subscription = { status: 'active', plan: 'plus', provider: 'google' };
+    authState.subscription = { status: 'active', plan: 'plus', provider: 'google', interval: 'month', priceId: 'plus_m:monthly' };
     entitlementsState.data = { ...entitlementsState.data, plan: 'plus', store: { billedBy: 'google', products, packBookings: 100 } };
     render(<BillingSection leadsSite />);
     expect(await screen.findByTestId('store-upgrade')).toHaveTextContent('billing.store.upgradeNote');
     fireEvent.click(screen.getByTestId('store-upgrade-pro'));
     await waitFor(() =>
-      expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' }), expect.objectContaining({ identifier: 'plus_m' })));
+      expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_m' }), 'plus_m:monthly'));
+  });
+
+  it('moves a yearly Lightor+ up to the yearly Pro (LT-602)', async () => {
+    authState.subscription = { status: 'active', plan: 'plus', provider: 'apple', interval: 'year', priceId: 'plus_y' };
+    entitlementsState.data = { ...entitlementsState.data, plan: 'plus', store: { billedBy: 'apple', products, packBookings: 100 } };
+    render(<BillingSection leadsSite />);
+    fireEvent.click(await screen.findByTestId('store-upgrade-pro'));
+    await waitFor(() => expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_y' }), 'plus_y'));
+  });
+
+  it('switches the cards to the yearly products and buys one (LT-602)', async () => {
+    render(<BillingSection />);
+    await screen.findByTestId('pricing-card-plus');
+    fireEvent.click(screen.getByText('billing.pricing.yearly'));
+    expect(screen.getByTestId('pricing-card-plus')).toHaveTextContent('899');
+    expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('1199');
+    expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('billing.per_year');
+    fireEvent.click(screen.getByTestId('pricing-buy-pro'));
+    await waitFor(() => expect(buyStoreProduct).toHaveBeenCalledWith('u1', expect.objectContaining({ identifier: 'pro_y' })));
+  });
+
+  it('shows no yearly switch when the store sells monthly plans only', async () => {
+    store.offers = { ...offersOf(), plans: offersOf().plans.filter((o) => o.interval === 'month') };
+    render(<BillingSection />);
+    await screen.findByTestId('pricing-card-plus');
+    expect(screen.queryByText('billing.pricing.yearly')).toBeNull();
   });
 
   it('restores purchases on request', async () => {

@@ -41,15 +41,33 @@ const ready = async (userId: string) => {
 };
 
 export type StorePlan = 'plus' | 'pro';
+export type StoreInterval = 'month' | 'year';
+
+/** One plan's product in the store, monthly or yearly (LT-602). */
+export interface StoreOffer {
+  plan: StorePlan;
+  interval: StoreInterval;
+  product: PurchasesStoreProduct;
+}
 
 export interface StoreOffers {
-  plans: Partial<Record<StorePlan, PurchasesStoreProduct>>;
+  plans: StoreOffer[];
   pack: PurchasesStoreProduct | null;
 }
 
 /** A Google subscription answers as "id:base-plan": the id is before the colon. */
 const sameProduct = (product: PurchasesStoreProduct, ids: string[]): boolean =>
   ids.includes(product.identifier) || ids.includes(product.identifier.split(':')[0]);
+
+/** The store's period, ISO 8601: a year ("P1Y", "P12M"), else a month. */
+export const intervalOf = (product: PurchasesStoreProduct): StoreInterval => {
+  const period = (product.subscriptionPeriod ?? '').toUpperCase();
+  return period === 'P1Y' || period === 'P12M' ? 'year' : 'month';
+};
+
+/** The plan's product for an interval, if the store sells one. */
+export const offerFor = (offers: StoreOffers | null, plan: StorePlan, interval: StoreInterval): PurchasesStoreProduct | undefined =>
+  offers?.plans.find((offer) => offer.plan === plan && offer.interval === interval)?.product;
 
 /** The store's own products for the plans and the pack, with its prices in the owner's money. */
 export const loadStoreOffers = async (
@@ -63,13 +81,14 @@ export const loadStoreOffers = async (
     subscriptionIds.length ? Purchases.getProducts({ productIdentifiers: subscriptionIds, type: PRODUCT_CATEGORY.SUBSCRIPTION }) : { products: [] },
     products.bookingPack.length ? Purchases.getProducts({ productIdentifiers: products.bookingPack, type: PRODUCT_CATEGORY.NON_SUBSCRIPTION }) : { products: [] },
   ]);
-  return {
-    plans: {
-      plus: subs.products.find((p) => sameProduct(p, products.plus)),
-      pro: subs.products.find((p) => sameProduct(p, products.pro)),
-    },
-    pack: packs.products.find((p) => sameProduct(p, products.bookingPack)) ?? null,
-  };
+  const plans: StoreOffer[] = [];
+  for (const product of subs.products) {
+    const plan: StorePlan | null = sameProduct(product, products.pro) ? 'pro' : sameProduct(product, products.plus) ? 'plus' : null;
+    const interval = intervalOf(product);
+    // One product a plan and interval: the first the store answers with.
+    if (plan && !plans.some((offer) => offer.plan === plan && offer.interval === interval)) plans.push({ plan, interval, product });
+  }
+  return { plans, pack: packs.products.find((p) => sameProduct(p, products.bookingPack)) ?? null };
 };
 
 /** The server reads RevenueCat and writes the account; the app waits for it. */
@@ -83,19 +102,20 @@ export type PurchaseOutcome = 'done' | 'cancelled';
 export const hasFreeTrial = (product: PurchasesStoreProduct | undefined): boolean => !!product?.defaultOption?.freePhase;
 
 /**
- * Buys a product. `replacing` is the subscription it takes the place of (Lightor+
- * up to Pro): on Google Play the old one is named and Pro is charged in full
- * today (LT-589, also inside a free trial); on the App Store both are in one
- * subscription group, so the store itself makes it an upgrade.
+ * Buys a product. `replacing` is the store product id of the subscription it
+ * takes the place of (Lightor+ up to Pro): on Google Play the old one is
+ * named and Pro is charged in full today (LT-589, also inside a free trial);
+ * on the App Store all the plans are in one subscription group, so the store
+ * itself makes it an upgrade.
  */
-export const buyStoreProduct = async (userId: string, product: PurchasesStoreProduct, replacing?: PurchasesStoreProduct): Promise<PurchaseOutcome> => {
+export const buyStoreProduct = async (userId: string, product: PurchasesStoreProduct, replacing?: string): Promise<PurchaseOutcome> => {
   const Purchases = await ready(userId);
   try {
     if (replacing && nativePlatform() === 'android') {
       const { STORE_REPLACEMENT_MODE } = await plugin();
       await Purchases.purchaseStoreProduct({
         product,
-        storeProductChangeInfo: { oldProductIdentifier: replacing.identifier.split(':')[0], replacementMode: STORE_REPLACEMENT_MODE.CHARGE_FULL_PRICE },
+        storeProductChangeInfo: { oldProductIdentifier: replacing.split(':')[0], replacementMode: STORE_REPLACEMENT_MODE.CHARGE_FULL_PRICE },
       });
     } else {
       await Purchases.purchaseStoreProduct({ product });

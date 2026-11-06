@@ -921,10 +921,7 @@
       "buyPack": "{{size}} more bookings · {{price}}",
       "packBought": "The pack is added. The site takes bookings.",
       "manage": "Manage in {{store}}",
-      "perMonth": "a month",
-      "bookingsAMonth": "{{count}} bookings a month",
-      "subscribe": "Join {{plan}}",
-      "renewal": "A monthly subscription that renews automatically until you cancel it in {{store}} settings at least 24 hours before the period ends. Payment is charged to the account you use in {{store}} when you confirm the purchase.",
+      "renewal": "A monthly or yearly subscription that renews automatically for the same period until you cancel it in {{store}} settings at least 24 hours before the period ends. Payment is charged to the account you use in {{store}} when you confirm the purchase.",
       "terms": "Terms of use",
       "privacy": "Privacy policy",
       "inFreeDays": "Already yours in your trial, until {{date}}",
@@ -1061,7 +1058,9 @@
         "bookings": {
           "free": "Up to 15 bookings a month",
           "plus": "Up to 200 bookings a month",
-          "pro": "500 bookings a month, then {{price}} each if you switch on extra bookings"
+          "pro": "500 bookings a month, then {{price}} each if you switch on extra bookings",
+          "plusStore": "Up to 200 bookings a month, and more in packs of 100",
+          "proStore": "500 bookings a month, and more in packs of 100"
         },
         "inquiries": {
           "free": "Up to 15 inquiries a month",

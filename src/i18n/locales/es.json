@@ -925,10 +925,7 @@
       "buyPack": "{{size}} reservas más · {{price}}",
       "packBought": "Paquete añadido. El sitio acepta reservas.",
       "manage": "Gestionar en {{store}}",
-      "perMonth": "al mes",
-      "bookingsAMonth": "{{count}} reservas al mes",
-      "subscribe": "Unirse a {{plan}}",
-      "renewal": "Una suscripción mensual que se renueva automáticamente hasta que la canceles en los ajustes de {{store}}, al menos 24 horas antes del fin del periodo. El pago se carga a tu cuenta de {{store}} al confirmar la compra.",
+      "renewal": "Una suscripción mensual o anual que se renueva automáticamente por el mismo periodo hasta que la canceles en los ajustes de {{store}}, al menos 24 horas antes del fin del periodo. El pago se carga a tu cuenta de {{store}} al confirmar la compra.",
       "terms": "Términos de uso",
       "privacy": "Política de privacidad",
       "inFreeDays": "Ya lo tienes en tu prueba, hasta el {{date}}",
@@ -1065,7 +1062,9 @@
         "bookings": {
           "free": "Hasta 15 reservas al mes",
           "plus": "Hasta 200 reservas al mes",
-          "pro": "500 reservas al mes, luego {{price}} cada una si activas las reservas extra"
+          "pro": "500 reservas al mes, luego {{price}} cada una si activas las reservas extra",
+          "plusStore": "Hasta 200 reservas al mes, y más en paquetes de 100",
+          "proStore": "500 reservas al mes, y más en paquetes de 100"
         },
         "inquiries": {
           "free": "Hasta 15 consultas al mes",
