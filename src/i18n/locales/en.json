@@ -426,8 +426,10 @@
     "listView": "List",
     "session": {
       "title": "Group session",
-      "participants": "{{count}} participants",
-      "cancelledCount": "{{count}} cancelled",
+      "participants_one": "{{count}} participant",
+      "participants_other": "{{count}} participants",
+      "cancelledCount_one": "{{count}} cancelled",
+      "cancelledCount_other": "{{count}} cancelled",
       "close": "Close",
       "addParticipant": "Add participant",
       "remove": "Remove from class",
@@ -788,7 +790,8 @@
     "today": "Today's Income",
     "weekly": "Weekly Income",
     "monthly": "Monthly Income",
-    "appointments": "appointments",
+    "appointments_one": "{{count}} appointment",
+    "appointments_other": "{{count}} appointments",
     "vsYesterday": "vs yesterday by this time",
     "vsLastWeek": "vs this point last week",
     "vsLastMonth": "vs this day last month"
@@ -798,7 +801,8 @@
     "total": "Total"
   },
   "dashboardList": {
-    "total": "appointments",
+    "total_one": "{{count}} appointment",
+    "total_other": "{{count}} appointments",
     "service": "Service",
     "dateTime": "Date / Time",
     "duration": "Duration",

@@ -106,7 +106,8 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
         label,
         changeLabel,
         value: `${currency}${current.income.toLocaleString()}`,
-        sub: `${current.count} ${t('incomeStats.appointments')}`,
+        // LT-601: i18next plurals - "1 appointment", "תור אחד", Arabic's six forms.
+        sub: t('incomeStats.appointments', { count: current.count }),
         change: change(current.income, previous.income),
         series: totals.map((x) => x.income),
       };
@@ -116,7 +117,7 @@ const IncomeStats: React.FC<IncomeStatsProps> = ({ appointments }) => {
       build(weeks, 'week', t('incomeStats.weekly'), t('incomeStats.vsLastWeek')),
       build(months, 'month', t('incomeStats.monthly'), t('incomeStats.vsLastMonth')),
     ];
-  }, [appointments, t]);
+  }, [appointments, t, currency]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

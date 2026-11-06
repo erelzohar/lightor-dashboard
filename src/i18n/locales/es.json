@@ -426,8 +426,12 @@
     "listView": "Lista",
     "session": {
       "title": "Sesión grupal",
-      "participants": "{{count}} participantes",
-      "cancelledCount": "{{count}} cancelados",
+      "participants_one": "{{count}} participante",
+      "participants_many": "{{count}} participantes",
+      "participants_other": "{{count}} participantes",
+      "cancelledCount_one": "{{count}} cancelado",
+      "cancelledCount_many": "{{count}} cancelados",
+      "cancelledCount_other": "{{count}} cancelados",
       "close": "Cerrar",
       "addParticipant": "Añadir participante",
       "remove": "Quitar de la clase",
@@ -788,7 +792,9 @@
     "today": "Ingresos de hoy",
     "weekly": "Ingresos semanales",
     "monthly": "Ingresos mensuales",
-    "appointments": "citas",
+    "appointments_one": "{{count}} cita",
+    "appointments_many": "{{count}} citas",
+    "appointments_other": "{{count}} citas",
     "vsYesterday": "vs ayer a esta hora",
     "vsLastWeek": "vs el mismo momento la semana pasada",
     "vsLastMonth": "vs el mismo día del mes pasado"
@@ -798,7 +804,9 @@
     "total": "Total"
   },
   "dashboardList": {
-    "total": "citas",
+    "total_one": "{{count}} cita",
+    "total_many": "{{count}} citas",
+    "total_other": "{{count}} citas",
     "service": "Servicio",
     "dateTime": "Fecha / Hora",
     "duration": "Duración",

@@ -4,7 +4,10 @@ import IncomeStats, { incomeIn, incomePeriods, samePointIn } from '../../compone
 import { sparklinePath } from '../../components/ui/stats-widget';
 import { Appointment, AppointmentType } from '../../types';
 
-const { t } = vi.hoisted(() => ({ t: (k: string) => (k === 'appointments.currencySymbol' ? '₪' : k) }));
+const { t } = vi.hoisted(() => ({
+  t: (k: string, vars?: Record<string, unknown>) =>
+    k === 'appointments.currencySymbol' ? '₪' : vars && 'count' in vars ? `${k}:${vars.count}` : k,
+}));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
 
 const HOUR = 3_600_000;
@@ -86,7 +89,8 @@ describe('the income cards', () => {
     expect(today.getByText('incomeStats.today')).toBeInTheDocument();
     expect(today.getByText('₪150')).toBeInTheDocument();
     expect(today.getByText('50%')).toBeInTheDocument(); // 150 vs 100 yesterday
-    expect(today.getByText('1 incomeStats.appointments · incomeStats.vsYesterday')).toBeInTheDocument();
+    // The count goes to i18next, which picks the plural form (LT-601).
+    expect(today.getByText('incomeStats.appointments:1 · incomeStats.vsYesterday')).toBeInTheDocument();
     expect(cards[0].querySelector('path[stroke]')?.getAttribute('stroke')).toBe('#22c55e');
   });
 

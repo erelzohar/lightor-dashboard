@@ -82,7 +82,7 @@ const DashboardDonutChart: React.FC<DashboardDonutChartProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-base">{t('donutChart.title')}</h3>
           <span className="text-xs text-light-gray bg-light-gray/10 dark:bg-white/5 px-2.5 py-1 rounded-full">
-            {total} {t('incomeStats.appointments')}
+            {t('incomeStats.appointments', { count: total })}
           </span>
         </div>
 

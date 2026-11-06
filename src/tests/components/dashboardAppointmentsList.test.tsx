@@ -64,7 +64,7 @@ describe('the home list with a class in it', () => {
     renderList(twelve());
 
     // The header counts rows: the session once.
-    expect(screen.getByText('1 dashboardList.total')).toBeTruthy();
+    expect(screen.getByText('dashboardList.total:1')).toBeTruthy();
     // Desktop and phone layouts are both in the DOM: one row, drawn twice.
     expect(screen.getAllByText('appointments.session.participants:12')).toHaveLength(2);
     expect(screen.getAllByText('Group training')).toHaveLength(2);
@@ -105,7 +105,7 @@ describe('the home list with a class in it', () => {
     const onAppointmentClick = vi.fn();
     renderList([booking('1', 'Solo Trainee')], onAppointmentClick);
 
-    expect(screen.getByText('1 dashboardList.total')).toBeTruthy();
+    expect(screen.getByText('dashboardList.total:1')).toBeTruthy();
     expect(screen.getAllByText('appointments.session.participants:1')).toHaveLength(2);
     expect(screen.queryByText('Solo Trainee')).toBeNull();
 
@@ -120,7 +120,7 @@ describe('the home list with a class in it', () => {
     const second = booking('22', 'Avi Levi', { type: haircut, timestamp: String(Date.now() + 26 * HOUR) });
     renderList([second, ...twelve(), first], onAppointmentClick);
 
-    expect(screen.getByText('3 dashboardList.total')).toBeTruthy();
+    expect(screen.getByText('dashboardList.total:3')).toBeTruthy();
     expect(screen.getAllByText('Dana Cohen')).toHaveLength(2);
     expect(screen.getAllByText('Avi Levi')).toHaveLength(2);
     expect(screen.getAllByText('₪80')).toHaveLength(4);
@@ -139,10 +139,10 @@ describe('the home list with a class in it', () => {
 
     // One live session with a cancelled booking in it is not a cancelled row.
     fireEvent.click(screen.getByRole('button', { name: 'appointments.cancelled' }));
-    expect(screen.getByText('0 dashboardList.total')).toBeTruthy();
+    expect(screen.getByText('dashboardList.total:0')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'appointments.scheduled' }));
-    expect(screen.getByText('1 dashboardList.total')).toBeTruthy();
+    expect(screen.getByText('dashboardList.total:1')).toBeTruthy();
     // The headcount and the takings leave the cancelled booking out.
     expect(screen.getAllByText('appointments.session.participants:12')).toHaveLength(2);
     expect(screen.getAllByText('₪720')).toHaveLength(2);

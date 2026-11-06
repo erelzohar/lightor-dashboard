@@ -30,6 +30,41 @@ const locales = {
 
 // English is the canonical key set; every other locale must match it exactly.
 const OTHER_LANGS = ['he', 'ar', 'fr', 'es'] as const;
+type Lang = keyof typeof locales;
+
+/**
+ * LT-601: count texts are i18next plurals - `key_one`, `key_other` and the
+ * forms a language adds (Hebrew `_two`, Arabic six). A family is one key in
+ * the key set, and every language carries exactly the forms its plural rules
+ * can pick: i18next never falls back from a missing form to `_other`, it falls
+ * back to the bare key and from there to Hebrew, mid-sentence.
+ */
+const PLURAL = /_(zero|one|two|few|many|other)$/;
+const PLURAL_FORMS: Record<Lang, string[]> = {
+  en: ['one', 'other'],
+  // "many" too: an iPhone on iOS 15 (CLDR before 42) still picks it for 20, 30...
+  he: ['one', 'two', 'many', 'other'],
+  ar: ['zero', 'one', 'two', 'few', 'many', 'other'],
+  fr: ['one', 'many', 'other'],
+  es: ['one', 'many', 'other'],
+};
+// A form that stands for one number may spell it out ("תור אחד", "موعدان");
+// every other form shows it (French "one" is 0 and 1).
+const SPELLED_OUT: Record<Lang, string[]> = { en: ['one'], he: ['one', 'two'], ar: ['zero', 'one', 'two'], fr: [], es: ['one'] };
+const PLACEHOLDER = /\{\{\s*\w+\s*\}\}/g;
+const COUNT = /^\{\{\s*count\s*\}\}$/;
+
+const familyKey = (key: string) => key.replace(PLURAL, '_{plural}');
+
+/** Plural families by their base key: form -> text. */
+const families = (flat: Record<string, string>) => {
+  const out: Record<string, Record<string, string>> = {};
+  for (const [key, value] of Object.entries(flat)) {
+    const form = key.match(PLURAL)?.[1];
+    if (form) (out[key.slice(0, -form.length - 1)] ??= {})[form] = value;
+  }
+  return out;
+};
 
 /**
  * The dashboard ships in five languages (en, he, ar, fr, es) and i18next
@@ -39,11 +74,46 @@ const OTHER_LANGS = ['he', 'ar', 'fr', 'es'] as const;
  */
 describe('dashboard translations', () => {
   it.each(OTHER_LANGS)('%s has exactly the English key set', (lang) => {
-    const target = locales[lang];
-    const missing = Object.keys(locales.en).filter((key) => !(key in target));
-    const extra = Object.keys(target).filter((key) => !(key in locales.en));
+    // A plural family counts once, whatever forms the language gives it.
+    const keys = (l: Lang) => new Set(Object.keys(locales[l]).map(familyKey));
+    const english = keys('en');
+    const target = keys(lang);
+    const missing = [...english].filter((key) => !target.has(key));
+    const extra = [...target].filter((key) => !english.has(key));
     expect({ lang, missing, extra }).toEqual({ lang, missing: [], extra: [] });
   });
+
+  it.each(Object.keys(locales) as Lang[])('%s gives every count text exactly its plural forms (LT-601)', (lang) => {
+    const wrong = Object.entries(families(locales[lang]))
+      .filter(([, forms]) => Object.keys(forms).sort().join() !== [...PLURAL_FORMS[lang]].sort().join())
+      .map(([base, forms]) => `${base}: ${Object.keys(forms).join(' ')}`);
+    expect(wrong).toEqual([]);
+  });
+
+  it('knows every plural form the plural rules can pick', () => {
+    for (const lang of Object.keys(PLURAL_FORMS) as Lang[]) {
+      const picked = new Intl.PluralRules(lang).resolvedOptions().pluralCategories;
+      expect(PLURAL_FORMS[lang]).toEqual(expect.arrayContaining(picked));
+    }
+  });
+
+  it.each(Object.keys(locales) as Lang[])(
+    "%s's plural forms keep English's placeholders and show the number (LT-601)",
+    (lang) => {
+      const used = (text = '') => text.match(PLACEHOLDER) ?? [];
+      const english = families(locales.en);
+      const wrong = Object.entries(families(locales[lang])).flatMap(([base, forms]) => {
+        const expected = [...new Set(Object.values(english[base] ?? {}).flatMap(used))].sort().join();
+        const actual = [...new Set(Object.values(forms).flatMap(used))].sort().join();
+        const showsCount = used(english[base]?.other).some((p) => COUNT.test(p));
+        const hidden = Object.entries(forms)
+          .filter(([form, text]) => showsCount && !SPELLED_OUT[lang].includes(form) && !used(text).some((p) => COUNT.test(p)))
+          .map(([form]) => `${base}_${form}`);
+        return expected === actual ? hidden : [base, ...hidden];
+      });
+      expect(wrong).toEqual([]);
+    }
+  );
 
   it.each(Object.keys(locales))('%s has no blank strings', (lang) => {
     const blank = Object.entries(locales[lang as keyof typeof locales])
@@ -53,11 +123,13 @@ describe('dashboard translations', () => {
   });
 
   it.each(OTHER_LANGS)('%s keeps interpolation placeholders identical to English', (lang) => {
-    const placeholders = (value: string) => (value.match(/\{\{\s*\w+\s*\}\}/g) ?? []).sort();
+    const placeholders = (value: string) => (value.match(PLACEHOLDER) ?? []).sort();
     const target = locales[lang];
 
+    // Plural forms are compared as a family, in the test above.
     const mismatched = Object.keys(locales.en).filter(
       (key) =>
+        !PLURAL.test(key) &&
         JSON.stringify(placeholders(locales.en[key])) !==
         JSON.stringify(placeholders(target[key] ?? ''))
     );

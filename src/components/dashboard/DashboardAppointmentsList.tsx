@@ -115,7 +115,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
           <div>
             <h3 className="font-semibold text-lg">{t('appointments.upcoming')}</h3>
             <p className="text-xs text-light-gray mt-0.5">
-              {filtered.length} {t('dashboardList.total')}
+              {t('dashboardList.total', { count: filtered.length })}
             </p>
           </div>
           {/* Status filter */}

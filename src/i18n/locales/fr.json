@@ -426,8 +426,12 @@
     "listView": "Liste",
     "session": {
       "title": "Séance collective",
-      "participants": "{{count}} participants",
-      "cancelledCount": "{{count}} annulés",
+      "participants_one": "{{count}} participant",
+      "participants_many": "{{count}} participants",
+      "participants_other": "{{count}} participants",
+      "cancelledCount_one": "{{count}} annulé",
+      "cancelledCount_many": "{{count}} annulés",
+      "cancelledCount_other": "{{count}} annulés",
       "close": "Fermer",
       "addParticipant": "Ajouter un participant",
       "remove": "Retirer du cours",
@@ -788,7 +792,9 @@
     "today": "Revenus du jour",
     "weekly": "Revenus hebdomadaires",
     "monthly": "Revenus mensuels",
-    "appointments": "rendez-vous",
+    "appointments_one": "{{count}} rendez-vous",
+    "appointments_many": "{{count}} rendez-vous",
+    "appointments_other": "{{count}} rendez-vous",
     "vsYesterday": "vs hier à la même heure",
     "vsLastWeek": "vs le même moment la semaine dernière",
     "vsLastMonth": "vs le même jour le mois dernier"
@@ -798,7 +804,9 @@
     "total": "Total"
   },
   "dashboardList": {
-    "total": "rendez-vous",
+    "total_one": "{{count}} rendez-vous",
+    "total_many": "{{count}} rendez-vous",
+    "total_other": "{{count}} rendez-vous",
     "service": "Service",
     "dateTime": "Date / Heure",
     "duration": "Durée",
