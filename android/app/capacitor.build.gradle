@@ -14,6 +14,7 @@ dependencies {
     implementation project(':capacitor-app')
     implementation project(':capacitor-haptics')
     implementation project(':capacitor-preferences')
+    implementation project(':capawesome-capacitor-live-update')
     implementation project(':revenuecat-purchases-capacitor')
 
 }
