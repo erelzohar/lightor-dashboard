@@ -24,6 +24,8 @@ vi.mock('../../hooks/useAppSelector', () => ({
     selector({ webConfig: { data: { businessName: 'Biz', conversion } } }),
 }));
 let newLeads = 0;
+// LT-610: the blog link asks the plan once; Pro here.
+vi.mock('../../services/postsApi', () => ({ hasBlog: () => Promise.resolve(true) }));
 vi.mock('../../hooks/useNewLeadsCount', () => ({
   useNewLeadsCount: () => newLeads,
   refreshNewLeadsCount: vi.fn(),
@@ -66,7 +68,7 @@ describe('the phone menu (LT-352, LT-378)', () => {
     // Part of the bar, above its own row: no second menu, no repeated pages.
     expect(screen.getByTestId('bottom-tab-bar')).toContainElement(added);
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(tileNames(added)).toEqual(['/design', '/customers', '/leads', '/appointment-types', '/portfolio', '/products', '/settings']);
+    expect(tileNames(added)).toEqual(['/design', '/customers', '/leads', '/appointment-types', '/portfolio', '/products', '/blog', '/settings']);
     tileNames(added).forEach((path) => expect(before).not.toContain(path));
     // The bar's own row is still there, unchanged.
     expect(barLinks().map((a) => a.getAttribute('href'))).toEqual([...tileNames(added), ...before]);
@@ -85,7 +87,7 @@ describe('the phone menu (LT-352, LT-378)', () => {
     renderAt('/');
     fireEvent.click(more());
     // Customers too since LT-376: everyone who wrote is one.
-    expect(tileNames(menu()!)).toEqual(['/design', '/customers', '/appointment-types', '/portfolio', '/products', '/settings']);
+    expect(tileNames(menu()!)).toEqual(['/design', '/customers', '/appointment-types', '/portfolio', '/products', '/blog', '/settings']);
   });
 
   it('shows every page under More while a page edits through the bar (LT-384)', () => {
@@ -105,7 +107,7 @@ describe('the phone menu (LT-352, LT-378)', () => {
     fireEvent.click(more());
     expect(tileNames(menu()!)).toEqual([
       '/', '/lighty', '/design', '/appointments',
-      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/settings',
+      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/blog', '/settings',
     ]);
   });
 

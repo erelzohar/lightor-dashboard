@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LifeBuoy, LogOut, Moon, Sun, type Inbox } from 'lucide-react';
+import { LifeBuoy, LogOut, Moon, Sun, type Inbox, Lock } from 'lucide-react';
 import { openReportProblem } from '../support/ReportProblem';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
@@ -16,6 +16,8 @@ export interface PhoneMenuItem {
   Icon: typeof Inbox;
   name: string;
   badge?: number;
+  /** LT-610: a page of a higher plan (the lock on its tile, the plan's name in its label). */
+  locked?: string;
 }
 
 export interface PhoneMenuSection {
@@ -134,7 +136,7 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
             )}
             {/* The bar's five columns, so the new pages line up with its own. */}
             <div className="grid grid-cols-5 gap-0.5">
-              {section.items.map(({ path, Icon, name, badge }) => (
+              {section.items.map(({ path, Icon, name, badge, locked }) => (
                 <NavLink
                   key={path}
                   to={path}
@@ -153,6 +155,11 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
                         data-testid="menu-badge"
                       >
                         {badge > 9 ? '9+' : badge}
+                      </span>
+                    )}
+                    {!!locked && (
+                      <span className="absolute -top-1.5 -end-2 flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-amber-400 text-white ring-2 ring-white dark:ring-slate-900" data-testid="menu-locked" aria-label={locked}>
+                        <Lock className="h-2.5 w-2.5" aria-hidden="true" />
                       </span>
                     )}
                   </span>

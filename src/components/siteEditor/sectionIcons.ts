@@ -1,7 +1,7 @@
 import {
   ArrowLeftRight, BarChart3, BadgeCheck, CalendarCheck, CalendarClock, Clock, Columns2, HelpCircle, Image, Images, Info,
   LayoutGrid, ListOrdered, MapPin, Megaphone, MessageSquareQuote, MoveHorizontal, PanelBottom, PanelTop, Phone, Quote,
-  Receipt, Share2, Sparkles, Type, type LucideIcon, ShoppingBag } from 'lucide-react';
+  Receipt, Share2, Sparkles, Type, type LucideIcon, ShoppingBag, Newspaper } from 'lucide-react';
 
 /** LT-252: an icon per section type, in the sections list and the add list. */
 export const SECTION_ICONS: Record<string, LucideIcon> = {
@@ -17,6 +17,7 @@ export const SECTION_ICONS: Record<string, LucideIcon> = {
   announcement: Megaphone,
   gallery: Images,
   products: ShoppingBag,
+  blog: Newspaper,
   interlude: Image,
   photoPair: Columns2,
   beforeAfter: ArrowLeftRight,

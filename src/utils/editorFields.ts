@@ -41,6 +41,9 @@ const RULES: Rule[] = [
   [/^components\.(about|portfolio|schedule|contact)\.description$/, () => para('sectionDescription')],
   [/^components\.products\.title$/, () => line('sectionTitle', 60)],
   [/^components\.products\.description$/, () => para('sectionDescription')],
+  // LT-610: the blog's name (menu, its page, the home section) and its page's line.
+  [/^components\.blog\.title$/, () => line('sectionTitle', 40)],
+  [/^components\.blog\.description$/, () => para('sectionDescription', 200)],
   [/^components\.about\.paragraphs\.intro$/, () => para('aboutIntro')],
   [/^components\.about\.paragraphs\.mission$/, () => para('aboutMission')],
   [/^components\.about\.features\.(\d+)\.title$/, (m) => ({ ...line('featureTitle', 80), n: item(m) })],

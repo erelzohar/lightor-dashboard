@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, ShoppingBag, Trash2, Type } from 'lucide-react';
+import { ArrowDown, ArrowUp, Image as ImageIcon, Plus, ShoppingBag, Trash2, Type, Newspaper } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
@@ -143,6 +143,18 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
           {t('siteEditor.section.manageProducts')}
         </Link>
       )}
+      {/* LT-610: the posts are written on the blog's page. */}
+      {type === 'blog' && (
+        <Link
+          to="/blog"
+          onClick={(e) => guardLinkClick(e, '/blog')}
+          data-testid="manage-posts"
+          className="flex items-center justify-center gap-2 rounded-xl border border-primary/40 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+        >
+          <Newspaper className="h-4 w-4" aria-hidden="true" />
+          {t('siteEditor.pages.managePosts')}
+        </Link>
+      )}
 
       {/* LT-256: then Lighty's line — every text of the section at once. */}
       {aiFields.length > 0 && (
@@ -269,7 +281,8 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
             <button
               type="button"
               className="px-3 py-1.5 rounded-full text-xs font-medium border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400"
-              onClick={() => onUpdate(removeBlock(config, block.id))}
+              // LT-610: a site with a blog always draws its section (front blogLooks): taking it away hides it.
+              onClick={() => onUpdate(block.type === 'blog' ? patchBlock(config, block.id, { mod: { ...(block.mod ?? {}), hidden: true } }) : removeBlock(config, block.id))}
             >
               <span className="inline-flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" />{t('siteEditor.section.remove')}</span>
             </button>

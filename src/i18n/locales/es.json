@@ -62,7 +62,8 @@
       "cancelled": "Movimiento cancelado."
     },
     "aiBusy": "Un momento: otra solicitud todavía está en curso. Inténtalo de nuevo en unos segundos.",
-    "products": "Productos"
+    "products": "Productos",
+    "blog": "Blog"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -2186,7 +2187,13 @@
       "products": "Página de productos",
       "productsShort": "Productos",
       "product": "Página de producto",
-      "tab": "Diseño de la página"
+      "tab": "Diseño de la página",
+      "blog": "Blog",
+      "post": "Entrada",
+      "blogLayout": "El diseño de la página del blog",
+      "postLayout": "El diseño de una entrada",
+      "blogHint": "Haz clic en el nombre del blog en el sitio para cambiarlo.",
+      "managePosts": "Gestionar las entradas"
     },
     "products": {
       "layout": "Disposición",
@@ -2586,6 +2593,20 @@
         "title": "Los más vistos",
         "body": "Los productos que los visitantes más abren en el sitio en los últimos 30 días, y las vistas de cada uno."
       }
+    },
+    "blog": {
+      "lighty": {
+        "title": "Lighty escribe por ti",
+        "body": "Elige un tema, añade unas palabras tuyas, y Lighty escribe un borrador con lo que dice tu sitio."
+      },
+      "new": {
+        "title": "Una entrada nueva",
+        "body": "También puedes escribir tú: un título, una imagen y la entrada en bloques."
+      },
+      "list": {
+        "title": "Tus entradas",
+        "body": "Los borradores se ven solo aquí. Una entrada publicada está en el blog de tu sitio y llega a Google."
+      }
     }
   },
   "phoneInput": {
@@ -2779,6 +2800,119 @@
       "renamed": "La categoría cambió en {{count}} productos",
       "joined": "{{count}} productos pasaron a \"{{name}}\"",
       "cleared": "La categoría se quitó de {{count}} productos"
+    }
+  },
+  "blog": {
+    "pro": "Pro",
+    "title": "Blog",
+    "description": "Entradas en tu sitio. Lighty las redacta con los datos de tu negocio, y tú corriges y publicas.",
+    "seeOnSite": "Ver el blog",
+    "newPost": "Nueva entrada",
+    "lightyWrites": "Lighty escribe",
+    "iWrite": "Escribo yo",
+    "draftsLeft": "Te quedan {{left}} de {{max}} borradores de Lighty este mes",
+    "empty": {
+      "title": "Aún no hay entradas",
+      "body": "Lighty puede escribir la primera con lo que ya dice tu sitio."
+    },
+    "status": {
+      "draft": "Borrador",
+      "published": "En el sitio",
+      "hidden": "Ocultada por Lightor"
+    },
+    "publishedOn": "Publicada el {{date}}",
+    "updatedOn": "Actualizada el {{date}}",
+    "hiddenNote": "Lightor ocultó esta entrada del sitio tras un aviso. Consultas: support@lightor.app",
+    "untitled": "Entrada sin título",
+    "deleteConfirm": "¿Eliminar la entrada? No se puede deshacer.",
+    "deleted": "Entrada eliminada",
+    "loadFailed": "No pudimos cargar tus entradas. Inténtalo de nuevo en un momento.",
+    "locked": {
+      "title": "Un blog para tu sitio, en Lightor Pro",
+      "body": "Entradas que Google encuentra, y Lighty las escribe con los datos de tu negocio. Apruebas cada entrada antes de publicarla.",
+      "point1": "Una página de blog en tu sitio y una página por entrada, con el diseño de tu sitio",
+      "point2": "Lighty sugiere temas y escribe hasta 10 borradores al mes",
+      "point3": "Cada entrada llega a Google y es fácil compartirla por WhatsApp",
+      "upgrade": "Ver los planes",
+      "kept": "Tienes {{count}} entradas guardadas. Vuelven a tu sitio con Pro, en las mismas direcciones."
+    },
+    "editor": {
+      "title": "Título",
+      "titlePlaceholder": "¿De qué trata la entrada?",
+      "summary": "Resumen",
+      "summaryHint": "La frase que Google muestra bajo el título",
+      "category": "Tema",
+      "categoryHint": "Una o dos palabras, como \"Consejos\" (opcional)",
+      "cover": "Imagen principal",
+      "coverSite": "De las imágenes del sitio",
+      "coverUpload": "Subir",
+      "coverAi": "Imagen con IA",
+      "coverAiPrompt": "¿Qué muestra la imagen?",
+      "coverAiMake": "Crear",
+      "coverRemove": "Sin imagen",
+      "coverLimit": "Se acabaron las imágenes con IA de este mes. Puedes subir una tuya.",
+      "coverFailed": "No se creó la imagen. Inténtalo de nuevo.",
+      "noSitePictures": "Aún no hay imágenes en el sitio",
+      "body": "La entrada",
+      "add": "Añadir un bloque",
+      "kinds": {
+        "p": "Párrafo",
+        "h2": "Título",
+        "h3": "Subtítulo",
+        "ul": "Lista",
+        "ol": "Lista numerada",
+        "quote": "Cita",
+        "image": "Imagen"
+      },
+      "item": "Elemento {{n}}",
+      "addItem": "Otro elemento",
+      "removeItem": "Quitar el elemento",
+      "caption": "Pie de foto (opcional)",
+      "pickPicture": "Elegir una imagen",
+      "up": "Subir",
+      "down": "Bajar",
+      "remove": "Quitar el bloque",
+      "saveDraft": "Guardar como borrador",
+      "publish": "Publicar en el sitio",
+      "update": "Guardar",
+      "unpublish": "Quitar del sitio",
+      "preview": "Vista previa en el sitio",
+      "close": "Cerrar",
+      "delete": "Eliminar la entrada",
+      "saved": "Guardado",
+      "publishedToast": "La entrada está en tu sitio",
+      "unpublishedToast": "La entrada salió del sitio y quedó como borrador",
+      "publishCap": "Publicaste 30 entradas este mes. Guarda esta como borrador y publícala el mes que viene.",
+      "needsTitle": "Falta un título",
+      "needsBody": "Hace falta al menos un párrafo",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "address": "La dirección de la entrada",
+      "addressNote": "La dirección se fijó al publicar por primera vez y no cambiará aunque cambie el título.",
+      "share": "Compartir por WhatsApp",
+      "leave": "Hay cambios sin guardar. ¿Cerrar sin guardar?",
+      "byLighty": "Lighty escribió este borrador con lo que dice tu sitio. La IA puede equivocarse: lee la entrada antes de publicarla."
+    },
+    "lighty": {
+      "title": "Lighty escribe una entrada",
+      "ideas": "¿Sobre qué escribimos?",
+      "ideasLoading": "Lighty está pensando temas a partir de tu negocio...",
+      "moreIdeas": "Otras ideas",
+      "ideasFailed": "No pudimos traer ideas. Puedes escribir tu propio tema.",
+      "own": "O tu propio tema",
+      "ownPlaceholder": "Por ejemplo: cómo elegir el color de uñas para un evento",
+      "next": "Seguir",
+      "topic": "El tema",
+      "words": "¿Qué quieres decir? (opcional)",
+      "wordsHint": "Un consejo de tu trabajo, una historia breve o lo que preguntan los clientes. Así la entrada suena como tú.",
+      "write": "Escribir un borrador",
+      "writing": "Lighty está escribiendo el borrador. Tarda alrededor de medio minuto.",
+      "failed": "Lighty no pudo escribirlo esta vez y el borrador no se contó. Inténtalo de nuevo.",
+      "used": "Se acabaron los borradores de Lighty de este mes. Se renuevan a principio de mes; mientras tanto puedes escribir tú.",
+      "back": "Volver"
+    },
+    "preview": {
+      "title": "Vista previa en el sitio",
+      "note": "Así se verá la entrada en tu sitio. Los visitantes la ven solo cuando está publicada."
     }
   },
   "app": {

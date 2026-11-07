@@ -17,6 +17,7 @@ export const TILE: Record<string, string> = {
   '/appointment-types': 'from-orange-400 to-rose-400',
   '/portfolio': 'from-rose-400 to-pink-500',
   '/products': 'from-violet-400 to-purple-500',
+  '/blog': 'from-sky-400 to-indigo-500',
   '/settings': 'from-teal-400 to-emerald-500',
   '/admin': 'from-indigo-400 to-violet-500',
   '/admin/users': 'from-emerald-400 to-teal-500',

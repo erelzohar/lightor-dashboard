@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react';
 import React, { useState, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -16,6 +17,8 @@ interface Links {
   icon: React.JSX.Element | React.ReactNode;
   /** A count beside the label (on the icon while collapsed), e.g. new leads (LT-197). */
   badge?: number;
+  /** LT-610: a page of a higher plan - a lock and the plan's name beside the label. */
+  locked?: string;
 }
 
 interface SidebarContextProps {
@@ -129,7 +132,7 @@ export const SidebarLink = ({
       to={link.href}
       end={end}
       onClick={onClick}
-      aria-label={`${link.label}${badge}`}
+      aria-label={`${link.label}${badge}${link.locked ? ` (${link.locked})` : ''}`}
       className={({ isActive }) =>
         cn(
           'flex items-center justify-start gap-2 group/sidebar py-2',
@@ -168,6 +171,12 @@ export const SidebarLink = ({
             data-testid="nav-badge"
           >
             {link.badge > 99 ? '99+' : link.badge}
+          </span>
+        )}
+        {!!link.locked && (
+          <span className="ms-2 inline-flex h-5 items-center gap-1 rounded-full bg-amber-100 px-1.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-200" data-testid="nav-locked" aria-hidden="true">
+            <Lock className="h-3 w-3" />
+            {link.locked}
           </span>
         )}
       </motion.span>

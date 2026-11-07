@@ -62,7 +62,8 @@
       "cancelled": "The move was cancelled."
     },
     "aiBusy": "One moment - another AI request is still running. Try again in a few seconds.",
-    "products": "Products"
+    "products": "Products",
+    "blog": "Blog"
   },
   "greetings": {
     "morning": "Good morning",
@@ -2182,7 +2183,13 @@
       "products": "Products page",
       "productsShort": "Products",
       "product": "Product page",
-      "tab": "Page design"
+      "tab": "Page design",
+      "blog": "Blog",
+      "post": "Post",
+      "blogLayout": "The blog page's look",
+      "postLayout": "A post page's look",
+      "blogHint": "Click the blog's name on the site to change it.",
+      "managePosts": "Manage the posts"
     },
     "products": {
       "layout": "Layout",
@@ -2582,6 +2589,20 @@
         "title": "Most viewed",
         "body": "Which products visitors open most on the site over the last 30 days, and each product's views."
       }
+    },
+    "blog": {
+      "lighty": {
+        "title": "Lighty writes for you",
+        "body": "Pick a topic, add a few words of your own, and Lighty writes a draft from what your site says."
+      },
+      "new": {
+        "title": "A new post",
+        "body": "You can also write on your own: a title, a picture and the post in blocks."
+      },
+      "list": {
+        "title": "Your posts",
+        "body": "Drafts are seen only here. A published post is on your site's blog and reaches Google."
+      }
     }
   },
   "phoneInput": {
@@ -2775,6 +2796,119 @@
       "renamed": "The category changed on {{count}} products",
       "joined": "{{count}} products moved to \"{{name}}\"",
       "cleared": "The category came off {{count}} products"
+    }
+  },
+  "blog": {
+    "pro": "Pro",
+    "title": "Blog",
+    "description": "Posts on your site. Lighty drafts them from your business's facts, and you correct and publish.",
+    "seeOnSite": "View the blog",
+    "newPost": "New post",
+    "lightyWrites": "Lighty writes",
+    "iWrite": "I'll write",
+    "draftsLeft": "{{left}} of {{max}} Lighty drafts left this month",
+    "empty": {
+      "title": "No posts yet",
+      "body": "Lighty can write your first one from what your site already says."
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "On the site",
+      "hidden": "Hidden by Lightor"
+    },
+    "publishedOn": "Published {{date}}",
+    "updatedOn": "Updated {{date}}",
+    "hiddenNote": "Lightor hid this post from the site after a report. Questions: support@lightor.app",
+    "untitled": "Untitled post",
+    "deleteConfirm": "Delete this post? This cannot be undone.",
+    "deleted": "Post deleted",
+    "loadFailed": "We could not load your posts. Please try again in a moment.",
+    "locked": {
+      "title": "A blog for your site, on Lightor Pro",
+      "body": "Posts Google finds, and Lighty writing them from your business's facts. You approve every post before it goes up.",
+      "point1": "A blog page on your site and a page for each post, in your site's design",
+      "point2": "Lighty suggests topics and writes up to 10 drafts a month",
+      "point3": "Every post reaches Google, and is easy to share on WhatsApp",
+      "upgrade": "See the plans",
+      "kept": "{{count}} posts are kept. They come back to your site with Pro, at the same addresses."
+    },
+    "editor": {
+      "title": "Title",
+      "titlePlaceholder": "What is the post about?",
+      "summary": "Summary line",
+      "summaryHint": "The sentence Google shows under the title",
+      "category": "Topic",
+      "categoryHint": "A word or two, like \"Tips\" (optional)",
+      "cover": "Main picture",
+      "coverSite": "From the site's pictures",
+      "coverUpload": "Upload",
+      "coverAi": "Picture with AI",
+      "coverAiPrompt": "What does the picture show?",
+      "coverAiMake": "Create",
+      "coverRemove": "No picture",
+      "coverLimit": "This month's AI pictures are used up. You can upload your own.",
+      "coverFailed": "The picture was not made. Please try again.",
+      "noSitePictures": "No pictures on the site yet",
+      "body": "The post",
+      "add": "Add a block",
+      "kinds": {
+        "p": "Paragraph",
+        "h2": "Heading",
+        "h3": "Subheading",
+        "ul": "List",
+        "ol": "Numbered list",
+        "quote": "Quote",
+        "image": "Picture"
+      },
+      "item": "Item {{n}}",
+      "addItem": "Another item",
+      "removeItem": "Remove the item",
+      "caption": "Caption (optional)",
+      "pickPicture": "Choose a picture",
+      "up": "Move up",
+      "down": "Move down",
+      "remove": "Remove the block",
+      "saveDraft": "Save as draft",
+      "publish": "Publish on the site",
+      "update": "Save",
+      "unpublish": "Take off the site",
+      "preview": "Preview on the site",
+      "close": "Close",
+      "delete": "Delete the post",
+      "saved": "Saved",
+      "publishedToast": "The post is on your site",
+      "unpublishedToast": "The post is off the site and kept as a draft",
+      "publishCap": "You have published 30 posts this month. Save this one as a draft and publish it next month.",
+      "needsTitle": "A title is needed",
+      "needsBody": "At least one paragraph is needed",
+      "saveFailed": "Saving failed. Please try again.",
+      "address": "The post's address",
+      "addressNote": "The address was set by the first publication and will not change, even if the title does.",
+      "share": "Share on WhatsApp",
+      "leave": "There are unsaved changes. Close without saving?",
+      "byLighty": "Lighty wrote this draft from what your site says. AI can make mistakes, so read the post before you publish it."
+    },
+    "lighty": {
+      "title": "Lighty writes a post",
+      "ideas": "What should it be about?",
+      "ideasLoading": "Lighty is thinking of topics from your business...",
+      "moreIdeas": "Other ideas",
+      "ideasFailed": "We could not fetch ideas. You can write your own topic.",
+      "own": "Or your own topic",
+      "ownPlaceholder": "For example: choosing a nail colour for an event",
+      "next": "Next",
+      "topic": "The topic",
+      "words": "What do you want to say? (optional)",
+      "wordsHint": "A tip from your work, a short story or what customers ask. That way the post sounds like you.",
+      "write": "Write a draft",
+      "writing": "Lighty is writing the draft. It takes about half a minute.",
+      "failed": "Lighty could not write it this time, and the draft was not counted. Please try again.",
+      "used": "This month's Lighty drafts are used up. They renew at the start of the month; meanwhile you can write your own.",
+      "back": "Back"
+    },
+    "preview": {
+      "title": "Preview on the site",
+      "note": "This is how the post will look on your site. Visitors see it only once it is published."
     }
   },
   "app": {

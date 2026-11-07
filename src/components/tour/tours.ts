@@ -115,6 +115,16 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
           { key: 'products.views', target: at('most-viewed') },
         ],
       };
+    // LT-610: the blog - Lighty's draft, writing by hand, the posts.
+    case '/blog':
+      return {
+        id: 'blog',
+        steps: [
+          { key: 'blog.lighty', target: at('blog-lighty') },
+          { key: 'blog.new', target: at('blog-new') },
+          { key: 'blog.list', target: at('blog-posts') },
+        ],
+      };
     case '/portfolio':
       return {
         id: 'gallery',

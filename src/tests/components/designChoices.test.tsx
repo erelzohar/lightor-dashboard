@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import DesignChoices, { designPicture, movesByItself, pictureGroup } from '../../components/siteEditor/DesignChoices';
-import { HERO_BACKGROUNDS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, SECTIONS } from '../../utils/editorOptions';
+import { HERO_BACKGROUNDS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, SECTIONS, BLOG_PAGE_LAYOUTS, POST_PAGE_LAYOUTS } from '../../utils/editorOptions';
 import Select from '../../components/ui/Select';
 import { ButtonSample, CardSample, CornerSample, FontSample, ThemeSample, useSampleFonts } from '../../components/siteEditor/ThemeSamples';
 import { optionOf } from '../helpers/dropdown';
@@ -61,6 +61,9 @@ describe('a picture of every design (LT-595)', () => {
       ...Object.keys(PRODUCT_CARDS).map((v): [string, string] => ['card', v]),
       ...PRODUCTS_PAGE_LAYOUTS.map((v): [string, string] => ['productsPage', v]),
       ...Object.keys(PRODUCT_PAGE_LAYOUTS).map((v): [string, string] => ['productPage', v]),
+      // LT-610: the blog's page and a post's.
+      ...Object.keys(BLOG_PAGE_LAYOUTS).map((v): [string, string] => ['blogPage', v]),
+      ...Object.keys(POST_PAGE_LAYOUTS).map((v): [string, string] => ['postPage', v]),
     ];
     const missing: string[] = [];
     for (const [group, value] of choices) {

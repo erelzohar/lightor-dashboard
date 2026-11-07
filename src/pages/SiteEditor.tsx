@@ -36,6 +36,8 @@ import PagePanel from '../components/siteEditor/PagePanel';
 import SectionsPanel from '../components/siteEditor/SectionsPanel';
 import AddSectionPanel from '../components/siteEditor/AddSectionPanel';
 import { ProductPagePanel, ProductsPagePanel, previewProductsOf } from '../components/siteEditor/ProductDesign';
+import { BlogPagePanel, PostPagePanel, previewPostsOf } from '../components/siteEditor/BlogDesign';
+import { withBlogSection } from '../utils/blogLooks';
 import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/labels';
 import SiteBuilder from './SiteBuilder';
 import type { WebConfig } from '../types';
@@ -74,6 +76,8 @@ const SiteEditor: React.FC = () => {
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector((state) => state.webConfig.data);
+  // LT-610: a page with a blog holds its section from the start (the site draws it so).
+  const editable = useMemo(() => (webConfig ? withBlogSection(webConfig) : webConfig), [webConfig]);
   // Every page names the window (LT-444): without this the tab kept the
   // previous page's title, here and in the builder for a business with no site.
   document.title = t('siteEditor.title');
@@ -88,7 +92,7 @@ const SiteEditor: React.FC = () => {
     }
     return <SiteBuilder />;
   }
-  return <Editor key={webConfig._id} saved={webConfig} />;
+  return <Editor key={webConfig._id} saved={editable ?? webConfig} />;
 };
 
 const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
@@ -192,12 +196,23 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // The preview shows one page at a time; the switcher moves it, and the panel
   // offers what can be designed on the page it shows.
   const framePath = bridge.path;
-  const pageKind: 'home' | 'products' | 'product' = framePath === '/products' ? 'products' : framePath.startsWith('/products/') ? 'product' : 'home';
+  const pageKind: 'home' | 'products' | 'product' | 'blog' | 'post' = framePath === '/products' ? 'products'
+    : framePath.startsWith('/products/') ? 'product'
+    : framePath === '/blog' ? 'blog'
+    : framePath.startsWith('/blog/') ? 'post'
+    : 'home';
   const productSlug = pageKind === 'product' ? decodeURIComponent(framePath.slice('/products/'.length)) : null;
   const hasPages = !!draft.value.products?.pages;
   const previewProducts = previewProductsOf(draft.value);
+  // LT-610: the blog's two pages, on a site with a blog (Pro, a post out).
+  const previewPosts = previewPostsOf(draft.value);
+  const hasBlog = previewPosts.length > 0;
   const goPage = (kind: string) => {
-    const to = kind === 'products' ? '/products' : kind === 'product' && previewProducts[0] ? `/products/${encodeURIComponent(previewProducts[0].slug)}` : '/';
+    const to = kind === 'products' ? '/products'
+      : kind === 'product' && previewProducts[0] ? `/products/${encodeURIComponent(previewProducts[0].slug)}`
+      : kind === 'blog' ? '/blog'
+      : kind === 'post' && previewPosts[0] ? `/blog/${encodeURIComponent(previewPosts[0].slug)}`
+      : '/';
     if (to !== framePath) bridge.go(to);
   };
   // Another page: nothing of the last one stays selected, and the panel shows the new one's choices.
@@ -209,8 +224,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // A site whose products lost their pages (one product left, a plan without them) is shown its home.
   const goFrame = bridge.go;
   useEffect(() => {
-    if (!hasPages && pageKind !== 'home') goFrame('/');
-  }, [hasPages, pageKind, goFrame]);
+    const productsPage = pageKind === 'products' || pageKind === 'product';
+    const blogPage = pageKind === 'blog' || pageKind === 'post';
+    if ((productsPage && !hasPages) || (blogPage && !hasBlog)) goFrame('/');
+  }, [hasPages, hasBlog, pageKind, goFrame]);
 
   const update = useCallback((next: DraftUpdate<WebConfig>, mergeKey?: string) => draft.set(next, mergeKey), [draft]);
   // LT-320: a gallery photo uploaded here lands on the draft as it is once the
@@ -458,6 +475,10 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
             <ProductsPagePanel config={draft.value} onUpdate={update} />
           ) : siteTab === 'page' && pageKind === 'product' ? (
             <ProductPagePanel config={draft.value} onUpdate={update} slug={productSlug} onPreview={(slug) => bridge.go(`/products/${encodeURIComponent(slug)}`)} />
+          ) : siteTab === 'page' && pageKind === 'blog' ? (
+            <BlogPagePanel config={draft.value} onUpdate={update} />
+          ) : siteTab === 'page' && pageKind === 'post' ? (
+            <PostPagePanel config={draft.value} onUpdate={update} />
           ) : siteTab === 'sections' ? (
             <SectionsPanel
               rows={rows}
@@ -606,12 +627,16 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // LT-545 (Erel: the site's own link, elegantly): the live page the preview shows, as saved.
   const livePage = liveSite ? `${liveSite}${framePath === '/' ? '' : framePath}` : null;
   const liveLabel = livePage ? livePage.replace(/^https:\/\//, '') : '';
+  const pageCount = 1 + (hasPages ? 2 : 0) + (hasBlog ? 2 : 0);
   const pageSwitcher = (short: boolean) => (
     <Tabs value={pageKind} onValueChange={goPage}>
-      <TabsList className="grid grid-cols-3" aria-label={t('siteEditor.pages.label')}>
+      <TabsList className={`grid ${pageCount === 5 ? 'grid-cols-5' : 'grid-cols-3'}`} aria-label={t('siteEditor.pages.label')}>
         <TabsTrigger value="home">{t(short ? 'siteEditor.pages.homeShort' : 'siteEditor.pages.home')}</TabsTrigger>
-        <TabsTrigger value="products">{t(short ? 'siteEditor.pages.productsShort' : 'siteEditor.pages.products')}</TabsTrigger>
-        <TabsTrigger value="product">{t('siteEditor.pages.product')}</TabsTrigger>
+        {hasPages && <TabsTrigger value="products">{t(short ? 'siteEditor.pages.productsShort' : 'siteEditor.pages.products')}</TabsTrigger>}
+        {hasPages && <TabsTrigger value="product">{t('siteEditor.pages.product')}</TabsTrigger>}
+        {/* LT-610: the blog's page and a post's. */}
+        {hasBlog && <TabsTrigger value="blog">{t('siteEditor.pages.blog')}</TabsTrigger>}
+        {hasBlog && <TabsTrigger value="post">{t('siteEditor.pages.post')}</TabsTrigger>}
       </TabsList>
     </Tabs>
   );
@@ -663,7 +688,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
       {/* ── Top bar ── LT-586 (Erel): on a wide screen the page switcher has a middle column of its own, so
           nothing beside it (the live link that grows and shrinks with the page, the unsaved note, the save
           button's words) moves it. */}
-      <header className={`h-14 md:h-16 flex items-center justify-between gap-2 px-3 md:px-6 shrink-0 ${hasPages ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] xl:gap-4' : ''}`} data-testid="editor-bar">
+      <header className={`h-14 md:h-16 flex items-center justify-between gap-2 px-3 md:px-6 shrink-0 ${hasPages || hasBlog ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] xl:gap-4' : ''}`} data-testid="editor-bar">
         <div className="flex items-center gap-2 min-w-0">
           <Palette className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
           <div className="min-w-0">
@@ -695,7 +720,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           )}
         </div>
         {/* In the bar where it has room (a wide screen); under it otherwise. */}
-        {hasPages && <div className="hidden xl:block shrink-0" data-tour="editor-pages" data-testid="page-switcher">{pageSwitcher(false)}</div>}
+        {(hasPages || hasBlog) && <div className="hidden xl:block shrink-0" data-tour="editor-pages" data-testid="page-switcher">{pageSwitcher(false)}</div>}
         <div className="flex items-center gap-1 xl:justify-self-end">
           <div className="hidden md:flex items-center gap-1 me-2">
             {!inBar && (
@@ -757,7 +782,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
         </div>
       </header>
 
-      {hasPages && <div className="xl:hidden px-3 pb-2 md:px-5 md:max-w-md" data-tour="editor-pages" data-testid="page-switcher-short">{pageSwitcher(true)}</div>}
+      {(hasPages || hasBlog) && <div className="xl:hidden px-3 pb-2 md:px-5 md:max-w-md" data-tour="editor-pages" data-testid="page-switcher-short">{pageSwitcher(true)}</div>}
 
       {/* ── Workspace ── */}
       <div className="flex-1 flex overflow-hidden md:px-5 md:pb-5 md:gap-4 relative">

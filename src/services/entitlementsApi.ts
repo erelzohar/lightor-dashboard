@@ -40,6 +40,9 @@ export interface PlanLimits {
    * owner, so the Account page offers none. Absent on an older API: offered.
    */
   whatsapp?: boolean;
+  /** LT-610: the blog (Pro). Absent on an older API: no blog. */
+  blog?: boolean;
+  blogDraftsPerMonth?: number;
 }
 
 export interface MyEntitlements {

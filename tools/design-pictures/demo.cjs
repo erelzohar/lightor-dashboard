@@ -131,6 +131,47 @@ const DESIGN = {
 
 exports.SLUG = (lang) => (lang === 'he' ? 'draft-0' : 'draft-0');
 
+// LT-610: the studio's blog - four posts, and the first one's body for a post's page.
+const POSTS = {
+  he: [
+    { title: 'איך בוחרים כלי קרמיקה לשימוש יומיומי', summary: 'חמישה דברים שכדאי לבדוק לפני שקונים ספל או קערה', category: 'טיפים', img: 1 },
+    { title: 'מה עובר על כלי בתנור', summary: 'מהחומר הרך ועד הגלזורה: שלוש השריפות של כל כלי', category: 'מהסטודיו', img: 0 },
+    { title: 'סדנת אובניים ראשונה: למה לצפות', summary: 'מה לובשים, כמה זמן זה לוקח ומה לוקחים הביתה', category: 'סדנאות', img: 3 },
+    { title: 'איך שומרים על כלי קרמיקה לאורך שנים', summary: 'מדיח, מיקרוגל ושריטות: מה מותר ומה עדיף להימנע', category: 'טיפים', img: 5 },
+  ],
+  en: [
+    { title: 'Choosing ceramics for every day', summary: 'Five things to check before you buy a mug or a bowl', category: 'Tips', img: 1 },
+    { title: 'What a piece goes through in the kiln', summary: 'From soft clay to glaze: the three firings of every piece', category: 'From the studio', img: 0 },
+    { title: 'Your first wheel workshop: what to expect', summary: 'What to wear, how long it takes and what you take home', category: 'Workshops', img: 3 },
+    { title: 'Caring for ceramics for years', summary: 'Dishwasher, microwave and scratches: what is fine and what to avoid', category: 'Tips', img: 5 },
+  ],
+};
+const BODY = {
+  he: [
+    { kind: 'p', text: 'כלי טוב מרגיש נכון ביד כבר בפעם הראשונה. כמה בדיקות פשוטות יעזרו לבחור כלי שתשתמשו בו כל יום, ולא רק תניחו על המדף.' },
+    { kind: 'h2', text: 'משקל ואחיזה' },
+    { kind: 'p', text: 'הרימו את הספל כמו שתשתו ממנו. ידית נוחה, שפה חלקה ומשקל מאוזן חשובים יותר מכל צבע.' },
+    { kind: 'ul', items: ['שפה חלקה בלי סדקים', 'תחתית ישרה שלא מתנדנדת', 'גלזורה אחידה בפנים'] },
+    { kind: 'quote', text: 'כל כלי שיוצא מהתנור עובר אצלי בדיקה ביד לפני שהוא יוצא לחנות.' },
+    { kind: 'p', text: 'רוצים לנסות בעצמכם? בסדנה אצלנו בונים כלי מההתחלה ועד הגלזורה.' },
+  ],
+  en: [
+    { kind: 'p', text: 'A good piece feels right in your hand the first time. A few simple checks help you choose something you will use every day, not only shelve.' },
+    { kind: 'h2', text: 'Weight and grip' },
+    { kind: 'p', text: 'Lift the mug as you would drink from it. A comfortable handle, a smooth rim and a balanced weight matter more than any colour.' },
+    { kind: 'ul', items: ['A smooth rim with no cracks', 'A flat base that does not rock', 'An even glaze inside'] },
+    { kind: 'quote', text: 'Every piece out of the kiln goes through my hands before it reaches the shop.' },
+    { kind: 'p', text: 'Want to try it yourself? In our workshop you make a piece from the start to the glaze.' },
+  ],
+};
+const postCard = (lang, p, i) => ({
+  id: `post-${i}`, slug: `post-${i}`, title: p.title, summary: p.summary, category: p.category,
+  cover: U(IMG.gallery[p.img], 1200, 800), publishedAt: `2026-11-0${6 - i}T09:00:00.000Z`, updatedAt: `2026-11-0${6 - i}T09:00:00.000Z`, minutes: 3 + i,
+});
+exports.posts = (lang) => POSTS[lang].map((p, i) => postCard(lang, p, i));
+exports.post = (lang) => ({ ...postCard(lang, POSTS[lang][0], 0), body: BODY[lang] });
+exports.POST_SLUG = 'post-0';
+
 /** The demo site in `lang`; `over` = { design, blocks, components, navbar, ... } on top. */
 exports.site = (lang, over = {}) => {
   const t = COPY[lang];
@@ -169,6 +210,9 @@ exports.site = (lang, over = {}) => {
     products: { total: items.length, pages: true, items },
     design: { ...DESIGN, ...(over.design || {}) },
     blocks: over.blocks || [],
+    // LT-610: the blog's newest (the section, the blog's page in a preview) and a post's draft.
+    ...(over.blog ? { blog: { total: 4, latest: exports.posts(lang) } } : {}),
+    ...(over.post ? { previewPost: exports.post(lang) } : {}),
   };
   if (over.legacy) {
     // A page without blocks: only the named sections show (no products, nothing to book).

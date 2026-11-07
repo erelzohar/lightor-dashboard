@@ -6,6 +6,8 @@
  * offered in Hebrew and English (other UI languages read the English).
  */
 
+import { blogLooksOf } from './blogLooks';
+
 export type Lang = 'he' | 'en';
 type Named = Record<string, { he: string; en: string }>;
 
@@ -21,6 +23,12 @@ export const optionLabel = (names: Named, value: string, lang: string): string =
  */
 const OWN_NAMES: Record<string, Named> = {
   products: { wall: { he: 'קיר מדפים', en: 'Wall of shelves' } },
+  // LT-610: the blog's section on the home page (Erel's pastes).
+  blog: {
+    latest: { he: 'הפוסטים האחרונים', en: 'Latest posts' },
+    article: { he: 'כרטיסי מאמר רחבים', en: 'Wide article cards' },
+    carousel: { he: 'קרוסלה מעוצבת', en: 'Designed carousel' },
+  },
 };
 export const sectionLabel = (section: string, value: string, lang: string): string =>
   optionLabel(OWN_NAMES[section]?.[value] ? OWN_NAMES[section] : LAYOUTS, value, lang);
@@ -66,6 +74,16 @@ export const PRODUCT_PAGE_LAYOUTS: Named = {
   // LT-605
   stand: { he: 'על מדף לבן', en: 'On a white ledge' },
   stage: { he: 'במה מרחפת', en: 'Floating stage' },
+};
+/** LT-610: the blog's page and a post's page (Erel's pastes and the post's two). */
+export const BLOG_PAGE_LAYOUTS: Named = {
+  grid: { he: 'רשת כרטיסים', en: 'Grid of cards' },
+  tagged: { he: 'תווית בפינה', en: 'Tagged cards' },
+  glass: { he: 'כרטיסי זכוכית', en: 'Glass cards' },
+};
+export const POST_PAGE_LAYOUTS: Named = {
+  classic: { he: 'עמודה מתחת לתמונה', en: 'A column under the picture' },
+  wide: { he: 'תמונה רחבה מאחורי הכותרת', en: 'The picture wide behind the title' },
 };
 /** The products page's own layouts: the still ones (the moving ones suit a handful); LT-588 by category. */
 export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list', 'rows', 'shelves', 'shop', 'wall'];
@@ -316,6 +334,8 @@ export const SECTIONS: Record<string, SectionDef> = {
   portfolio: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS, designToken: 'portfolioLayout', visibleKey: 'portfolio' },
   gallery: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS },
   products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit', 'drops', 'wall'], designToken: 'productsLayout' },
+  // LT-610: the blog's newest posts (Pro; the section shows once a post is out).
+  blog: { label: { he: 'בלוג', en: 'Blog' }, variants: ['latest', 'article', 'carousel'] },
   testimonials: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS, designToken: 'testimonialsLayout', visibleKey: 'testimonials' },
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },
@@ -356,6 +376,7 @@ export const SECTION_HINTS: Named = {
   announcement: { he: 'שורה בראש הדף: מבצע, חדשות', en: 'A line at the top: an offer, news' },
   gallery: { he: 'התמונות מהגלריה', en: 'Your gallery photos' },
   products: { he: 'המוצרים שלך, עם תמונה ומחיר', en: 'Your products, with pictures and prices' },
+  blog: { he: 'הפוסטים החדשים מהבלוג', en: 'The newest posts from the blog' },
   interlude: { he: 'תמונה רחבה בין אזורים', en: 'A wide photo between sections' },
   photoPair: { he: 'שתי תמונות זו לצד זו', en: 'Two photos side by side' },
   beforeAfter: { he: 'השוואה בין שתי תמונות', en: 'Two photos compared' },
@@ -392,6 +413,8 @@ export const DEFAULT_VARIANT: Record<string, string> = { products: 'well', inter
  * (the styles store 'full').
  */
 export const blockLookOf = (type: string, variant: unknown, design: Record<string, unknown>): string | undefined => {
+  // LT-610: the blog's section takes its style's own look when it has none.
+  if (type === 'blog') return typeof variant === 'string' && variant ? variant : blogLooksOf(design).section;
   const token = BLOCK_TOKEN[type];
   const fromDesign = token ? design[token] : undefined;
   const look = typeof variant === 'string' && variant ? variant

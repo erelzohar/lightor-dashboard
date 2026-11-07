@@ -23,6 +23,7 @@ import {
   Flag,
   LifeBuoy, Tags,
   ShoppingBag,
+  Newspaper,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
@@ -41,6 +42,7 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import LightyIcon from '../lighty/LightyIcon';
 import { navTile } from './navTiles';
 import { openReportProblem } from '../support/ReportProblem';
+import { hasBlog } from '../../services/postsApi';
 
 interface SidebarProps {
   isRestricted?: boolean;
@@ -228,6 +230,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const { guardLinkClick } = useLeaveGuard();
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
+  // LT-610: the blog is Pro's; on any other plan its link is locked (Erel 2026-11-07).
+  const [blogOn, setBlogOn] = useState<boolean | null>(null);
+  useEffect(() => {
+    let live = true;
+    void hasBlog().then((on) => { if (live) setBlogOn(on); });
+    return () => { live = false; };
+  }, []);
   const unreadNotifications = useUnreadNotifications();
   // A leads site (LT-199) has no calendar: no Appointments, the leads are the
   // daily destination, and the weekly hours are just the hours the site
@@ -256,6 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const productsSite = leadsSite && webConfig?.catalog === true;
   const productsLink = { path: '/products', Icon: ShoppingBag, name: t('common.products') };
   const showServices = !productsSite || (webConfig?.appointmentTypes?.length ?? 0) > 0;
+  const blogLink = { path: '/blog', Icon: Newspaper, name: t('common.blog'), locked: blogOn === false ? t('blog.pro') : undefined };
 
   const navSections = [
     {
@@ -295,6 +305,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         // that holds pictures stays beside them.
         ...(showGallery ? [{ path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') }] : []),
         ...(productsSite ? [] : [productsLink]),
+        blogLink,
         { path: '/settings', Icon: Settings, name: t('common.settings') },
       ],
     },
@@ -352,7 +363,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               // left a stale group of nameless icons behind after a switch.
               <div key={section.id} role="group" aria-label={section.label} className="flex flex-col">
                 <SectionLabel label={section.label} first={sIdx === 0} />
-                {section.items.map(({ path, Icon, name, badge }: { path: string; Icon: typeof Inbox; name: string; badge?: number }) => {
+                {section.items.map(({ path, Icon, name, badge, locked }: { path: string; Icon: typeof Inbox; name: string; badge?: number; locked?: string }) => {
                   if (isRestricted && !ALLOWED_WHEN_RESTRICTED.includes(path)) return null;
                   return (
                     <SidebarLink
@@ -363,6 +374,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                         href: path,
                         icon: navIcon(path, Icon),
                         badge,
+                        locked,
                       }}
                       className={linkClasses}
                       onClick={(event) => guardLinkClick(event, path)}

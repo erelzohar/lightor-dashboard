@@ -16,7 +16,7 @@ RAW = os.environ.get('RAW_DIR') or os.path.join(tempfile.gettempdir(), 'lightor-
 OUT = os.environ.get('OUT_DIR') or os.path.join(ROOT, '..', '..', 'public', 'designs')
 W, H = 1280, 800
 TW, TH = 336, 210
-PAGE_TOPS = {'hero', 'navbar', 'herobg', 'productsPage', 'productPage'}
+PAGE_TOPS = {'hero', 'navbar', 'herobg', 'productsPage', 'productPage', 'blogPage', 'postPage'}
 STATIC_Q = 82
 
 
@@ -136,7 +136,7 @@ def main():
 def sheet(lang, cols=8):
     out = os.path.join(OUT, lang)
     files = sorted(f for f in os.listdir(out) if f.endswith('.webp') and not f.endswith('.anim.webp'))
-    order = ['hero', 'navbar', 'herobg', 'about', 'intro', 'features', 'gallery', 'products', 'card', 'productsPage', 'productPage', 'quote', 'faq', 'ledger', 'schedule', 'contact', 'footer', 'interlude', 'bookingBand', 'manifesto', 'process', 'hours', 'photoPair']
+    order = ['hero', 'navbar', 'herobg', 'about', 'intro', 'features', 'gallery', 'products', 'card', 'productsPage', 'productPage', 'blog', 'blogPage', 'postPage', 'quote', 'faq', 'ledger', 'schedule', 'contact', 'footer', 'interlude', 'bookingBand', 'manifesto', 'process', 'hours', 'photoPair']
     files.sort(key=lambda f: (order.index(f.split('-')[0]) if f.split('-')[0] in order else 99, f))
     label_h = 18
     rows = (len(files) + cols - 1) // cols

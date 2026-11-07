@@ -132,6 +132,8 @@ export interface ComponentsConfig {
   services?: { title?: string };
   /** LT-540 heading; LT-558 the Products page's switch (absent = shown). */
   products?: { title?: string; description?: string; cta?: string; visible?: boolean };
+  /** LT-610: the blog's name (menu, its page, the home section) and its page's line. */
+  blog?: { title?: string; description?: string };
 }
 
 /** One section of a composed page (LT-133); the site editor selects and edits blocks by id (LT-249). */
@@ -231,6 +233,8 @@ export interface WebConfig {
   catalog?: boolean;
   /** LT-540: what the site shows of them, as the public site reads it (for the preview). */
   products?: { total: number; pages: boolean; items: unknown[] };
+  /** LT-610: the blog's newest few, on Pro once a post is out (absent otherwise), for the preview. */
+  blog?: { total: number; latest: { id: string; slug: string; title: string }[] };
   /**
    * The owner's own words about the business (LT-202), at most 2000
    * characters. The server writes it on every AI generation and the AI

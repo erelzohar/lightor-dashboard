@@ -62,7 +62,8 @@
       "cancelled": "Déplacement annulé."
     },
     "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes.",
-    "products": "Produits"
+    "products": "Produits",
+    "blog": "Blog"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -2186,7 +2187,13 @@
       "products": "Page des produits",
       "productsShort": "Produits",
       "product": "Page produit",
-      "tab": "Design de la page"
+      "tab": "Design de la page",
+      "blog": "Blog",
+      "post": "Article",
+      "blogLayout": "Le style de la page du blog",
+      "postLayout": "Le style d’un article",
+      "blogHint": "Cliquez sur le nom du blog sur le site pour le changer.",
+      "managePosts": "Gérer les articles"
     },
     "products": {
       "layout": "Disposition",
@@ -2586,6 +2593,20 @@
         "title": "Les plus vus",
         "body": "Les produits que les visiteurs ouvrent le plus sur le site depuis 30 jours, et les vues de chacun."
       }
+    },
+    "blog": {
+      "lighty": {
+        "title": "Lighty écrit pour vous",
+        "body": "Choisissez un sujet, ajoutez quelques mots à vous, et Lighty écrit un brouillon à partir de votre site."
+      },
+      "new": {
+        "title": "Un nouvel article",
+        "body": "Vous pouvez aussi écrire vous-même : un titre, une image et l’article en blocs."
+      },
+      "list": {
+        "title": "Vos articles",
+        "body": "Les brouillons ne se voient qu’ici. Un article publié est sur le blog de votre site et arrive sur Google."
+      }
     }
   },
   "phoneInput": {
@@ -2779,6 +2800,119 @@
       "renamed": "La catégorie a changé sur {{count}} produits",
       "joined": "{{count}} produits sont passés dans « {{name}} »",
       "cleared": "La catégorie a été retirée de {{count}} produits"
+    }
+  },
+  "blog": {
+    "pro": "Pro",
+    "title": "Blog",
+    "description": "Des articles sur votre site. Lighty les rédige à partir des informations de votre activité, et vous corrigez et publiez.",
+    "seeOnSite": "Voir le blog",
+    "newPost": "Nouvel article",
+    "lightyWrites": "Lighty écrit",
+    "iWrite": "J’écris moi-même",
+    "draftsLeft": "Il vous reste {{left}} brouillons Lighty sur {{max}} ce mois-ci",
+    "empty": {
+      "title": "Pas encore d’articles",
+      "body": "Lighty peut écrire le premier à partir de ce que dit déjà votre site."
+    },
+    "status": {
+      "draft": "Brouillon",
+      "published": "Sur le site",
+      "hidden": "Masqué par Lightor"
+    },
+    "publishedOn": "Publié le {{date}}",
+    "updatedOn": "Mis à jour le {{date}}",
+    "hiddenNote": "Lightor a masqué cet article du site après un signalement. Questions : support@lightor.app",
+    "untitled": "Article sans titre",
+    "deleteConfirm": "Supprimer l’article ? Impossible de revenir en arrière.",
+    "deleted": "Article supprimé",
+    "loadFailed": "Impossible de charger vos articles. Réessayez dans un instant.",
+    "locked": {
+      "title": "Un blog pour votre site, avec Lightor Pro",
+      "body": "Des articles que Google trouve, et Lighty qui les écrit à partir des informations de votre activité. Vous validez chaque article avant sa publication.",
+      "point1": "Une page de blog sur votre site et une page par article, dans le style de votre site",
+      "point2": "Lighty propose des sujets et écrit jusqu’à 10 brouillons par mois",
+      "point3": "Chaque article arrive sur Google et se partage facilement sur WhatsApp",
+      "upgrade": "Voir les formules",
+      "kept": "{{count}} articles sont conservés. Ils reviennent sur votre site avec Pro, aux mêmes adresses."
+    },
+    "editor": {
+      "title": "Titre",
+      "titlePlaceholder": "De quoi parle l’article ?",
+      "summary": "Résumé",
+      "summaryHint": "La phrase que Google affiche sous le titre",
+      "category": "Sujet",
+      "categoryHint": "Un ou deux mots, comme « Conseils » (facultatif)",
+      "cover": "Image principale",
+      "coverSite": "Parmi les images du site",
+      "coverUpload": "Importer",
+      "coverAi": "Image avec l’IA",
+      "coverAiPrompt": "Que montre l’image ?",
+      "coverAiMake": "Créer",
+      "coverRemove": "Sans image",
+      "coverLimit": "Les images IA du mois sont épuisées. Vous pouvez importer la vôtre.",
+      "coverFailed": "L’image n’a pas été créée. Réessayez.",
+      "noSitePictures": "Pas encore d’images sur le site",
+      "body": "L’article",
+      "add": "Ajouter un bloc",
+      "kinds": {
+        "p": "Paragraphe",
+        "h2": "Titre",
+        "h3": "Sous-titre",
+        "ul": "Liste",
+        "ol": "Liste numérotée",
+        "quote": "Citation",
+        "image": "Image"
+      },
+      "item": "Élément {{n}}",
+      "addItem": "Un autre élément",
+      "removeItem": "Retirer l’élément",
+      "caption": "Légende (facultatif)",
+      "pickPicture": "Choisir une image",
+      "up": "Monter",
+      "down": "Descendre",
+      "remove": "Retirer le bloc",
+      "saveDraft": "Enregistrer en brouillon",
+      "publish": "Publier sur le site",
+      "update": "Enregistrer",
+      "unpublish": "Retirer du site",
+      "preview": "Aperçu sur le site",
+      "close": "Fermer",
+      "delete": "Supprimer l’article",
+      "saved": "Enregistré",
+      "publishedToast": "L’article est sur votre site",
+      "unpublishedToast": "L’article est retiré du site et gardé en brouillon",
+      "publishCap": "Vous avez publié 30 articles ce mois-ci. Gardez celui-ci en brouillon et publiez-le le mois prochain.",
+      "needsTitle": "Un titre est nécessaire",
+      "needsBody": "Il faut au moins un paragraphe",
+      "saveFailed": "L’enregistrement a échoué. Réessayez.",
+      "address": "L’adresse de l’article",
+      "addressNote": "L’adresse a été fixée à la première publication et ne changera pas, même si le titre change.",
+      "share": "Partager sur WhatsApp",
+      "leave": "Des modifications ne sont pas enregistrées. Fermer sans enregistrer ?",
+      "byLighty": "Lighty a écrit ce brouillon à partir de ce que dit votre site. L’IA peut se tromper : relisez l’article avant de le publier."
+    },
+    "lighty": {
+      "title": "Lighty écrit un article",
+      "ideas": "Sur quoi écrire ?",
+      "ideasLoading": "Lighty cherche des sujets à partir de votre activité...",
+      "moreIdeas": "D’autres idées",
+      "ideasFailed": "Impossible d’obtenir des idées. Vous pouvez écrire votre propre sujet.",
+      "own": "Ou votre propre sujet",
+      "ownPlaceholder": "Par exemple : choisir une couleur de vernis pour un événement",
+      "next": "Continuer",
+      "topic": "Le sujet",
+      "words": "Que voulez-vous dire ? (facultatif)",
+      "wordsHint": "Un conseil de votre métier, une courte histoire ou ce que demandent vos clients. Ainsi l’article vous ressemble.",
+      "write": "Écrire un brouillon",
+      "writing": "Lighty écrit le brouillon. Cela prend environ une demi-minute.",
+      "failed": "Lighty n’a pas pu l’écrire cette fois, et le brouillon n’a pas été compté. Réessayez.",
+      "used": "Les brouillons Lighty du mois sont épuisés. Ils se renouvellent au début du mois ; en attendant vous pouvez écrire vous-même.",
+      "back": "Retour"
+    },
+    "preview": {
+      "title": "Aperçu sur le site",
+      "note": "Voici l’article tel qu’il apparaîtra sur votre site. Les visiteurs le voient seulement une fois publié."
     }
   },
   "app": {

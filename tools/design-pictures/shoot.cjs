@@ -8,13 +8,14 @@ const os = require('os');
 const path = require('path');
 const { FRONT, launch, open } = require('./h.cjs');
 const esbuild = require(path.join(FRONT, 'node_modules/esbuild'));
-const { site, props } = require('./demo.cjs');
+const { site, props, POST_SLUG } = require('./demo.cjs');
 
 const OPTIONS = process.env.EDITOR_OPTIONS || path.resolve(__dirname, '../../src/utils/editorOptions.ts');
+// Bundled (LT-610: the options import the blog's looks), so the file's own imports come along.
 const load = () => {
-  const { code } = esbuild.transformSync(fs.readFileSync(OPTIONS, 'utf8'), { loader: 'ts', format: 'cjs' });
+  const { outputFiles } = esbuild.buildSync({ entryPoints: [OPTIONS], bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent' });
   const m = { exports: {} };
-  new Function('module', 'exports', code)(m, m.exports);
+  new Function('module', 'exports', 'require', outputFiles[0].text)(m, m.exports, require);
   return m.exports;
 };
 const O = load();
@@ -49,10 +50,14 @@ const designs = () => {
   for (const value of O.PRODUCTS_PAGE_LAYOUTS) list.push({ key: `productsPage-${value}`, group: 'productsPage', value, kind: 'productsPage', moving: false });
   // LT-605: a product page can move by itself too (the floating stage).
   for (const value of Object.keys(O.PRODUCT_PAGE_LAYOUTS)) list.push({ key: `productPage-${value}`, group: 'productPage', value, kind: 'productPage', moving: paid('productPage', value) });
+  // LT-610: the blog's page and a post's page.
+  for (const value of Object.keys(O.BLOG_PAGE_LAYOUTS)) list.push({ key: `blogPage-${value}`, group: 'blogPage', value, kind: 'blogPage', moving: false });
+  for (const value of Object.keys(O.POST_PAGE_LAYOUTS)) list.push({ key: `postPage-${value}`, group: 'postPage', value, kind: 'postPage', moving: false });
   return list;
 };
 
-const at = (d) => (d.kind === 'productsPage' ? '/products' : d.kind === 'productPage' ? '/products/draft-0' : '/');
+const at = (d) => (d.kind === 'productsPage' ? '/products' : d.kind === 'productPage' ? '/products/draft-0'
+  : d.kind === 'blogPage' ? '/blog' : d.kind === 'postPage' ? `/blog/${POST_SLUG}` : '/');
 let seq = 0;
 const block = (lang, type, variant) => ({ id: `b${++seq}`, type, ...(variant ? { variant } : {}), ...(props(lang, type) ? { props: props(lang, type) } : {}) });
 
@@ -74,8 +79,12 @@ const configOf = (lang, d) => {
       return site(lang, { design: { productsPageLayout: d.value }, blocks: [block(lang, 'hero', 'image-right'), block(lang, 'products', 'well'), block(lang, 'footer', 'columns')] });
     case 'productPage':
       return site(lang, { design: { productPageLayout: d.value }, blocks: [block(lang, 'hero', 'image-right'), block(lang, 'products', 'well'), block(lang, 'footer', 'columns')] });
+    case 'blogPage':
+      return site(lang, { blog: true, design: { blogLayout: d.value }, blocks: [block(lang, 'hero', 'image-right'), block(lang, 'blog', 'latest'), block(lang, 'footer', 'columns')] });
+    case 'postPage':
+      return site(lang, { blog: true, post: true, design: { postLayout: d.value }, blocks: [block(lang, 'hero', 'image-right'), block(lang, 'blog', 'latest'), block(lang, 'footer', 'columns')] });
     default:
-      return site(lang, { navbar: false, blocks: [block(lang, d.group, d.value)] });
+      return site(lang, { navbar: false, blog: d.group === 'blog', blocks: [block(lang, d.group, d.value)] });
   }
 };
 
@@ -232,7 +241,7 @@ const shootOne = async (h, lang, d, out) => {
     for (const d of all) {
       // A page without blocks keeps its sections mounted from one config to the next, and an entrance that
       // already ran never runs for the new layout's parts: those (and the products' own pages) get a fresh page.
-      const fresh = ['legacy', 'productsPage', 'productPage'].includes(d.kind);
+      const fresh = ['legacy', 'productsPage', 'productPage', 'blogPage', 'postPage'].includes(d.kind);
       const where = `${at(d)}|${tall(d) ? SECTION_H : H}${fresh ? `|${d.key}` : ''}`;
       if (!pages[where]) pages[where] = await open(browser, { width: W, height: tall(d) ? SECTION_H : H, at: at(d), reducedMotion: process.env.REDUCED ? 'reduce' : 'no-preference' });
       let meta;

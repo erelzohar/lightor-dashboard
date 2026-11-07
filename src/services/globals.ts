@@ -16,6 +16,7 @@ abstract class Globals {
     public leadsUrl:string;
     /** LT-540. */
     public productsUrl:string;
+    public postsUrl:string;
     /** LT-580: the apps' store purchases (RevenueCat). */
     public storeUrl:string;
     public notificationsUrl:string;
@@ -56,6 +57,7 @@ class DevelopmentGlobals extends Globals {
     public customersUrl = `${DEV_API_BASE}/api/customers/`;
     public leadsUrl = `${DEV_API_BASE}/api/leads/`;
     public productsUrl = `${DEV_API_BASE}/api/products/`;
+    public postsUrl = `${DEV_API_BASE}/api/posts/`;
     public storeUrl = `${DEV_API_BASE}/api/store/`;
     public notificationsUrl = `${DEV_API_BASE}/api/notifications/`;
     public assistantUrl = `${DEV_API_BASE}/api/assistant/`;
@@ -104,6 +106,7 @@ class ProductionGlobals extends Globals {
     public customersUrl = "https://api.lightor.app/api/customers/";
     public leadsUrl = "https://api.lightor.app/api/leads/";
     public productsUrl = "https://api.lightor.app/api/products/";
+    public postsUrl = "https://api.lightor.app/api/posts/";
     public storeUrl = "https://api.lightor.app/api/store/";
     public notificationsUrl = "https://api.lightor.app/api/notifications/";
     public assistantUrl = "https://api.lightor.app/api/assistant/";

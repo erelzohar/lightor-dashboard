@@ -23,6 +23,8 @@ vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: typeof state) => unknown): unknown => selector(state),
 }));
 vi.mock('../../services/leadsApi', () => ({ fetchLeads: vi.fn() }));
+// LT-610: the blog link asks the plan once; Pro here.
+vi.mock('../../services/postsApi', () => ({ hasBlog: () => Promise.resolve(true) }));
 
 const renderSidebar = () =>
   render(
@@ -57,7 +59,7 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.conversion = 'book';
     state.webConfig.data.catalog = true;
     renderSidebar();
-    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/leads', '/schedule-vacations', '/appointment-types', '/products', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/leads', '/schedule-vacations', '/appointment-types', '/products', '/blog', '/settings']);
     state.webConfig.data.components.portfolio.items = [{ url: 'a.webp' }];
     renderSidebar();
     const groups = screen.getAllByRole('group', { name: 'sidebar.manage' });
@@ -71,11 +73,11 @@ describe('Sidebar by site mode', () => {
     state.webConfig.data.catalog = true;
     const { unmount } = renderSidebar();
     expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/products', '/leads']);
-    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/blog', '/settings']);
     unmount();
     state.webConfig.data.appointmentTypes = [{ _id: 's1', name: 'Fitting' }];
     renderSidebar();
-    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/blog', '/settings']);
     state.webConfig.data.appointmentTypes = [];
     state.webConfig.data.catalog = false;
   });
@@ -86,7 +88,7 @@ describe('Sidebar by site mode', () => {
 
     expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/appointments']);
     expect(groupHrefs('sidebar.manage')).toEqual([
-      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/settings',
+      '/customers', '/leads', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/blog', '/settings',
     ]);
     expect(within(screen.getByRole('group', { name: 'sidebar.manage' })).getByText('common.scheduleVacations')).toBeInTheDocument();
   });
@@ -96,7 +98,7 @@ describe('Sidebar by site mode', () => {
     renderSidebar();
 
     expect(groupHrefs('sidebar.main')).toEqual(['/', '/lighty', '/design', '/leads']);
-    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/settings']);
+    expect(groupHrefs('sidebar.manage')).toEqual(['/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/products', '/blog', '/settings']);
     const manage = within(screen.getByRole('group', { name: 'sidebar.manage' }));
     expect(manage.getByText('common.openingHours')).toBeInTheDocument();
     expect(manage.queryByText('common.scheduleVacations')).not.toBeInTheDocument();
