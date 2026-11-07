@@ -118,7 +118,8 @@ def main():
             if anim:
                 shots = anim['shots']
                 frames = [frame_of(Image.open(os.path.join(lang_dir, key, s['file'])), meta) for s in shots]
-                if anim.get('mode') == 'scroll':
+                # Scroll loops and time-lapses (a slow field, LT-605) play at a fixed pace.
+                if anim.get('fixedMs'):
                     durations = [anim.get('fixedMs', 85)] * len(frames)
                 else:
                     durations = [max(40, shots[i + 1]['t'] - shots[i]['t']) for i in range(len(shots) - 1)] + [100]

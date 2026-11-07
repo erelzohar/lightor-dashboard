@@ -41,11 +41,19 @@ const settled = () => act(() => new Promise<void>((r) => setTimeout(r, 0)));
 
 describe('the paid designs (LT-570)', () => {
   it('give way to one default per section, which is never paid itself', () => {
-    expect(FREE_DEFAULTS).toEqual({ hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles', contact: 'split' });
+    expect(FREE_DEFAULTS).toEqual({ hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles', contact: 'split', productPage: 'side' });
     for (const [section, paid] of Object.entries(PAID_LAYOUTS)) {
       expect(paid.length).toBeGreaterThan(0);
       expect(isPaidDesign(section, FREE_DEFAULTS[section])).toBe(false);
     }
+  });
+
+  it("crowns LT-605's live-colours hero and the floating stage, not the wall, its ledge or the 3D button", () => {
+    expect(isPaidDesign('hero', 'mesh')).toBe(true);
+    expect(isPaidDesign('productPage', 'stage')).toBe(true);
+    expect(isPaidDesign('productPage', 'stand')).toBe(false);
+    expect(isPaidDesign('products', 'wall')).toBe(false);
+    expect(isPaidDesign('productsPage', 'wall')).toBe(false);
   });
 
   it('crowns the contact section with bubbles, not the reviews of the same name (LT-591)', () => {

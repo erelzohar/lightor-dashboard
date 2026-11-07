@@ -47,7 +47,8 @@ const designs = () => {
   for (const value of O.HERO_BACKGROUNDS) list.push({ key: `herobg-${value}`, group: 'herobg', value, kind: 'herobg', moving: O.PAID_BACKGROUNDS.includes(value) });
   for (const value of Object.keys(O.PRODUCT_CARDS)) list.push({ key: `card-${value}`, group: 'card', value, kind: 'card', moving: false });
   for (const value of O.PRODUCTS_PAGE_LAYOUTS) list.push({ key: `productsPage-${value}`, group: 'productsPage', value, kind: 'productsPage', moving: false });
-  for (const value of Object.keys(O.PRODUCT_PAGE_LAYOUTS)) list.push({ key: `productPage-${value}`, group: 'productPage', value, kind: 'productPage', moving: false });
+  // LT-605: a product page can move by itself too (the floating stage).
+  for (const value of Object.keys(O.PRODUCT_PAGE_LAYOUTS)) list.push({ key: `productPage-${value}`, group: 'productPage', value, kind: 'productPage', moving: paid('productPage', value) });
   return list;
 };
 
@@ -135,6 +136,18 @@ const cardCrop = async (h, value) => {
 
 const EXTRA_WAIT = { 'contact-bubbles': 9000 };
 
+const SCROLL_HEROES = ['parallax', 'expand'];
+
+const swatch = (n) => async (h) => {
+  const all = await h.frame.$$('.lt-stage-swatch');
+  if (all[n]) await all[n].click();
+};
+const ACTS = {
+  'productPage-stage': [{ at: 500, run: swatch(1) }, { at: 1900, run: swatch(2) }],
+};
+/** Time-lapses: how long to film for the usual number of frames. */
+const LAPSE = { 'hero-mesh': 9600 };
+
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 /** Frames of a moving design: time-based, or by scrolling for the scroll heroes. */
@@ -147,7 +160,8 @@ const frames = async (h, d, dir, clip) => {
     await h.page.screenshot({ path: file, type: 'jpeg', quality: 88, clip });
     shots.push({ file: path.basename(file), t: Date.now() });
   };
-  if (d.kind === 'hero') {
+  // LT-605: the live-colours hero moves by itself, not by the scroll.
+  if (d.kind === 'hero' && SCROLL_HEROES.includes(d.value)) {
     // Scroll-driven: down through the hero, a breath, back up, a breath.
     const room = await h.frame.evaluate(() => {
       const el = document.querySelector('main').firstElementChild;
@@ -164,14 +178,21 @@ const frames = async (h, d, dir, clip) => {
     }
     return { mode: 'scroll', range, shots, fixedMs: 85 };
   }
-  const end = Date.now() + 3200;
+  // LT-605: a design that answers a tap shows it in its loop (the stage takes on a colour, then another).
+  const acts = ACTS[d.key] ? [...ACTS[d.key]] : [];
+  // A field that drifts slowly is filmed as a time-lapse: as many frames over a longer time, played at the usual pace.
+  const span = LAPSE[d.key] || 3200;
+  const gap = (90 * span) / 3200;
+  const start = Date.now();
+  const end = start + span;
   while (Date.now() < end) {
     const t = Date.now();
+    while (acts.length && t - start >= acts[0].at) await acts.shift().run(h);
     await snap();
     const spent = Date.now() - t;
-    if (spent < 90) await h.page.waitForTimeout(90 - spent);
+    if (spent < gap) await h.page.waitForTimeout(gap - spent);
   }
-  return { mode: 'time', shots };
+  return { mode: 'time', shots, ...(LAPSE[d.key] ? { fixedMs: 90 } : {}) };
 };
 
 const shootOne = async (h, lang, d, out) => {

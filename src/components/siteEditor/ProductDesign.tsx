@@ -1,10 +1,12 @@
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import { getAt, setAt } from '../../utils/editorPaths';
-import { CARD_LAYOUTS, LAYOUTS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, blockLookOf, optionLabel } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, FREE_DEFAULTS, PRODUCTS_PAGE_LAYOUTS, PRODUCT_CARDS, PRODUCT_PAGE_LAYOUTS, blockLookOf, isPaidDesign, optionLabel, sectionLabel } from '../../utils/editorOptions';
+import { canOfferPurchases } from '../../lib/platform';
+import { PaidNote, usePaidDesignsHeld } from './MotionPlan';
 import { vocabLang } from './labels';
 import DesignChoices from './DesignChoices';
 
@@ -112,7 +114,7 @@ export function ProductsPagePanel<T>({ config, onUpdate }: PanelProps<T>) {
           group="productsPage"
           values={PRODUCTS_PAGE_LAYOUTS}
           current={layout}
-          labelOf={(value) => optionLabel(LAYOUTS, value, lang)}
+          labelOf={(value) => sectionLabel('products', value, lang)}
           onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productsPageLayout', value))}
           language={i18n.language || 'he'}
           testId="products-page-choices"
@@ -132,6 +134,10 @@ export function ProductPagePanel<T>({ config, onUpdate, slug, onPreview }: Panel
   const lang = vocabLang(i18n.language);
   const pickerId = useId();
   const items = previewProductsOf(config);
+  const held = usePaidDesignsHeld();
+  const sells = canOfferPurchases();
+  const [asked, setAsked] = useState<string | null>(null);
+  const pageLayout = productPageLayoutOf(config);
   return (
     <div className="flex flex-col gap-5" data-testid="product-page-panel">
       {items.length > 1 && (
@@ -149,16 +155,23 @@ export function ProductPagePanel<T>({ config, onUpdate, slug, onPreview }: Panel
       )}
       <div>
         <p className={label}>{t('siteEditor.products.layout')}</p>
+        {/* LT-605: the floating stage is a paid design (MotionPlan, as in SectionPanel). */}
         <DesignChoices
           name={t('siteEditor.products.layout')}
           group="productPage"
-          values={Object.keys(PRODUCT_PAGE_LAYOUTS)}
-          current={productPageLayoutOf(config)}
+          values={Object.keys(PRODUCT_PAGE_LAYOUTS).filter((v) => !isPaidDesign('productPage', v) || !held || sells)}
+          current={held && isPaidDesign('productPage', pageLayout) ? FREE_DEFAULTS.productPage : pageLayout}
           labelOf={(value) => optionLabel(PRODUCT_PAGE_LAYOUTS, value, lang)}
-          onPick={(value) => onUpdate((prev) => setAt(prev, 'design.productPageLayout', value))}
+          marked={(value) => isPaidDesign('productPage', value) && (!held || sells)}
+          onPick={(value) => {
+            if (held && isPaidDesign('productPage', value)) { setAsked(value); return; }
+            setAsked(null);
+            onUpdate((prev) => setAt(prev, 'design.productPageLayout', value));
+          }}
           language={i18n.language || 'he'}
           testId="product-page-choices"
         />
+        {asked && <div className="mt-2"><PaidNote /></div>}
       </div>
       <p className="text-xs text-gray-500 dark:text-slate-400">{t('siteEditor.products.contentHint')}</p>
       <ManageProducts />

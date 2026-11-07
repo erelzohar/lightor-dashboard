@@ -81,6 +81,8 @@ export const ButtonSample: React.FC<{ style: string; color: string }> = ({ style
     style === 'solid' ? { background: color, color: '#fff' }
     : style === 'gradient' ? { backgroundImage: `linear-gradient(135deg, ${color}, ${color}99)`, color: '#fff' }
     : style === 'outline' ? { border: `1.5px solid ${color}`, color }
+    // LT-605: raised on its own side, as the site's 3D button.
+    : style === 'splash' ? { background: color, color: '#fff', boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 0 rgba(0,0,0,0.35), 0 3px 0 ${color}`, transform: 'translateY(-1px)' }
     : { background: `${color}1f`, color };
   return <span aria-hidden="true" data-sample={`button-${style}`} className="inline-flex h-5 w-12 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold" style={css}>Aa</span>;
 };

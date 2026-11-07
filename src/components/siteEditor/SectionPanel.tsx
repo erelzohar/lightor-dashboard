@@ -6,7 +6,7 @@ import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { blockById, getAt, moveBlock, patchBlock, removeBlock, setAt } from '../../utils/editorPaths';
 import { aiEditable, fieldInfo } from '../../utils/editorFields';
-import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, FREE_DEFAULTS, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, LAYOUTS, OWN_BACKDROP_HEROES, PAID_BACKGROUNDS, blockLookOf, heroBackgroundOf, isPaidDesign, optionLabel, sectionDef, variantToStore } from '../../utils/editorOptions';
+import { CARD_LAYOUTS, DECOR_BACKGROUNDS, DEFAULT_VARIANT, FREE_DEFAULTS, HERO_BACKGROUNDS, HERO_BACKGROUND_NAMES, OWN_BACKDROP_HEROES, PAID_BACKGROUNDS, blockLookOf, heroBackgroundOf, isPaidDesign, optionLabel, sectionDef, sectionLabel, variantToStore } from '../../utils/editorOptions';
 import { canOfferPurchases } from '../../lib/platform';
 import { PaidNote, usePaidDesignsHeld } from './MotionPlan';
 import { ProductCardPicker } from './ProductDesign';
@@ -167,7 +167,7 @@ function SectionPanel<T>({ config, section, sectionType, fields, onUpdate, onSel
             group={pictureGroup(type)}
             values={def.variants.filter((v) => offered(isPaidDesign(type, v)))}
             current={current}
-            labelOf={(v) => optionLabel(LAYOUTS, v, lang)}
+            labelOf={(v) => sectionLabel(type, v, lang)}
             marked={(v) => marked(isPaidDesign(type, v))}
             language={i18n.language || 'he'}
             onPick={(v) => {

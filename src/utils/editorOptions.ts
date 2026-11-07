@@ -15,6 +15,16 @@ export const optionLabel = (names: Named, value: string, lang: string): string =
   return lang === 'he' ? entry.he : entry.en;
 };
 
+/**
+ * LT-605: a look whose value another section already names differently ('wall'
+ * is the highlights' typographic wall and the products' wall of shelves).
+ */
+const OWN_NAMES: Record<string, Named> = {
+  products: { wall: { he: 'קיר מדפים', en: 'Wall of shelves' } },
+};
+export const sectionLabel = (section: string, value: string, lang: string): string =>
+  optionLabel(OWN_NAMES[section]?.[value] ? OWN_NAMES[section] : LAYOUTS, value, lang);
+
 export const PRESETS: Named = {
   luxe: { he: 'יוקרתי', en: 'Luxe' },
   editorial: { he: 'מגזיני', en: 'Editorial' },
@@ -53,9 +63,12 @@ export const PRODUCT_PAGE_LAYOUTS: Named = {
   hero: { he: 'תמונה גדולה מעל', en: 'Large picture above' },
   gallery: { he: 'גלריה ופרטים צמודים', en: 'Gallery, details in view' },
   detail: { he: 'דף חנות', en: 'Shop page' },
+  // LT-605
+  stand: { he: 'על מדף לבן', en: 'On a white ledge' },
+  stage: { he: 'במה מרחפת', en: 'Floating stage' },
 };
 /** The products page's own layouts: the still ones (the moving ones suit a handful); LT-588 by category. */
-export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list', 'rows', 'shelves', 'shop'];
+export const PRODUCTS_PAGE_LAYOUTS = ['well', 'swap', 'bento', 'list', 'rows', 'shelves', 'shop', 'wall'];
 /** The layouts that draw a card per product (the owner's card). */
 export const CARD_LAYOUTS = ['well', 'swap', 'shop'];
 
@@ -80,6 +93,8 @@ export const BUTTON_STYLES: Named = {
   gradient: { he: 'מעבר צבע', en: 'Gradient' },
   outline: { he: 'מסגרת', en: 'Outline' },
   ghost: { he: 'שקוף', en: 'Ghost' },
+  // LT-605: festive's raised button whose letters roll and whose lines splash out.
+  splash: { he: 'תלת ממד', en: '3D splash' },
 };
 
 export const RADII: Named = {
@@ -113,7 +128,7 @@ export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk'
 /** LT-531: these two are `design.decor`, which the site draws in place of `bgType`. */
 export const DECOR_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
 /** LT-531: the heroes that draw their own backdrop; a background chip would do nothing there. */
-export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage', 'slant'];
+export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage', 'slant', 'mesh'];
 
 /**
  * LT-570 (Erel 2026-11-03/04): the paid designs, by the section they lay out
@@ -123,7 +138,8 @@ export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'ae
  * LT-583: the products' orbit (it turns by itself) joins them.
  */
 export const PAID_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
-  hero: ['parallax', 'expand'],
+  // LT-605: the hero over a live field of colours.
+  hero: ['parallax', 'expand', 'mesh'],
   gallery: ['clothesline', 'cascade', 'curve'],
   portfolio: ['clothesline', 'cascade', 'curve'],
   products: ['belt', 'hanger', 'coverflow', 'orbit'],
@@ -131,9 +147,11 @@ export const PAID_LAYOUTS: Readonly<Record<string, readonly string[]>> = {
   features: ['stack'],
   // LT-591: the contact section with floating bubbles.
   contact: ['bubbles'],
+  // LT-605: the product page whose product floats by itself.
+  productPage: ['stage'],
 };
 export const PAID_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
-export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles', contact: 'split' };
+export const FREE_DEFAULTS: Readonly<Record<string, string>> = { hero: 'fullbleed', gallery: 'masonry', portfolio: 'masonry', products: 'well', features: 'tiles', contact: 'split', productPage: 'side' };
 export const isPaidDesign = (section: string, value: unknown): boolean =>
   typeof value === 'string' && (PAID_LAYOUTS[section] ?? []).includes(value);
 
@@ -242,6 +260,8 @@ export const LAYOUTS: Named = {
   index: { he: 'אינדקס', en: 'Index' },
   // booking band and statement
   slant: { he: 'אלכסון', en: 'Slanted' },
+  // LT-605: the hero over a live field of the site's colours.
+  mesh: { he: 'צבעים חיים', en: 'Living colours' },
   quiet: { he: 'שקט', en: 'Quiet' },
   ticket: { he: 'כרטיס', en: 'Ticket' },
   display: { he: 'ענק', en: 'Display' },
@@ -269,7 +289,7 @@ export interface SectionDef {
   outsideBlocks?: boolean;
 }
 
-const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage', 'slant'];
+const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage', 'slant', 'mesh'];
 const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
 const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight', 'editorial'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
@@ -295,7 +315,7 @@ export const SECTIONS: Record<string, SectionDef> = {
   visit: { label: { he: 'פרטי ביקור', en: 'Visit' } },
   portfolio: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS, designToken: 'portfolioLayout', visibleKey: 'portfolio' },
   gallery: { label: { he: 'גלריה', en: 'Gallery' }, variants: GALLERY_LAYOUTS },
-  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit', 'drops'], designToken: 'productsLayout' },
+  products: { label: { he: 'מוצרים', en: 'Products' }, variants: ['well', 'swap', 'bento', 'list', 'belt', 'hanger', 'coverflow', 'orbit', 'drops', 'wall'], designToken: 'productsLayout' },
   testimonials: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS, designToken: 'testimonialsLayout', visibleKey: 'testimonials' },
   quote: { label: { he: 'המלצות', en: 'Reviews' }, variants: QUOTE_LAYOUTS },
   faq: { label: { he: 'שאלות נפוצות', en: 'FAQ' }, variants: FAQ_STYLES, designToken: 'faqStyle', visibleKey: 'faq' },
