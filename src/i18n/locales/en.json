@@ -1003,6 +1003,8 @@
     "freePeriodPending": "Verify your phone number in your account details to get 60 days of Lightor+.",
     "pastDueDescNative": "Your last payment didn't go through. Until it does, your site takes no bookings or inquiries and your customers' reminders are paused.",
     "pastDueDescNativeLeads": "Your last payment didn't go through. Until it does, your site takes no inquiries.",
+    "pastDueStore": "Your last payment in {{store}} didn't go through. Until it does, your site takes no bookings or inquiries and your customers' reminders are paused. Update your payment method in {{store}}, and once the payment goes through everything resumes.",
+    "pastDueStoreLeads": "Your last payment in {{store}} didn't go through. Until it does, your site takes no inquiries. Update your payment method in {{store}}, and once the payment goes through everything resumes.",
     "bookingsMeter": "{{used}}/{{included}} bookings this period",
     "bookingsMeterFree": "{{used}}/{{included}} bookings this month of your free trial",
     "bookingsNearIncluded": "Nearing the included bookings",

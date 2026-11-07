@@ -720,13 +720,19 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             >
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
               <p>
-                {canSell
-                  ? t(leadsSite ? 'billing.pastDueDescLeads' : 'billing.pastDueDesc')
-                  : t(leadsSite ? 'billing.pastDueDescNativeLeads' : 'billing.pastDueDescNative')}
+                {/* LT-607: a store renewal that failed is fixed in that store. */}
+                {billedByStore
+                  ? t(leadsSite ? 'billing.pastDueStoreLeads' : 'billing.pastDueStore', {
+                      store: t(entitlements?.store?.billedBy === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore'),
+                    })
+                  : canSell
+                    ? t(leadsSite ? 'billing.pastDueDescLeads' : 'billing.pastDueDesc')
+                    : t(leadsSite ? 'billing.pastDueDescNativeLeads' : 'billing.pastDueDescNative')}
               </p>
             </div>
             {meters}
-            {canSell && <div className="flex flex-wrap items-center gap-2">
+            {billedByStore && storePlans}
+            {canSell && !billedByStore && <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="primary"
                 onClick={() => void openPortal('updatePaymentMethod')}

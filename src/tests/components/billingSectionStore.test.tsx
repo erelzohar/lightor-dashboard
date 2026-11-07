@@ -266,6 +266,34 @@ describe('BillingSection with the stores (LT-580)', () => {
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('billing.store.packBought', expect.anything()));
   });
 
+  // LT-607 (Erel 2026-11-08): a store renewal that failed closes bookings like Paddle's past_due, and is fixed in the store.
+  it('a store renewal that failed: the store\'s own words and its manage button, no packs, no Paddle card update', async () => {
+    authState.subscription = { status: 'past_due', plan: 'plus', provider: 'google' };
+    entitlementsState.data = {
+      ...entitlementsState.data,
+      plan: 'free',
+      paymentFailed: true,
+      store: { billedBy: 'google', products, packBookings: 100 },
+      bookings: { kind: 'plus', used: 10, included: 200, periodStart: new Date().toISOString(), periodEnd: new Date(Date.now() + 9 * 864e5).toISOString(), extraAgorot: null, billedBy: 'google', packs: { left: 0, size: 100, closed: false } },
+    };
+    render(<BillingSection />);
+    expect(await screen.findByTestId('billing-past-due')).toHaveTextContent('billing.pastDueStore');
+    expect(t).toHaveBeenCalledWith('billing.pastDueStore', expect.objectContaining({ store: 'billing.store.googlePlay' }));
+    expect(await screen.findByTestId('store-manage')).toBeInTheDocument();
+    expect(screen.queryByTestId('store-packs')).toBeNull();
+    expect(screen.queryByText('billing.updatePaymentMethod')).toBeNull();
+  });
+
+  it('a store renewal that failed, seen on the web: the store\'s words and no Paddle button', async () => {
+    delete w.Capacitor;
+    store.on = false;
+    authState.subscription = { status: 'past_due', plan: 'pro', provider: 'apple' };
+    entitlementsState.data = { ...entitlementsState.data, plan: 'free', paymentFailed: true, store: { billedBy: 'apple', products, packBookings: 100 } };
+    render(<BillingSection leadsSite />);
+    expect(await screen.findByTestId('billing-past-due')).toHaveTextContent('billing.pastDueStoreLeads');
+    expect(screen.queryByText('billing.updatePaymentMethod')).toBeNull();
+  });
+
   it('keeps a subscription paid on the web to the web', async () => {
     authState.subscription = { status: 'active', plan: 'pro', subscriptionId: 'sub_1' };
     entitlementsState.data = { ...entitlementsState.data, plan: 'pro' };

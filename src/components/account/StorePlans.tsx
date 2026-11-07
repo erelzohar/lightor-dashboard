@@ -57,7 +57,9 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
 
   const store = entitlements.store;
   const billedBy = store?.billedBy ?? null;
-  const subscribed = auth.user?.subscription?.status === 'active' && !!billedBy;
+  // LT-607: a store renewal that failed (past_due, the grace period) is still the store's to fix.
+  const pastDue = auth.user?.subscription?.status === 'past_due';
+  const subscribed = (auth.user?.subscription?.status === 'active' || pastDue) && !!billedBy;
   const pilot = entitlements.pilot ?? null;
   const freeDaysEnd = pilot ? new Date(pilot.until) : null;
   const inFreeDays = !!freeDaysEnd && freeDaysEnd.getTime() > Date.now();
@@ -134,7 +136,7 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
             </Button>
           </div>
         )}
-        {!leadsSite && packs && (
+        {!leadsSite && !pastDue && packs && (
           <div className={`rounded-xl border p-3 text-sm ${packs.closed ? 'border-amber-300/70 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10' : 'border-gray-200 dark:border-slate-700'}`} data-testid="store-packs">
             <p className="flex items-center gap-2 font-medium text-gray-900 dark:text-white">
               <Package className="h-4 w-4 shrink-0 text-primary" />

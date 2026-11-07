@@ -1007,6 +1007,8 @@
     "freePeriodPending": "Verifica tu teléfono en los datos de la cuenta para obtener 60 días de Lightor+.",
     "pastDueDescNative": "Tu último pago no se pudo completar. Hasta que se complete, tu sitio no recibe reservas ni consultas y los recordatorios a tus clientes están en pausa.",
     "pastDueDescNativeLeads": "Tu último pago no se pudo completar. Hasta que se complete, tu sitio no recibe consultas.",
+    "pastDueStore": "Tu último pago en {{store}} no se pudo completar. Hasta que se complete, tu sitio no recibe reservas ni consultas y los recordatorios a tus clientes están en pausa. Actualiza tu método de pago en {{store}} y, en cuanto se complete, todo se reanuda.",
+    "pastDueStoreLeads": "Tu último pago en {{store}} no se pudo completar. Hasta que se complete, tu sitio no recibe consultas. Actualiza tu método de pago en {{store}} y, en cuanto se complete, todo se reanuda.",
     "bookingsMeter": "{{used}}/{{included}} reservas en este período",
     "bookingsMeterFree": "{{used}}/{{included}} reservas este mes de tu prueba gratuita",
     "bookingsNearIncluded": "Cerca de las reservas incluidas",
