@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { reportClientError } from '../../services/errorReporting';
+import { noteRenderCrash } from '../../lib/liveUpdate';
 
 /**
  * The outermost error boundary (LT-170), mounted above the Redux provider
@@ -48,6 +49,8 @@ export default class RootErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
+    // LT-608: a bundle that crashes is not confirmed; the app falls back to the one before.
+    noteRenderCrash();
     void reportClientError({
       error: error.message ? `${error.name}: ${error.message}` : error.name,
       stack: error.stack,

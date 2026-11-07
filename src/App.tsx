@@ -46,6 +46,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AppUrlOpenListener from './components/routing/AppUrlOpenListener';
+import LiveUpdateGate from './components/app/LiveUpdateGate';
 import InstagramCallback from './pages/InstagramCallback';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
@@ -73,6 +74,8 @@ function App() {
             />
             {/* Native deep links for every route, signed in or not (LT-315). */}
             <AppUrlOpenListener />
+            {/* LT-608: the apps' over-the-air updates, and the store-update screen. */}
+            <LiveUpdateGate />
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>

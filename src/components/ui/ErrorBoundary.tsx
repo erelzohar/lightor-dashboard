@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 import { reportClientError } from '../../services/errorReporting';
 import { useAuth } from '../../contexts/AuthContext';
+import { noteRenderCrash } from '../../lib/liveUpdate';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -43,6 +44,8 @@ class ErrorBoundaryClass extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // LT-608: a bundle that crashes is not confirmed; the app falls back to the one before.
+    noteRenderCrash();
     this.setState({ error, errorInfo });
 
     // Report to the backend (LT-170). The reporter itself is production-only

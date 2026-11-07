@@ -1751,6 +1751,16 @@
         "everyone": "Everyone",
         "without": "Except {{names}}"
       }
+    },
+    "appInstalls": {
+      "title": "The apps out there",
+      "subtitle": "{{count}} installs seen in the last {{days}} days",
+      "failed": "The installs could not be loaded",
+      "version": "Version",
+      "bundle": "Over-the-air update",
+      "installs": "Installs",
+      "latest": "latest",
+      "mustUpdate": "must update"
     }
   },
   "customers": {
@@ -2765,6 +2775,17 @@
       "renamed": "The category changed on {{count}} products",
       "joined": "{{count}} products moved to \"{{name}}\"",
       "cleared": "The category came off {{count}} products"
+    }
+  },
+  "app": {
+    "update": {
+      "title": "A new version of Lightor is here",
+      "body": "To carry on, update the app from the store. It only takes a moment, and all your data stays.",
+      "cta": "Update the app"
+    },
+    "version": {
+      "app": "Version {{version}} ({{build}})",
+      "bundle": "Update {{id}} from {{date}}"
     }
   }
 }

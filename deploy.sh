@@ -17,7 +17,12 @@ STAGING=temp_dashboard_dist
 
 [ -f "$KEY" ] || { echo "✗ ssh key not found at $KEY"; exit 1; }
 
-echo "🚀 1/4  Building locally..."
+# LT-608: what this bundle is, baked into it and published with it for the
+# apps' over-the-air updates: the commit and the time, and when it was built.
+export BUNDLE_ID="${BUNDLE_ID:-$(git rev-parse --short=7 HEAD)-$(date -u +%Y%m%d%H%M)}"
+export BUILD_TIME="${BUILD_TIME:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+
+echo "🚀 1/4  Building locally ($BUNDLE_ID)..."
 npm run build
 
 if [ ! -f dist/index.html ]; then
@@ -48,3 +53,39 @@ ssh -i "$KEY" "$HOST" bash -s <<EOF
 EOF
 
 echo "✅ 4/4  the owner dashboard deployed."
+
+# LT-608: the same build, zipped and signed, for the apps' over-the-air
+# updates. LIVE_UPDATE_KEY is the private key's file (CI writes it from the
+# LIVE_UPDATE_PRIVATE_KEY secret); without it the apps get nothing new. The
+# server's manifest lists the last 20 bundles with each one's native
+# fingerprint; the API (GET /api/app/update) picks the one an app may take.
+UPDATES=/var/www/app-updates
+if [ -n "${LIVE_UPDATE_KEY:-}" ] && [ -f "$LIVE_UPDATE_KEY" ]; then
+  echo "📦 Publishing the apps' bundle $BUNDLE_ID..."
+  FINGERPRINT=$(node tools/native-fingerprint.mjs)
+  rm -f bundle.zip
+  (cd dist && zip -qrX ../bundle.zip .)
+  CHECKSUM=$( (sha256sum bundle.zip 2>/dev/null || shasum -a 256 bundle.zip) | cut -d' ' -f1)
+  SIGNATURE=$(openssl dgst -sha256 -sign "$LIVE_UPDATE_KEY" bundle.zip | base64 | tr -d '\n')
+  [ -n "$SIGNATURE" ] || { echo "✗ could not sign the bundle"; exit 1; }
+  ssh -i "$KEY" "$HOST" "cat $UPDATES/manifest.json 2>/dev/null || echo '{}'" > manifest.old.json
+  ID="$BUNDLE_ID" FP="$FINGERPRINT" SUM="$CHECKSUM" SIG="$SIGNATURE" BUILT="$BUILD_TIME" \
+    BASE="${APP_UPDATES_BASE:-https://dashboard.lightor.app/app-updates}" node tools/publish-manifest.mjs manifest.old.json app-updates.json manifest.json
+  scp -q -i "$KEY" bundle.zip "$HOST:app-update-$BUNDLE_ID.zip"
+  scp -q -i "$KEY" manifest.json "$HOST:app-update-manifest.json"
+  ssh -i "$KEY" "$HOST" "UPDATES=$UPDATES ID=$BUNDLE_ID bash -s" <<'REMOTE'
+    set -euo pipefail
+    sudo mkdir -p "$UPDATES"
+    sudo mv ~/"app-update-$ID.zip" "$UPDATES/$ID.zip"
+    sudo mv ~/app-update-manifest.json "$UPDATES/manifest.json"
+    # Only the zips the manifest still lists stay.
+    cd "$UPDATES"
+    for f in *.zip; do grep -q "\"${f%.zip}\"" manifest.json || sudo rm -f "$f"; done
+    sudo chown -R www-data:www-data "$UPDATES"
+    sudo chmod -R a+rX "$UPDATES"
+REMOTE
+  rm -f bundle.zip manifest.old.json manifest.json
+  echo "✅ the apps' bundle $BUNDLE_ID published ($FINGERPRINT)."
+else
+  echo "ℹ️  No LIVE_UPDATE_KEY: the apps' bundle is not published."
+fi

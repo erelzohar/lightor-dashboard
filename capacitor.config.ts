@@ -1,4 +1,20 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { readFileSync } from 'fs';
+
+/**
+ * LT-608: the over-the-air bundles' public key, from .env.production (the
+ * one place the dashboard's public keys live). Read here because the native
+ * plugin takes it from this config at `cap sync`, not from the bundle - a
+ * bundle cannot change the key that checks it.
+ */
+const liveUpdatePublicKey = (): string | undefined => {
+  try {
+    const line = readFileSync('.env.production', 'utf8').split('\n').find((l) => l.startsWith('VITE_LIVE_UPDATE_PUBLIC_KEY='));
+    return line?.slice('VITE_LIVE_UPDATE_PUBLIC_KEY='.length).trim() || undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 /**
  * Capacitor shell for the dashboard (LT-128, mobile plan phase 1).
@@ -39,6 +55,16 @@ const config: CapacitorConfig = {
     backgroundColor: '#ffffff',
   },
   plugins: {
+    // LT-608: over-the-air updates from our own server (src/lib/liveUpdate.ts
+    // decides when); a bundle must carry our signature, must call ready()
+    // within 30 s or it is rolled back, and a rolled-back bundle is never
+    // tried again.
+    LiveUpdate: {
+      autoUpdateStrategy: 'none',
+      readyTimeout: 30000,
+      autoBlockRolledBackBundles: true,
+      publicKey: liveUpdatePublicKey(),
+    },
     FirebaseMessaging: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },

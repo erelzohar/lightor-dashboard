@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { nativeFingerprint } from './tools/native-fingerprint.mjs';
 
 /**
  * LT-315: refuse a bundle that contains a regex lookbehind assertion. WebKit
@@ -24,8 +25,17 @@ const noRegexLookbehind = (): Plugin => ({
 });
 
 // https://vitejs.dev/config/
+// LT-608: what this bundle is, baked in - its id (deploy.sh passes the commit
+// and time as BUNDLE_ID), when it was built, and the native app it needs.
+const BUILD_TIME = process.env.BUILD_TIME || new Date().toISOString();
+
 export default defineConfig({
   plugins: [react(), noRegexLookbehind()],
+  define: {
+    __BUNDLE_ID__: JSON.stringify(process.env.BUNDLE_ID || `local-${BUILD_TIME.slice(0, 16).replace(/\D/g, '')}`),
+    __BUILD_TIME__: JSON.stringify(BUILD_TIME),
+    __NATIVE_FINGERPRINT__: JSON.stringify(nativeFingerprint(__dirname)),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

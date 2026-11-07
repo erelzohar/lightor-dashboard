@@ -20,6 +20,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
 import { phoneCodeErrorKey, samePhone, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 import { checkPhone, formatPhoneForDisplay, toE164 } from '../utils/phone';
+import AppVersionLine from '../components/app/AppVersionLine';
 
 // Native names — a language selector should read in the language it selects.
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
@@ -524,6 +525,10 @@ const Account: React.FC = () => {
             {label}
           </a>
         ))}
+      </div>
+      {/* LT-608: which version this is, for support. */}
+      <div className="pb-6">
+        <AppVersionLine />
       </div>
     </motion.div>
   );

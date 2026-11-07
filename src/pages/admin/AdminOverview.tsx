@@ -16,6 +16,7 @@ import StatCard from '../../components/ui/StatCard';
 import { DonutChart } from '../../components/ui/donut-chart';
 import ErrorBoundaryWithLanguage from '../../components/ui/ErrorBoundary';
 import StatusBadge from '../../components/admin/StatusBadge';
+import AppInstallsCard from '../../components/admin/AppInstallsCard';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   fetchOverview,
@@ -332,6 +333,11 @@ const AdminOverview: React.FC = () => {
               </ul>
             )}
           </Card>
+        </ErrorBoundaryWithLanguage>
+
+        {/* ── The apps' versions out there (LT-608) ── */}
+        <ErrorBoundaryWithLanguage>
+          <AppInstallsCard />
         </ErrorBoundaryWithLanguage>
       </div>
     </motion.div>

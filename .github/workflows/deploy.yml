@@ -75,11 +75,21 @@ jobs:
             exit 1
           fi
 
+      # LT-608: the bundle is also signed for the apps' over-the-air updates
+      # when the LIVE_UPDATE_PRIVATE_KEY secret is set (deploy.sh skips it otherwise).
       - name: Deploy
         env:
           HOST: ${{ secrets.DEPLOY_HOST }}
-        run: KEY="$HOME/.ssh/deploy_key" ./deploy.sh
+          LIVE_UPDATE_PRIVATE_KEY: ${{ secrets.LIVE_UPDATE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "$LIVE_UPDATE_PRIVATE_KEY" ]; then
+            printf "%s\n" "$LIVE_UPDATE_PRIVATE_KEY" > ~/.ssh/live_update_key.pem
+            chmod 600 ~/.ssh/live_update_key.pem
+            export LIVE_UPDATE_KEY="$HOME/.ssh/live_update_key.pem"
+          fi
+          KEY="$HOME/.ssh/deploy_key" ./deploy.sh
 
-      - name: Remove the key from the runner
+      - name: Remove the keys from the runner
         if: always()
-        run: rm -f ~/.ssh/deploy_key
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/live_update_key.pem

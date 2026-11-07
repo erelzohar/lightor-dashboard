@@ -552,3 +552,18 @@ export const mergeAdminCategory = async (key: string, into: string): Promise<{ s
 export const deleteAdminCategory = async (key: string): Promise<void> => {
   await send('delete', `categories/${encodeURIComponent(key)}`);
 };
+
+// -------------------------------------------------------- app installs --
+
+/** LT-608: the apps' installs seen in the last 30 days, by store version and build, and by over-the-air bundle. */
+export interface AppInstalls {
+  days: number;
+  total: number;
+  versions: { platform: 'ios' | 'android'; version: string; build: string; installs: number; lastSeenAt: string }[];
+  bundles: { platform: 'ios' | 'android'; bundle: string; installs: number }[];
+  latest: string | null;
+  minBuild: { ios?: number; android?: number };
+}
+
+export const getAppInstalls = async (): Promise<AppInstalls> =>
+  (await get<{ success: boolean; data: AppInstalls }>('app-installs')).data;

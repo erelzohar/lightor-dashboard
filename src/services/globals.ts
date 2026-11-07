@@ -22,6 +22,8 @@ abstract class Globals {
     public assistantUrl:string;
     /** Push device registry (LT-129). */
     public devicesUrl:string;
+    /** The apps' over-the-air updates and versions (LT-608). */
+    public appUrl:string;
     /** An owner's problem reports (LT-448). */
     public supportUrl:string;
     /** The site categories (LT-453). */
@@ -58,6 +60,7 @@ class DevelopmentGlobals extends Globals {
     public notificationsUrl = `${DEV_API_BASE}/api/notifications/`;
     public assistantUrl = `${DEV_API_BASE}/api/assistant/`;
     public devicesUrl = `${DEV_API_BASE}/api/devices/`;
+    public appUrl = `${DEV_API_BASE}/api/app/`;
     public supportUrl = `${DEV_API_BASE}/api/support/`;
     public categoriesUrl = `${DEV_API_BASE}/api/categories`;
     public registerOrigin = "http://localhost:5173";
@@ -105,6 +108,7 @@ class ProductionGlobals extends Globals {
     public notificationsUrl = "https://api.lightor.app/api/notifications/";
     public assistantUrl = "https://api.lightor.app/api/assistant/";
     public devicesUrl = "https://api.lightor.app/api/devices/";
+    public appUrl = "https://api.lightor.app/api/app/";
     public supportUrl = "https://api.lightor.app/api/support/";
     public categoriesUrl = "https://api.lightor.app/api/categories";
     public registerOrigin = "https://register.lightor.app";

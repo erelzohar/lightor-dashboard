@@ -1755,6 +1755,16 @@
         "everyone": "Todos",
         "without": "Excepto {{names}}"
       }
+    },
+    "appInstalls": {
+      "title": "Las apps en uso",
+      "subtitle": "{{count}} instalaciones vistas en los últimos {{days}} días",
+      "failed": "No se pudieron cargar las instalaciones",
+      "version": "Versión",
+      "bundle": "Actualización remota",
+      "installs": "Instalaciones",
+      "latest": "la más reciente",
+      "mustUpdate": "debe actualizar"
     }
   },
   "customers": {
@@ -2769,6 +2779,17 @@
       "renamed": "La categoría cambió en {{count}} productos",
       "joined": "{{count}} productos pasaron a \"{{name}}\"",
       "cleared": "La categoría se quitó de {{count}} productos"
+    }
+  },
+  "app": {
+    "update": {
+      "title": "Hay una nueva versión de Lightor",
+      "body": "Para continuar, actualiza la app desde la tienda. Solo toma un momento y todos tus datos se conservan.",
+      "cta": "Actualizar la app"
+    },
+    "version": {
+      "app": "Versión {{version}} ({{build}})",
+      "bundle": "Actualización {{id}} del {{date}}"
     }
   }
 }

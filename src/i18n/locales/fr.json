@@ -1755,6 +1755,16 @@
         "everyone": "Tout le monde",
         "without": "Sauf {{names}}"
       }
+    },
+    "appInstalls": {
+      "title": "Les applis en circulation",
+      "subtitle": "{{count}} installations vues ces {{days}} derniers jours",
+      "failed": "Impossible de charger les installations",
+      "version": "Version",
+      "bundle": "Mise à jour à distance",
+      "installs": "Installations",
+      "latest": "la plus récente",
+      "mustUpdate": "mise à jour requise"
     }
   },
   "customers": {
@@ -2769,6 +2779,17 @@
       "renamed": "La catégorie a changé sur {{count}} produits",
       "joined": "{{count}} produits sont passés dans « {{name}} »",
       "cleared": "La catégorie a été retirée de {{count}} produits"
+    }
+  },
+  "app": {
+    "update": {
+      "title": "Une nouvelle version de Lightor est disponible",
+      "body": "Pour continuer, mettez l’application à jour depuis le store. Cela ne prend qu’un instant, et toutes vos données sont conservées.",
+      "cta": "Mettre à jour l’application"
+    },
+    "version": {
+      "app": "Version {{version}} ({{build}})",
+      "bundle": "Mise à jour {{id}} du {{date}}"
     }
   }
 }
