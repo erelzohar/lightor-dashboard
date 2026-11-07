@@ -3,6 +3,10 @@ package app.lightor.dashboard;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -27,5 +31,29 @@ public class MainActivity extends BridgeActivity {
             Log.w("Lightor", "google-services.json missing - Firebase running on placeholder options; push and Google Sign-In are off");
         }
         super.onCreate(savedInstanceState);
+        hideNavigationBar();
+    }
+
+    // LT-606 (Erel 2026-11-07): the soft keys (three buttons, or the gesture
+    // handle) go away while the app is in use, so they never sit over the
+    // app's bottom tabs. A swipe from the bottom edge brings them back over
+    // the page for a few seconds; they hide again on their own, and again
+    // whenever the app comes back to the front. The status bar stays.
+    @Override
+    public void onResume() {
+        super.onResume();
+        hideNavigationBar();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) hideNavigationBar();
+    }
+
+    private void hideNavigationBar() {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        controller.hide(WindowInsetsCompat.Type.navigationBars());
     }
 }
