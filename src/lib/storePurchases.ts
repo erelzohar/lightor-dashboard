@@ -28,8 +28,16 @@ const plugin = () => import('@revenuecat/purchases-capacitor');
 
 let configuredFor: string | null = null;
 
-/** RevenueCat knows the owner by our user id, so the webhook names them. */
-const ready = async (userId: string) => {
+/**
+ * RevenueCat knows the owner by our user id, so the webhook names them.
+ *
+ * LT-604: the plugin comes back wrapped (`{ Purchases }`), never on its own
+ * from an async function: a Capacitor plugin is a proxy that answers every
+ * name, so resolving a promise with it calls `Purchases.then()`, which the
+ * native side refuses, and the promise never settles ("loading plans" for
+ * ever on the iPhone).
+ */
+const ready = async (userId: string): Promise<{ Purchases: (typeof import('@revenuecat/purchases-capacitor'))['Purchases'] }> => {
   const { Purchases } = await plugin();
   if (configuredFor === null) {
     await Purchases.configure({ apiKey: keyFor(), appUserID: userId });
@@ -37,7 +45,7 @@ const ready = async (userId: string) => {
     await Purchases.logIn({ appUserID: userId });
   }
   configuredFor = userId;
-  return Purchases;
+  return { Purchases };
 };
 
 export type StorePlan = 'plus' | 'pro';
@@ -74,7 +82,7 @@ export const loadStoreOffers = async (
   userId: string,
   products: { plus: string[]; pro: string[]; bookingPack: string[] }
 ): Promise<StoreOffers> => {
-  const Purchases = await ready(userId);
+  const { Purchases } = await ready(userId);
   const { PRODUCT_CATEGORY } = await plugin();
   const subscriptionIds = [...products.plus, ...products.pro];
   const [subs, packs] = await Promise.all([
@@ -109,7 +117,7 @@ export const hasFreeTrial = (product: PurchasesStoreProduct | undefined): boolea
  * itself makes it an upgrade.
  */
 export const buyStoreProduct = async (userId: string, product: PurchasesStoreProduct, replacing?: string): Promise<PurchaseOutcome> => {
-  const Purchases = await ready(userId);
+  const { Purchases } = await ready(userId);
   try {
     if (replacing && nativePlatform() === 'android') {
       const { STORE_REPLACEMENT_MODE } = await plugin();
@@ -130,14 +138,14 @@ export const buyStoreProduct = async (userId: string, product: PurchasesStorePro
 
 /** "Restore purchases" (App Store rule 3.1.1): the store's purchases of this Apple ID / Google account back on the account. */
 export const restoreStore = async (userId: string): Promise<void> => {
-  const Purchases = await ready(userId);
+  const { Purchases } = await ready(userId);
   await Purchases.restorePurchases();
   await syncStore();
 };
 
 /** Where the owner changes or cancels a store subscription: the store's own page. */
 export const manageStoreUrl = async (userId: string): Promise<string> => {
-  const Purchases = await ready(userId);
+  const { Purchases } = await ready(userId);
   const { customerInfo } = await Purchases.getCustomerInfo();
   return customerInfo.managementURL
     ?? (nativePlatform() === 'android' ? 'https://play.google.com/store/account/subscriptions' : 'https://apps.apple.com/account/subscriptions');

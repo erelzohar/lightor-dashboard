@@ -3,7 +3,8 @@ import { describe, it, expect, vi } from 'vitest';
 const getProducts = vi.hoisted(() => vi.fn());
 vi.mock('@revenuecat/purchases-capacitor', () => ({
   PRODUCT_CATEGORY: { SUBSCRIPTION: 'SUBSCRIPTION', NON_SUBSCRIPTION: 'NON_SUBSCRIPTION' },
-  Purchases: { configure: vi.fn(async () => {}), logIn: vi.fn(async () => {}), getProducts },
+  // A Capacitor plugin answers every name, `then` too: a promise resolved with it never settles (LT-604).
+  Purchases: { configure: vi.fn(async () => {}), logIn: vi.fn(async () => {}), getProducts, then: () => new Promise(() => {}) },
 }));
 vi.mock('../../lib/platform', () => ({ isNativeApp: () => true, nativePlatform: () => 'android' }));
 
@@ -20,7 +21,7 @@ describe('the store offers (LT-602)', () => {
     expect(intervalOf(product('a', null))).toBe('month');
   });
 
-  it('files each product under its plan and period, the first one for each', async () => {
+  it('files each product under its plan and period, the first one for each (and settles, though the plugin answers `then`)', async () => {
     getProducts.mockImplementation(async ({ type }: { type: string }) => ({
       products: type === 'SUBSCRIPTION'
         ? [product('plus:monthly', 'P1M'), product('plus_y:yearly', 'P1Y'), product('pro:monthly', 'P1M'), product('pro_y:yearly', 'P1Y'), product('pro_other', 'P1M'), product('stray', 'P1M')]

@@ -26,6 +26,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** iPhone: Lightor+ opens in the free days' last 3 days (Erel 2026-11-05, LT-589). */
 export const APPLE_PLUS_OPEN_DAYS = 3;
 const PRIVACY_URL = 'https://lightor.app/privacy.html';
+/** How long the store may take to name its products before the plans read as unavailable. */
+const STORE_TIMEOUT_MS = 30_000;
 
 /**
  * LT-580: the Account page's store in the apps - the plans for an owner who
@@ -66,10 +68,13 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
   useEffect(() => {
     if (!store || !userId) return;
     let live = true;
+    // LT-604: a store that never answers shows "plans unavailable", not a loader for ever.
+    const giveUp = setTimeout(() => { if (live) setFailed(true); }, STORE_TIMEOUT_MS);
     loadStoreOffers(userId, store.products)
       .then((found) => { if (live) setOffers(found); })
-      .catch(() => { if (live) setFailed(true); });
-    return () => { live = false; };
+      .catch(() => { if (live) setFailed(true); })
+      .finally(() => clearTimeout(giveUp));
+    return () => { live = false; clearTimeout(giveUp); };
   }, [store, userId]);
 
   if (!store) return null;
