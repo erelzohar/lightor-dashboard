@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Blog from '../../pages/Blog';
-import { createPost, deletePost, draftPost, getPost, listPosts, postIdeas, updatePost, type Post } from '../../services/postsApi';
+import { createPost, deletePost, draftPictures, draftPost, getPost, listPosts, postIdeas, updatePost, type Post } from '../../services/postsApi';
+import { PICTURES_POLL } from '../../components/blog/PostEditor';
 import { sitePicturesOf } from '../../components/blog/blogPictures';
 import { blogLooksOf, withBlogSection } from '../../utils/blogLooks';
 import { blockLookOf } from '../../utils/editorOptions';
@@ -29,7 +30,7 @@ vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
 vi.mock('../../services/aiApi', () => ({ aiService: { createImage: vi.fn() } }));
 vi.mock('../../services/postsApi', async (original) => ({
   ...(await original<typeof import('../../services/postsApi')>()),
-  listPosts: vi.fn(), getPost: vi.fn(), createPost: vi.fn(), updatePost: vi.fn(), deletePost: vi.fn(), postIdeas: vi.fn(), draftPost: vi.fn(),
+  listPosts: vi.fn(), getPost: vi.fn(), createPost: vi.fn(), updatePost: vi.fn(), deletePost: vi.fn(), postIdeas: vi.fn(), draftPost: vi.fn(), draftPictures: vi.fn(),
 }));
 
 const PRO = { blog: true, draftsPerMonth: 10, draftsLeft: 7, publishesPerMonth: 30, publishesLeft: 30 };
@@ -72,6 +73,78 @@ describe('the Blog page on Pro (LT-610)', () => {
     await waitFor(() => expect(createPost).toHaveBeenCalledWith(expect.objectContaining({ title: 'איך שומרים על הלק', status: 'draft', byLighty: true, slug: 'gel-care', cover: 'a.webp' })));
     expect(await screen.findByTestId('post-editor')).toBeTruthy();
     expect(screen.getByTestId('blog-drafts-left').textContent).toContain('"left":6');
+  });
+
+  /** Lighty writes a three-paragraph draft whose pictures are on their way (LT-610). */
+  const writeWithPictures = async () => {
+    PICTURES_POLL.firstMs = 5;
+    PICTURES_POLL.everyMs = 5;
+    vi.mocked(listPosts).mockResolvedValue({ posts: [], limits: PRO });
+    vi.mocked(postIdeas).mockResolvedValue([{ title: 'איך שומרים על הלק', angle: 'טיפים לבית' }]);
+    vi.mocked(draftPost).mockResolvedValue({
+      draft: { title: 'איך שומרים על הלק', summary: 'ש', category: 'טיפים', slug: 'gel-care', cover: '', body: [{ kind: 'p', text: 'פתיחה.' }, { kind: 'h2', text: 'כפפות' }, { kind: 'p', text: 'סיום.' }] },
+      draftsLeft: 6,
+      pictures: { job: 'job-1', inside: [1, 2] },
+    });
+    vi.mocked(createPost).mockImplementation(async (input) => post({ ...input, _id: 'new', cover: input.cover ? { url: input.cover } : null, body: input.body } as Partial<Post>));
+    renderPage();
+    fireEvent.click((await screen.findAllByRole('button', { name: /blog.lightyWrites/ }))[0]);
+    const dialog = await screen.findByTestId('lighty-writes');
+    fireEvent.click(await within(dialog).findByText('איך שומרים על הלק'));
+    fireEvent.click(within(dialog).getByRole('button', { name: /blog.lighty.write/ }));
+    return screen.findByTestId('post-editor');
+  };
+
+  it("puts Lighty's pictures in once they are made, and keeps them in the draft (LT-610)", async () => {
+    let asked = 0;
+    vi.mocked(draftPictures).mockImplementation(async () => (++asked < 3
+      ? { done: false, pictures: { 'img-1': null } }
+      : { done: true, pictures: { cover: 'https://api.lightor.app/api/images/tmp-ai-c.webp', 'img-0': 'a.webp', 'img-1': null } }));
+    vi.mocked(updatePost).mockImplementation(async (_id, input) => post({
+      ...input, _id: 'new', cover: input.cover ? { url: input.cover.replace('tmp-ai-c.webp', 'kept-c.webp') } : null, body: input.body,
+    } as Partial<Post>));
+    const editor = await writeWithPictures();
+    // While they are made: a place for the main picture and one for each picture inside.
+    expect(within(editor).getByTestId('cover-pending')).toBeTruthy();
+    expect(within(editor).getAllByTestId('picture-pending')).toHaveLength(2);
+    expect(createPost).toHaveBeenCalledWith(expect.objectContaining({ cover: null, body: [{ kind: 'p', text: 'פתיחה.' }, { kind: 'h2', text: 'כפפות' }, { kind: 'p', text: 'סיום.' }] }));
+    // Then all at once, and saved quietly: the cover, the gallery picture after the opening, and no empty place.
+    await waitFor(() => expect(updatePost).toHaveBeenCalledWith('new', expect.objectContaining({
+      status: 'draft',
+      cover: 'https://api.lightor.app/api/images/tmp-ai-c.webp',
+      body: [{ kind: 'p', text: 'פתיחה.' }, { kind: 'image', url: 'a.webp' }, { kind: 'h2', text: 'כפפות' }, { kind: 'p', text: 'סיום.' }],
+    })));
+    expect(draftPictures).toHaveBeenCalledWith('job-1');
+    expect(within(editor).queryByTestId('cover-pending')).toBeNull();
+    expect(within(editor).queryAllByTestId('picture-pending')).toHaveLength(0);
+    // Pictures have no alt text (LT-581), so they are read off the page itself.
+    const srcs = () => [...editor.querySelectorAll('img')].map((img) => img.getAttribute('src') ?? '');
+    await waitFor(() => expect(srcs()).toEqual(expect.arrayContaining([expect.stringContaining('kept-c.webp'), expect.stringContaining('a.webp')])));
+    expect(toast.success).toHaveBeenCalledWith('blog.editor.picturesAdded');
+    expect(updatePost).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not save over the owner's own changes: the pictures join them", async () => {
+    let release: (() => void) | undefined;
+    vi.mocked(draftPictures).mockImplementation(() => new Promise((resolve) => {
+      release = () => resolve({ done: true, pictures: { cover: 'https://api.lightor.app/api/images/tmp-ai-c.webp', 'img-0': null, 'img-1': null } });
+    }));
+    const editor = await writeWithPictures();
+    fireEvent.change(within(editor).getByLabelText('blog.editor.title'), { target: { value: 'כותרת של בעלת העסק' } });
+    await waitFor(() => expect(release).toBeDefined());
+    release!();
+    await waitFor(() => expect(within(editor).queryByTestId('cover-pending')).toBeNull());
+    expect(within(editor).queryAllByTestId('picture-pending')).toHaveLength(0);
+    expect([...editor.querySelectorAll('img')].some((img) => img.getAttribute('src')?.includes('tmp-ai-c.webp'))).toBe(true);
+    expect(updatePost).not.toHaveBeenCalled();
+  });
+
+  it('lets the places go when the pictures cannot be asked about', async () => {
+    vi.mocked(draftPictures).mockRejectedValue(new Error('gone'));
+    const editor = await writeWithPictures();
+    await waitFor(() => expect(within(editor).queryByTestId('cover-pending')).toBeNull());
+    expect(within(editor).queryAllByTestId('picture-pending')).toHaveLength(0);
+    expect(updatePost).not.toHaveBeenCalled();
   });
 
   it('says so when the month\'s drafts are used, and asks Lighty for nothing', async () => {

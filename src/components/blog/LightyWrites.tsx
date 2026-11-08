@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
-import { draftPost, postIdeas, type PostDraft, type PostIdea } from '../../services/postsApi';
+import { draftPost, postIdeas, type DraftPictures, type PostDraft, type PostIdea } from '../../services/postsApi';
 import LightyIcon from '../lighty/LightyIcon';
 
 interface Props {
   draftsLeft: number;
   draftsPerMonth: number;
-  onDrafted: (draft: PostDraft, left: number) => void;
+  /** The draft, the drafts left this month, and its pictures on their way (LT-610). */
+  onDrafted: (draft: PostDraft, left: number, pictures?: DraftPictures) => void;
   onClose: () => void;
 }
 
@@ -54,8 +55,8 @@ const LightyWrites: React.FC<Props> = ({ draftsLeft, draftsPerMonth, onDrafted, 
     setWriting(true);
     setFailed(false);
     try {
-      const { draft, draftsLeft: left } = await draftPost(topic, words);
-      onDrafted(draft, left);
+      const { draft, draftsLeft: left, pictures } = await draftPost(topic, words);
+      onDrafted(draft, left, pictures);
     } catch {
       setFailed(true);
     } finally {

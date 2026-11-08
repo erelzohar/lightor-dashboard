@@ -8,7 +8,7 @@ import { useConfirm } from '../hooks/useConfirm';
 import { canOfferPurchases } from '../lib/platform';
 import { siteUrlOf } from '../utils/siteUrl';
 import {
-  createPost, deletePost, getPost, listPosts, type BlogLimits, type Post, type PostDraft,
+  createPost, deletePost, getPost, listPosts, type BlogLimits, type DraftPictures, type Post, type PostDraft,
 } from '../services/postsApi';
 import PostEditor from '../components/blog/PostEditor';
 import LightyWrites from '../components/blog/LightyWrites';
@@ -32,6 +32,8 @@ const Blog: React.FC = () => {
   const [limits, setLimits] = useState<BlogLimits | null>(null);
   const [failed, setFailed] = useState(false);
   const [editing, setEditing] = useState<Post | 'new' | null>(null);
+  // LT-610: the pictures of the draft Lighty just wrote, on their way into the editor.
+  const [coming, setComing] = useState<DraftPictures | null>(null);
   const [writing, setWriting] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
   const siteUrl = siteUrlOf(typeof webConfig?.subDomain === 'string' ? webConfig.subDomain : null);
@@ -52,6 +54,7 @@ const Blog: React.FC = () => {
   const open = async (post: Post) => {
     setOpening(post._id);
     try {
+      setComing(null);
       setEditing(await getPost(post._id));
     } catch {
       toast.error(t('blog.loadFailed'));
@@ -61,12 +64,13 @@ const Blog: React.FC = () => {
   };
 
   // Lighty's draft is saved at once, so a draft of the month is never lost.
-  const drafted = async (draft: PostDraft, left: number) => {
+  const drafted = async (draft: PostDraft, left: number, pictures?: DraftPictures) => {
     setWriting(false);
     setLimits((l) => (l ? { ...l, draftsLeft: left } : l));
     try {
       const post = await createPost({ ...draft, cover: draft.cover || null, status: 'draft', byLighty: true });
       setPosts((list) => [post, ...(list ?? [])]);
+      setComing(pictures ?? null);
       setEditing(post);
     } catch {
       toast.error(t('blog.editor.saveFailed'));
@@ -83,6 +87,7 @@ const Blog: React.FC = () => {
   const removed = (id: string) => {
     setPosts((list) => (list ?? []).filter((p) => p._id !== id));
     setEditing(null);
+    setComing(null);
   };
 
   const removeKept = async (post: Post) => {
@@ -221,13 +226,14 @@ const Blog: React.FC = () => {
           siteUrl={siteUrl}
           config={webConfig}
           sitePictures={sitePictures}
-          onClose={() => setEditing(null)}
+          pictures={editing !== 'new' && coming ? coming : null}
+          onClose={() => { setEditing(null); setComing(null); }}
           onSaved={saved}
           onDeleted={removed}
         />
       )}
       {writing && limits && (
-        <LightyWrites draftsLeft={limits.draftsLeft} draftsPerMonth={limits.draftsPerMonth} onDrafted={(d, left) => void drafted(d, left)} onClose={() => setWriting(false)} />
+        <LightyWrites draftsLeft={limits.draftsLeft} draftsPerMonth={limits.draftsPerMonth} onDrafted={(d, left, pictures) => void drafted(d, left, pictures)} onClose={() => setWriting(false)} />
       )}
       {dialog}
     </div>

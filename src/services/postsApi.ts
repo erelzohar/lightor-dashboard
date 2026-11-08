@@ -17,6 +17,12 @@ export interface PostBlock {
   items?: string[];
   url?: string;
   caption?: string;
+  /**
+   * LT-610: the editor's own mark on a picture Lighty is still making for a
+   * draft; never sent (an image block without its address is left out of a
+   * save), and gone once the picture is in.
+   */
+  pending?: 'img-0' | 'img-1';
 }
 
 export interface Post {
@@ -92,9 +98,29 @@ export const deletePost = async (id: string): Promise<void> => {
 export const postIdeas = async (seen: string[] = []): Promise<PostIdea[]> =>
   (await apiClient.post(`${globals.aiUrl}post-ideas`, { seen })).data.data.ideas;
 
-/** Lighty's draft from a topic and the owner's own words: one of the plan's drafts this month. */
-export const draftPost = async (topic: string, words?: string): Promise<{ draft: PostDraft; draftsLeft: number }> =>
-  (await apiClient.post(`${globals.aiUrl}post-draft`, { topic, ...(words?.trim() ? { words: words.trim() } : {}) })).data.data;
+/**
+ * LT-610 (Erel 2026-11-08: "a main picture and two more inside"): the draft's
+ * pictures, made after it - the job to ask about, and where the two inside go
+ * (how many of the draft's blocks come before each).
+ */
+export interface DraftPictures {
+  job: string;
+  inside: number[];
+}
+
+export interface DraftPicturesState {
+  done: boolean;
+  /** Per place: a picture's address, null when none came, absent while it is on its way. */
+  pictures: Partial<Record<'cover' | 'img-0' | 'img-1', string | null>>;
+}
+
+/** Lighty's draft from a topic and the owner's own words: one of the plan's drafts this month, with its pictures on their way. */
+export const draftPost = async (topic: string, words?: string): Promise<{ draft: PostDraft; draftsLeft: number; pictures?: DraftPictures }> =>
+  (await apiClient.post(`${globals.aiUrl}post-draft`, { topic, ...(words?.trim() ? { words: words.trim() } : {}), pictures: true })).data.data;
+
+/** How far a draft's pictures got: each one as it comes. */
+export const draftPictures = async (job: string): Promise<DraftPicturesState> =>
+  (await apiClient.get(`${globals.aiUrl}post-pictures/${encodeURIComponent(job)}`)).data.data;
 
 /**
  * Whether this account's plan has the blog (Pro): the menu draws its link

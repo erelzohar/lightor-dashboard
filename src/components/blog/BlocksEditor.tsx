@@ -120,6 +120,11 @@ const BlocksEditor: React.FC<Props> = ({ blocks, onChange, sitePictures }) => {
                   </button>
                 )}
               </div>
+            ) : block.kind === 'image' && block.pending && !block.url ? (
+              // LT-610: Lighty is still making this picture of its draft.
+              <div role="status" className="flex h-40 items-center justify-center gap-2 rounded-xl border border-dashed border-violet-300 bg-violet-50 px-4 text-center text-sm font-medium text-violet-700 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-200" data-testid="picture-pending">
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" /> {t('blog.editor.picturePending')}
+              </div>
             ) : block.kind === 'image' ? (
               <div className="space-y-2">
                 {block.url ? (

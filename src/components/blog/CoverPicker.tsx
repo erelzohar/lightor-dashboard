@@ -14,6 +14,8 @@ interface Props {
   sitePictures: string[];
   /** What the AI picture starts from: the post's title and line. */
   subject: string;
+  /** LT-610: Lighty is still making this draft's main picture. */
+  pending?: boolean;
 }
 
 const choice = 'inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium disabled:opacity-50';
@@ -23,7 +25,7 @@ const choice = 'inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 tex
  * made with AI out of the plan's pictures of the month (Pro has 40). A
  * picture made with AI is temporary until the post is saved.
  */
-const CoverPicker: React.FC<Props> = ({ value, onChange, sitePictures, subject }) => {
+const CoverPicker: React.FC<Props> = ({ value, onChange, sitePictures, subject, pending = false }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState<'site' | 'ai' | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -67,8 +69,12 @@ const CoverPicker: React.FC<Props> = ({ value, onChange, sitePictures, subject }
             <X className="h-3.5 w-3.5" /> {t('blog.editor.coverRemove')}
           </button>
         </div>
+      ) : pending ? (
+        <div role="status" className="flex aspect-video w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-violet-300 bg-violet-50 px-4 text-center text-sm font-medium text-violet-700 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-200" data-testid="cover-pending">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" /> {t('blog.editor.coverPending')}
+        </div>
       ) : null}
-      <div className={`flex flex-wrap gap-2 ${value ? 'mt-3' : ''}`}>
+      <div className={`flex flex-wrap gap-2 ${value || pending ? 'mt-3' : ''}`}>
         <button type="button" disabled={busy || !sitePictures.length} onClick={() => setOpen(open === 'site' ? null : 'site')} className={`${choice} border-gray-200 text-gray-700 dark:border-slate-600 dark:text-slate-200`}>
           <Images className="h-4 w-4" /> {t('blog.editor.coverSite')}
         </button>

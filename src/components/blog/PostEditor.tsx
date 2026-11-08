@@ -1,10 +1,10 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, ExternalLink, Loader2, MessageCircle, Sparkles, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useConfirm } from '../../hooks/useConfirm';
-import { createPost, deletePost, updatePost, type Post, type PostBlock, type PostInput } from '../../services/postsApi';
+import { createPost, deletePost, draftPictures, updatePost, type DraftPictures, type DraftPicturesState, type Post, type PostBlock, type PostInput } from '../../services/postsApi';
 import BlocksEditor from './BlocksEditor';
 import CoverPicker from './CoverPicker';
 import PostPreview from './PostPreview';
@@ -15,6 +15,8 @@ interface Props {
   siteUrl: string | null;
   config: Record<string, unknown> | null;
   sitePictures: string[];
+  /** LT-610: the pictures of the draft Lighty just wrote, on their way. */
+  pictures?: DraftPictures | null;
   onClose: () => void;
   onSaved: (post: Post) => void;
   onDeleted: (id: string) => void;
@@ -31,13 +33,26 @@ const bodyOf = (blocks: PostBlock[]): PostBlock[] =>
   blocks.filter((b) => (b.kind === 'ul' || b.kind === 'ol' ? (b.items ?? []).some((i) => i.trim()) : b.kind === 'image' ? !!b.url : !!b.text?.trim()))
     .map((b) => (b.kind === 'ul' || b.kind === 'ol' ? { ...b, items: (b.items ?? []).filter((i) => i.trim()) } : b));
 
+/** LT-610: how often the editor asks about a draft's pictures, and for how long (tests make it quick). */
+export const PICTURES_POLL = { firstMs: 1500, everyMs: 2500, giveUpMs: 180_000 };
+
+/** The two pictures inside, as places in the body until they come: from the last place to the first, so each lands where the server counted. */
+const withPlaces = (body: PostBlock[], inside: number[]): PostBlock[] => {
+  const out = [...body];
+  inside
+    .map((at, i) => ({ at, i, slot: (i ? 'img-1' : 'img-0') as 'img-0' | 'img-1' }))
+    .sort((a, b) => b.at - a.at || b.i - a.i)
+    .forEach(({ at, slot }) => out.splice(Math.min(Math.max(at, 0), out.length), 0, { kind: 'image', url: '', pending: slot }));
+  return out;
+};
+
 /**
  * LT-610: one post, full screen (it is long, and it is written on phones):
  * its title, line and topic, its main picture, its blocks; saved as a draft,
  * published, taken off the site or deleted; seen in the site's own look
  * before it goes up.
  */
-const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, onClose, onSaved, onDeleted }) => {
+const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, pictures = null, onClose, onSaved, onDeleted }) => {
   const { t } = useTranslation();
   const { confirm, dialog } = useConfirm();
   const box = useRef<HTMLDivElement>(null);
@@ -46,7 +61,9 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, onCl
   const [summary, setSummary] = useState(post?.summary ?? '');
   const [category, setCategory] = useState(post?.category ?? '');
   const [cover, setCover] = useState<string | null>(post?.cover?.url ?? null);
-  const [blocks, setBlocks] = useState<PostBlock[]>(post?.body?.length ? post.body : [{ kind: 'p', text: '' }]);
+  const [blocks, setBlocks] = useState<PostBlock[]>(() =>
+    post?.body?.length ? (pictures ? withPlaces(post.body, pictures.inside) : post.body) : [{ kind: 'p', text: '' }]);
+  const [coverComing, setCoverComing] = useState(!!pictures && !post?.cover?.url);
   const [busy, setBusy] = useState<'save' | 'publish' | 'unpublish' | 'delete' | null>(null);
   const [previewing, setPreviewing] = useState(false);
 
@@ -63,8 +80,9 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, onCl
   const out = saved?.status === 'published';
   const liveUrl = siteUrl && saved?.slug && out ? `${siteUrl}/blog/${saved.slug}` : null;
 
-  const save = async (status: 'draft' | 'published', kind: 'save' | 'publish' | 'unpublish') => {
-    if (!title.trim()) { toast.error(t('blog.editor.needsTitle')); return; }
+  /** `quiet`: Lighty's pictures kept in a draft the owner had not changed - no checks shouted, one line said. */
+  const save = async (status: 'draft' | 'published', kind: 'save' | 'publish' | 'unpublish', quiet = false) => {
+    if (!title.trim()) { if (!quiet) toast.error(t('blog.editor.needsTitle')); return; }
     const body = bodyOf(blocks);
     if (status === 'published' && !body.some((b) => b.kind === 'p')) { toast.error(t('blog.editor.needsBody')); return; }
     setBusy(kind);
@@ -72,16 +90,79 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, onCl
     try {
       const next = saved ? await updatePost(saved._id, input) : await createPost({ ...input, title: title.trim() });
       setSaved(next);
-      setClean(JSON.stringify({ title, summary, category, cover: next.cover?.url ?? null, body }));
+      // A picture made with AI is temporary until a save keeps it under a name of its own (LT-610): the
+      // editor goes on with the kept names, or the next save would copy the temporary one again.
+      const sent = body.filter((b) => b.kind === 'image').map((b) => b.url ?? '');
+      const kept = (next.body ?? []).filter((b) => b.kind === 'image').map((b) => b.url ?? '');
+      const renamed = new Map(sent.length === kept.length ? sent.map((url, i) => [url, kept[i]] as const).filter(([from, to]) => from !== to) : []);
+      const keptBody = body.map((b) => (b.kind === 'image' && b.url && renamed.has(b.url) ? { ...b, url: renamed.get(b.url) } : b));
+      if (renamed.size) setBlocks((list) => list.map((b) => (b.kind === 'image' && b.url && renamed.has(b.url) ? { ...b, url: renamed.get(b.url) } : b)));
+      setClean(JSON.stringify({ title, summary, category, cover: next.cover?.url ?? null, body: keptBody }));
       if (next.cover?.url !== cover) setCover(next.cover?.url ?? null);
       onSaved(next);
-      toast.success(kind === 'publish' ? t('blog.editor.publishedToast') : kind === 'unpublish' ? t('blog.editor.unpublishedToast') : t('blog.editor.saved'));
+      toast.success(quiet ? t('blog.editor.picturesAdded') : kind === 'publish' ? t('blog.editor.publishedToast') : kind === 'unpublish' ? t('blog.editor.unpublishedToast') : t('blog.editor.saved'));
     } catch (error) {
-      toast.error(errorCode(error) === 'POST_PUBLISH_CAP' ? t('blog.editor.publishCap') : t('blog.editor.saveFailed'));
+      if (!quiet) toast.error(errorCode(error) === 'POST_PUBLISH_CAP' ? t('blog.editor.publishCap') : t('blog.editor.saveFailed'));
     } finally {
       setBusy(null);
     }
   };
+
+  // LT-610: Lighty's pictures come in together once all are made, each into
+  // its place unless the owner filled it first. Into a draft without unsaved
+  // changes they are saved at once (a picture made with AI is kept only by a
+  // save); otherwise they join the owner's changes, and a published post waits
+  // for its owner's own save.
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  const [keepPictures, setKeepPictures] = useState(false);
+  useEffect(() => {
+    if (!pictures) return undefined;
+    let live = true;
+    let misses = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const started = Date.now();
+    const settle = (got: DraftPicturesState['pictures']) => {
+      live = false;
+      const wasClean = !dirtyRef.current;
+      setCoverComing(false);
+      if (got.cover) {
+        const url = got.cover;
+        setCover((owners) => owners ?? url);
+      }
+      // Each place takes its picture; a place whose picture did not come empties.
+      setBlocks((list) => list.flatMap((b): PostBlock[] => {
+        if (!b.pending) return [b];
+        const url = got[b.pending];
+        return url ? [{ kind: 'image', url }] : [];
+      }));
+      if (wasClean && (got.cover || got['img-0'] || got['img-1'])) setKeepPictures(true);
+    };
+    const tick = async () => {
+      try {
+        const { done, pictures: got } = await draftPictures(pictures.job);
+        if (!live) return;
+        misses = 0;
+        if (done) { settle(got); return; }
+      } catch {
+        if (!live) return;
+        misses += 1;
+        if (misses >= 3) { settle({}); return; }
+      }
+      if (Date.now() - started > PICTURES_POLL.giveUpMs) { settle({}); return; }
+      timer = setTimeout(() => void tick(), PICTURES_POLL.everyMs);
+    };
+    timer = setTimeout(() => void tick(), PICTURES_POLL.firstMs);
+    return () => { live = false; clearTimeout(timer); };
+  }, [pictures]);
+  useEffect(() => {
+    if (!keepPictures || busy) return;
+    setKeepPictures(false);
+    if (saved?.status === 'published') return;
+    void saveRef.current('draft', 'save', true);
+  }, [keepPictures, busy, saved?.status]);
 
   const remove = async () => {
     if (!saved) { onClose(); return; }
@@ -143,7 +224,7 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, onCl
           </div>
           <div>
             <p className={label}>{t('blog.editor.cover')}</p>
-            <CoverPicker value={cover} onChange={setCover} sitePictures={sitePictures} subject={[title, summary].filter(Boolean).join('. ')} />
+            <CoverPicker value={cover} onChange={setCover} sitePictures={sitePictures} subject={[title, summary].filter(Boolean).join('. ')} pending={coverComing} />
           </div>
           <div>
             <p className={label}>{t('blog.editor.body')}</p>
