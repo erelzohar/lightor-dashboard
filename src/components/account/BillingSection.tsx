@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt } from 'lucide-react';
+import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt, ExternalLink } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import type { CheckoutEventsData } from '@paddle/paddle-js';
 import Card from '../ui/Card';
@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { canOfferPurchases } from '../../lib/platform';
 import { storeSalesOn } from '../../lib/storePurchases';
+import { STORE_SUBSCRIPTIONS_URL } from '../../lib/storeLinks';
 import StorePlans from './StorePlans';
 import { lazyOr } from '../../lib/lazyOr';
 
@@ -153,7 +154,36 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const storePlans = storeSales && entitlements && !complimentary
     ? <StorePlans entitlements={entitlements} leadsSite={leadsSite} onChanged={reloadAccount} />
     : null;
-  const billedByStore = !!entitlements?.store?.billedBy;
+  // LT-612: who bills the subscription is known before the plan loads - the
+  // signed-in account says (`provider`) - so the web never offers Paddle's
+  // buttons, not even for a moment, for one the App Store or Google Play bills.
+  // Once the plan is read, the server's word (`store.billedBy`) is the one.
+  const provider = auth.user?.subscription?.provider;
+  const storeBilledBy: 'apple' | 'google' | null = entitlements
+    ? (entitlements.store?.billedBy ?? null)
+    : (provider === 'apple' || provider === 'google') && (status === 'active' || status === 'past_due') ? provider : null;
+  const billedByStore = !!storeBilledBy;
+  const storeName = t(storeBilledBy === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore');
+  // Where the web sends a store subscription (LT-612, Erel 2026-11-08): the
+  // app shows this in its own store part; the web had nothing to say.
+  const storeManage = storeBilledBy ? (
+    <a
+      href={STORE_SUBSCRIPTIONS_URL[storeBilledBy]}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-primary/40 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+      data-testid="store-manage-web"
+    >
+      <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
+      {t('billing.store.manage', { store: storeName })}
+    </a>
+  ) : null;
+  const storeNote = storeBilledBy ? (
+    <div className="space-y-2" data-testid="store-billed-web">
+      <p>{t('billing.store.billedBy', { store: storeName })}</p>
+      <div>{storeManage}</div>
+    </div>
+  ) : null;
 
   const appointmentCap = entitlements?.limits.monthlyAppointments ?? null;
   const appointmentsUsed = entitlements?.usage.appointmentsThisMonth ?? 0;
@@ -325,7 +355,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       const until = activeUntil ?? nextBillDate;
       toast.success(
         until
-          ? t('billing.cancelScheduledToast', { date: new Date(until).toLocaleDateString() })
+          ? t('billing.cancelScheduledToast', { date: new Date(until).toLocaleDateString(dateLocale) })
           : t('billing.cancelScheduledToastNoDate'),
         { duration: 8000 }
       );
@@ -636,13 +666,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   <CalendarX size={16} className="shrink-0" />
                   {nextBillDate
                     ? t('billing.cancelScheduledDesc', {
-                        date: new Date(nextBillDate).toLocaleDateString(),
+                        date: new Date(nextBillDate).toLocaleDateString(dateLocale),
                       })
                     : t('billing.cancelScheduledDescNoDate')}
                 </p>
                 {meters}
                 {/* LT-580: renewing again is the store's, from its page. */}
-                {billedByStore && storePlans}
+                {billedByStore && (storePlans ?? storeNote)}
                 {canSell && !billedByStore && (
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -671,7 +701,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   {nextBillDate && (
                     <p>
                       {t('billing.nextBill')}{' '}
-                      {new Date(nextBillDate).toLocaleDateString()}
+                      {new Date(nextBillDate).toLocaleDateString(dateLocale)}
                     </p>
                   )}
                 </div>
@@ -680,7 +710,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* What the plan includes (LT-465), in place of "no monthly limits". */}
                 {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
                 {/* LT-580: an app subscription is managed in its store, with its booking packs. */}
-                {billedByStore && storePlans}
+                {billedByStore && (storePlans ?? storeNote)}
                 {/* LT-504: to the other plan, on the web only (LT-130). */}
                 {canSell && !billedByStore && currentPlan && (
                   <div>
@@ -723,7 +753,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* LT-607: a store renewal that failed is fixed in that store. */}
                 {billedByStore
                   ? t(leadsSite ? 'billing.pastDueStoreLeads' : 'billing.pastDueStore', {
-                      store: t(entitlements?.store?.billedBy === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore'),
+                      store: storeName,
                     })
                   : canSell
                     ? t(leadsSite ? 'billing.pastDueDescLeads' : 'billing.pastDueDesc')
@@ -731,7 +761,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </p>
             </div>
             {meters}
-            {billedByStore && storePlans}
+            {billedByStore && (storePlans ?? <div>{storeManage}</div>)}
             {canSell && !billedByStore && <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="primary"
@@ -947,7 +977,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             <p className="text-sm text-gray-600 dark:text-gray-300">
               {nextBillDate
                 ? t('billing.cancelModalBody', {
-                    date: new Date(nextBillDate).toLocaleDateString(),
+                    date: new Date(nextBillDate).toLocaleDateString(dateLocale),
                   })
                 : t('billing.cancelModalBodyNoDate')}
             </p>

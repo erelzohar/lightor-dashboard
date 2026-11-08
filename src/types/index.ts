@@ -316,6 +316,8 @@ export interface User {
   hasPassword?: boolean;
   subscription: {
     status: 'free' | 'active' | 'past_due' | 'canceled' | 'deleted';
+    /** Who bills it (LT-580): Paddle on the web, or the App Store or Google Play from the apps. */
+    provider?: 'paddle' | 'apple' | 'google';
     planId?: string;
     customerId?: string;
     subscriptionId?: string;

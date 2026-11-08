@@ -1,4 +1,5 @@
 import type { PurchasesStoreProduct } from '@revenuecat/purchases-capacitor';
+import { STORE_SUBSCRIPTIONS_URL } from './storeLinks';
 import apiClient from '../services/apiClient';
 import globals from '../services/globals';
 import { isNativeApp, nativePlatform } from './platform';
@@ -147,6 +148,5 @@ export const restoreStore = async (userId: string): Promise<void> => {
 export const manageStoreUrl = async (userId: string): Promise<string> => {
   const { Purchases } = await ready(userId);
   const { customerInfo } = await Purchases.getCustomerInfo();
-  return customerInfo.managementURL
-    ?? (nativePlatform() === 'android' ? 'https://play.google.com/store/account/subscriptions' : 'https://apps.apple.com/account/subscriptions');
+  return customerInfo.managementURL ?? STORE_SUBSCRIPTIONS_URL[nativePlatform() === 'android' ? 'google' : 'apple'];
 };
