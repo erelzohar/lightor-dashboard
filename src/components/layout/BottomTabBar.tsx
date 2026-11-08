@@ -67,6 +67,8 @@ export const barPaths = (isRestricted: boolean, leadsSite: boolean, productsSite
  *  long iOS gets to send its own click first (it does within ~50 ms). */
 export const HOLD_SLOP_PX = 24;
 export const HOLD_CLICK_WAIT_MS = 350;
+/** What a held touch may open: the bar's links and its "More" (LT-620); not the editing panel's own controls. */
+const PRESSABLE = 'a[href],[data-tab-more]';
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leadsSite = false, productsSite = false, newLeads, moreDot = false, onMore, menuOpen = false, menu, editing = false, rowRef, panelRef }) => {
   const { t } = useTranslation();
@@ -85,7 +87,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   const [sheetOut, setSheetOut] = useState(menuOpen);
   if (menuOpen && !sheetOut) setSheetOut(true);
   const raised = menuOpen || sheetOut;
-  const press = useRef<{ item: HTMLAnchorElement; x: number; y: number; clicked: boolean } | null>(null);
+  const press = useRef<{ item: HTMLElement; x: number; y: number; clicked: boolean } | null>(null);
   // LT-256/257: Lighty in the thumb bar on every site, in the same place —
   // Customers, and on a leads site Services, are under "More".
   const lighty = { path: '/lighty', Icon: LightyIcon as unknown as typeof Inbox, label: 'Lighty' };
@@ -145,15 +147,17 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
   };
 
   // LT-419: a touch that ends on the link it began on, without sliding
-  // away, opens it when iOS sent no click of its own.
+  // away, opens it when iOS sent no click of its own. LT-620: "More" too -
+  // a button held about a second got no click either, and unlike the tabs
+  // it had no way back (seen on iOS 1.1 (26)).
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-    const item = event.pointerType === 'touch' ? (event.target as Element).closest<HTMLAnchorElement>('a[href]') : null;
+    const item = event.pointerType === 'touch' ? (event.target as Element).closest<HTMLElement>(PRESSABLE) : null;
     press.current = item ? { item, x: event.clientX, y: event.clientY, clicked: false } : null;
   };
   const onPointerUp = (event: React.PointerEvent<HTMLElement>) => {
     const p = press.current;
     if (!p || Math.hypot(event.clientX - p.x, event.clientY - p.y) > HOLD_SLOP_PX) return;
-    if (document.elementFromPoint(event.clientX, event.clientY)?.closest('a[href]') !== p.item) return;
+    if (document.elementFromPoint(event.clientX, event.clientY)?.closest(PRESSABLE) !== p.item) return;
     setTimeout(() => {
       if (!p.clicked && p.item.isConnected) p.item.click();
       if (press.current === p) press.current = null;
@@ -245,6 +249,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ isRestricted = false, leads
         aria-label={menuOpen ? t('sidebar.closeMenu') : t('sidebar.openMenu')}
         aria-expanded={menuOpen}
         aria-controls="phone-menu"
+        data-tab-more
       >
         <span className="relative">
           {navTile('more', menuOpen ? X : LayoutGrid, '', 'from-slate-400 to-slate-500')}

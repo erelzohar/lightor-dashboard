@@ -238,6 +238,42 @@ describe('BottomTabBar', () => {
     });
   });
 
+  // LT-620 (Erel on iOS 1.1 (26): "במיוחד הכפתור של עוד"): a held press on
+  // "More" got no click from iOS, and unlike the tabs nothing stood in for it.
+  describe('a held touch on "More"', () => {
+    const setup = () => {
+      vi.useFakeTimers();
+      const onMore = vi.fn();
+      render(<MemoryRouter><BottomTabBar onMore={onMore} /></MemoryRouter>);
+      const more = screen.getByRole('button', { name: 'sidebar.openMenu' });
+      document.elementFromPoint = vi.fn(() => more);
+      return { more, onMore };
+    };
+    const press = (el: HTMLElement, { type = 'touch', dx = 0 } = {}) => {
+      fireEvent.pointerDown(el, { pointerType: type, clientX: 30, clientY: 700 });
+      fireEvent.pointerUp(el, { pointerType: type, clientX: 30 + dx, clientY: 700 });
+    };
+    afterEach(() => { vi.useRealTimers(); });
+
+    it('opens the menu when iOS sent no click', () => {
+      const { more, onMore } = setup();
+      press(more);
+      expect(onMore).not.toHaveBeenCalled();
+      act(() => { vi.advanceTimersByTime(HOLD_CLICK_WAIT_MS); });
+      expect(onMore).toHaveBeenCalledTimes(1);
+    });
+
+    it('toggles once only when iOS did click, and not for a slide or a mouse', () => {
+      const { more, onMore } = setup();
+      press(more);
+      fireEvent.click(more); // the browser's own click
+      press(more, { dx: 40 });
+      press(more, { type: 'mouse' });
+      act(() => { vi.advanceTimersByTime(HOLD_CLICK_WAIT_MS * 2); });
+      expect(onMore).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // LT-441: "More"'s pages are a sheet sliding from behind the row; the bar
   // stays raised and opaque until it is gone, then goes back to frosted glass.
   it('keeps the bar raised while its sheet slides away, then drops it', async () => {
