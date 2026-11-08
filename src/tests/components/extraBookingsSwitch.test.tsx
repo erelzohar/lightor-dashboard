@@ -165,7 +165,9 @@ describe('Free and Lightor+ side by side', () => {
     } as never);
     const { unmount } = render(<BillingSection />);
     expect(await screen.findByTestId('plan-compare')).toBeInTheDocument();
-    expect(screen.getAllByRole('row')).toHaveLength(15);
+    // The header and 15 rows: the blog's since LT-615.
+    expect(screen.getAllByRole('row')).toHaveLength(16);
+    expect(screen.getByRole('row', { name: /billing\.compare\.rows\.blog\.label/ })).toBeInTheDocument();
     unmount();
 
     inApp();

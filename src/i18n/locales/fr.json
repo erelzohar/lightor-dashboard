@@ -1084,6 +1084,11 @@
           "plus": "Jusqu’à 15 produits sur votre site",
           "pro": "Jusqu’à 100 produits sur votre site"
         },
+        "blog": {
+          "free": "Pas de blog sur votre site",
+          "plus": "Pas de blog sur votre site",
+          "pro": "Un blog sur votre site, avec jusqu’à 10 brouillons de Lighty par mois"
+        },
         "texts": {
           "free": "Un message de confirmation aux clients",
           "plus": "Une confirmation et un rappel le matin aux clients",
@@ -1171,6 +1176,12 @@
           "free": "Jusqu'à 5",
           "plus": "Jusqu'à 15",
           "pro": "Jusqu'à 100"
+        },
+        "blog": {
+          "label": "Blog sur le site",
+          "free": "Non",
+          "plus": "Non",
+          "pro": "Oui, avec 10 brouillons de Lighty par mois"
         },
         "texts": {
           "label": "Messages aux clients",

@@ -1084,6 +1084,11 @@
           "plus": "Hasta 15 productos en tu sitio",
           "pro": "Hasta 100 productos en tu sitio"
         },
+        "blog": {
+          "free": "Sin blog en tu sitio",
+          "plus": "Sin blog en tu sitio",
+          "pro": "Un blog en tu sitio, con hasta 10 borradores de Lighty al mes"
+        },
         "texts": {
           "free": "Un mensaje de confirmación a los clientes",
           "plus": "Confirmación y recordatorio por la mañana a los clientes",
@@ -1171,6 +1176,12 @@
           "free": "Hasta 5",
           "plus": "Hasta 15",
           "pro": "Hasta 100"
+        },
+        "blog": {
+          "label": "Blog en el sitio",
+          "free": "No",
+          "plus": "No",
+          "pro": "Sí, con 10 borradores de Lighty al mes"
         },
         "texts": {
           "label": "Mensajes a clientes",

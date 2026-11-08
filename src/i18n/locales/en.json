@@ -1080,6 +1080,11 @@
           "plus": "Up to 15 products on your site",
           "pro": "Up to 100 products on your site"
         },
+        "blog": {
+          "free": "No blog on your site",
+          "plus": "No blog on your site",
+          "pro": "A blog on your site, with up to 10 Lighty drafts a month"
+        },
         "texts": {
           "free": "A confirmation text to customers",
           "plus": "A confirmation and a morning reminder to customers",
@@ -1167,6 +1172,12 @@
           "free": "Up to 5",
           "plus": "Up to 15",
           "pro": "Up to 100"
+        },
+        "blog": {
+          "label": "Blog on the site",
+          "free": "No",
+          "plus": "No",
+          "pro": "Yes, with 10 Lighty drafts a month"
         },
         "texts": {
           "label": "Customer texts",

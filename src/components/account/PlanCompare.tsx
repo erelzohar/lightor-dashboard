@@ -16,6 +16,8 @@ export const PLAN_ROWS = [
   'services',
   // LT-565: entitlements' maxProducts, on any site (a booking site can show products too).
   'products',
+  // LT-615 (the LT-495 plan's announcement): the blog is Pro's, with Lighty's 10 drafts a month.
+  'blog',
   'texts',
   'siteLighty',
   'rebuilds',

@@ -63,8 +63,9 @@ type Row = (typeof PLAN_ROWS)[number];
 const PAID_PLANS: PaidPlan[] = ['plus', 'pro'];
 // LT-511: a leads site takes no bookings, and sends no booking's texts.
 // LT-565: its cards name the products (a products site is a leads site).
-const BOOKING_ROWS: Row[] = ['bookings', 'texts', 'siteLighty', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
-const LEAD_ROWS: Row[] = ['inquiries', 'services', 'products', 'siteLighty', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
+// LT-615: the blog on every card, beside the site's Lighty (Pro's, with Lighty's drafts).
+const BOOKING_ROWS: Row[] = ['bookings', 'texts', 'siteLighty', 'blog', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
+const LEAD_ROWS: Row[] = ['inquiries', 'services', 'products', 'siteLighty', 'blog', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
 
 const reveal = {
   hidden: { opacity: 0, y: -16 },
