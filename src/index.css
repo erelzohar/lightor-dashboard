@@ -69,6 +69,18 @@ body {
   overscroll-behavior: none;
 }
 
+/* LT-622 (Erel 2026-11-09 on iOS 1.1 (26): a delay between a tap and the
+   page or menu opening): a page that can zoom makes WebKit hold every tap
+   about 350 ms, waiting to see if a second tap (double-tap zoom) follows;
+   measured in the simulator, a still tap got its click 355 ms after the
+   finger lifted, one that slid a little after 41 ms. `manipulation` drops
+   double-tap zoom only - pinch zoom stays, and `touch-none` / `touch-pan-*`
+   utilities still win where a component sets them. Not inherited, so every
+   element carries it. */
+* {
+  touch-action: manipulation;
+}
+
 body {
   user-select: none;
   @apply font-sans bg-light-bg text-light-text transition-colors duration-200;
