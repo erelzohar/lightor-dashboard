@@ -96,17 +96,14 @@ export const postIdeas = async (seen: string[] = []): Promise<PostIdea[]> =>
 export const draftPost = async (topic: string, words?: string): Promise<{ draft: PostDraft; draftsLeft: number }> =>
   (await apiClient.post(`${globals.aiUrl}post-draft`, { topic, ...(words?.trim() ? { words: words.trim() } : {}) })).data.data;
 
-let blogOn: Promise<boolean> | null = null;
-
 /**
- * Whether this account's plan has the blog (Pro), asked once a visit: the menu
- * draws its link locked on any other plan. A plan bought or ended is seen on
- * the next visit, and the Blog page itself always asks the server again.
+ * Whether this account's plan has the blog (Pro): the menu draws its link
+ * locked on a definite no only, and null - the server could not say - locks
+ * nothing. Asked anew every time: a remembered answer outlived a switch of
+ * accounts in the same tab and locked the admin's link (Erel 2026-11-08).
  */
-export const hasBlog = (): Promise<boolean> => {
-  blogOn ??= fetchMyEntitlements().then((e) => e?.limits?.blog === true || e?.plan === 'pro').catch(() => false);
-  return blogOn;
+export const hasBlog = async (): Promise<boolean | null> => {
+  const mine = await fetchMyEntitlements();
+  if (!mine) return null;
+  return mine.limits?.blog === true || mine.plan === 'pro';
 };
-
-/** Tests and a plan change start from the server again. */
-export const forgetBlogPlan = (): void => { blogOn = null; };

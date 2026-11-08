@@ -231,12 +231,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // New leads (LT-197), re-read on every navigation so the badge follows.
   const newLeads = useNewLeadsCount(false);
   // LT-610: the blog is Pro's; on any other plan its link is locked (Erel 2026-11-07).
+  // Locked only on the server's definite no, and asked again when the account
+  // or its plan changes: the admin saw a lock left over from another account
+  // signed in earlier in the same tab (Erel 2026-11-08).
   const [blogOn, setBlogOn] = useState<boolean | null>(null);
+  const account = auth.user?._id;
+  const plan = `${auth.user?.role ?? ''}:${auth.user?.subscription?.status ?? ''}:${auth.user?.subscription?.planId ?? ''}`;
   useEffect(() => {
     let live = true;
-    void hasBlog().then((on) => { if (live) setBlogOn(on); });
+    setBlogOn(null);
+    if (account) void hasBlog().then((on) => { if (live) setBlogOn(on); });
     return () => { live = false; };
-  }, []);
+  }, [account, plan]);
   const unreadNotifications = useUnreadNotifications();
   // A leads site (LT-199) has no calendar: no Appointments, the leads are the
   // daily destination, and the weekly hours are just the hours the site
