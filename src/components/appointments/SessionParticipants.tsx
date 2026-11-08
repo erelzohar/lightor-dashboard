@@ -18,6 +18,7 @@ import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone'
 import AnswersList from './AnswersList';
 import OwnerBookingModal from '../customers/OwnerBookingModal';
 import { pop } from '../ui/pop-button';
+import { staggerDelay, staggered } from '../../lib/stagger';
 
 interface SessionParticipantsProps {
   session: Session | null;
@@ -213,9 +214,10 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
               return (
                 <motion.li
                   key={participant._id}
-                  initial={{ opacity: 0, y: 6 }}
+                  // LT-625: only the first rows slide in (a long run blocked every tap on iOS).
+                  initial={staggered(index) ? { opacity: 0, y: 6 } : false}
                   animate={{ opacity: cancelled ? 0.55 : 1, y: 0 }}
-                  transition={{ delay: Math.min(index * 0.02, 0.2), duration: 0.15 }}
+                  transition={{ delay: staggerDelay(index, 0.02), duration: 0.15 }}
                   className="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-3 border border-transparent hover:border-primary/20 transition-colors"
                 >
                   <div className="flex items-center gap-3">

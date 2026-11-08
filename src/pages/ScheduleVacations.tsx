@@ -24,6 +24,8 @@ import { useConfirm } from '../hooks/useConfirm';
 import { isLeadsSite } from '../utils/siteMode';
 import { businessTimeZone, zonedDateKey, zonedInputValue, zonedWallDate } from '../utils/businessTime';
 import { vacationDays, vacationInputValue, vacationMs } from '../utils/vacationTime';
+// LT-625: only the first rows of a list slide in (a long run blocked every tap on iOS).
+import { staggerDelay, staggered } from '../lib/stagger';
 
 interface DayHours {
   startTime: string;
@@ -472,9 +474,9 @@ const ScheduleVacations: React.FC = () => {
                   <motion.div
                     key={index}
                     data-tour={index === 0 ? 'hours' : undefined}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={staggered(index) ? { opacity: 0, y: 8 } : false}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.04 * index }}
+                    transition={{ delay: staggerDelay(index, 0.04) }}
                     className="flex items-center justify-between p-5 rounded-2xl bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5 group hover:bg-black/[0.07] dark:hover:bg-white/[0.04] transition-colors"
                   >
                     <div className="flex items-center gap-6">
@@ -500,9 +502,9 @@ const ScheduleVacations: React.FC = () => {
                   <motion.div
                     key={index}
                     data-tour={index === 0 ? 'hours' : undefined}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={staggered(index) ? { opacity: 0, y: 8 } : false}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.04 * index }}
+                    transition={{ delay: staggerDelay(index, 0.04) }}
                     className="flex flex-col items-center md:flex-row md:items-center md:justify-between p-5 rounded-2xl gap-4"
                     style={getActiveDayStyle(darkMode)}
                   >
@@ -518,9 +520,9 @@ const ScheduleVacations: React.FC = () => {
                 <motion.div
                   key={index}
                   data-tour={index === 0 ? 'hours' : undefined}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={staggered(index) ? { opacity: 0, y: 8 } : false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.04 * index }}
+                  transition={{ delay: staggerDelay(index, 0.04) }}
                   className="flex flex-col items-center md:flex-row md:items-center md:justify-between p-5 rounded-2xl gap-4"
                   style={getActiveDayStyle(darkMode)}
                 >
@@ -631,9 +633,9 @@ const ScheduleVacations: React.FC = () => {
                     return (
                       <motion.div
                         key={override.date}
-                        initial={{ opacity: 0, y: 8 }}
+                        initial={staggered(index) ? { opacity: 0, y: 8 } : false}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.03 * index }}
+                        transition={{ delay: staggerDelay(index, 0.03) }}
                         className={`flex flex-col p-5 rounded-2xl gap-4 ${
                           isOpen ? '' : 'bg-black/[0.04] dark:bg-white/[0.02] border border-black/10 dark:border-white/5'
                         }`}
@@ -834,9 +836,9 @@ const ScheduleVacations: React.FC = () => {
                   {vacations.map((vacation, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={staggered(index) ? { opacity: 0, y: 10 } : false}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: staggerDelay(index, 0.05) }}
                       className="p-4 rounded-2xl bg-black/[0.04] dark:bg-white/[0.03] border border-black/10 dark:border-white/5 hover:bg-black/[0.07] dark:hover:bg-white/5 transition-colors"
                     >
                       {editingVacation === vacation._id ? (

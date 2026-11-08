@@ -29,6 +29,7 @@ import { Toggle } from '../components/ui/liquid-toggle';
 import { ComingSoonRow } from '../components/ui/ComingSoon';
 import { tabsListVariants, tabsTriggerVariants } from '../components/ui/segmented-tabs';
 import Dropdown from '../components/ui/dropdown';
+import { staggerDelay, staggered } from '../lib/stagger';
 
 
 // A service is at most 12 hours (LT-484): a longer one never fits a working day.
@@ -666,10 +667,11 @@ const AppointmentTypes: React.FC = () => {
               {appointmentTypes.map((type, i) => (
                 <motion.div
                   key={type._id}
-                  initial={{ opacity: 0, y: 8 }}
+                  // LT-625: only the first rows slide in (a long run blocked every tap on iOS).
+                  initial={staggered(i) ? { opacity: 0, y: 8 } : false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -16, transition: { duration: 0.2 } }}
-                  transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 25 }}
+                  transition={{ delay: staggerDelay(i, 0.04), type: 'spring', stiffness: 300, damping: 25 }}
                   className={`flex items-center justify-between px-4 py-3.5 rounded-2xl mb-1 last:mb-0 transition-all cursor-pointer group ${
                     currentType?._id === type._id && isFormOpen
                       ? 'border border-primary/30'

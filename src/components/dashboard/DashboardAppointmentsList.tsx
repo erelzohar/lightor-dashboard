@@ -15,6 +15,7 @@ import { telHref, whatsAppHref } from '../../utils/phone';
 import { Session, activeParticipants, groupSessions, isGroupSession, sessionDisplayStatus } from '../../utils/sessions';
 import { useOpenSession } from '../../hooks/useOpenSession';
 import SessionParticipants from '../appointments/SessionParticipants';
+import { staggerDelay, staggered } from '../../lib/stagger';
 
 interface DashboardAppointmentsListProps {
   appointments: Appointment[];
@@ -182,9 +183,10 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
               return (
                 <motion.div
                   key={session.id}
-                  initial={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
+                  // LT-625: only the first rows slide in (a long run blocked every tap on iOS).
+                  initial={staggered(i) ? { opacity: 0, x: direction === 'rtl' ? 10 : -10 } : false}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
+                  transition={{ delay: staggerDelay(i, 0.04) }}
                   onClick={() => onAppointmentClick(appointment)}
                   className="group cursor-pointer"
                 >
@@ -353,9 +355,9 @@ const SessionRow: React.FC<SessionRowProps> = ({ session, index, statusConfig, a
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: direction === 'rtl' ? 10 : -10 }}
+      initial={staggered(index) ? { opacity: 0, x: direction === 'rtl' ? 10 : -10 } : false}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: staggerDelay(index, 0.04) }}
       role="button"
       tabIndex={0}
       onClick={() => onOpen(session)}

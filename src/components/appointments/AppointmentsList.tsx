@@ -18,6 +18,7 @@ import { useClassSessionsState } from '../../hooks/useClassSessions';
 import SessionCard from './SessionCard';
 import SessionParticipants from './SessionParticipants';
 import AnswersList from './AnswersList';
+import { staggerDelay, staggered } from '../../lib/stagger';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -137,9 +138,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               return (
               <motion.div
                 key={session.id}
-                initial={{ opacity: 0, y: 10 }}
+                // LT-625: only the first rows slide in (a long run blocked every tap on iOS).
+                initial={staggered(i) ? { opacity: 0, y: 10 } : false}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: staggerDelay(i, 0.05) }}
                 onClick={grouped ? undefined : () => onAppointmentClick(appointment)}
                 className={grouped ? '' : 'group cursor-pointer'}
               >

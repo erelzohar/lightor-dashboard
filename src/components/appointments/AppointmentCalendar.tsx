@@ -38,6 +38,7 @@ import { useClassSessions, useClassSessionsState } from '../../hooks/useClassSes
 import { lightTick } from '../../lib/haptics';
 import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 import { pop } from '../ui/pop-button';
+import { staggerDelay, staggered } from '../../lib/stagger';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -1211,10 +1212,11 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                             ref={drag?.setNodeRef}
                             {...(drag?.attributes ?? {})}
                             {...(drag?.listeners ?? {})}
-                            initial={{ opacity: 0, scale: 0.94 }}
+                            // LT-625: only the first sessions of a day pop in.
+                            initial={staggered(idx) ? { opacity: 0, scale: 0.94 } : false}
                             animate={{ opacity: lifted ? 0.35 : status === 'cancelled' ? 0.45 : 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ delay: idx * 0.02, duration: 0.15 }}
+                            transition={{ delay: staggerDelay(idx, 0.02), duration: 0.15 }}
                             whileHover={lifted ? undefined : { scale: 1.025, zIndex: 25 }}
                             whileTap={movable ? undefined : { scale: 0.97 }}
                             onClick={e => {
