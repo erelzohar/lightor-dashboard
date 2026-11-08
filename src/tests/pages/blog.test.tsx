@@ -147,6 +147,23 @@ describe('the Blog page on Pro (LT-610)', () => {
     expect(updatePost).not.toHaveBeenCalled();
   });
 
+  it("counts the draft as soon as Lighty starts writing it, and gives it back when it fails (LT-615)", async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [], limits: PRO });
+    vi.mocked(postIdeas).mockResolvedValue([{ title: 'איך שומרים על הלק', angle: 'טיפים לבית' }]);
+    let fail: (reason: unknown) => void = () => {};
+    vi.mocked(draftPost).mockImplementation(() => new Promise((_, reject) => { fail = reject; }));
+    renderPage();
+    fireEvent.click((await screen.findAllByRole('button', { name: /blog.lightyWrites/ }))[0]);
+    const dialog = await screen.findByTestId('lighty-writes');
+    expect(within(dialog).getByTestId('drafts-left').textContent).toContain('"left":7');
+    fireEvent.click(await within(dialog).findByText('איך שומרים על הלק'));
+    fireEvent.click(within(dialog).getByRole('button', { name: /blog.lighty.write/ }));
+    await waitFor(() => expect(within(dialog).getByTestId('drafts-left').textContent).toContain('"left":6'));
+    fail(new Error('no draft'));
+    await waitFor(() => expect(within(dialog).getByTestId('draft-failed')).toBeInTheDocument());
+    expect(within(dialog).getByTestId('drafts-left').textContent).toContain('"left":7');
+  });
+
   it('says so when the month\'s drafts are used, and asks Lighty for nothing', async () => {
     vi.mocked(listPosts).mockResolvedValue({ posts: [post()], limits: { ...PRO, draftsLeft: 0 } });
     renderPage();

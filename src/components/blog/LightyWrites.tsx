@@ -81,7 +81,9 @@ const LightyWrites: React.FC<Props> = ({ draftsLeft, draftsPerMonth, onDrafted, 
             <LightyIcon className="h-9 w-9" />
             <div>
               <h2 id="lighty-writes-title" className="text-lg font-bold text-gray-900 dark:text-white">{t('blog.lighty.title')}</h2>
-              <p className="text-xs text-gray-500 dark:text-slate-400" data-testid="drafts-left">{t('blog.draftsLeft', { left: draftsLeft, max: draftsPerMonth })}</p>
+              {/* LT-615 (Erel 2026-11-08): the draft being written is already this month's, as the server took it;
+                  a draft that fails is given back, and the count with it. */}
+              <p className="text-xs text-gray-500 dark:text-slate-400" data-testid="drafts-left">{t('blog.draftsLeft', { left: writing ? Math.max(0, draftsLeft - 1) : draftsLeft, max: draftsPerMonth })}</p>
             </div>
           </div>
           <button type="button" onClick={onClose} disabled={writing} aria-label={t('blog.editor.close')} className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 disabled:opacity-40 dark:hover:bg-slate-800">
