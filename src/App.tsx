@@ -48,6 +48,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AppUrlOpenListener from './components/routing/AppUrlOpenListener';
 import LiveUpdateGate from './components/app/LiveUpdateGate';
+import AppLockGate from './components/app/AppLockGate';
+import AppLockOffer from './components/app/AppLockOffer';
 import InstagramCallback from './pages/InstagramCallback';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
@@ -77,6 +79,9 @@ function App() {
             <AppUrlOpenListener />
             {/* LT-608: the apps' over-the-air updates, and the store-update screen. */}
             <LiveUpdateGate />
+            {/* LT-617: the apps' Face ID / fingerprint lock, and its one-time offer. */}
+            <AppLockGate />
+            <AppLockOffer />
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>

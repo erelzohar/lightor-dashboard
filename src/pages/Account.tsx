@@ -14,6 +14,7 @@ import BillingSection from '../components/account/BillingSection';
 import DangerZoneSection from '../components/account/DangerZoneSection';
 import NotificationsCard from '../components/account/NotificationsCard';
 import ToursCard from '../components/account/ToursCard';
+import AppLockCard from '../components/account/AppLockCard';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../hooks/useAppSelector';
@@ -471,6 +472,9 @@ const Account: React.FC = () => {
       {/* How and about what the owner hears — email, SMS or WhatsApp, one
           switch per event (LT-129, LT-213) */}
       <NotificationsCard leadsSite={leadsSite} />
+
+      {/* LT-617: the apps' Face ID / fingerprint lock (nothing on the web) */}
+      <AppLockCard />
 
       {/* Lighty's page tours: on, off, or all over again (LT-389) */}
       <ToursCard />

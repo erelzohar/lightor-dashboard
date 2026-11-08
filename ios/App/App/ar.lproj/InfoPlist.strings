@@ -2,3 +2,4 @@
 "NSCameraUsageDescription" = "يستخدم Lightor الكاميرا لتتمكّن من تصوير أعمالك وإضافتها إلى معرض نشاطك التجاري.";
 "NSPhotoLibraryUsageDescription" = "يحتاج Lightor إلى الوصول إلى صورك لتتمكّن من إضافة صور أعمالك إلى معرض نشاطك التجاري.";
 "NSPhotoLibraryAddUsageDescription" = "يحفظ Lightor الصور التي تصدّرها في مكتبة الصور.";
+"NSFaceIDUsageDescription" = "يستخدم Lightor بصمة الوجه لفتح التطبيق عند تفعيل القفل.";

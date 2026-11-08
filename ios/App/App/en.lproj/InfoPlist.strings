@@ -2,3 +2,4 @@
 "NSCameraUsageDescription" = "Lightor uses the camera so you can photograph your work and add it to your business gallery.";
 "NSPhotoLibraryUsageDescription" = "Lightor needs access to your photos so you can add pictures of your work to your business gallery.";
 "NSPhotoLibraryAddUsageDescription" = "Lightor saves images you export to your photo library.";
+"NSFaceIDUsageDescription" = "Lightor uses Face ID to open the app when you turn on the lock.";

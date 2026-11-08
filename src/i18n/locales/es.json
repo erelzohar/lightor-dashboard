@@ -2945,5 +2945,38 @@
       "retry": "Reintentar",
       "checking": "Comprobando la conexión"
     }
+  },
+  "appLock": {
+    "lockedTitle": "Lightor está bloqueado",
+    "lockedBody": {
+      "face": "Para continuar, confirma que eres tú con Face ID.",
+      "fingerprint": "Para continuar, confirma que eres tú con Touch ID.",
+      "biometrics": "Para continuar, confirma que eres tú con tu huella o tu rostro."
+    },
+    "unlock": "Desbloquear",
+    "signOut": "Cerrar sesión",
+    "reason": "Desbloquear Lightor",
+    "cancel": "Cancelar",
+    "enabled": "El bloqueo está activado",
+    "failed": "No se pudo verificar. Puedes intentarlo de nuevo.",
+    "offer": {
+      "title": {
+        "face": "¿Abrir Lightor con Face ID?",
+        "fingerprint": "¿Abrir Lightor con Touch ID?",
+        "biometrics": "¿Abrir Lightor con tu huella o tu rostro?"
+      },
+      "body": "Nadie más podrá abrir Lightor en este teléfono. Puedes cambiarlo cuando quieras en la página Cuenta.",
+      "enable": "Activar",
+      "later": "Ahora no"
+    },
+    "card": {
+      "title": {
+        "face": "Bloqueo con Face ID",
+        "fingerprint": "Bloqueo con Touch ID",
+        "biometrics": "Bloqueo con huella o rostro"
+      },
+      "description": "Lightor solo se abre después de reconocerte, también cuando vuelves después de 5 minutos o más.",
+      "toggle": "Bloquear la app"
+    }
   }
 }

@@ -2945,5 +2945,38 @@
       "retry": "Réessayer",
       "checking": "Vérification de la connexion"
     }
+  },
+  "appLock": {
+    "lockedTitle": "Lightor est verrouillé",
+    "lockedBody": {
+      "face": "Pour continuer, confirmez votre identité avec Face ID.",
+      "fingerprint": "Pour continuer, confirmez votre identité avec Touch ID.",
+      "biometrics": "Pour continuer, confirmez votre identité avec votre empreinte ou votre visage."
+    },
+    "unlock": "Déverrouiller",
+    "signOut": "Se déconnecter",
+    "reason": "Déverrouiller Lightor",
+    "cancel": "Annuler",
+    "enabled": "Le verrouillage est activé",
+    "failed": "La vérification a échoué. Vous pouvez réessayer.",
+    "offer": {
+      "title": {
+        "face": "Ouvrir Lightor avec Face ID ?",
+        "fingerprint": "Ouvrir Lightor avec Touch ID ?",
+        "biometrics": "Ouvrir Lightor avec votre empreinte ou votre visage ?"
+      },
+      "body": "Personne d'autre ne pourra ouvrir Lightor sur ce téléphone. Vous pouvez changer cela à tout moment dans la page Compte.",
+      "enable": "Activer",
+      "later": "Pas maintenant"
+    },
+    "card": {
+      "title": {
+        "face": "Verrouillage par Face ID",
+        "fingerprint": "Verrouillage par Touch ID",
+        "biometrics": "Verrouillage par empreinte ou visage"
+      },
+      "description": "Lightor ne s'ouvre qu'après vous avoir reconnu, y compris quand vous y revenez après 5 minutes ou plus.",
+      "toggle": "Verrouiller l'application"
+    }
   }
 }

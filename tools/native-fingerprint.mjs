@@ -10,7 +10,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
-const NATIVE_PACKAGE = /^(@capacitor\/(?!cli$)|@capacitor-firebase\/|@capawesome\/|@revenuecat\/)/;
+// Every package with native code the app ships (LT-617 added @aparajita's biometric lock): a bundle built
+// with one of them must never reach a store build without it.
+const NATIVE_PACKAGE = /^(@capacitor\/(?!cli$)|@capacitor-firebase\/|@capawesome\/|@revenuecat\/|@aparajita\/)/;
 
 /** Native files that decide what the JavaScript may call, with each one's version lines dropped. */
 const NATIVE_FILES = [

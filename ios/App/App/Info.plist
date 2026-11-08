@@ -69,6 +69,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Lightor uses the camera so you can photograph your work and add it to your business gallery.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Lightor uses Face ID to open the app when you turn on the lock.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Lightor saves images you export to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
