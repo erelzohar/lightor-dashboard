@@ -4,25 +4,16 @@ import globals from './globals';
 
 const URL = globals.vacationsUrl;
 
-// Get all vacations
-export const getVacations = async (): Promise<Vacation[]> => {
+// A site's vacations. The API lists them only by the site: GET /api/vacations/:webConfigId
+// (LT-626: a bare GET /api/vacations/ answered 404, and the API has no route
+// for one vacation by its id either).
+export const getVacations = async (webConfigId: string): Promise<Vacation[]> => {
+  if (!webConfigId) throw new Error('webConfig id is required');
   try {
-    const res = await apiClient.get(URL);
+    const res = await apiClient.get(`${URL}${webConfigId}`);
     return res.data.data;
   } catch (err) {
     console.error('Failed to fetch vacations:', err);
-    throw err;
-  }
-};
-
-// Get vacation by ID
-export const getVacationById = async (id: string): Promise<Vacation> => {
-  if (!id) throw new Error('Vacation ID is required');
-  try {
-    const res = await apiClient.get(`${URL}${id}`);
-    return res.data.data;
-  } catch (err) {
-    console.error('Failed to fetch vacation:', err);
     throw err;
   }
 };

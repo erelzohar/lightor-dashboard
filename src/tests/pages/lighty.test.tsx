@@ -39,6 +39,12 @@ vi.mock('../../services/imagesApi', () => ({ uploadImage }));
 vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
 const { dispatch } = vi.hoisted(() => ({ dispatch: vi.fn() }));
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => dispatch }));
+// LT-626: which site's vacations a day-off card reads again.
+const { fetchVacations } = vi.hoisted(() => ({ fetchVacations: vi.fn((id: string) => ({ type: 'vacations/fetchAll', meta: { arg: id } })) }));
+vi.mock('../../store/slices/vacationsSlice', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../store/slices/vacationsSlice')>()),
+  fetchVacations,
+}));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'u1' } } }) }));
 vi.mock('../../lib/platform', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/platform')>()),
@@ -346,6 +352,42 @@ describe("Lighty's text (LT-253)", () => {
     expect(assistantService.confirm).toHaveBeenCalledWith('act1');
     // The calendar is read again.
     expect(dispatch).toHaveBeenCalled();
+  });
+
+  // LT-626: the refresh asked GET /api/vacations/ (no such route: a 404 in the console).
+  it("reads the site's vacations again after a day off is confirmed and after its undo", async () => {
+    store.current = { webConfig: { data: { _id: 'wc1', conversion: 'book' } } };
+    const pending = {
+      id: 'vac1',
+      kind: 'vacation_add' as const,
+      card: { items: [{ title: 'חופש', from: '2026-11-13', to: '2026-11-13' }], texts: 0, notes: [] as { key: string }[] },
+      status: 'pending' as const,
+      expiresAt: new Date(Date.now() + 600_000).toISOString(),
+    };
+    vi.mocked(assistantService.thread).mockResolvedValue([]);
+    vi.mocked(assistantService.chat).mockResolvedValue({ reply: 'הכנתי, אשרו בכרטיס.', actions: [pending] });
+    vi.mocked(assistantService.confirm).mockResolvedValue({ ...pending, status: 'done', undoUntil: new Date(Date.now() + 600_000).toISOString() });
+    vi.mocked(assistantService.undo).mockResolvedValue({ ...pending, status: 'undone' });
+    fetchVacations.mockClear();
+    try {
+      renderPage();
+      expect(await screen.findByText('lighty.hello')).toBeInTheDocument();
+      fireEvent.change(screen.getByPlaceholderText('lighty.placeholder'), { target: { value: 'תחסום לי את יום שישי הקרוב' } });
+      fireEvent.submit(screen.getByPlaceholderText('lighty.placeholder').closest('form')!);
+      const card = await screen.findByTestId('lighty-action');
+      expect(fetchVacations).not.toHaveBeenCalled();
+      fireEvent.click(within(card).getByRole('button', { name: /lighty.action.confirm/ }));
+      expect(await within(card).findByText('lighty.action.done')).toBeInTheDocument();
+      expect(fetchVacations).toHaveBeenCalledTimes(1);
+      expect(fetchVacations).toHaveBeenCalledWith('wc1');
+      expect(dispatch).toHaveBeenCalledWith({ type: 'vacations/fetchAll', meta: { arg: 'wc1' } });
+      fireEvent.click(within(card).getByRole('button', { name: /lighty.action.undo/ }));
+      expect(await within(card).findByText('lighty.action.undone')).toBeInTheDocument();
+      expect(fetchVacations).toHaveBeenCalledTimes(2);
+      expect(fetchVacations).toHaveBeenLastCalledWith('wc1');
+    } finally {
+      store.current = { webConfig: { data: { conversion: 'book' } } };
+    }
   });
 
   it('a card from the conversation so far shows as it ended', async () => {

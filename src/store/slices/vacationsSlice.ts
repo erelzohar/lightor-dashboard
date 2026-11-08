@@ -18,20 +18,11 @@ const initialState: VacationsState = {
 
 // === CRUD Thunks ===
 
-// Fetch all vacations
+// Fetch the site's vacations
 export const fetchVacations = createAsyncThunk(
   'vacations/fetchAll',
-  async () => {
-    const response = await vacationsApi.getVacations();
-    return response;
-  }
-);
-
-// Fetch single vacation by ID
-export const fetchVacationById = createAsyncThunk(
-  'vacations/fetchById',
-  async (id: string) => {
-    const response = await vacationsApi.getVacationById(id);
+  async (webConfigId: string) => {
+    const response = await vacationsApi.getVacations(webConfigId);
     return response;
   }
 );
@@ -85,20 +76,6 @@ const vacationsSlice = createSlice({
       .addCase(fetchVacations.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch vacations';
-      })
-
-      // === Fetch by ID ===
-      .addCase(fetchVacationById.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchVacationById.fulfilled, (state, action) => {
-        state.selectedVacation = action.payload;
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(fetchVacationById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch vacation';
       })
 
       // === Create ===

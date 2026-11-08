@@ -199,7 +199,7 @@ const LightyPage: React.FC = () => {
       : turn)));
     if (next.status !== 'done' && next.status !== 'undone') return;
     if (['vacation_add', 'vacation_remove', 'hours', 'booking_rules'].includes(next.kind) && webConfig?._id) void dispatch(fetchWebConfig(webConfig._id));
-    if (next.kind === 'vacation_add' || next.kind === 'vacation_remove') void dispatch(fetchVacations());
+    if ((next.kind === 'vacation_add' || next.kind === 'vacation_remove') && webConfig?._id) void dispatch(fetchVacations(webConfig._id));
     if (next.kind.startsWith('appointment_') || next.kind === 'customer_block') {
       if (userId) void dispatch(fetchAppointments({ user_id: userId, limit: 5000 }));
     }
