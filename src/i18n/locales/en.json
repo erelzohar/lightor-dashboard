@@ -2901,7 +2901,7 @@
       "words": "What do you want to say? (optional)",
       "wordsHint": "A tip from your work, a short story or what customers ask. That way the post sounds like you.",
       "write": "Write a draft",
-      "writing": "Lighty is writing the draft. It takes about half a minute.",
+      "writing": "Lighty is writing the draft. It takes up to a minute.",
       "failed": "Lighty could not write it this time, and the draft was not counted. Please try again.",
       "used": "This month's Lighty drafts are used up. They renew at the start of the month; meanwhile you can write your own.",
       "back": "Back"

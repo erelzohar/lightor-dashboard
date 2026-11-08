@@ -2905,7 +2905,7 @@
       "words": "Que voulez-vous dire ? (facultatif)",
       "wordsHint": "Un conseil de votre métier, une courte histoire ou ce que demandent vos clients. Ainsi l’article vous ressemble.",
       "write": "Écrire un brouillon",
-      "writing": "Lighty écrit le brouillon. Cela prend environ une demi-minute.",
+      "writing": "Lighty écrit le brouillon. Cela prend jusqu’à une minute.",
       "failed": "Lighty n’a pas pu l’écrire cette fois, et le brouillon n’a pas été compté. Réessayez.",
       "used": "Les brouillons Lighty du mois sont épuisés. Ils se renouvellent au début du mois ; en attendant vous pouvez écrire vous-même.",
       "back": "Retour"

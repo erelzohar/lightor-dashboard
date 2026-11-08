@@ -2905,7 +2905,7 @@
       "words": "¿Qué quieres decir? (opcional)",
       "wordsHint": "Un consejo de tu trabajo, una historia breve o lo que preguntan los clientes. Así la entrada suena como tú.",
       "write": "Escribir un borrador",
-      "writing": "Lighty está escribiendo el borrador. Tarda alrededor de medio minuto.",
+      "writing": "Lighty está escribiendo el borrador. Tarda hasta un minuto.",
       "failed": "Lighty no pudo escribirlo esta vez y el borrador no se contó. Inténtalo de nuevo.",
       "used": "Se acabaron los borradores de Lighty de este mes. Se renuevan a principio de mes; mientras tanto puedes escribir tú.",
       "back": "Volver"
