@@ -204,6 +204,9 @@ const ProductEditor: React.FC<{
         summary: d.summary.trim() ? d.summary : filled.summary,
         description: d.description.trim() ? d.description : filled.description,
         category: d.category.trim() ? d.category : filled.category,
+        // LT-623: the colours and sizes the owner's own words name, when the form has none.
+        colors: d.colors.length ? d.colors : filled.colors,
+        sizes: d.sizes.length ? d.sizes : filled.sizes,
       }));
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
@@ -229,6 +232,10 @@ const ProductEditor: React.FC<{
         summary: d.summary.trim() ? d.summary : filled.summary,
         description: d.description.trim() ? d.description : filled.description,
         category: d.category.trim() ? d.category : filled.category,
+        // LT-623 (Erel: "ורוד ואדום" left the colours empty): what it comes in and its short facts.
+        colors: d.colors.length ? d.colors : filled.colors,
+        sizes: d.sizes.length ? d.sizes : filled.sizes,
+        details: d.details.length ? d.details : filled.details.slice(0, MAX_DETAILS),
       }));
       if (needsPicture && filled.picture) {
         try {

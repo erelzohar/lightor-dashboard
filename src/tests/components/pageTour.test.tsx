@@ -147,6 +147,29 @@ describe('Lighty page tours (LT-389)', () => {
     expect(await screen.findByRole('dialog', { name: 'tour.home.statsLeads.title' })).toBeInTheDocument();
   });
 
+  // LT-624: the home's numbers come after its data, and a fast start went on without them.
+  it("waits a little for the home's numbers, and a products site's tour shows its shop and its products", async () => {
+    state.webConfig.data = { conversion: 'lead', catalog: true } as { conversion: string };
+    const Late = () => {
+      const [shown, setShown] = React.useState(false);
+      React.useEffect(() => { const id = setTimeout(() => setShown(true), 600); return () => clearTimeout(id); }, []);
+      return (
+        <div>
+          {shown && <div data-tour="stats">stats</div>}
+          {shown && <div data-tour="top-products">products</div>}
+          <nav data-tour="nav">nav</nav>
+        </div>
+      );
+    };
+    renderAt('/', <Late />);
+
+    expect(await screen.findByRole('dialog', { name: 'tour.home.intro.title' }, { timeout: 3000 })).toHaveTextContent('tour.step:1/4');
+    fireEvent.click(screen.getByText('tour.next'));
+    expect(await screen.findByRole('dialog', { name: 'tour.home.statsProducts.title' })).toBeInTheDocument();
+    fireEvent.click(screen.getByText('tour.next'));
+    expect(await screen.findByRole('dialog', { name: 'tour.home.topProducts.title' })).toBeInTheDocument();
+  });
+
   it('leaves settings and the account page to their tooltips', () => {
     expect(tourFor('/settings', false)).toBeNull();
     expect(tourFor('/account', true)).toBeNull();
@@ -156,6 +179,7 @@ describe('Lighty page tours (LT-389)', () => {
     const paths = ['/', '/lighty', '/design', '/appointments', '/leads', '/customers', '/schedule-vacations', '/appointment-types', '/portfolio', '/settings', '/account'];
     const keys = new Set<string>();
     for (const p of paths) for (const leads of [false, true]) tourFor(p, leads)?.steps.forEach((s) => keys.add(s.key));
+    tourFor('/', true, true)?.steps.forEach((s) => keys.add(s.key));
     expect(keys.size).toBeGreaterThan(20);
     for (const locale of [he, en, ar, fr, es] as unknown as Array<{ tour: Record<string, unknown> }>) {
       for (const ui of ['next', 'prev', 'done', 'skip', 'turnOff', 'step']) expect(typeof locale.tour[ui]).toBe('string');

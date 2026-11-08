@@ -17,6 +17,10 @@ import type { AppointmentType, WebConfig } from '../types';
 export const isLeadsSite = (config: Pick<WebConfig, 'conversion'> | null | undefined): boolean =>
   config?.conversion === 'lead';
 
+/** LT-624: a products site - a leads site that shows products (LT-541): its home is the shop's. */
+export const isProductsSite = (config: Pick<WebConfig, 'conversion' | 'catalog'> | null | undefined): boolean =>
+  isLeadsSite(config) && config?.catalog === true;
+
 /**
  * Can a customer book this service? A named service with a positive
  * duration — the rule the server enforces (SERVICE_NOT_BOOKABLE) and the

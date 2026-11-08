@@ -15,6 +15,11 @@
 export interface TourStep {
   key: string;
   target?: string[];
+  /**
+   * LT-624: a part that shows once the page's data is in (the home's numbers): the tour waits
+   * for it a little before starting, instead of starting without it.
+   */
+  late?: boolean;
 }
 
 export interface TourDef {
@@ -24,8 +29,8 @@ export interface TourDef {
 
 const at = (...names: string[]): string[] => names.map((n) => (n.startsWith('[') ? n : `[data-tour="${n}"]`));
 
-/** The tour of the page at `pathname`, for a booking or a leads site; null for none. */
-export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null => {
+/** The tour of the page at `pathname`, for a booking, a leads or (LT-624) a products site; null for none. */
+export const tourFor = (pathname: string, leadsSite: boolean, productsSite = false): TourDef | null => {
   switch (pathname) {
     case '/':
       return {
@@ -33,7 +38,9 @@ export const tourFor = (pathname: string, leadsSite: boolean): TourDef | null =>
         steps: [
           { key: 'home.intro' },
           { key: 'home.setup', target: at('setup') },
-          { key: leadsSite ? 'home.statsLeads' : 'home.stats', target: at('stats') },
+          { key: productsSite ? 'home.statsProducts' : leadsSite ? 'home.statsLeads' : 'home.stats', target: at('stats'), late: true },
+          // LT-624: a products site's most wanted products.
+          ...(productsSite ? [{ key: 'home.topProducts', target: at('top-products'), late: true }] : []),
           { key: 'home.nav', target: at('nav', '[data-testid="bottom-tab-bar"]') },
           { key: 'home.lighty', target: at('[data-testid="floating-lighty"]') },
         ],

@@ -905,6 +905,28 @@
     },
     "graph": {
       "reset": "Back to the current period"
+    },
+    "productsHome": {
+      "bandLabel": "Your shop in numbers",
+      "inquiries": "Inquiries this month",
+      "today": "Today: {{count}}",
+      "views": "Product views",
+      "mostViewed": "Most viewed: {{name}}",
+      "rate": "Inquiries per 100 views",
+      "rateOf": "{{asks}} inquiries from {{views}} views",
+      "rateNotYet": "Measured from the first product view",
+      "handledOf": "{{handled}} of {{total}} handled in 30 days",
+      "topTitle": "Most wanted products",
+      "topSub": "By inquiries and views over the last 30 days",
+      "topEmpty": "No product views or inquiries in the last 30 days yet.",
+      "asks": "Inquiries: {{count}}",
+      "allProducts": "All products",
+      "noProducts": "No products on the site yet.",
+      "rank": "Number {{n}}",
+      "picksTitle": "Colours and sizes people ask for",
+      "picksSub": "From product inquiries over the last 30 days",
+      "latest": "Latest inquiries",
+      "viewAll": "All inquiries"
     }
   },
   "billing": {
@@ -2347,7 +2369,10 @@
         "facebook": "Facebook",
         "tiktok": "TikTok",
         "x": "X",
-        "pictures": "Pictures"
+        "pictures": "Pictures",
+        "colors": "Colours",
+        "sizes": "Sizes",
+        "details": "Short facts"
       },
       "value": {
         "shown": "Shown on the site",
@@ -2463,6 +2488,14 @@
       "lighty": {
         "title": "And I'm always here",
         "body": "Tap me to chat. Ask me anything about your business."
+      },
+      "statsProducts": {
+        "title": "Your shop",
+        "body": "Here you see how many inquiries came in, how many times your products were viewed, how many inquiries every 100 views bring and who is waiting for an answer."
+      },
+      "topProducts": {
+        "title": "Most wanted products",
+        "body": "The products visitors care about most, by inquiries and views. A tap opens your products page."
       }
     },
     "lighty": {
@@ -2729,7 +2762,7 @@
       "label": "A few words about the product",
       "placeholder": "For example: a scented candle in a glass jar, vanilla",
       "action": "Lighty creates the product",
-      "hint": "Lighty writes the name, summary, full description and category, and makes a fitting picture. You can change everything before saving.",
+      "hint": "Lighty writes the name, summary, full description and category, fills in the colours, sizes and details you wrote, and makes a fitting picture. You can change everything before saving.",
       "tooShort": "Write at least a few words about the product",
       "pictureLimit": "Lighty wrote the product. This month's AI pictures are used up, and you can add a picture of your own.",
       "pictureFailed": "Lighty wrote the product, but the picture wasn't made. Try again, or add a picture of your own."

@@ -192,7 +192,7 @@ describe('the Products page (LT-540)', () => {
   });
 
   it('lets Lighty fill in what is empty, and never what the owner wrote', async () => {
-    vi.mocked(aiService.draftProduct).mockResolvedValue({ name: 'AI name', summary: 'AI line', description: 'AI words', category: 'AI kind' });
+    vi.mocked(aiService.draftProduct).mockResolvedValue({ name: 'AI name', summary: 'AI line', description: 'AI words', category: 'AI kind', colors: [], sizes: [], details: [] });
     render(<Products />);
     fireEvent.click(await screen.findByTestId('product-card'));
     const dialog = await screen.findByTestId('product-editor');
@@ -248,7 +248,7 @@ describe('a product from a few words (LT-568)', () => {
     vi.mocked(aiService.createImage).mockReset();
     vi.mocked(listProducts).mockResolvedValue({ products: [], limits: plan(10) });
     vi.mocked(aiService.draftProductFromText).mockResolvedValue({
-      name: 'Vanilla candle', summary: 'A candle in a jar', description: 'Full words', category: 'Candles', picture: 'A candle in a glass jar, plain background',
+      name: 'Vanilla candle', summary: 'A candle in a jar', description: 'Full words', category: 'Candles', colors: [], sizes: [], details: [], picture: 'A candle in a glass jar, plain background',
     });
   });
 
@@ -279,6 +279,51 @@ describe('a product from a few words (LT-568)', () => {
     expect(vi.mocked(createProduct).mock.calls[0][0]).toMatchObject({
       name: 'Vanilla candle', category: 'Candles', images: [{ url: 'https://api.lightor.app/api/images/temp/t1.webp' }],
     });
+  });
+
+  // LT-623 (Erel: "לק ג׳ל 100 מ״ל ורוד ואדום" left the colours empty).
+  it("fills the colours, sizes and short details the owner's words name, and saves them", async () => {
+    vi.mocked(aiService.createImage).mockResolvedValue('https://api.lightor.app/api/images/temp/t2.webp');
+    vi.mocked(aiService.draftProductFromText).mockResolvedValue({
+      name: 'לק ג׳ל', summary: 's', description: 'd', category: 'לקים',
+      colors: [{ name: 'ורוד', hex: '#f4a6c1' }, { name: 'אדום', hex: '#d32f2f' }],
+      sizes: ['10 מ״ל', '15 מ״ל'],
+      details: ['100 מ״ל'],
+      picture: 'p',
+    });
+    vi.mocked(createProduct).mockResolvedValue(product({ _id: 'p10', name: 'לק ג׳ל' }));
+    const dialog = await openNew();
+    fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'לק ג׳ל 100 מ״ל ורוד ואדום' } });
+    fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    const options = within(dialog).getByTestId('product-options');
+    await waitFor(() => expect(within(options).getByText('ורוד')).toBeTruthy());
+    expect(within(options).getByText('אדום')).toBeTruthy();
+    expect(within(options).getByText('15 מ״ל')).toBeTruthy();
+    expect(within(dialog).getByText('100 מ״ל')).toBeTruthy();
+    await waitFor(() => expect((within(dialog).getByText('products.save').closest('button') as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(within(dialog).getByText('products.save'));
+    await waitFor(() => expect(createProduct).toHaveBeenCalled());
+    expect(vi.mocked(createProduct).mock.calls[vi.mocked(createProduct).mock.calls.length - 1][0]).toMatchObject({
+      colors: [{ name: 'ורוד', hex: '#f4a6c1' }, { name: 'אדום', hex: '#d32f2f' }],
+      sizes: ['10 מ״ל', '15 מ״ל'],
+      details: ['100 מ״ל'],
+    });
+  });
+
+  it('never replaces colours, sizes or details the owner already put in', async () => {
+    vi.mocked(aiService.createImage).mockResolvedValue('https://api.lightor.app/api/images/temp/t3.webp');
+    vi.mocked(aiService.draftProductFromText).mockResolvedValue({
+      name: 'n', summary: 's', description: 'd', category: 'c', colors: [{ name: 'ירוק', hex: '#00aa00' }], sizes: ['S', 'M'], details: ['AI fact'], picture: 'p',
+    });
+    const dialog = await openNew();
+    const detail = within(dialog).getByLabelText('products.details');
+    fireEvent.change(detail, { target: { value: 'My fact' } });
+    fireEvent.keyDown(detail, { key: 'Enter' });
+    fireEvent.change(within(dialog).getByLabelText('products.fromWords.label'), { target: { value: 'a green shirt' } });
+    fireEvent.click(within(dialog).getByTestId('create-from-words'));
+    await waitFor(() => expect(within(within(dialog).getByTestId('product-options')).getByText('ירוק')).toBeTruthy());
+    expect(within(dialog).getByText('My fact')).toBeTruthy();
+    expect(within(dialog).queryByText('AI fact')).toBeNull();
   });
 
   // Erel: the free plan makes the picture too, out of its 5 a month; past the month, the texts stay.

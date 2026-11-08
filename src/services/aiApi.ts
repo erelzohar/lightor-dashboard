@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import type { ProductColor } from './productsApi';
 import globals from './globals';
 import i18n from '../i18n/config';
 import { shrinkImage } from '../lib/ownerImages';
@@ -81,6 +82,30 @@ function getAuthHeaders() {
 // charged before the model runs, so retrying a 500 three times spent the
 // owner's AI on one failure and kept them waiting. They see the error and
 // decide.
+/**
+ * Lighty's draft of a product (LT-540, LT-568). LT-623: with the colours, sizes and short
+ * details the owner's words name - none from a server that does not send them yet.
+ */
+export interface ProductDraft {
+  name: string;
+  summary: string;
+  description: string;
+  category: string;
+  colors: ProductColor[];
+  sizes: string[];
+  details: string[];
+}
+
+const draftOf = (data: Partial<ProductDraft>): ProductDraft => ({
+  name: data.name ?? '',
+  summary: data.summary ?? '',
+  description: data.description ?? '',
+  category: data.category ?? '',
+  colors: Array.isArray(data.colors) ? data.colors : [],
+  sizes: Array.isArray(data.sizes) ? data.sizes : [],
+  details: Array.isArray(data.details) ? data.details : [],
+});
+
 export const aiService = {
   /**
    * The whole-site chat (LT-249). LT-426: up to three of the owner's
@@ -191,12 +216,12 @@ export const aiService = {
     image: string,
     language: string,
     known?: { name?: string; summary?: string; description?: string; category?: string; details?: string[] },
-  ): Promise<{ name: string; summary: string; description: string; category: string }> => {
-    const response = await apiClient.post<{ success: boolean; data: { name: string; summary: string; description: string; category: string } }>(
+  ): Promise<ProductDraft> => {
+    const response = await apiClient.post<{ success: boolean; data: Partial<ProductDraft> }>(
       `${globals.aiUrl}product-draft`,
       { image, language, ...(known ? { known } : {}) }
     );
-    return response.data.data;
+    return draftOf(response.data.data);
   },
 
   /**
@@ -204,12 +229,12 @@ export const aiService = {
    * prompt for createImage. Stored nowhere until the owner saves. 400 = too
    * short or too long, 429 = the AI budget is spent.
    */
-  draftProductFromText: async (text: string, language: string): Promise<{ name: string; summary: string; description: string; category: string; picture: string }> => {
-    const response = await apiClient.post<{ success: boolean; data: { name: string; summary: string; description: string; category: string; picture?: string } }>(
+  draftProductFromText: async (text: string, language: string): Promise<ProductDraft & { picture: string }> => {
+    const response = await apiClient.post<{ success: boolean; data: Partial<ProductDraft> & { picture?: string } }>(
       `${globals.aiUrl}product-draft`,
       { text, language }
     );
-    return { ...response.data.data, picture: response.data.data.picture ?? '' };
+    return { ...draftOf(response.data.data), picture: response.data.data.picture ?? '' };
   },
 };
 

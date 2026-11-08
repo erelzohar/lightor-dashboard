@@ -13,6 +13,7 @@ import LeadsSummary from '../components/dashboard/LeadsSummary';
 import LeadsStats from '../components/dashboard/LeadsStats';
 import LeadsChart from '../components/dashboard/LeadsChart';
 import LeadsTopics, { hasTopics } from '../components/dashboard/LeadsTopics';
+import ProductsHome from '../components/dashboard/ProductsHome';
 import ShareSiteCard from '../components/dashboard/ShareSiteCard';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -31,7 +32,8 @@ import { upgradeIsOpen } from '../lib/upgradeWindow';
 import toast from 'react-hot-toast';
 import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { fetchLeads, fetchLeadStats, LeadsPage, LeadStats } from '../services/leadsApi';
-import { isLeadsSite } from '../utils/siteMode';
+import { fetchProductViews, listProducts, type Product, type ProductViews } from '../services/productsApi';
+import { isLeadsSite, isProductsSite } from '../utils/siteMode';
 
 const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -77,6 +79,8 @@ const Dashboard: React.FC = () => {
   // the income, graph, donut and appointments list, and nothing polls the
   // appointments.
   const leadsSite = isLeadsSite(webConfig);
+  // LT-624: a products site's home is the shop's - its numbers, products and inquiries.
+  const productsSite = isProductsSite(webConfig);
 
   // Contact-form leads (LT-197): the new ones wait on the home card, and a
   // capped plan is warned from 80% of the month's leads. On a leads site the
@@ -128,6 +132,27 @@ const Dashboard: React.FC = () => {
   const leadsTotal = leadsPage
     ? (leadsPage.counts?.new ?? 0) + (leadsPage.counts?.contacted ?? 0) + (leadsPage.counts?.closed ?? 0)
     : undefined;
+
+  // LT-624: a products site also reads its products and their views; `undefined` while they
+  // load, null when a read failed (the home then leaves that part out).
+  const [shopProducts, setShopProducts] = useState<Product[] | null | undefined>(undefined);
+  const [productViews, setProductViews] = useState<ProductViews | null | undefined>(undefined);
+  useEffect(() => {
+    if (!productsSite) return;
+    let cancelled = false;
+    listProducts()
+      .then(({ products }) => { if (!cancelled) setShopProducts(products); })
+      .catch(() => { if (!cancelled) setShopProducts(null); });
+    fetchProductViews()
+      .then((views) => { if (!cancelled) setProductViews(views); })
+      .catch(() => { if (!cancelled) setProductViews(null); });
+    return () => {
+      cancelled = true;
+    };
+  }, [productsSite]);
+  const shopRead = shopProducts !== undefined && productViews !== undefined;
+  // Something to show: an inquiry, a view of a product, or a read that failed (said in its place).
+  const shopHasNews = !!leadsTotal || leadsPage === null || (productViews?.total ?? 0) > 0;
   // The chart and the topics draw only what they have: neither after 30 days
   // without an inquiry, and the topics not without an answered question.
   const leadsPerDay = leadStats?.perDay.some((d) => d.count > 0) ? leadStats.perDay : null;
@@ -232,7 +257,9 @@ const Dashboard: React.FC = () => {
   // Nothing to show yet: the welcome (and whatever notices ride with it)
   // centres in the pane instead of sitting under the greeting with an empty
   // screen below it.
-  const isEmpty = leadsSite ? leadsTotal === 0 : appointments.length === 0;
+  const isEmpty = productsSite
+    ? leadsPage !== undefined && leadStats !== undefined && shopRead && !shopHasNews
+    : leadsSite ? leadsTotal === 0 : appointments.length === 0;
 
   return (
     <motion.div
@@ -565,7 +592,19 @@ const Dashboard: React.FC = () => {
       {/* ── A leads site's home (LT-199, LT-274): its numbers, the last 30 days
           by day and by topic, and the latest inquiries replace every booking
           widget. Nothing shows until both reads answer, so nothing jumps. ── */}
-      {leadsSite && leadsPage !== undefined && leadStats !== undefined && !!(leadsTotal || leadsPage === null) && (
+      {productsSite && leadsPage !== undefined && leadStats !== undefined && shopRead && shopHasNews && (
+        <ProductsHome
+          stats={leadStats}
+          page={leadsPage}
+          products={shopProducts}
+          views={productViews}
+          currency={webConfig?.currency}
+          language={language}
+          direction={direction}
+        />
+      )}
+
+      {leadsSite && !productsSite && leadsPage !== undefined && leadStats !== undefined && !!(leadsTotal || leadsPage === null) && (
         <>
           {leadStats && (
             <div data-tour="stats">

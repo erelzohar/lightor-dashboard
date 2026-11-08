@@ -8,7 +8,7 @@ import { pop } from '../ui/pop-button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
-import { isLeadsSite } from '../../utils/siteMode';
+import { isLeadsSite, isProductsSite } from '../../utils/siteMode';
 import { markTourSeen, setToursOff } from '../../services/toursApi';
 import { tourFor, type TourStep } from './tours';
 import { findTarget } from './geometry';
@@ -50,6 +50,9 @@ interface PageTourProps {
   settleMs?: number;
 }
 
+/** How long a tour waits for a part drawn from the page's data (LT-624). */
+const LATE_MS = 3000;
+
 const PageTour: React.FC<PageTourProps> = ({ enabled, settleMs = 700 }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -59,7 +62,7 @@ const PageTour: React.FC<PageTourProps> = ({ enabled, settleMs = 700 }) => {
   const webConfig = useAppSelector((state) => state.webConfig.data);
   const leadsSite = isLeadsSite(webConfig);
   const reduceMotion = useReducedMotion();
-  const tour = tourFor(pathname, leadsSite);
+  const tour = tourFor(pathname, leadsSite, isProductsSite(webConfig));
   const saved = auth.user?.tours;
   const wanted =
     enabled && !!webConfig && !!tour && !offHere && saved?.off !== true && !saved?.seen?.includes(tour.id) && !doneHere.has(tour.id);
@@ -90,7 +93,10 @@ const PageTour: React.FC<PageTourProps> = ({ enabled, settleMs = 700 }) => {
       const waited = Date.now() - startedAt;
       if (!document.querySelector('[aria-modal="true"]')) {
         const shown = tour.steps.filter((s) => !s.target || findTarget(s.target));
-        if (shown.some((s) => s.target)) {
+        // LT-624: a part drawn from the page's data may still be on its way (the home's numbers
+        // came after a fast start, and the tour went on without them): wait a little for it.
+        const late = tour.steps.some((s) => s.late && s.target && !findTarget(s.target));
+        if (shown.some((s) => s.target) && (!late || waited > LATE_MS)) {
           direction.current = 1;
           setSteps(shown);
           return;

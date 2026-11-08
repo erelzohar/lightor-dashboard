@@ -2,9 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Inbox, Phone, MessageCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Inbox, Phone, MessageCircle, ArrowLeft, ArrowRight, ShoppingBag } from 'lucide-react';
 import type { LeadsPage, LeadStatus } from '../../services/leadsApi';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
+import { resolveImage } from '../../utils/images';
 import { pop } from '../ui/pop-button';
 
 const STATUS_TINT: Record<LeadStatus, string> = {
@@ -17,6 +18,11 @@ interface LeadsSummaryProps {
   /** The newest leads as `/api/leads?limit=5` answered; null when it failed. */
   page: LeadsPage | null;
   direction: 'ltr' | 'rtl';
+  /** LT-624: a products site's home says "inquiries" and shows each one's product. */
+  title?: string;
+  viewAll?: string;
+  /** The picture of the product an inquiry is about, by its id. */
+  pictureOf?: (productId: string | undefined) => string | undefined;
 }
 
 /**
@@ -25,7 +31,7 @@ interface LeadsSummaryProps {
  * one row with its call and WhatsApp buttons. The counts that sat above the
  * list moved to the home's numbers (LT-274).
  */
-const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction }) => {
+const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction, title, viewAll, pictureOf }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -47,13 +53,13 @@ const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction }) => {
         <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
           <Inbox className="w-5 h-5" />
         </div>
-        <h2 className="flex-1 min-w-0 font-semibold text-gray-800 dark:text-white">{t('dashboard.leadsSummary.latest')}</h2>
+        <h2 className="flex-1 min-w-0 font-semibold text-gray-800 dark:text-white">{title ?? t('dashboard.leadsSummary.latest')}</h2>
         <button
           type="button"
           onClick={() => navigate('/leads')}
           className="shrink-0 flex items-center gap-1 text-sm font-medium text-primary hover:underline"
         >
-          {t('dashboard.leadsSummary.viewAll')}
+          {viewAll ?? t('dashboard.leadsSummary.viewAll')}
           <Arrow className="w-4 h-4" />
         </button>
       </div>
@@ -73,6 +79,23 @@ const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction }) => {
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">{formatWhen(lead.createdAt)}</p>
+                  {/* LT-624: the product it asks about, with its picture and the colour or size picked. */}
+                  {pictureOf && lead.product && (
+                    <div className="mt-2 flex items-center gap-2 min-w-0" data-testid="leads-summary-product">
+                      {(() => {
+                        const picture = pictureOf(lead.product.product_id);
+                        return picture ? (
+                          <img src={resolveImage(picture)} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover bg-gray-100 dark:bg-slate-800" />
+                        ) : (
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><ShoppingBag className="h-4 w-4" aria-hidden="true" /></span>
+                        );
+                      })()}
+                      <p className="min-w-0 text-sm text-gray-700 dark:text-gray-200 break-words">
+                        {lead.product.name}
+                        {lead.product.options && <span className="text-gray-500 dark:text-gray-400"> · {lead.product.options}</span>}
+                      </p>
+                    </div>
+                  )}
                   {lead.message && (
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 truncate">{lead.message}</p>
                   )}

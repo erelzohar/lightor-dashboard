@@ -909,6 +909,28 @@
     },
     "graph": {
       "reset": "Volver al periodo actual"
+    },
+    "productsHome": {
+      "bandLabel": "Tu tienda en cifras",
+      "inquiries": "Consultas este mes",
+      "today": "Hoy: {{count}}",
+      "views": "Vistas de productos",
+      "mostViewed": "Lo más visto: {{name}}",
+      "rate": "Consultas por cada 100 vistas",
+      "rateOf": "{{asks}} consultas de {{views}} vistas",
+      "rateNotYet": "Se medirá desde la primera vista de un producto",
+      "handledOf": "{{handled}} de {{total}} atendidas en 30 días",
+      "topTitle": "Los productos más buscados",
+      "topSub": "Según consultas y vistas de los últimos 30 días",
+      "topEmpty": "Todavía no hay vistas ni consultas de productos en los últimos 30 días.",
+      "asks": "Consultas: {{count}}",
+      "allProducts": "Todos los productos",
+      "noProducts": "Todavía no hay productos en el sitio.",
+      "rank": "Puesto {{n}}",
+      "picksTitle": "Colores y tallas que piden",
+      "picksSub": "De las consultas de productos de los últimos 30 días",
+      "latest": "Últimas consultas",
+      "viewAll": "Todas las consultas"
     }
   },
   "billing": {
@@ -2351,7 +2373,10 @@
         "facebook": "Facebook",
         "tiktok": "TikTok",
         "x": "X",
-        "pictures": "Fotos"
+        "pictures": "Fotos",
+        "colors": "Colores",
+        "sizes": "Tallas",
+        "details": "Datos breves"
       },
       "value": {
         "shown": "Visible en el sitio",
@@ -2467,6 +2492,14 @@
       "lighty": {
         "title": "Y siempre estoy aquí",
         "body": "Tócame para hablar. Pregúntame lo que quieras sobre tu negocio."
+      },
+      "statsProducts": {
+        "title": "Tu tienda",
+        "body": "Aquí ves cuántas consultas llegaron, cuántas veces se vieron tus productos, cuántas consultas traen cada 100 vistas y quién espera respuesta."
+      },
+      "topProducts": {
+        "title": "Los productos más buscados",
+        "body": "Los productos que más interesan a los visitantes, según consultas y vistas. Al tocar se abre la página de productos."
       }
     },
     "lighty": {
@@ -2733,7 +2766,7 @@
       "label": "Unas palabras sobre el producto",
       "placeholder": "Por ejemplo: una vela aromática en un tarro de vidrio, de vainilla",
       "action": "Lighty crea el producto",
-      "hint": "Lighty escribe el nombre, el resumen, la descripción completa y la categoría, y prepara una foto adecuada. Puedes cambiarlo todo antes de guardar.",
+      "hint": "Lighty escribe el nombre, el resumen, la descripción completa y la categoría, completa los colores, las tallas y los datos que escribiste, y prepara una foto adecuada. Puedes cambiarlo todo antes de guardar.",
       "tooShort": "Escribe al menos unas palabras sobre el producto",
       "pictureLimit": "Lighty redactó el producto. Las fotos con IA de este mes se agotaron, y puedes añadir una foto tuya.",
       "pictureFailed": "Lighty redactó el producto, pero la foto no se creó. Inténtalo de nuevo o añade una foto tuya."

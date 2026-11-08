@@ -24,7 +24,7 @@ export interface Lead {
    * the site shows it now; absent once the site no longer does.
    */
   /** LT-588: `options`, the colour and size the visitor picked ("אדום, M"). */
-  product?: { name: string; price?: number; url?: string; options?: string };
+  product?: { product_id?: string; name: string; price?: number; url?: string; options?: string };
   status: LeadStatus;
   createdAt: string;
   updatedAt: string;
@@ -71,6 +71,19 @@ export interface LeadStats {
     perDay: { date: string; count: number }[];
     since: string | null;
   };
+  /**
+   * LT-624: a products site's home - the last 30 days' inquiries about a product: how many, by
+   * product id and by day, and the colours (with their swatch) and sizes picked, most first.
+   * Absent from an older API.
+   */
+  products?: ProductInterest | null;
+}
+
+export interface ProductInterest {
+  total: number;
+  byProduct: Record<string, number>;
+  perDay?: { date: string; count: number }[];
+  picks: { value: string; kind: 'color' | 'size'; hex?: string; count: number }[];
 }
 
 const authHeaders = () => {

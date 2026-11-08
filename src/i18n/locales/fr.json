@@ -909,6 +909,28 @@
     },
     "graph": {
       "reset": "Revenir à la période actuelle"
+    },
+    "productsHome": {
+      "bandLabel": "Votre boutique en chiffres",
+      "inquiries": "Demandes ce mois-ci",
+      "today": "Aujourd’hui : {{count}}",
+      "views": "Vues des produits",
+      "mostViewed": "Le plus vu : {{name}}",
+      "rate": "Demandes pour 100 vues",
+      "rateOf": "{{asks}} demandes pour {{views}} vues",
+      "rateNotYet": "Mesuré dès la première vue d’un produit",
+      "handledOf": "{{handled}} sur {{total}} traitées en 30 jours",
+      "topTitle": "Les produits les plus demandés",
+      "topSub": "Selon les demandes et les vues des 30 derniers jours",
+      "topEmpty": "Pas encore de vues ni de demandes de produits ces 30 derniers jours.",
+      "asks": "Demandes : {{count}}",
+      "allProducts": "Tous les produits",
+      "noProducts": "Pas encore de produits sur le site.",
+      "rank": "Numéro {{n}}",
+      "picksTitle": "Couleurs et tailles demandées",
+      "picksSub": "D’après les demandes de produits des 30 derniers jours",
+      "latest": "Dernières demandes",
+      "viewAll": "Toutes les demandes"
     }
   },
   "billing": {
@@ -2351,7 +2373,10 @@
         "facebook": "Facebook",
         "tiktok": "TikTok",
         "x": "X",
-        "pictures": "Photos"
+        "pictures": "Photos",
+        "colors": "Couleurs",
+        "sizes": "Tailles",
+        "details": "Détails courts"
       },
       "value": {
         "shown": "Visible sur le site",
@@ -2467,6 +2492,14 @@
       "lighty": {
         "title": "Et je suis toujours là",
         "body": "Touchez-moi pour discuter. Posez-moi n'importe quelle question sur votre activité."
+      },
+      "statsProducts": {
+        "title": "Votre boutique",
+        "body": "Ici, vous voyez combien de demandes sont arrivées, combien de fois vos produits ont été vus, combien de demandes rapportent 100 vues et qui attend une réponse."
+      },
+      "topProducts": {
+        "title": "Les produits les plus demandés",
+        "body": "Les produits qui intéressent le plus les visiteurs, selon les demandes et les vues. Un appui ouvre la page des produits."
       }
     },
     "lighty": {
@@ -2733,7 +2766,7 @@
       "label": "Quelques mots sur le produit",
       "placeholder": "Par exemple : une bougie parfumée dans un pot en verre, à la vanille",
       "action": "Lighty crée le produit",
-      "hint": "Lighty écrit le nom, le résumé, la description complète et la catégorie, et prépare une photo adaptée. Tout reste modifiable avant d’enregistrer.",
+      "hint": "Lighty écrit le nom, le résumé, la description complète et la catégorie, remplit les couleurs, les tailles et les détails que vous avez écrits, et prépare une photo adaptée. Tout reste modifiable avant d’enregistrer.",
       "tooShort": "Écrivez au moins quelques mots sur le produit",
       "pictureLimit": "Lighty a rédigé le produit. Les photos IA de ce mois sont épuisées, et vous pouvez ajouter votre propre photo.",
       "pictureFailed": "Lighty a rédigé le produit, mais la photo n’a pas été créée. Réessayez ou ajoutez votre propre photo."
