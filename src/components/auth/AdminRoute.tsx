@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader } from 'lucide-react';
+import OfflineScreen from './OfflineScreen';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -27,6 +28,9 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
       </div>
     );
   }
+
+  // LT-614: the server could not be asked; the operator is not signed out.
+  if (auth.offline) return <OfflineScreen />;
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace />;

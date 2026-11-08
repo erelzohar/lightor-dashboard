@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import type { FacebookCredential } from '../lib/facebookSignIn';
 import { User } from '../types';
 import globals from './globals';
+import { SERVER_UNREACHABLE } from './serverUnreachable';
 
 /**
  * LT-009: the session lives in an HttpOnly cookie set by the API, invisible
@@ -200,6 +201,13 @@ export const getCurrentUser = async (): Promise<User> => {
 
     return response.data.data;
   } catch (error) {
+    // LT-614: no answer at all (offline, a dropped connection, a timeout) or
+    // a server that is down says nothing about the session; only the server's
+    // own refusal means signed out.
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status === undefined || status === 408 || status === 429 || status >= 500) {
+      throw Object.assign(new Error('Server unreachable'), { code: SERVER_UNREACHABLE });
+    }
     throw new Error('Invalid token');
   }
 };

@@ -225,9 +225,24 @@ describe('authApi', () => {
     it('rejects /me rather than returning undefined', async () => {
       // AuthContext treats a rejection as "not signed in". Returning undefined
       // instead would mark the session authenticated with a null user.
-      vi.spyOn(apiClient, 'get').mockRejectedValue(new Error('401'));
+      vi.spyOn(apiClient, 'get').mockRejectedValue(Object.assign(new Error('401'), { response: { status: 401 } }));
 
       await expect(getCurrentUser()).rejects.toThrow('Invalid token');
+    });
+
+    // LT-614: an owner whose phone has no signal is not signed out.
+    it('tells "the server could not be asked" from "the server said no" on /me', async () => {
+      const get = vi.spyOn(apiClient, 'get');
+      const codeOf = async () => getCurrentUser().then(() => 'resolved', (error: { code?: string; message: string }) => error.code ?? error.message);
+
+      get.mockRejectedValueOnce(new Error('Network Error'));
+      expect(await codeOf()).toBe('SERVER_UNREACHABLE');
+      get.mockRejectedValueOnce(Object.assign(new Error('Bad gateway'), { response: { status: 502 } }));
+      expect(await codeOf()).toBe('SERVER_UNREACHABLE');
+      get.mockRejectedValueOnce(Object.assign(new Error('Too many'), { response: { status: 429 } }));
+      expect(await codeOf()).toBe('SERVER_UNREACHABLE');
+      get.mockRejectedValueOnce(Object.assign(new Error('Forbidden'), { response: { status: 403 } }));
+      expect(await codeOf()).toBe('Invalid token');
     });
 
     it('never blocks logout on a network failure', async () => {

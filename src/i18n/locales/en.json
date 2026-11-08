@@ -2934,6 +2934,12 @@
     "version": {
       "app": "Version {{version}} ({{build}})",
       "bundle": "Update {{id}} from {{date}}"
+    },
+    "offline": {
+      "title": "No connection",
+      "body": "We couldn't reach the server. Check your internet connection. Your account is safe, and we'll carry on by ourselves once you're back online.",
+      "retry": "Try again",
+      "checking": "Checking the connection"
     }
   }
 }

@@ -8,6 +8,7 @@ import { SignInCard } from '../components/ui/sign-in-card-2';
 import { isNativeApp } from '../lib/platform';
 import { appleSignInAvailable, isAppleCancel, signInWithApple } from '../lib/appleSignIn';
 import { FACEBOOK_APP_ID, facebookSignInAvailable, isFacebookCancel, nativeFacebookSignIn } from '../lib/facebookSignIn';
+import OfflineScreen from '../components/auth/OfflineScreen';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const NATIVE_GOOGLE_ENABLED = true;
@@ -101,6 +102,8 @@ const Login: React.FC = () => {
 
   if (auth.isLoading) return null;
   if (auth.isAuthenticated) return <Navigate to="/" />;
+  // LT-614: a session is expected but the server could not be asked.
+  if (auth.offline) return <OfflineScreen />;
 
   document.title = t('login.title');
 

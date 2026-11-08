@@ -2938,6 +2938,12 @@
     "version": {
       "app": "Versión {{version}} ({{build}})",
       "bundle": "Actualización {{id}} del {{date}}"
+    },
+    "offline": {
+      "title": "Sin conexión",
+      "body": "No pudimos conectar con el servidor. Comprueba tu conexión a internet. Tu cuenta está a salvo y seguiremos solos en cuanto vuelva la conexión.",
+      "retry": "Reintentar",
+      "checking": "Comprobando la conexión"
     }
   }
 }

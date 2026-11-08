@@ -426,4 +426,6 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  /** LT-614: a session was expected but the server could not be reached; the app shows "no connection" and keeps trying. */
+  offline?: boolean;
 }

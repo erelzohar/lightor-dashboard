@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader } from 'lucide-react';
 import VerifyEmailGate from './VerifyEmailGate';
+import OfflineScreen from './OfflineScreen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,6 +34,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       </div>
     );
   }
+
+  // LT-614: the server could not be asked; the owner is not signed out.
+  if (auth.offline) return <OfflineScreen />;
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace />;

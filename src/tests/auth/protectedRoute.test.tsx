@@ -9,6 +9,9 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('../../components/auth/VerifyEmailGate', () => ({
   default: () => <div>verify-gate</div>,
 }));
+vi.mock('../../components/auth/OfflineScreen', () => ({
+  default: () => <div>offline-screen</div>,
+}));
 
 const mockAuth = (state: Partial<AuthState>) => {
   vi.mocked(useAuth).mockReturnValue({
@@ -64,6 +67,15 @@ describe('ProtectedRoute', () => {
 
     expect(screen.queryByText('login-page')).not.toBeInTheDocument();
     expect(screen.queryByText('dashboard-content')).not.toBeInTheDocument();
+  });
+
+  it('says "no connection" instead of sending a signed-in owner to login (LT-614)', () => {
+    mockAuth({ isAuthenticated: false, offline: true });
+
+    renderRoute();
+
+    expect(screen.getByText('offline-screen')).toBeInTheDocument();
+    expect(screen.queryByText('login-page')).not.toBeInTheDocument();
   });
 
   it('redirects an unauthenticated visitor to login', () => {

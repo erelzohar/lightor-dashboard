@@ -3,6 +3,7 @@ import type { FacebookCredential } from '../lib/facebookSignIn';
 import toast from 'react-hot-toast';
 import { AuthState, User } from '../types';
 import { loginUser, googleLogin, googleLoginWithIdToken, appleLogin, facebookLogin, changePassword, getCurrentUser, cookieSync, serverLogout } from '../services/authApi';
+import { isServerUnreachable } from '../services/serverUnreachable';
 import { updateUserInfo } from '../services/userApi';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -32,9 +33,14 @@ interface AuthContextType {
    * the canonical case (LT-004).
    */
   refreshUser: () => Promise<User | null>;
+  /** LT-614: asks the server again after "no connection" (the screen's button; it also retries by itself). */
+  retryConnection: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/** LT-614: how often the app asks again while the server cannot be reached. */
+const OFFLINE_RETRY_MS = 5000;
 
 /** loginUser's failure codes as the sign-in card's keys (LT-340); any other failure reads as a wrong password. */
 const LOGIN_ERROR_KEYS: Record<string, string> = {
@@ -84,6 +90,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void registerForPush();
   }, [auth.isAuthenticated, auth.user?.isVerified]);
 
+  // Asks the server who is signed in: signed in, signed out, or (LT-614) "no
+  // connection" when the server could not be asked at all. That last one is
+  // not a sign-out: the session hint and the app's stored token stay, the
+  // routes show the no-connection screen, and the question is asked again.
+  const probingRef = useRef(false);
+  const probeSession = async (): Promise<void> => {
+    if (probingRef.current) return;
+    probingRef.current = true;
+    try {
+      // The cookie (if any) rides along; no token handling in client code.
+      const user = await getCurrentUser();
+      setSessionHint();
+      setAuth({
+        user,
+        token: null,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
+    } catch (error) {
+      if (isServerUnreachable(error)) {
+        setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false, error: null, offline: true });
+        return;
+      }
+      clearSessionHint();
+      setAuth({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      });
+    } finally {
+      probingRef.current = false;
+    }
+  };
+
   // Initial authentication check (runs ONLY on first load)
   useEffect(() => {
     const initAuth = async () => {
@@ -114,33 +158,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      try {
-        // The cookie (if any) rides along; no token handling in client code.
-        const user = await getCurrentUser();
-        setSessionHint();
-        setAuth({
-          user,
-          token: null,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
-        if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
-      } catch (error) {
-        clearSessionHint();
-        setAuth({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: null,
-        });
-      }
+      await probeSession();
     };
 
     initAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // LT-614: while the server cannot be reached, ask again every few seconds,
+  // when the browser says it is back online, and when the app comes back to
+  // the screen (an Android WebView does not always fire "online").
+  useEffect(() => {
+    if (!auth.offline) return undefined;
+    const retry = () => { void probeSession(); };
+    const onVisible = () => { if (document.visibilityState === 'visible') retry(); };
+    const timer = window.setInterval(retry, OFFLINE_RETRY_MS);
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.offline]);
 
   const login = async (email: string, password: string, staySignedIn = false) => {
     setLoading(true);
@@ -335,7 +376,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   logoutRef.current = logout;
 
   return (
-    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithApple, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser }}>
+    <AuthContext.Provider value={{ auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithApple, loginWithFacebook, logout, loading, updateUser, updatePassword, refreshUser, retryConnection: probeSession }}>
       {children}
     </AuthContext.Provider>
   );

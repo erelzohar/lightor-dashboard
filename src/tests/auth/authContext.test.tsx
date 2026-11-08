@@ -62,6 +62,7 @@ const Consumer: React.FC = () => {
       <span data-testid="plan">{auth.user?.subscription?.status ?? '-'}</span>
       <span data-testid="error">{auth.error ?? '-'}</span>
       <span data-testid="token">{auth.token === null ? 'null' : String(auth.token)}</span>
+      <span data-testid="offline">{auth.offline ? 'offline' : '-'}</span>
       <button onClick={() => login('jane', 'secret', true)}>login</button>
       <button onClick={() => loginWithGoogle('g-cred')}>google</button>
       <button onClick={() => loginWithFacebook({ accessToken: 'fb-token' })}>facebook</button>
@@ -140,6 +141,59 @@ describe('AuthContext', () => {
       await settled();
       expect(screen.getByTestId('token')).toHaveTextContent('null');
       expect(localStorage.getItem('lightor')).toBeNull();
+    });
+  });
+
+  // LT-614 (seen in the Android app 2026-11-08): opened with no internet, the
+  // app showed the sign-in screen as if the owner had been signed out.
+  describe('no connection at launch (LT-614)', () => {
+    const unreachable = () => Object.assign(new Error('Server unreachable'), { code: 'SERVER_UNREACHABLE' });
+
+    it('is not a sign-out: the session stays and the routes say "no connection"', async () => {
+      vi.mocked(getCurrentUser).mockRejectedValue(unreachable());
+
+      renderAuth();
+
+      await settled();
+      expect(screen.getByTestId('state')).toHaveTextContent('out');
+      expect(screen.getByTestId('offline')).toHaveTextContent('offline');
+      expect(hasSessionHint()).toBe(true);
+    });
+
+    it('asks again by itself and signs in once the server answers', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(getCurrentUser).mockRejectedValueOnce(unreachable()).mockResolvedValue(user());
+
+      renderAuth();
+      await waitFor(() => expect(screen.getByTestId('offline')).toHaveTextContent('offline'));
+      await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+
+      await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
+      expect(screen.getByTestId('offline')).toHaveTextContent('-');
+      vi.useRealTimers();
+    });
+
+    it('asks again the moment the browser is back online', async () => {
+      vi.mocked(getCurrentUser).mockRejectedValueOnce(unreachable()).mockResolvedValue(user());
+
+      renderAuth();
+      await waitFor(() => expect(screen.getByTestId('offline')).toHaveTextContent('offline'));
+      act(() => { window.dispatchEvent(new Event('online')); });
+
+      await waitFor(() => expect(screen.getByTestId('state')).toHaveTextContent('in'));
+      expect(getCurrentUser).toHaveBeenCalledTimes(2);
+    });
+
+    it('signs out as before when the server, reached again, refuses the session', async () => {
+      vi.mocked(getCurrentUser).mockRejectedValueOnce(unreachable()).mockRejectedValue(new Error('Invalid token'));
+
+      renderAuth();
+      await waitFor(() => expect(screen.getByTestId('offline')).toHaveTextContent('offline'));
+      act(() => { window.dispatchEvent(new Event('online')); });
+
+      await waitFor(() => expect(screen.getByTestId('offline')).toHaveTextContent('-'));
+      expect(screen.getByTestId('state')).toHaveTextContent('out');
+      expect(hasSessionHint()).toBe(false);
     });
   });
 
