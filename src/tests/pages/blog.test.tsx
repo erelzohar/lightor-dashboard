@@ -9,7 +9,7 @@ import { blogLooksOf, withBlogSection } from '../../utils/blogLooks';
 import { blockLookOf } from '../../utils/editorOptions';
 import { previewPostOf } from '../../components/blog/PostPreview';
 import toast from 'react-hot-toast';
-import { updateWebConfig } from '../../store/slices/webConfigSlice';
+import { fetchWebConfig, updateWebConfig } from '../../store/slices/webConfigSlice';
 
 /**
  * LT-610 (the LT-495 plan, Erel 2026-11-07): the dashboard's Blog page. Pro
@@ -21,7 +21,7 @@ const i18n = vi.hoisted(() => ({ t: (key: string, o?: Record<string, unknown>) =
 vi.mock('react-i18next', () => ({ useTranslation: () => i18n }));
 vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }) }));
 vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.resolve(file) }));
-const site = vi.hoisted(() => ({ current: { subDomain: 'studio', defaultLanguage: 'he', components: { hero: { heroImageSrc: 'hero.webp' }, portfolio: { items: [{ url: 'a.webp' }] } } } as Record<string, unknown> }));
+const site = vi.hoisted(() => ({ current: { _id: 'wc1', subDomain: 'studio', defaultLanguage: 'he', components: { hero: { heroImageSrc: 'hero.webp' }, portfolio: { items: [{ url: 'a.webp' }] } } } as Record<string, unknown> }));
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: site.current } }),
 }));
@@ -30,6 +30,7 @@ const store = vi.hoisted(() => ({ dispatch: vi.fn(async (action: unknown) => act
 vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => store.dispatch }));
 vi.mock('../../store/slices/webConfigSlice', () => ({
   updateWebConfig: Object.assign(vi.fn((payload: unknown) => ({ type: 'webConfig/update', payload })), { rejected: { match: () => false } }),
+  fetchWebConfig: vi.fn((id: string) => ({ type: 'webConfig/fetch', payload: id })),
 }));
 const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true), isNativeApp: () => false }));
 vi.mock('../../lib/platform', () => platform);
@@ -277,6 +278,8 @@ describe("the blog's switch on the site (LT-638)", () => {
     // The site's other parts go back as they were.
     expect(sent.components.portfolio).toEqual({ items: [{ url: 'a.webp' }] });
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('blog.visibility.savedHidden'));
+    // LT-641: fetched again, with the products' and the blog's summaries the save's answer lacks.
+    expect(fetchWebConfig).toHaveBeenCalledWith('wc1');
   });
 
   it('says the blog is hidden and kept, with no way to it on the site, and turns it back on', async () => {
@@ -290,6 +293,20 @@ describe("the blog's switch on the site (LT-638)", () => {
     fireEvent.click(within(card).getByRole('switch'));
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
     expect((vi.mocked(updateWebConfig).mock.calls[0][0] as unknown as { components: { blog: unknown } }).components.blog).toEqual({ title: 'יומן', visible: true });
+  });
+
+  // LT-641 (Erel): a first post showed in the editor only after a reload.
+  it("fetches the site's config again after a post is published, so the editor sees it", async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post()], limits: PRO });
+    vi.mocked(getPost).mockResolvedValue(post({ body: [{ kind: 'p', text: 'פסקה.' }] }));
+    vi.mocked(updatePost).mockImplementation(async (_id, input) => post({ ...input, status: 'published', cover: null } as Partial<Post>));
+    vi.mocked(deletePost).mockResolvedValue(undefined as never);
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /לק ג׳ל שמחזיק/ }));
+    const editor = await screen.findByTestId('post-editor');
+    expect(fetchWebConfig).not.toHaveBeenCalled();
+    fireEvent.click(within(editor).getByTestId('post-publish'));
+    await waitFor(() => expect(fetchWebConfig).toHaveBeenCalledWith('wc1'));
   });
 
   it('is not there before the blog has a post, nor on other plans', async () => {
@@ -333,6 +350,8 @@ describe('the Blog page on other plans (LT-610)', () => {
     fireEvent.click(screen.getByRole('button', { name: /blog.editor.delete: / }));
     fireEvent.click(await screen.findByRole('button', { name: 'blog.editor.delete' }));
     await waitFor(() => expect(deletePost).toHaveBeenCalledWith('p1'));
+    // LT-641: the site's config fetched again, so the editor no longer shows it.
+    await waitFor(() => expect(fetchWebConfig).toHaveBeenCalledWith('wc1'));
   });
 });
 

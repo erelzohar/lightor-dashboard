@@ -5,7 +5,7 @@ import { Check, ExternalLink, EyeOff, Loader2, Lock, Newspaper, PenLine, Sparkle
 import toast from 'react-hot-toast';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { updateWebConfig } from '../store/slices/webConfigSlice';
+import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useConfirm } from '../hooks/useConfirm';
 import { canOfferPurchases } from '../lib/platform';
@@ -48,6 +48,15 @@ const Blog: React.FC = () => {
   const [savingShown, setSavingShown] = useState(false);
   const components = (webConfig?.components ?? {}) as Record<string, Record<string, unknown> | undefined>;
   const shownOnSite = components.blog?.visible !== false;
+  // LT-641: every page, the site editor too, reads the site's config from the store, with what the
+  // server adds when it is fetched (the blog's posts, the products). A change to what the site shows
+  // fetches it again: the editor kept the old one until a reload, and after the switch (whose save
+  // answer carries neither) it lost its page switcher, the products' pages with it.
+  const siteId = typeof webConfig?._id === 'string' ? webConfig._id : null;
+  const refreshSite = useCallback(() => {
+    if (siteId) void dispatch(fetchWebConfig(siteId));
+  }, [siteId, dispatch]);
+
   const setShownOnSite = async (visible: boolean) => {
     if (!webConfig) return;
     setSavingShown(true);
@@ -57,6 +66,7 @@ const Blog: React.FC = () => {
         components: { ...components, blog: { ...(components.blog ?? {}), visible } },
       } as unknown as Parameters<typeof updateWebConfig>[0]));
       if (updateWebConfig.rejected.match(res)) throw new Error('Update rejected');
+      refreshSite();
       toast.success(t(visible ? 'blog.visibility.savedShown' : 'blog.visibility.savedHidden'));
     } catch {
       toast.error(t('blog.editor.saveFailed'));
@@ -109,11 +119,13 @@ const Blog: React.FC = () => {
       return [post, ...rest];
     });
     void listPosts().then(({ limits: plan }) => setLimits(plan)).catch(() => undefined);
+    refreshSite();
   };
   const removed = (id: string) => {
     setPosts((list) => (list ?? []).filter((p) => p._id !== id));
     setEditing(null);
     setComing(null);
+    refreshSite();
   };
 
   const removeKept = async (post: Post) => {
