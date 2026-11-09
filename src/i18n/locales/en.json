@@ -487,7 +487,8 @@
     "appleNoEmail": "Apple did not share an email address, and an account needs one. Try again and share your email (Apple's hidden address works too).",
     "appleFailed": "Signing in with Apple failed. Please try again.",
     "facebookNoEmail": "Facebook did not share an email address, and an account needs one. Try again and allow your email, or sign up with email.",
-    "facebookFailed": "Signing in with Facebook failed. Please try again."
+    "facebookFailed": "Signing in with Facebook failed. Please try again.",
+    "weeklyLimit": "A new account can be opened once a week. You can open one again from {{when}}."
   },
   "onboarding": {
     "welcomeTitle": "Welcome, {{name}}!",
@@ -1307,7 +1308,13 @@
   "handoff": {
     "connecting": "Signing you in to your account...",
     "failed": "The sign-in link has expired",
-    "goToLogin": "Sign in"
+    "goToLogin": "Sign in",
+    "switch": {
+      "title": "Switch accounts?",
+      "body": "This device is signed in to {{current}}. The link opens the account {{next}}.",
+      "confirm": "Switch to the new account",
+      "stay": "Stay in my account"
+    }
   },
   "verifyGate": {
     "title": "Email verification required",

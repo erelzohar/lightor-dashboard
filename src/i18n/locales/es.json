@@ -489,7 +489,8 @@
     "appleNoEmail": "Apple no compartió una dirección de correo, y una cuenta la necesita. Inténtalo de nuevo y comparte tu correo (la dirección oculta de Apple también sirve).",
     "appleFailed": "No se pudo iniciar sesión con Apple. Inténtalo de nuevo.",
     "facebookNoEmail": "Facebook no compartió una dirección de correo, y una cuenta la necesita. Inténtalo de nuevo y permite tu correo, o regístrate con tu correo.",
-    "facebookFailed": "No se pudo iniciar sesión con Facebook. Inténtalo de nuevo."
+    "facebookFailed": "No se pudo iniciar sesión con Facebook. Inténtalo de nuevo.",
+    "weeklyLimit": "Se puede abrir una cuenta nueva una vez por semana. Podrás abrir otra a partir del {{when}}."
   },
   "onboarding": {
     "welcomeTitle": "¡Bienvenido, {{name}}!",
@@ -1311,7 +1312,13 @@
   "handoff": {
     "connecting": "Iniciando sesión en tu cuenta...",
     "failed": "El enlace de inicio de sesión ha caducado",
-    "goToLogin": "Iniciar sesión"
+    "goToLogin": "Iniciar sesión",
+    "switch": {
+      "title": "¿Cambiar de cuenta?",
+      "body": "Este dispositivo tiene la sesión iniciada en {{current}}. El enlace abre la cuenta {{next}}.",
+      "confirm": "Cambiar a la cuenta nueva",
+      "stay": "Quedarme en mi cuenta"
+    }
   },
   "verifyGate": {
     "title": "Se requiere verificación de correo",

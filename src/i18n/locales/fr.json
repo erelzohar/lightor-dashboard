@@ -489,7 +489,8 @@
     "appleNoEmail": "Apple n'a pas partagé d'adresse e-mail, et un compte en a besoin. Réessayez en partageant votre e-mail (l'adresse masquée d'Apple convient aussi).",
     "appleFailed": "La connexion avec Apple a échoué. Veuillez réessayer.",
     "facebookNoEmail": "Facebook n'a pas partagé d'adresse e-mail, et un compte en a besoin. Réessayez en autorisant votre e-mail, ou inscrivez-vous avec un e-mail.",
-    "facebookFailed": "La connexion avec Facebook a échoué. Veuillez réessayer."
+    "facebookFailed": "La connexion avec Facebook a échoué. Veuillez réessayer.",
+    "weeklyLimit": "Un nouveau compte peut être ouvert une fois par semaine. Vous pourrez en ouvrir un à partir du {{when}}."
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue, {{name}} !",
@@ -1311,7 +1312,13 @@
   "handoff": {
     "connecting": "Connexion à votre compte...",
     "failed": "Le lien de connexion a expiré",
-    "goToLogin": "Se connecter"
+    "goToLogin": "Se connecter",
+    "switch": {
+      "title": "Changer de compte ?",
+      "body": "Cet appareil est connecté à {{current}}. Le lien ouvre le compte {{next}}.",
+      "confirm": "Passer au nouveau compte",
+      "stay": "Rester dans mon compte"
+    }
   },
   "verifyGate": {
     "title": "Vérification de l'e-mail requise",

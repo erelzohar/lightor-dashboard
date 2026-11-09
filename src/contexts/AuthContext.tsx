@@ -14,6 +14,7 @@ import { hasSessionHint, setSessionHint, clearSessionHint } from '../services/se
 import { registerForPush, unregisterPush } from '../services/pushClient';
 import { isNativeApp } from '../lib/platform';
 import i18n from '../i18n/config';
+import { weeklyLimitMessage } from '../utils/accountPace';
 interface AuthContextType {
   auth: AuthState;
   login: (email: string, password: string, staySignedIn?: boolean) => Promise<void>;
@@ -249,7 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const e = err as { response?: { data?: { error?: string } }; message?: string };
       setAuth(prev => ({
         ...prev,
-        error: e.response?.data?.error || e.message || 'Google login failed',
+        error: weeklyLimitMessage(err, (key, options) => String(i18n.t(key, options as never)), i18n.language) ?? (e.response?.data?.error || e.message || 'Google login failed'),
         isLoading: false,
       }));
       throw err;
@@ -293,9 +294,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const e = error as { response?: { data?: { error?: string; code?: string } } };
       setAuth(prev => ({
         ...prev,
-        error: e.response?.data?.code === 'FACEBOOK_NO_EMAIL'
+        error: weeklyLimitMessage(error, (key, options) => String(i18n.t(key, options as never)), i18n.language) ?? (e.response?.data?.code === 'FACEBOOK_NO_EMAIL'
           ? i18n.t('login.facebookNoEmail')
-          : e.response?.data?.error || i18n.t('login.facebookFailed'),
+          : e.response?.data?.error || i18n.t('login.facebookFailed')),
         isLoading: false,
       }));
     } finally {
@@ -313,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: { ...prev.user!, ...updatedUser }
       }));
     } catch (error: any) {
-      throw Object.assign(new Error(error.message || 'Failed to update user account'), { code: error.code });
+      throw Object.assign(new Error(error.message || 'Failed to update user account'), { code: error.code, details: error.details });
     }
   };
 
@@ -334,6 +335,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
       if (response.success) {
+        // A changed password ends every session signed before it (LT-635), this
+        // app's stored one too: keep the one the change hands back (no-op on the web).
+        if (response.token) await saveSession(response.token);
         // The response rotated the session cookie server-side. Read the user
         // from /auth/me rather than unpacking the token — payloads carry only
         // { id, role } since LT-002.

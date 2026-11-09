@@ -52,6 +52,31 @@ const legacyAuthHeader = () => {
  * The response *sets the session cookie*; the body's token is not stored.
  * (LT-030 / LT-009)
  */
+/**
+ * LT-635 (LT-631 M4): the account signed in on this device, or null. Asked as a
+ * credential check, so a 401 here is an answer and never signs anything out.
+ */
+export const currentAccount = async (): Promise<{ _id: string; email?: string } | null> => {
+  try {
+    const response = await apiClient.get(`${globals.authUrl}me`, { withCredentials: true, ...legacyAuthHeader(), credentialCheck: true });
+    const user = response.data?.data;
+    return user?._id ? { _id: String(user._id), email: user.email } : null;
+  } catch {
+    return null;
+  }
+};
+
+/** LT-635: the account a sign-in link opens, asked without signing in to it. */
+export const handoffAccount = async (handoffToken: string): Promise<{ _id: string; email?: string } | null> => {
+  try {
+    const response = await apiClient.post(globals.authUrl + 'handoff', { token: handoffToken, check: true }, { withCredentials: true, credentialCheck: true });
+    const data = response.data?.data;
+    return data?._id ? { _id: String(data._id), email: data.email } : null;
+  } catch {
+    return null;
+  }
+};
+
 export const handoffLogin = async (handoffToken: string): Promise<{ token: string; user: User }> => {
   const response = await apiClient.post(
     globals.authUrl + 'handoff',
@@ -214,7 +239,10 @@ export const getCurrentUser = async (): Promise<User> => {
 
 
 export const verifyEmail = async (token: string): Promise<void> => {
-  const response = await apiClient.get(`${globals.authUrl}verify/${token}`);
+  // LT-635 (LT-631): the link's token is hex; anything else in it once steered
+  // this request to another /auth path (`..%2Flogout` signed the owner out).
+  if (!/^[A-Za-z0-9_-]{1,200}$/.test(token)) throw new Error('Verification failed');
+  const response = await apiClient.get(`${globals.authUrl}verify/${encodeURIComponent(token)}`);
   if (!response.data?.success) {
     throw new Error('Verification failed');
   }

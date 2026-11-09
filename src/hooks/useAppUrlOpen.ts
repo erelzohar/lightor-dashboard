@@ -58,6 +58,11 @@ export const useAppUrlOpen = (): void => {
       App.addListener('appUrlOpen', ({ url }) => {
         try {
           const parsed = new URL(url);
+          // LT-635 (LT-631 M4): the dashboard's own links only. The app also
+          // owns the Google and Facebook sign-in schemes, which any web page can
+          // open, and what their SDKs leave lands here: routed by its path alone,
+          // `<scheme>://x/handoff#t=...` signed the app in to another account.
+          if (parsed.protocol !== 'https:' || parsed.hostname !== 'dashboard.lightor.app') return;
           const to = parsed.pathname + parsed.search + parsed.hash;
           (guardedNavigate ?? navigateRef.current)(to);
         } catch {

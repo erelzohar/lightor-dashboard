@@ -16,10 +16,11 @@ const NATIVE_GOOGLE_ENABLED = true;
 const FacebookLogin =
   (FacebookLoginPkg as { default?: typeof FacebookLoginPkg }).default ?? FacebookLoginPkg;
 import { motion } from 'framer-motion';
+import { weeklyLimitMessage } from '../utils/accountPace';
 
 const Login: React.FC = () => {
   const { auth, login, loginWithGoogle, loginWithGoogleIdToken, loginWithApple, loginWithFacebook, loading } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [nativeError, setNativeError] = React.useState<string | null>(null);
 
   const googleLogin = useGoogleLogin({
@@ -63,7 +64,7 @@ const Login: React.FC = () => {
       // the outside. Naming the id turns it into a one-line fix.
       const aud = audienceOf(idToken);
       if (aud && /invalid google token/i.test(message)) message += ` - client id ${aud}`;
-      setNativeError(message);
+      setNativeError(weeklyLimitMessage(err, t, i18n?.language ?? 'he') ?? message);
     }
   };
   const onGoogleLogin = isNativeApp() ? nativeGoogleLogin : () => googleLogin();
@@ -79,9 +80,9 @@ const Login: React.FC = () => {
       // The API's own words when it answered; Apple's sheet speaks in system
       // codes ("AuthorizationError error 1000"), so those get our sentence.
       const e = err as { response?: { data?: { error?: string; code?: string } } };
-      setNativeError(e.response?.data?.code === 'APPLE_NO_EMAIL'
+      setNativeError(weeklyLimitMessage(err, t, i18n?.language ?? 'he') ?? (e.response?.data?.code === 'APPLE_NO_EMAIL'
         ? t('login.appleNoEmail')
-        : e.response?.data?.error || t('login.appleFailed'));
+        : e.response?.data?.error || t('login.appleFailed')));
     }
   };
 

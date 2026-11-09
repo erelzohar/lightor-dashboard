@@ -164,7 +164,7 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
             size="sm"
             variant="outline"
             leftIcon={<ExternalLink size={14} />}
-            onClick={() => void manageStoreUrl(userId).then((url) => window.open(url, '_blank'))}
+            onClick={() => void manageStoreUrl(userId).then((url) => window.open(url, '_blank', 'noopener,noreferrer'))}
             data-testid="store-manage"
           >
             {t('billing.store.manage', { store: storeName })}

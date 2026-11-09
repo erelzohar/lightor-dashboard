@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../../services/phoneCodeApi';
 import { checkPhone, formatPhoneForDisplay, toE164 } from '../../utils/phone';
 import DeleteAccountDialog from '../account/DeleteAccountDialog';
+import { weeklyLimitMessage } from '../../utils/accountPace';
 
 const RESEND_SECONDS = 30;
 const CODE_LENGTH = 6;
@@ -104,7 +105,8 @@ const PhoneGate: React.FC = () => {
       await updateUser({ phone: toE164(codeFor) ?? codeFor, phoneToken });
     } catch (err) {
       setCode('');
-      setError(t(gateErrorKey(err)));
+      // LT-633: a phone that opened or deleted another account this week waits.
+      setError(weeklyLimitMessage(err, t, language) ?? t(gateErrorKey(err)));
       setBusy(false);
     }
   };

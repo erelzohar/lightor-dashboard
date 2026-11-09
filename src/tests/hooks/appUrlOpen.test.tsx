@@ -75,6 +75,23 @@ describe('native deep links (LT-315)', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/appointments');
   });
 
+  it('ignore a link that is not the dashboard\'s own (LT-635)', async () => {
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <AppUrlOpenListener />
+        <Routes>
+          <Route path="*" element={<Where />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    await act(async () => {});
+    open('com.googleusercontent.apps.123-abc://x/handoff#t=ho_evil');
+    open('fb2690947951349617://authorize/handoff#t=ho_evil');
+    open('http://dashboard.lightor.app/handoff#t=ho_evil');
+    open('https://evil.example/handoff#t=ho_evil');
+    expect(screen.getByTestId('where')).toHaveTextContent('/login');
+  });
+
   it('listen for nothing on the web', async () => {
     isNative.value = false;
     render(
