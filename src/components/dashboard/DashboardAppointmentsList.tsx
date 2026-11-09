@@ -1,6 +1,6 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
 import { hasPrice } from '../../utils/currency';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Phone, Clock, Calendar, ChevronRight, ChevronLeft, Users } from 'lucide-react';
 import Card from '../ui/Card';
@@ -23,6 +23,14 @@ interface DashboardAppointmentsListProps {
 }
 
 type StatusFilter = 'all' | 'scheduled' | 'completed' | 'cancelled' | 'ongoing';
+
+/**
+ * LT-627: rows drawn at first, and again each time the box is scrolled near
+ * its end. A demo account's 360 rows were some 17,000 elements on the home
+ * page, built on every visit and torn down on leaving it, for a box that
+ * shows six at a time.
+ */
+export const ROWS_PER_PAGE = 30;
 
 // Map status to a plain hex color for inline styles (avatar backgrounds)
 const SEGMENT_BG_COLORS: Record<string, string> = {
@@ -95,6 +103,24 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
     return statusOf(session) === statusFilter;
   });
 
+  // The rows drawn so far (LT-627); a filter starts again from the top.
+  const [shown, setShown] = useState(ROWS_PER_PAGE);
+  useEffect(() => { setShown(ROWS_PER_PAGE); }, [statusFilter]);
+  const listRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const more = filtered.length > shown;
+  useEffect(() => {
+    const end = endRef.current;
+    if (!more || !end) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries.some((entry) => entry.isIntersecting)) setShown((n) => n + ROWS_PER_PAGE); },
+      { root: listRef.current, rootMargin: '0px 0px 300px 0px' },
+    );
+    observer.observe(end);
+    return () => observer.disconnect();
+  }, [more, shown]);
+  const drawn = more ? filtered.slice(0, shown) : filtered;
+
   const filterOptions: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: t('appointments.all') },
     { value: 'scheduled', label: t('appointments.scheduled') },
@@ -157,9 +183,9 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
         </div>
 
         {/* List */}
-        <div className="mt-2 divide-y divide-light-gray/10 max-h-[26rem] overflow-y-auto scrollbar-thin">
+        <div ref={listRef} className="mt-2 divide-y divide-light-gray/10 max-h-[26rem] overflow-y-auto scrollbar-thin">
           {filtered.length > 0 ? (
-            filtered.map((session, i) => {
+            drawn.map((session, i) => {
               const status = statusOf(session);
               const statusConfig = STATUS_COLORS[status] || STATUS_COLORS.scheduled;
 
@@ -297,7 +323,7 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
 
                 </motion.div>
               );
-            })
+            }).concat(more ? [<div key="more" ref={endRef} aria-hidden="true" data-testid="list-more" className="h-px !border-0" />] : [])
           ) : (
             <div className="py-12 text-center">
               <Calendar size={40} className="mx-auto mb-3 text-light-gray/30" />

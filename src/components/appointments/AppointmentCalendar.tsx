@@ -39,6 +39,7 @@ import { lightTick } from '../../lib/haptics';
 import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 import { pop } from '../ui/pop-button';
 import { staggerDelay, staggered } from '../../lib/stagger';
+import { useIsWide } from '../../hooks/useIsWide';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -124,6 +125,9 @@ const STATUS_CFG = [
 const NEXT_HIDDEN_KEY = 'lightor.nextApptHidden';
 const NEXT_WINDOW_MS = 14 * 24 * 3_600_000;
 
+/** Days on show for a view at a width: a day on a phone, three on a tablet, the week above (LT-627: read at once, so a phone never draws a week first). */
+const daysFor = (mode: ViewMode, width: number): number => (mode === 'day' || width < 640 ? 1 : width < 1024 ? 3 : 7);
+
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments,
   onAppointmentClick,
@@ -133,7 +137,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 }) => {
   const [currentDate, setCurrentDate]           = useState(new Date());
   const [viewMode,    setViewMode]              = useState<ViewMode>('week');
-  const [visibleDays, setVisibleDays]           = useState(7);
+  const [visibleDays, setVisibleDays]           = useState(() => daysFor('week', window.innerWidth));
+  // LT-627: the desktop side panel only where it shows (below lg it was drawn and hidden).
+  const wide = useIsWide();
   // Measured at once (LT-315): the first auto-scroll reads it on mount.
   const [nowMinutes,  setNowMinutes]            = useState(nowMinutesOfDay);
   const [miniCalMonth,setMiniCalMonth]          = useState(startOfMonth(new Date()));
@@ -227,11 +233,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   // ── Resize handler ────────────────────────────────────────────────────
   useEffect(() => {
-    const onResize = () => {
-      if (viewMode === 'day' || window.innerWidth < 640) setVisibleDays(1);
-      else if (window.innerWidth < 1024) setVisibleDays(3);
-      else setVisibleDays(7);
-    };
+    const onResize = () => setVisibleDays(daysFor(viewMode, window.innerWidth));
     onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
@@ -458,7 +460,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   const handleViewMode = (m: ViewMode) => {
     setViewMode(m);
-    setVisibleDays(m === 'day' ? 1 : window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 3 : 7);
+    setVisibleDays(daysFor(m, window.innerWidth));
   };
 
   /**
@@ -880,12 +882,15 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       {/* ─────────────────────────────────────────────────────────────────
           SIDEBAR — always dark, fixed colors
       ───────────────────────────────────────────────────────────────── */}
-      <aside
-        className="hidden lg:block w-[300px] flex-shrink-0 overflow-y-auto"
-        style={{ background: '#1a1b26', borderRight: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}
-      >
-        {sidePanel}
-      </aside>
+      {wide && (
+        <aside
+          className="hidden lg:block w-[300px] flex-shrink-0 overflow-y-auto"
+          style={{ background: '#1a1b26', borderRight: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}
+          data-testid="calendar-aside"
+        >
+          {sidePanel}
+        </aside>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────────
           MOBILE SIDEBAR DRAWER
