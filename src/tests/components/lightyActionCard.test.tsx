@@ -210,4 +210,19 @@ describe("Lighty's action card (LT-561)", () => {
     expect(text).not.toContain('תמונות מוסיפים בדף המוצרים.');
     expect([...screen.getByTestId('card-pictures').querySelectorAll('img')].map((i) => i.getAttribute('src')?.split('/').pop())).toEqual(['mug1.webp', 'mug2.webp']);
   });
+
+  // LT-629 (Erel: "sometimes the pictures in the chat show empty"): the picture Lighty made is a
+  // full address; joined to the images address it never loaded.
+  it('shows a picture Lighty made at its own address, and a quiet mark for one that is gone', () => {
+    const made = 'https://api.lightor.app/api/images/tmp-ai-0b6f1a8e-0c1f-4c7c-9d4e-1f2a3b4c5d6e.webp';
+    render(<LightyActionCard action={card({ kind: 'product_add', card: {
+      items: [{ subject: 'מברשת שיניים', field: 'pictures', before: null, after: '2' }],
+      texts: 0, notes: [{ key: 'aiPicture' }], pictures: [made, 'kept.webp'],
+    } })} onChange={vi.fn()} />);
+    const pictures = [...screen.getByTestId('card-pictures').querySelectorAll('img')];
+    expect(pictures.map((i) => i.getAttribute('src'))).toEqual([made, expect.stringMatching(/\/api\/images\/kept\.webp$/)]);
+    fireEvent.error(pictures[0]);
+    expect(screen.getByTestId('card-picture-gone')).toBeInTheDocument();
+    expect(screen.getByTestId('card-pictures').querySelectorAll('img')).toHaveLength(1);
+  });
 });

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLeaveGuard } from '../../contexts/LeaveGuardContext';
-import globals from '../../services/globals';
+import { resolveImage } from '../../utils/images';
 
 /**
  * LT-253 — Lighty's face and voice wherever the owner talks to the AI: the
@@ -122,7 +122,7 @@ export const OwnerBubble: React.FC<{ children: React.ReactNode; images?: string[
     <div className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-ee-md bg-primary text-white px-3 py-2 text-sm">
       {images?.length ? (
         <div className="mb-1.5 flex flex-wrap gap-1.5" data-testid="owner-pictures">
-          {images.map((name) => <img key={name} src={`${globals.imagesUrl}${name}`} alt="" className="h-16 w-16 rounded-lg object-cover" />)}
+          {images.map((name) => <img key={name} src={resolveImage(name)} alt="" className="h-16 w-16 rounded-lg object-cover" />)}
         </div>
       ) : null}
       {children}

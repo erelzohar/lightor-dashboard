@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AlertTriangle, Ban, Bell, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, ListPlus, Loader2,
+  AlertTriangle, Ban, Bell, CalendarCheck, CalendarClock, CalendarOff, CalendarPlus, CalendarX, Check, Clock, ImageOff, ListPlus, Loader2,
   MessageCircleReply, MessageSquare, Package, Send, PackagePlus, Pencil, Settings2, StickyNote, Store, Undo2, UserPlus, Users, X, type LucideIcon,
 } from 'lucide-react';
 import { israeliPhoneKind, toE164, whatsAppHref } from '../../utils/phone';
 import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
-import globals from '../../services/globals';
+import { resolveImage } from '../../utils/images';
+
+/**
+ * LT-629 (Erel: "sometimes the pictures in the chat show empty"): a picture Lighty made is a
+ * full address, not a name to join to the images address - joined, it never loaded. One that
+ * is gone since (a declined card's temporary picture) shows a quiet mark, not a broken image.
+ */
+const CardPicture: React.FC<{ name: string }> = ({ name }) => {
+  const [broken, setBroken] = useState(false);
+  return broken ? (
+    <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500" data-testid="card-picture-gone">
+      <ImageOff className="h-5 w-5" aria-hidden="true" />
+    </span>
+  ) : (
+    <img src={resolveImage(name)} alt="" onError={() => setBroken(true)} className="h-12 w-12 rounded-lg object-cover" />
+  );
+};
 
 /**
  * LT-561 — a change Lighty proposed, as the server wrote it from the owner's
@@ -161,7 +177,7 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
     if (field === 'pictures' && action.card.pictures?.length) {
       return (
         <span className="flex flex-wrap gap-1.5" data-testid="card-pictures">
-          {action.card.pictures.map((name) => <img key={name} src={`${globals.imagesUrl}${name}`} alt="" className="h-12 w-12 rounded-lg object-cover" />)}
+          {action.card.pictures.map((name) => <CardPicture key={name} name={name} />)}
         </span>
       );
     }
