@@ -73,7 +73,7 @@ const LightyWrites: React.FC<Props> = ({ draftsLeft, draftsPerMonth, onDrafted, 
         aria-labelledby="lighty-writes-title"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl dark:bg-slate-900 sm:rounded-3xl"
+        className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-white p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl dark:bg-slate-900 sm:rounded-3xl sm:pb-6"
         data-testid="lighty-writes"
       >
         <div className="mb-4 flex items-start justify-between gap-3">

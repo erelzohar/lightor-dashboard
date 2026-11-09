@@ -269,7 +269,7 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, onReplac
                     aria-labelledby={aiTitleId}
                     data-testid="gallery-ai-edit"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex max-h-[92dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-2xl bg-white p-5 dark:bg-slate-900 sm:rounded-2xl"
+                    className="flex max-h-[92dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-2xl bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] dark:bg-slate-900 sm:rounded-2xl sm:pb-5"
                 >
                     <div className="flex items-center justify-between gap-3">
                         <h2 id={aiTitleId} className="text-lg font-bold text-gray-900 dark:text-white">{t('portfolio.aiEditTitle')}</h2>

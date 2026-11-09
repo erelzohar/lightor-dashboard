@@ -193,6 +193,22 @@ describe('the Blog page on Pro (LT-610)', () => {
     expect((await within(editor).findByTestId('post-address')).textContent).toContain('https://studio.lightor.app/blog/gel-nails');
   });
 
+  // LT-636 (Erel's iPhone): on a phone the editor is the whole screen, and its
+  // title and close button sat under the status bar, its buttons on the home bar.
+  it("keeps the editor's bar under the phone's status bar and its buttons above the home bar", async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post()], limits: PRO });
+    vi.mocked(getPost).mockResolvedValue(post());
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /לק ג׳ל שמחזיק/ }));
+    const editor = await screen.findByTestId('post-editor');
+    const bar = within(editor).getByRole('button', { name: 'blog.editor.close' }).parentElement!;
+    expect(bar.className).toContain('pt-[max(0.75rem,env(safe-area-inset-top))]');
+    expect(bar.className).toContain('sm:pt-3');
+    const buttons = within(editor).getByTestId('post-publish').closest('.border-t') as HTMLElement;
+    expect(buttons.className).toContain('pb-[calc(0.75rem+env(safe-area-inset-bottom))]');
+    expect(buttons.className).toContain('sm:pb-3');
+  });
+
   it('says what went wrong when the month\'s publications are used', async () => {
     vi.mocked(listPosts).mockResolvedValue({ posts: [], limits: PRO });
     vi.mocked(createPost).mockRejectedValue({ response: { status: 429, data: { code: 'POST_PUBLISH_CAP' } } });

@@ -189,7 +189,9 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, pict
         className="flex h-full w-full max-w-3xl flex-col overflow-hidden bg-white shadow-2xl dark:bg-slate-900 sm:rounded-3xl"
         data-testid="post-editor"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-3 dark:border-slate-700">
+        {/* LT-636: on a phone the editor is the whole screen, so its bar starts
+            under the status bar and its buttons end above the home bar. */}
+        <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-700 sm:pt-3">
           <h2 id="post-editor-title" className="min-w-0 break-words font-semibold text-gray-900 dark:text-white">
             {title.trim() || t('blog.untitled')}
           </h2>
@@ -244,7 +246,7 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, pict
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-5 py-3 dark:border-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] dark:border-slate-700 sm:pb-3">
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setPreviewing(true)} className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-slate-600 dark:text-slate-200" data-testid="post-preview-open">
               <Eye className="h-4 w-4" /> {t('blog.editor.preview')}

@@ -76,10 +76,11 @@ const PostPreview: React.FC<{ post: PreviewPost; config: Record<string, unknown>
         aria-label={t('blog.preview.title')}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-5xl flex-col overflow-hidden bg-white shadow-2xl dark:bg-slate-900 sm:h-[90vh] sm:rounded-2xl"
+        className="flex h-full w-full max-w-5xl flex-col overflow-hidden bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl dark:bg-slate-900 sm:h-[90vh] sm:rounded-2xl sm:pb-0"
         data-testid="post-preview"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-slate-700">
+        {/* LT-636: on a phone the preview is the whole screen; its bar starts under the status bar. */}
+        <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-700 sm:pt-3">
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white">{t('blog.preview.title')}</p>
             <p className="text-xs text-gray-500 dark:text-slate-400">{t('blog.preview.note')}</p>
