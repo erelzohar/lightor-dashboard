@@ -55,6 +55,18 @@ const Signup: React.FC = () => {
     return () => window.removeEventListener('message', onMessage);
   }, [navigate]);
 
+  // LT-628: the window behind the keyboard's rounded corners takes the body's
+  // colour (capacitor.config: Keyboard autoBackdropColor 'dom'). The framed
+  // signup is black, so the body is black while this page is open (the page's
+  // own bg-black is 90% black: over the white body it was a grey band).
+  useEffect(() => {
+    const before = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#000';
+    return () => {
+      document.body.style.backgroundColor = before;
+    };
+  }, []);
+
   const BackArrow = i18n.dir?.() === 'rtl' ? ArrowRight : ArrowLeft;
 
   return (

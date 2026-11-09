@@ -65,6 +65,14 @@ const config: CapacitorConfig = {
       autoBlockRolledBackBundles: true,
       publicKey: liveUpdatePublicKey(),
     },
+    // LT-628: with @capacitor/keyboard installed, iOS no longer adds its form
+    // bar (^ v ✓) above the keyboard, and the web view is resized to end at
+    // the keyboard's top (resize 'native', the default). What shows behind the
+    // keyboard's rounded corners is the window, black unless painted: 'dom'
+    // paints it the body's colour each time the keyboard opens.
+    Keyboard: {
+      autoBackdropColor: 'dom',
+    },
     FirebaseMessaging: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },

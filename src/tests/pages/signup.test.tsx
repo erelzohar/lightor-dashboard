@@ -42,6 +42,13 @@ describe('the signup page in the app', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  it("paints the body black while it is open, so the keyboard's corners show black (LT-628)", () => {
+    const page = renderPage();
+    expect(document.body.style.backgroundColor).toBe('rgb(0, 0, 0)');
+    page.unmount();
+    expect(document.body.style.backgroundColor).toBe('');
+  });
+
   it('tells the frame which page is around it, on the register origin only', async () => {
     renderPage();
     const post = vi.spyOn(frame().contentWindow!, 'postMessage');

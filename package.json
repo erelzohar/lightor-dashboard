@@ -25,6 +25,7 @@
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.1",
     "@capacitor/haptics": "^8.0.2",
+    "@capacitor/keyboard": "8.0.6",
     "@capacitor/preferences": "^8.0.1",
     "@capawesome/capacitor-live-update": "8.7.1",
     "@dnd-kit/core": "^6.3.1",
