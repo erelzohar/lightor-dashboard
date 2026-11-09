@@ -263,13 +263,13 @@ const PostEditor: React.FC<Props> = ({ post, siteUrl, config, sitePictures, pict
                 <button type="button" onClick={() => void save('draft', 'unpublish')} disabled={!!busy} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200">
                   {busy === 'unpublish' ? <Loader2 className="h-4 w-4 animate-spin" /> : t('blog.editor.unpublish')}
                 </button>
-                <button type="button" onClick={() => void save('published', 'save')} disabled={!!busy} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" data-testid="post-update">
+                <button type="button" onClick={() => void save('published', 'save')} disabled={!!busy || !dirty} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" data-testid="post-update">
                   {busy === 'save' ? <Loader2 className="h-4 w-4 animate-spin" /> : t('blog.editor.update')}
                 </button>
               </>
             ) : (
               <>
-                <button type="button" onClick={() => void save('draft', 'save')} disabled={!!busy} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200" data-testid="post-save-draft">
+                <button type="button" onClick={() => void save('draft', 'save')} disabled={!!busy || !dirty} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200" data-testid="post-save-draft">
                   {busy === 'save' ? <Loader2 className="h-4 w-4 animate-spin" /> : t('blog.editor.saveDraft')}
                 </button>
                 <button type="button" onClick={() => void save('published', 'publish')} disabled={!!busy} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" data-testid="post-publish">

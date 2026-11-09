@@ -149,6 +149,38 @@ describe('Services page - by site mode', () => {
     expect(vi.mocked(updateAppointmentType).mock.calls[0]).toEqual(['s1', { name: 'Kitchen & bath', price: '900', image: '' }]);
   });
 
+  // LT-637 (Erel): nothing changed, nothing sent; a double tap saves once.
+  it('keeps Save off for an unchanged service, and a double tap saves once', async () => {
+    answerTypes(() => [service({ price: '900' })]);
+    renderPage('lead');
+    fireEvent.click(await screen.findByText('Kitchen renovation'));
+    const save = screen.getByTestId('service-save');
+    expect(save).toBeDisabled();
+    fireEvent.change(input('name')!, { target: { value: 'Kitchen & bath' } });
+    expect(save).toBeEnabled();
+    fireEvent.click(save);
+    fireEvent.click(save);
+    await waitFor(() => expect(updateAppointmentType).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps Save off for a booking site's unchanged service, its class fields included", async () => {
+    answerTypes(() => [service({ price: '100', durationMS: '1800000' })]);
+    renderPage('book');
+    fireEvent.click(await screen.findByText('Kitchen renovation'));
+    expect(screen.getByTestId('service-save')).toBeDisabled();
+    fireEvent.change(input('price')!, { target: { value: '120' } });
+    expect(screen.getByTestId('service-save')).toBeEnabled();
+  });
+
+  it('keeps Save off in a new service until it has a name', async () => {
+    renderPage('lead');
+    await screen.findByText('appointmentTypes.noServices');
+    fireEvent.click(screen.getByText('appointmentTypes.newService'));
+    expect(screen.getByTestId('service-save')).toBeDisabled();
+    fireEvent.change(input('name')!, { target: { value: 'Kitchen renovation' } });
+    expect(screen.getByTestId('service-save')).toBeEnabled();
+  });
+
   it('lists a leads site’s services with their price only when they have one, and no duration', async () => {
     answerTypes(() => [
       service({ _id: 's1', name: 'Kitchen renovation', price: '' }),

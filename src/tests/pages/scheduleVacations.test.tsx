@@ -215,9 +215,12 @@ describe("Schedule: a vacation on the business's clock", () => {
     const [start, end] = dateTimeInputs(container);
     expect(start.value).toBe('2030-03-04T10:00');
     expect(end.value).toBe('2030-03-06T10:00');
+    // LT-637 (Erel): nothing changed, nothing sent.
+    const save = () => { const saves = screen.getAllByText('common.save'); return saves[saves.length - 1].closest('button')!; };
+    expect(save()).toBeDisabled();
     fireEvent.change(end, { target: { value: '2030-03-06T12:30' } });
-    const saves = screen.getAllByText('common.save');
-    fireEvent.click(saves[saves.length - 1]);
+    expect(save()).toBeEnabled();
+    fireEvent.click(save());
 
     await waitFor(() => expect(updateVacation).toHaveBeenCalledTimes(1));
     expect(vi.mocked(updateVacation).mock.calls[0][0]).toMatchObject({

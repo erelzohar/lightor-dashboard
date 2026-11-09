@@ -139,6 +139,9 @@ const Account: React.FC = () => {
     }
   };
 
+  // LT-637 (Erel): nothing changed, nothing sent.
+  const detailsChanged = formData.name.trim() !== (auth.user?.name ?? '').trim() || !samePhone(formData.phone, auth.user?.phone);
+
   const saveDetails = async (phoneToken?: string) => {
     // Only what this form edits: the language has its own card, and a
     // stale copy here would undo a change made there meanwhile (LT-315).
@@ -154,7 +157,7 @@ const Account: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (codeFor) return;
+    if (codeFor || !detailsChanged) return;
     setCodeError(null);
     setTriedSave(true);
     // A new number first gets a code (LT-360); the same one saves at once.
@@ -342,7 +345,7 @@ const Account: React.FC = () => {
                   {t('account.phoneCode.confirm')}
                 </Button>
               ) : (
-                <Button type="submit" isLoading={codeBusy}>
+                <Button type="submit" isLoading={codeBusy} disabled={!detailsChanged}>
                   {t('account.saveChanges')}
                 </Button>
               )}

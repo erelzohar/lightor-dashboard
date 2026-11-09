@@ -58,6 +58,8 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
     listeners
 }, ref) => {
     const { t } = useTranslation();
+    // LT-637 (Erel): the check waits for a title that is not the one saved.
+    const titleChanged = (editTitle ?? '').trim() !== (item.title ?? '').trim();
 
     return (
         <div
@@ -145,7 +147,7 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                 aria-label={t('portfolio.enterTitle')}
                                 autoFocus
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') onSave?.();
+                                    if (e.key === 'Enter' && titleChanged) onSave?.();
                                     if (e.key === 'Escape') onCancelEdit?.();
                                 }}
                             />
@@ -159,7 +161,8 @@ export const PortfolioImageCard = React.forwardRef<HTMLDivElement, {
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onSave?.(); }}
-                                    className="p-1.5 rounded-lg bg-primary hover:brightness-110 text-white transition-colors shadow-md cursor-pointer touch-manipulation"
+                                    disabled={!titleChanged}
+                                    className="p-1.5 rounded-lg bg-primary hover:brightness-110 text-white transition-colors shadow-md cursor-pointer touch-manipulation disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
                                     aria-label={t('common.save')}
                                 >
                                     <Check size={14} />
@@ -250,7 +253,8 @@ const SortableImageItem: React.FC<Props> = ({ item, onRemove, onUpdate, onReplac
             onAiEditClick={onReplace ? () => setAiOpen(true) : undefined}
             onRemoveClick={() => void askRemove()}
             onSave={() => {
-                onUpdate(item.url, { title: editTitle.trim() });
+                // LT-637: an unchanged title is not sent again.
+                if (editTitle.trim() !== (item.title || '').trim()) onUpdate(item.url, { title: editTitle.trim() });
                 setIsEditing(false);
             }}
             onCancelEdit={handleCancelEdit}

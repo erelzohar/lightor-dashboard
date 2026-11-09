@@ -1059,6 +1059,9 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, timeZone,
     webConfig_id: vacation.webConfig_id,
   }));
   const nowInput = zonedInputValue(Date.now(), timeZone);
+  // LT-637 (Erel): nothing changed, nothing sent.
+  const [initial] = useState(() => JSON.stringify(editData));
+  const unchanged = JSON.stringify(editData) === initial;
 
   return (
     <div className="space-y-4">
@@ -1091,7 +1094,7 @@ const VacationEditForm: React.FC<VacationEditFormProps> = ({ vacation, timeZone,
         <Button variant="danger" size="sm" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button variant="primary" size="sm" onClick={() => onSave(editData)} disabled={isSaving}>
+        <Button variant="primary" size="sm" onClick={() => onSave(editData)} disabled={isSaving || unchanged}>
           {t('common.save')}
         </Button>
       </div>

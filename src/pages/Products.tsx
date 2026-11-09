@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eye, EyeOff, ExternalLink, GripVertical, ImagePlus, Images, Info, Loader2, Plus, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
@@ -152,6 +152,10 @@ const ProductEditor: React.FC<{
   const titleId = useId();
   const { confirm, dialog } = useConfirm();
   const [draft, setDraft] = useState<Draft>(() => draftOf(product));
+  // LT-637 (Erel): nothing to send, nothing sent - Save waits for a change. A sample from the
+  // wizard counts as one: saving it as it is makes it the owner's (no more "sample" badge).
+  const pristine = useMemo(() => JSON.stringify(draftOf(product)), [product]);
+  const changed = JSON.stringify(draft) !== pristine || !!product?.sample;
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [drafting, setDrafting] = useState(false);
@@ -591,7 +595,7 @@ const ProductEditor: React.FC<{
               {t('common.cancel')}
             </button>
             {/* LT-568: not while Lighty still makes the product's picture - it would be saved without it. */}
-            <button type="button" onClick={save} disabled={saving || creating || picturing} className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+            <button type="button" onClick={save} disabled={saving || creating || picturing || !changed} data-testid="product-save" className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('products.save')}
             </button>

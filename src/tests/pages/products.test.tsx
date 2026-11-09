@@ -125,6 +125,47 @@ describe('the Products page (LT-540)', () => {
     expect(vi.mocked(updateProduct).mock.calls[0][1]).toMatchObject({ name: 'Golden ring', sample: false, price: 12050 });
   });
 
+  // LT-637 (Erel): nothing changed, nothing sent.
+  it('keeps Save off until the product changes, and sends nothing for an unchanged one', async () => {
+    vi.mocked(updateProduct).mockClear();
+    vi.mocked(listProducts).mockResolvedValue({ products: [product({ sample: false })], limits: plan(10) });
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    const save = within(dialog).getByTestId('product-save');
+    expect(save).toBeDisabled();
+    fireEvent.click(save);
+    expect(updateProduct).not.toHaveBeenCalled();
+    fireEvent.change(within(dialog).getByLabelText('products.name'), { target: { value: 'Golden ring' } });
+    expect(save).toBeEnabled();
+    // Back as it was: nothing to send again.
+    fireEvent.change(within(dialog).getByLabelText('products.name'), { target: { value: product().name } });
+    expect(save).toBeDisabled();
+  });
+
+  it("lets a wizard's sample be saved as it is, which makes it the owner's", async () => {
+    vi.mocked(updateProduct).mockClear();
+    vi.mocked(listProducts).mockResolvedValue({ products: [product({ sample: true })], limits: plan(10) });
+    vi.mocked(updateProduct).mockResolvedValue(product({ sample: false }));
+    render(<Products />);
+    fireEvent.click(await screen.findByTestId('product-card'));
+    const dialog = await screen.findByTestId('product-editor');
+    expect(within(dialog).getByTestId('product-save')).toBeEnabled();
+    fireEvent.click(within(dialog).getByTestId('product-save'));
+    await waitFor(() => expect(vi.mocked(updateProduct).mock.calls[0][1]).toMatchObject({ sample: false }));
+  });
+
+  it('keeps Save off in an empty new product', async () => {
+    vi.mocked(listProducts).mockResolvedValue({ products: [], limits: plan(10) });
+    render(<Products />);
+    await screen.findByTestId('products-empty');
+    fireEvent.click(screen.getByText('products.add'));
+    const dialog = await screen.findByTestId('product-editor');
+    expect(within(dialog).getByTestId('product-save')).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText('products.name'), { target: { value: 'Silver ring' } });
+    expect(within(dialog).getByTestId('product-save')).toBeEnabled();
+  });
+
   // LT-577: Erel's form card - the main picture beside the words, a tapped one becomes the main one.
   it('makes a tapped picture the main one, saved first', async () => {
     vi.mocked(listProducts).mockResolvedValue({ products: [product({ images: [{ url: 'a.webp' }, { url: 'b.webp' }, { url: 'c.webp' }] })], limits: plan(10) });

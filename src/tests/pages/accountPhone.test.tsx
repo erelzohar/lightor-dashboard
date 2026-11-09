@@ -51,11 +51,17 @@ describe('Account page: the phone (LT-360)', () => {
   it('saves an unchanged phone (written another way) without a code', async () => {
     render(<Account />);
     fireEvent.click(screen.getByText('account.editDetails'));
+    const save = () => screen.getByText('account.saveChanges').closest('button')!;
+    // LT-637 (Erel): nothing changed, nothing sent - the same number written another way is no change.
+    expect(save()).toBeDisabled();
     fireEvent.change(phoneInput(), { target: { name: 'phone', value: '+972 50-123-4567' } });
-    fireEvent.click(screen.getByText('account.saveChanges'));
+    expect(save()).toBeDisabled();
+    fireEvent.change(document.querySelector('input[name="name"]') as HTMLInputElement, { target: { name: 'name', value: 'Jane Cohen' } });
+    expect(save()).toBeEnabled();
+    fireEvent.click(save());
 
     // Sent in E.164, the form it is stored in (LT-404).
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane', phone: '+972501234567' }));
+    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ name: 'Jane Cohen', phone: '+972501234567' }));
     expect(sendPhoneCode).not.toHaveBeenCalled();
   });
 

@@ -43,6 +43,24 @@ describe('a gallery picture has a title only (LT-582)', () => {
     expect(onUpdate).toHaveBeenCalledWith('pic.webp', { title: 'Wedding cake' });
   });
 
+  // LT-637 (Erel): nothing changed, nothing sent.
+  it('keeps the check off until the title changes, and sends nothing for the same one', () => {
+    const onUpdate = vi.fn();
+    render(<SortableImageItem item={ITEM} onRemove={vi.fn()} onUpdate={onUpdate} />);
+    fireEvent.click(screen.getByRole('button', { name: 'portfolio.editTitle' }));
+    const title = screen.getByRole('textbox', { name: 'portfolio.enterTitle' });
+    const check = screen.getByRole('button', { name: 'common.save' });
+    expect(check).toBeDisabled();
+    fireEvent.keyDown(title, { key: 'Enter' });
+    fireEvent.change(title, { target: { value: ' Cake ' } });
+    expect(check).toBeDisabled();
+    expect(onUpdate).not.toHaveBeenCalled();
+    fireEvent.change(title, { target: { value: 'Birthday cake' } });
+    expect(check).toBeEnabled();
+    fireEvent.keyDown(title, { key: 'Enter' });
+    expect(onUpdate).toHaveBeenCalledWith('pic.webp', { title: 'Birthday cake' });
+  });
+
   it('marks nothing as missing, and names the card\'s picture by its title', () => {
     render(<SortableImageItem item={ITEM} onRemove={vi.fn()} onUpdate={vi.fn()} />);
     expect(screen.getByRole('img')).toHaveAttribute('alt', 'Cake');

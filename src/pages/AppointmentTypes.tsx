@@ -1,6 +1,6 @@
 import { useCurrencySymbol } from '../hooks/useCurrencySymbol';
 import { hasPrice } from '../utils/currency';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, Banknote, Tag, Edit2, Trash2, ListPlus, Plus, ChevronDown, X, Users, ImagePlus, CreditCard } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -84,6 +84,19 @@ const AppointmentTypes: React.FC = () => {
   const [isClass, setIsClass] = useState(false);
   const [capacity, setCapacity] = useState('12');
   const [sessions, setSessions] = useState<ClassSession[]>([]);
+  // LT-637 (Erel): one save at a time, and nothing sent while nothing changed.
+  const [saving, setSaving] = useState(false);
+  const formState = JSON.stringify({ ...formData, isClass, capacity, sessions });
+  const savedState = useMemo(() => currentType && JSON.stringify({
+    name: currentType.name,
+    price: currentType.price ?? '',
+    durationMS: currentType.durationMS ?? '',
+    image: currentType.image ?? '',
+    isClass: currentType.kind === 'class',
+    capacity: currentType.capacity ? String(currentType.capacity) : '12',
+    sessions: currentType.sessions ?? [],
+  }), [currentType]);
+  const nothingToSave = currentType ? formState === savedState : !formData.name.trim();
   const { auth } = useAuth();
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
   // A leads site's services are content (LT-199): a name, a picture and a
@@ -219,7 +232,8 @@ const AppointmentTypes: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Saving mid-upload would store the service without the picture being chosen.
-    if (uploadingImage) return;
+    if (uploadingImage || saving || nothingToSave) return;
+    setSaving(true);
     try {
       if (leadsSite) {
         // A leads site's service (LT-199): no duration and no class fields on
@@ -262,6 +276,8 @@ const AppointmentTypes: React.FC = () => {
       } else {
         toast.error(t('appointmentTypes.saveError'));
       }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -618,7 +634,9 @@ const AppointmentTypes: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        className="flex items-center gap-1.5 px-5 py-3 rounded-full text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all"
+                        disabled={saving || uploadingImage || nothingToSave}
+                        data-testid="service-save"
+                        className="flex items-center gap-1.5 px-5 py-3 rounded-full text-xs font-semibold text-white hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                         style={{
                           background: 'linear-gradient(to right, #8b5cf6, #c084fc)',
                           boxShadow: '0 8px 24px -8px rgba(139,92,246,0.6)',

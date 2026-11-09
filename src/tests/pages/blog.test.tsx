@@ -193,6 +193,37 @@ describe('the Blog page on Pro (LT-610)', () => {
     expect((await within(editor).findByTestId('post-address')).textContent).toContain('https://studio.lightor.app/blog/gel-nails');
   });
 
+  // LT-637 (Erel): nothing changed, nothing sent.
+  it('keeps Save off until the post changes, and off again once saved', async () => {
+    vi.mocked(updatePost).mockReset();
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post()], limits: PRO });
+    vi.mocked(getPost).mockResolvedValue(post());
+    vi.mocked(updatePost).mockImplementation(async (_id, input) => post({ ...input, status: 'draft', cover: null } as Partial<Post>));
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /לק ג׳ל שמחזיק/ }));
+    const editor = await screen.findByTestId('post-editor');
+    const save = within(editor).getByTestId('post-save-draft');
+    expect(save).toBeDisabled();
+    // Publishing is an action of its own, open as before.
+    expect(within(editor).getByTestId('post-publish')).toBeEnabled();
+    fireEvent.change(within(editor).getByLabelText('blog.editor.title'), { target: { value: 'כותרת חדשה' } });
+    expect(save).toBeEnabled();
+    fireEvent.click(save);
+    await waitFor(() => expect(updatePost).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(within(editor).getByTestId('post-save-draft')).toBeDisabled());
+  });
+
+  it("keeps a published post's Update off until it changes", async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post({ status: 'published' })], limits: PRO });
+    vi.mocked(getPost).mockResolvedValue(post({ status: 'published' }));
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /לק ג׳ל שמחזיק/ }));
+    const editor = await screen.findByTestId('post-editor');
+    expect(within(editor).getByTestId('post-update')).toBeDisabled();
+    fireEvent.change(within(editor).getByLabelText('blog.editor.title'), { target: { value: 'כותרת חדשה' } });
+    expect(within(editor).getByTestId('post-update')).toBeEnabled();
+  });
+
   // LT-636 (Erel's iPhone): on a phone the editor is the whole screen, and its
   // title and close button sat under the status bar, its buttons on the home bar.
   it("keeps the editor's bar under the phone's status bar and its buttons above the home bar", async () => {
