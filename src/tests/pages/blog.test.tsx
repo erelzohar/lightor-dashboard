@@ -9,6 +9,7 @@ import { blogLooksOf, withBlogSection } from '../../utils/blogLooks';
 import { blockLookOf } from '../../utils/editorOptions';
 import { previewPostOf } from '../../components/blog/PostPreview';
 import toast from 'react-hot-toast';
+import { updateWebConfig } from '../../store/slices/webConfigSlice';
 
 /**
  * LT-610 (the LT-495 plan, Erel 2026-11-07): the dashboard's Blog page. Pro
@@ -23,6 +24,12 @@ vi.mock('browser-image-compression', () => ({ default: (file: File) => Promise.r
 const site = vi.hoisted(() => ({ current: { subDomain: 'studio', defaultLanguage: 'he', components: { hero: { heroImageSrc: 'hero.webp' }, portfolio: { items: [{ url: 'a.webp' }] } } } as Record<string, unknown> }));
 vi.mock('../../hooks/useAppSelector', () => ({
   useAppSelector: (selector: (s: unknown) => unknown) => selector({ webConfig: { data: site.current } }),
+}));
+// LT-638: the blog's switch saves the site's components, as the gallery's and the products' do.
+const store = vi.hoisted(() => ({ dispatch: vi.fn(async (action: unknown) => action) }));
+vi.mock('../../hooks/useAppDispatch', () => ({ useAppDispatch: () => store.dispatch }));
+vi.mock('../../store/slices/webConfigSlice', () => ({
+  updateWebConfig: Object.assign(vi.fn((payload: unknown) => ({ type: 'webConfig/update', payload })), { rejected: { match: () => false } }),
 }));
 const platform = vi.hoisted(() => ({ canOfferPurchases: vi.fn(() => true), isNativeApp: () => false }));
 vi.mock('../../lib/platform', () => platform);
@@ -250,6 +257,51 @@ describe('the Blog page on Pro (LT-610)', () => {
     fireEvent.change(within(editor).getAllByTestId('post-block')[0].querySelector('textarea')!, { target: { value: 'פסקה.' } });
     fireEvent.click(within(editor).getByTestId('post-publish'));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('blog.editor.publishCap'));
+  });
+});
+
+describe("the blog's switch on the site (LT-638)", () => {
+  const SITE = site.current;
+  beforeEach(() => { site.current = SITE; });
+
+  it('turns the whole blog off on the site, keeping the rest of the site as it was', async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post({ status: 'published', publishedAt: '2026-11-07T09:00:00Z' })], limits: PRO });
+    renderPage();
+    const card = await screen.findByTestId('blog-on-site');
+    expect(within(card).getByText('blog.visibility.shown')).toBeInTheDocument();
+    expect(screen.getByText('blog.seeOnSite')).toBeInTheDocument();
+    fireEvent.click(within(card).getByRole('switch'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    const sent = vi.mocked(updateWebConfig).mock.calls[0][0] as unknown as { components: Record<string, unknown> };
+    expect(sent.components.blog).toEqual({ visible: false });
+    // The site's other parts go back as they were.
+    expect(sent.components.portfolio).toEqual({ items: [{ url: 'a.webp' }] });
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('blog.visibility.savedHidden'));
+  });
+
+  it('says the blog is hidden and kept, with no way to it on the site, and turns it back on', async () => {
+    site.current = { ...SITE, components: { ...(SITE.components as object), blog: { title: 'יומן', visible: false } } };
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post({ status: 'published', publishedAt: '2026-11-07T09:00:00Z' })], limits: PRO });
+    renderPage();
+    const card = await screen.findByTestId('blog-on-site');
+    expect(within(card).getByText('blog.visibility.hidden')).toBeInTheDocument();
+    expect(within(card).getByText('blog.visibility.hiddenBody')).toBeInTheDocument();
+    expect(screen.queryByText('blog.seeOnSite')).toBeNull();
+    fireEvent.click(within(card).getByRole('switch'));
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect((vi.mocked(updateWebConfig).mock.calls[0][0] as unknown as { components: { blog: unknown } }).components.blog).toEqual({ title: 'יומן', visible: true });
+  });
+
+  it('is not there before the blog has a post, nor on other plans', async () => {
+    vi.mocked(listPosts).mockResolvedValue({ posts: [], limits: PRO });
+    const { unmount } = renderPage();
+    await screen.findByTestId('blog-empty');
+    expect(screen.queryByTestId('blog-on-site')).toBeNull();
+    unmount();
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post()], limits: { ...PRO, blog: false } });
+    renderPage();
+    await screen.findByTestId('blog-locked');
+    expect(screen.queryByTestId('blog-on-site')).toBeNull();
   });
 });
 

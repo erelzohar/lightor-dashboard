@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Check, ExternalLink, Loader2, Lock, Newspaper, PenLine, Sparkles, Trash2 } from 'lucide-react';
+import { Check, ExternalLink, EyeOff, Loader2, Lock, Newspaper, PenLine, Sparkles, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { updateWebConfig } from '../store/slices/webConfigSlice';
+import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useConfirm } from '../hooks/useConfirm';
 import { canOfferPurchases } from '../lib/platform';
 import { siteUrlOf } from '../utils/siteUrl';
@@ -38,6 +41,29 @@ const Blog: React.FC = () => {
   const [opening, setOpening] = useState<string | null>(null);
   const siteUrl = siteUrlOf(typeof webConfig?.subDomain === 'string' ? webConfig.subDomain : null);
   const sitePictures = sitePicturesOf(webConfig);
+
+  // LT-638 (Erel): the owner's switch, as the gallery and the products have; off, the site shows no
+  // blog anywhere (its section, its menu link, its pages, the search engines) and the posts stay here.
+  const dispatch = useAppDispatch();
+  const [savingShown, setSavingShown] = useState(false);
+  const components = (webConfig?.components ?? {}) as Record<string, Record<string, unknown> | undefined>;
+  const shownOnSite = components.blog?.visible !== false;
+  const setShownOnSite = async (visible: boolean) => {
+    if (!webConfig) return;
+    setSavingShown(true);
+    try {
+      const res = await dispatch(updateWebConfig({
+        _id: webConfig._id,
+        components: { ...components, blog: { ...(components.blog ?? {}), visible } },
+      } as unknown as Parameters<typeof updateWebConfig>[0]));
+      if (updateWebConfig.rejected.match(res)) throw new Error('Update rejected');
+      toast.success(t(visible ? 'blog.visibility.savedShown' : 'blog.visibility.savedHidden'));
+    } catch {
+      toast.error(t('blog.editor.saveFailed'));
+    } finally {
+      setSavingShown(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -127,7 +153,7 @@ const Blog: React.FC = () => {
         </div>
         {limits?.blog && (
           <div className="flex flex-wrap items-center gap-2">
-            {siteUrl && published > 0 && (
+            {siteUrl && published > 0 && shownOnSite && (
               <a href={`${siteUrl}/blog`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-slate-700 dark:text-slate-200">
                 <ExternalLink className="h-4 w-4" /> {t('blog.seeOnSite')}
               </a>
@@ -160,6 +186,24 @@ const Blog: React.FC = () => {
               {t('blog.locked.upgrade')}
             </Link>
           )}
+        </div>
+      )}
+
+      {limits?.blog && (posts?.length ?? 0) > 0 && (
+        <div
+          className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 ${shownOnSite ? 'border-gray-200 dark:border-slate-700' : 'border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10'}`}
+          data-testid="blog-on-site"
+        >
+          <div className="flex min-w-0 items-start gap-2">
+            {!shownOnSite && <EyeOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />}
+            <div className="min-w-0">
+              <p className={`text-sm font-medium ${shownOnSite ? 'text-gray-900 dark:text-white' : 'text-amber-800 dark:text-amber-200'}`}>
+                {t(shownOnSite ? 'blog.visibility.shown' : 'blog.visibility.hidden')}
+              </p>
+              {!shownOnSite && <p className="text-sm text-amber-800/80 dark:text-amber-200/80">{t('blog.visibility.hiddenBody')}</p>}
+            </div>
+          </div>
+          <ToggleSwitch checked={shownOnSite} onChange={(v) => void setShownOnSite(v)} disabled={savingShown} label={t('blog.visibility.label')} />
         </div>
       )}
 

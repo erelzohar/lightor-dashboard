@@ -2886,6 +2886,14 @@
       "upgrade": "Voir les formules",
       "kept": "{{count}} articles sont conservés. Ils reviennent sur votre site avec Pro, aux mêmes adresses."
     },
+    "visibility": {
+      "label": "Afficher le blog sur le site",
+      "shown": "Le blog est affiché sur le site",
+      "hidden": "Le blog est masqué sur le site",
+      "hiddenBody": "Les articles sont conservés ici et le blog peut revenir à tout moment.",
+      "savedShown": "Le blog est de nouveau affiché sur le site",
+      "savedHidden": "Le blog a été masqué sur le site"
+    },
     "editor": {
       "title": "Titre",
       "titlePlaceholder": "De quoi parle l’article ?",

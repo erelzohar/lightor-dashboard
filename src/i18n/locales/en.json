@@ -2882,6 +2882,14 @@
       "upgrade": "See the plans",
       "kept": "{{count}} posts are kept. They come back to your site with Pro, at the same addresses."
     },
+    "visibility": {
+      "label": "Show the blog on the site",
+      "shown": "The blog is shown on the site",
+      "hidden": "The blog is hidden from the site",
+      "hiddenBody": "The posts are kept here, and the blog can come back any time.",
+      "savedShown": "The blog is shown on the site again",
+      "savedHidden": "The blog was hidden from the site"
+    },
     "editor": {
       "title": "Title",
       "titlePlaceholder": "What is the post about?",

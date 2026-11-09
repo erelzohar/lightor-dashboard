@@ -2886,6 +2886,14 @@
       "upgrade": "Ver los planes",
       "kept": "Tienes {{count}} entradas guardadas. Vuelven a tu sitio con Pro, en las mismas direcciones."
     },
+    "visibility": {
+      "label": "Mostrar el blog en el sitio",
+      "shown": "El blog se muestra en el sitio",
+      "hidden": "El blog está oculto del sitio",
+      "hiddenBody": "Las publicaciones se guardan aquí y el blog puede volver en cualquier momento.",
+      "savedShown": "El blog vuelve a mostrarse en el sitio",
+      "savedHidden": "El blog se ocultó del sitio"
+    },
     "editor": {
       "title": "Título",
       "titlePlaceholder": "¿De qué trata la entrada?",
