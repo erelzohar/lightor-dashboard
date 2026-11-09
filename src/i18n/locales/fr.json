@@ -511,7 +511,6 @@
     "hideDetails": "Masquer les détails",
     "allDoneBtn": "Tout est prêt ! Fermer le panneau",
     "phoneGate": {
-      "later": "Plus tard",
       "title": "Vérifiez votre mobile",
       "body": "Avant de créer votre site, vérifions votre numéro de mobile avec un code.",
       "label": "Numéro de mobile",

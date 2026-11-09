@@ -12,7 +12,6 @@ import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
 import PhoneGate from '../onboarding/PhoneGate';
 import BuildingBar from '../onboarding/BuildingBar';
-import { nativePlatform } from '../../lib/platform';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import PageTour from '../tour/PageTour';
 import AccountBanners from './AccountBanners';
@@ -39,7 +38,6 @@ const Layout: React.FC = () => {
   const fullBleed = FULL_BLEED_ROUTES.includes(pathname);
   const [webConfigChecked, setWebConfigChecked] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-  const [phoneLater, setPhoneLater] = useState(false);
   const { t } = useTranslation();
 
   const { direction } = useTheme();
@@ -107,7 +105,8 @@ const Layout: React.FC = () => {
 
   // LT-500: an account made by Apple or Google sign-in proves its phone before
   // anything else. Only before a site exists: older accounts keep their card.
-  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending' && !phoneLater;
+  // LT-634: the iOS app too (its "later" is gone).
+  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending';
 
   // LT-502: with no site there is one thing to do: build it. The builder opens
   // at once, with no card and no navbar until a site is saved; the only other
@@ -175,7 +174,7 @@ const Layout: React.FC = () => {
       {/* LT-454: it fades out (0.15s) as it goes. LT-500: the phone comes first. */}
       <AnimatePresence mode="wait">
         {needsPhone ? (
-          <PhoneGate key="phone" onLater={nativePlatform() === 'ios' ? () => setPhoneLater(true) : undefined} />
+          <PhoneGate key="phone" />
         ) : boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && !isRestricted ? (
           <OnboardingWelcome
             key="welcome"

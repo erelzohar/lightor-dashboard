@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { nativePlatform } from '../../lib/platform';
@@ -118,9 +118,10 @@ describe('Layout, an account with no site', () => {
     expect(screen.getByTestId('navbar')).toBeTruthy();
   });
 
-  it('asks for the phone first, with nothing behind it and no "later" off iOS', () => {
+  // LT-634: the iOS app too, where a "later" held for one launch (LT-502).
+  it('asks for the phone first on every platform, with nothing behind it and no "later"', () => {
     state.user.freePeriod = { state: 'pending' } as User['freePeriod'];
-    for (const platform of ['web', 'android'] as const) {
+    for (const platform of ['web', 'android', 'ios'] as const) {
       vi.mocked(nativePlatform).mockReturnValue(platform);
       const { unmount } = open('/');
       expect(screen.getByTestId('phone-gate')).toBeTruthy();
@@ -131,13 +132,4 @@ describe('Layout, an account with no site', () => {
     }
   });
 
-  it('on iOS "later" opens the builder', async () => {
-    vi.mocked(nativePlatform).mockReturnValue('ios');
-    state.user.freePeriod = { state: 'pending' } as User['freePeriod'];
-    open('/');
-    fireEvent.click(screen.getByText('onboarding.phoneGate.later'));
-    expect(screen.getByTestId('page').textContent).toBe('/design');
-    expect(screen.queryByTestId('navbar')).toBeNull();
-    await waitFor(() => expect(screen.queryByTestId('phone-gate')).toBeNull());
-  });
 });

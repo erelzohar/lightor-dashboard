@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import PhoneGate from '../../components/onboarding/PhoneGate';
 import { sendPhoneCode, verifyPhoneCode } from '../../services/phoneCodeApi';
+import { deleteAccount } from '../../services/authApi';
 
 /**
  * LT-500: an Apple or Google signup proves its phone before the site is
@@ -14,7 +16,13 @@ const { t, updateUser, logout } = vi.hoisted(() => ({
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'he' }) }));
-vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ updateUser, logout }) }));
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({ updateUser, logout, auth: { user: { email: 'owner@example.com', googleId: 'g-1' } } }),
+}));
+vi.mock('../../services/authApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../services/authApi')>()),
+  deleteAccount: vi.fn(),
+}));
 vi.mock('../../services/phoneCodeApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/phoneCodeApi')>()),
   sendPhoneCode: vi.fn(),
@@ -90,11 +98,36 @@ describe('PhoneGate', () => {
     expect(logout).toHaveBeenCalled();
   });
 
-  // LT-502: the iOS app only, which the Layout decides.
-  it('offers "later" when it is given one', () => {
-    const onLater = vi.fn();
-    render(<PhoneGate onLater={onLater} />);
-    fireEvent.click(screen.getByText('onboarding.phoneGate.later'));
-    expect(onLater).toHaveBeenCalled();
+  // LT-634: Apple wants an account made in the app deletable in the app, and
+  // a reviewer with no Israeli mobile gets no further than this step.
+  it('deletes the account from here, with the proof the account page asks for', async () => {
+    vi.mocked(deleteAccount).mockResolvedValue(undefined as never);
+    render(
+      <MemoryRouter>
+        <PhoneGate />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('danger.deleteCta'));
+    const dialog = screen.getByRole('dialog', { name: 'danger.modalTitle' });
+    const confirm = screen.getByText('danger.modalConfirm');
+    expect(confirm.closest('button')).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/danger\.confirmEmailLabel/), { target: { value: 'owner@example.com' } });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(deleteAccount).toHaveBeenCalledWith({ confirmEmail: 'owner@example.com' }));
+    await waitFor(() => expect(logout).toHaveBeenCalled());
+    expect(dialog).toBeTruthy();
+  });
+
+  it('closes the deletion step without deleting', () => {
+    render(
+      <MemoryRouter>
+        <PhoneGate />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByText('danger.deleteCta'));
+    fireEvent.click(screen.getByText('common.cancel'));
+    expect(screen.queryByRole('dialog', { name: 'danger.modalTitle' })).toBeNull();
+    expect(deleteAccount).not.toHaveBeenCalled();
+    expect(screen.getByTestId('phone-gate')).toBeTruthy();
   });
 });

@@ -509,7 +509,6 @@
     "hideDetails": "Hide details",
     "allDoneBtn": "All set! Close panel",
     "phoneGate": {
-      "later": "Later",
       "title": "Verify your mobile",
       "body": "Before we build your site, let's verify your mobile number with a code.",
       "label": "Mobile number",

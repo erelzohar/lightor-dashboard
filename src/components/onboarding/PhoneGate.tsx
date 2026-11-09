@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../../services/phoneCodeApi';
 import { checkPhone, formatPhoneForDisplay, toE164 } from '../../utils/phone';
+import DeleteAccountDialog from '../account/DeleteAccountDialog';
 
 const RESEND_SECONDS = 30;
 const CODE_LENGTH = 6;
@@ -28,10 +29,12 @@ const gateErrorKey = (error: unknown): string => {
  * logging out. The save proves the phone and decides the free period, and
  * the Layout then opens the site builder.
  *
- * LT-502: `onLater` adds a "later" for the iOS app, where App Review may refuse
- * a required phone after Sign in with Apple. It holds for this launch.
+ * LT-634 (Erel 2026-11-09): on every platform, the iOS app too, where a
+ * "later" held for one launch since LT-502. Apple wants an account made in
+ * the app deletable in the app, so the account can be deleted from here
+ * (a reviewer with no Israeli mobile gets no further).
  */
-const PhoneGate: React.FC<{ onLater?: () => void }> = ({ onLater }) => {
+const PhoneGate: React.FC = () => {
   const { t } = useTranslation();
   const { logout, updateUser } = useAuth();
   const { language } = useTheme();
@@ -44,6 +47,7 @@ const PhoneGate: React.FC<{ onLater?: () => void }> = ({ onLater }) => {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [wait, setWait] = useState(0);
+  const [deleting, setDeleting] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -214,16 +218,15 @@ const PhoneGate: React.FC<{ onLater?: () => void }> = ({ onLater }) => {
         )}
 
         <div className="flex items-center justify-center gap-5">
-          {onLater && (
-            <button type="button" onClick={onLater} disabled={busy} className="py-1 text-sm font-semibold text-gray-600 dark:text-gray-300 disabled:opacity-50">
-              {t('onboarding.phoneGate.later')}
-            </button>
-          )}
           <button type="button" onClick={logout} disabled={busy} className="py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-50">
             {t('onboarding.phoneGate.logout')}
           </button>
+          <button type="button" onClick={() => setDeleting(true)} disabled={busy} className="py-1 text-sm text-red-600 dark:text-red-400 disabled:opacity-50">
+            {t('danger.deleteCta')}
+          </button>
         </div>
       </motion.div>
+      {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
     </motion.div>
   );
 };
