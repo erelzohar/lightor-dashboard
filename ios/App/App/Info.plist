@@ -54,6 +54,12 @@
 	<string>2690947951349617</string>
 	<key>FacebookClientToken</key>
 	<string>1caf461f06a5c14874b52ed5aebdd5b1</string>
+	<!-- LT-643: sign-in only. The SDK sends no app events and collects no
+	     advertising ID by itself (Meta turns both on by default). -->
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<false/>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<false/>
 	<key>FacebookDisplayName</key>
 	<string>Lightor</string>
 	<key>LSApplicationQueriesSchemes</key>

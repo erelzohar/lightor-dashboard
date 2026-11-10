@@ -48,6 +48,10 @@
              implementation dependency), but they are in the APK. -->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id" />
         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token" />
+        <!-- LT-643: sign-in only. The SDK sends no app events and collects no
+             advertising ID by itself (Meta turns both on by default). -->
+        <meta-data android:name="com.facebook.sdk.AutoLogAppEventsEnabled" android:value="false" />
+        <meta-data android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled" android:value="false" />
         <activity
             android:name="com.facebook.FacebookActivity"
             tools:ignore="MissingClass"
@@ -83,4 +87,13 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- LT-643: the Facebook SDK (sign-in only) adds the advertising ID and
+         the Privacy Sandbox ad permissions. Lightor shows no ads and tracks
+         nobody, so they come out; Play's advertising ID declaration says No. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_TOPICS" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE" tools:node="remove" />
 </manifest>
