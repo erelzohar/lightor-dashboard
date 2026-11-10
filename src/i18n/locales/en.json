@@ -1890,6 +1890,16 @@
       "unblockConfirm": "Unblock",
       "unblocked": "Customer unblocked"
     },
+    "delete": {
+      "action": "Delete customer",
+      "title": "Delete customer",
+      "message": "{{name}} will be removed from your customers, with the notes you wrote about them. Their past appointments stay in the calendar without a name or a phone number. This cannot be undone.",
+      "messageLeads": "{{name}} will be removed from your customers, with the notes you wrote about them. Their inquiries stay in the inquiries list. This cannot be undone.",
+      "blockedNote": "The block is removed with the customer, and the number can reach you again.",
+      "confirm": "Delete",
+      "done": "Customer deleted",
+      "hasUpcoming": "This customer has {{count}} upcoming appointments. Cancel them before deleting."
+    },
     "add": {
       "title": "Add customer",
       "name": "Name",

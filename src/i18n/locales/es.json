@@ -1894,6 +1894,16 @@
       "unblockConfirm": "Desbloquear",
       "unblocked": "Cliente desbloqueado"
     },
+    "delete": {
+      "action": "Eliminar cliente",
+      "title": "Eliminar cliente",
+      "message": "{{name}} se eliminará de tus clientes, con las notas que escribiste. Sus citas pasadas quedan en el calendario sin nombre ni teléfono. Esta acción no se puede deshacer.",
+      "messageLeads": "{{name}} se eliminará de tus clientes, con las notas que escribiste. Sus consultas quedan en la lista de consultas. Esta acción no se puede deshacer.",
+      "blockedNote": "El bloqueo se quita con la eliminación, y el número podrá volver a contactarte.",
+      "confirm": "Eliminar",
+      "done": "Cliente eliminado",
+      "hasUpcoming": "Este cliente tiene {{count}} citas próximas. Cancélalas antes de eliminarlo."
+    },
     "add": {
       "title": "Añadir cliente",
       "name": "Nombre",

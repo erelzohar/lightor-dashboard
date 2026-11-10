@@ -29,7 +29,7 @@ const get = async <T>(path: string, params?: Record<string, unknown>): Promise<T
   return response.data as T;
 };
 
-const send = async <T>(method: 'post' | 'patch', path: string, body?: Record<string, unknown>): Promise<T> => {
+const send = async <T>(method: 'post' | 'patch' | 'delete', path: string, body?: Record<string, unknown>): Promise<T> => {
   const response = await apiClient.request({
     method,
     url: `${globals.customersUrl}${path}`,
@@ -189,6 +189,13 @@ export const setCustomerBlock = (
 
 export const setCustomerNotes = async (id: string, notes: string): Promise<CustomerRecord> =>
   (await send<{ data: CustomerRecord }>('patch', `${id}/notes`, { notes })).data;
+
+/**
+ * LT-645: the customer's record goes; their past bookings stay without the
+ * person. Refused (409 CUSTOMER_HAS_UPCOMING) while a booking is still ahead.
+ */
+export const deleteCustomer = (id: string): Promise<{ anonymized: number }> =>
+  send<{ anonymized: number }>('delete', id);
 
 /**
  * Downloads the CSV through the authenticated client (a bare <a href> would

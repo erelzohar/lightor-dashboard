@@ -60,3 +60,27 @@ describe('moving a booking from its details window', () => {
     expect(screen.queryByText('appointments.move.button')).toBeNull();
   });
 });
+
+/** LT-645 — a deleted customer's past booking keeps no phone: no call, no WhatsApp, no card to open. */
+describe("a deleted customer's past booking", () => {
+  it('shows the name it was given and nothing to call or open', () => {
+    render(
+      <AppointmentDetails
+        appointment={booking({ name: 'Deleted customer', phone: '-', status: 'completed', timestamp: String(Date.now() - 48 * HOUR) })}
+        onClose={vi.fn()}
+        onUpdate={vi.fn()}
+      />
+    );
+    expect(screen.getAllByText('Deleted customer').length).toBeGreaterThan(0);
+    expect(screen.queryByText('appointments.card.customer')).toBeNull();
+    expect(screen.queryByText('WhatsApp')).toBeNull();
+    expect(document.querySelector('a[href^="tel:"]')).toBeNull();
+  });
+
+  it('an ordinary booking still has them', () => {
+    render(<AppointmentDetails appointment={booking()} onClose={vi.fn()} onUpdate={vi.fn()} />);
+    expect(screen.getByText('appointments.card.customer')).toBeInTheDocument();
+    expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+    expect(document.querySelector('a[href^="tel:"]')).not.toBeNull();
+  });
+});

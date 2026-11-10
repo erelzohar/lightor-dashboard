@@ -54,6 +54,8 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   if (!appointment) return null;
 
   const status = getDisplayStatus(appointment);
+  // LT-645: a deleted customer's past booking keeps no phone ("-"): nobody to call, no card to open.
+  const hasPhone = /\d/.test(appointment.phone ?? '');
   const canMove = status === 'scheduled' && appointment.type?.kind !== 'class';
 
   const openCustomer = async () => {
@@ -172,18 +174,18 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
             <User size={14} className="text-gray-400 shrink-0" />
             <span className="flex-1 min-w-0 text-sm text-gray-600 dark:text-gray-300 truncate">{appointment.name}</span>
-            <button type="button"
+            {hasPhone && <button type="button"
               onClick={e => { e.stopPropagation(); void openCustomer(); }}
               disabled={findingCustomer}
               aria-busy={findingCustomer || undefined}
               className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 bg-violet-50 dark:bg-violet-500/15 text-primary dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/25 disabled:opacity-60 transition-colors">
               <Contact size={12} aria-hidden="true" />
               {t('appointments.card.customer')}
-            </button>
+            </button>}
           </div>
 
           {/* Phone + WhatsApp */}
-          <div className="flex items-center gap-2 px-3 py-2">
+          {hasPhone && <div className="flex items-center gap-2 px-3 py-2">
             <Phone size={14} className="text-gray-400 shrink-0" />
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <a href={telHref(appointment.phone)}
@@ -205,7 +207,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
               </a>
               )}
             </div>
-          </div>
+          </div>}
 
           {/* Booking answers (LT-178) */}
           <AnswersList answers={appointment.answers} />

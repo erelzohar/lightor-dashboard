@@ -1894,6 +1894,16 @@
       "unblockConfirm": "Débloquer",
       "unblocked": "Client débloqué"
     },
+    "delete": {
+      "action": "Supprimer le client",
+      "title": "Supprimer le client",
+      "message": "{{name}} sera retiré de vos clients, avec les notes que vous avez écrites. Ses rendez-vous passés restent dans le calendrier, sans nom ni numéro de téléphone. Cette action est définitive.",
+      "messageLeads": "{{name}} sera retiré de vos clients, avec les notes que vous avez écrites. Ses demandes restent dans la liste des demandes. Cette action est définitive.",
+      "blockedNote": "Le blocage est levé avec la suppression, et ce numéro pourra vous recontacter.",
+      "confirm": "Supprimer",
+      "done": "Client supprimé",
+      "hasUpcoming": "Ce client a {{count}} rendez-vous à venir. Annulez-les avant de le supprimer."
+    },
     "add": {
       "title": "Ajouter un client",
       "name": "Nom",

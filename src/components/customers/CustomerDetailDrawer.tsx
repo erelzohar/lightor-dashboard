@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { X, Phone, Ban, ShieldCheck, CalendarPlus, StickyNote, Loader, Inbox } from 'lucide-react';
+import { X, Phone, Ban, ShieldCheck, CalendarPlus, StickyNote, Loader, Inbox, Trash2 } from 'lucide-react';
 import Button from '../ui/Button';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import StatusBadge from '../admin/StatusBadge';
@@ -18,7 +18,9 @@ import { isLeadsSite } from '../../utils/siteMode';
 import { LEAD_STATUS_TINT } from '../../utils/leadStatus';
 import { removeLeadFromCustomer } from '../../services/leadsApi';
 import {
+  deleteCustomer,
   fetchCustomer,
+  isApiErrorCode,
   setCustomerBlock,
   setCustomerNotes,
   CustomerDetail,
@@ -63,6 +65,8 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
   const [blocking, setBlocking] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [removingLead, setRemovingLead] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const open = customerId !== null;
 
@@ -132,6 +136,36 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
       toast.error(t('customers.errors.saveFailed'));
     } finally {
       setBlocking(false);
+    }
+  };
+
+  // LT-645: a booking still ahead holds the delete; the owner cancels it first.
+  const askDelete = () => {
+    const upcoming = detail?.stats?.upcoming ?? 0;
+    if (upcoming > 0) toast.error(t('customers.delete.hasUpcoming', { count: upcoming }));
+    else setDeleteOpen(true);
+  };
+
+  const applyDelete = async () => {
+    if (!detail) return;
+    setDeleting(true);
+    try {
+      await deleteCustomer(detail.customer._id);
+      toast.success(t('customers.delete.done'));
+      setDeleteOpen(false);
+      onChanged();
+      onClose();
+    } catch (error) {
+      if (isApiErrorCode(error, 'CUSTOMER_HAS_UPCOMING')) {
+        const upcoming = (error as { response?: { data?: { details?: { upcoming?: number } } } }).response?.data?.details?.upcoming;
+        toast.error(t('customers.delete.hasUpcoming', { count: upcoming ?? 1 }));
+        setDeleteOpen(false);
+        await load();
+      } else {
+        toast.error(t('customers.errors.saveFailed'));
+      }
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -242,6 +276,9 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                         {t('customers.block.title')}
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" leftIcon={<Trash2 size={15} />} onClick={askDelete} data-testid="customer-delete">
+                      {t('customers.delete.action')}
+                    </Button>
                   </div>
 
                   {leadsSite ? (
@@ -450,6 +487,22 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
                 loading={blocking}
                 onClose={() => setUnblockOpen(false)}
                 onConfirm={() => applyBlock(false)}
+              />
+              <ConfirmDialog
+                open={deleteOpen}
+                danger
+                title={t('customers.delete.title')}
+                message={
+                  <>
+                    {t(leadsSite ? 'customers.delete.messageLeads' : 'customers.delete.message', { name: customer.name })}
+                    {customer.isBlocked && <span className="block mt-2">{t('customers.delete.blockedNote')}</span>}
+                  </>
+                }
+                confirmLabel={t('customers.delete.confirm')}
+                cancelLabel={t('customers.block.cancel')}
+                loading={deleting}
+                onClose={() => setDeleteOpen(false)}
+                onConfirm={applyDelete}
               />
               {!leadsSite && (
                 <OwnerBookingModal
