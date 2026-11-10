@@ -24,6 +24,7 @@ import {
   LifeBuoy, Tags,
   ShoppingBag,
   Newspaper,
+  Wallet,
 } from 'lucide-react';
 import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from '../ui/sidebar';
 import BottomTabBar, { barPaths } from './BottomTabBar';
@@ -272,6 +273,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   const productsLink = { path: '/products', Icon: ShoppingBag, name: t('common.products') };
   const showServices = !productsSite || (webConfig?.appointmentTypes?.length ?? 0) > 0;
   const blogLink = { path: '/blog', Icon: Newspaper, name: t('common.blog'), locked: blogOn === false ? t('blog.pro') : undefined };
+  // LT-646 (Erel 2026-11-10): payments and orders - one day the card
+  // processing, the products' orders and the refunds. Not built yet: the link
+  // says "soon" and goes nowhere.
+  const paymentsLink = { path: '/payments', Icon: Wallet, name: t('common.paymentsOrders'), soon: t('sidebar.soon') };
 
   const navSections = [
     {
@@ -312,6 +317,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
         ...(showGallery ? [{ path: '/portfolio', Icon: ImageIcon, name: t('common.portfolio') }] : []),
         ...(productsSite ? [] : [productsLink]),
         blogLink,
+        paymentsLink,
         { path: '/settings', Icon: Settings, name: t('common.settings') },
       ],
     },
@@ -369,7 +375,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
               // left a stale group of nameless icons behind after a switch.
               <div key={section.id} role="group" aria-label={section.label} className="flex flex-col">
                 <SectionLabel label={section.label} first={sIdx === 0} />
-                {section.items.map(({ path, Icon, name, badge, locked }: { path: string; Icon: typeof Inbox; name: string; badge?: number; locked?: string }) => {
+                {section.items.map(({ path, Icon, name, badge, locked, soon }: { path: string; Icon: typeof Inbox; name: string; badge?: number; locked?: string; soon?: string }) => {
                   if (isRestricted && !ALLOWED_WHEN_RESTRICTED.includes(path)) return null;
                   return (
                     <SidebarLink
@@ -381,6 +387,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
                         icon: navIcon(path, Icon),
                         badge,
                         locked,
+                        soon,
                       }}
                       className={linkClasses}
                       onClick={(event) => guardLinkClick(event, path)}

@@ -19,6 +19,11 @@ interface Links {
   badge?: number;
   /** LT-610: a page of a higher plan - a lock and the plan's name beside the label. */
   locked?: string;
+  /**
+   * LT-646: a page that is not built yet - its name and this word ("Soon")
+   * beside the label, and no link: it goes nowhere until the page exists.
+   */
+  soon?: string;
 }
 
 interface SidebarContextProps {
@@ -127,6 +132,36 @@ export const SidebarLink = ({
   // Folded, the label is display:none and the link would have no name; the
   // name says the badge too, as the open rail shows it (LT-362).
   const badge = link.badge ? ` ${link.badge > 99 ? '99+' : link.badge}` : '';
+  if (link.soon) {
+    // LT-646: not a link yet - the same row, dimmed, with its "soon" pill.
+    // Plain text, not a link: a screen reader hears its name and "soon" even
+    // while the rail is folded (the visible label is display:none then).
+    return (
+      <div
+        data-testid="nav-soon-item"
+        className={cn('flex items-center justify-start gap-2 group/sidebar py-2 cursor-default opacity-70', className)}
+      >
+        <span className="sr-only">{`${link.label} (${link.soon})`}</span>
+        <span className="relative inline-flex" aria-hidden="true">{link.icon}</span>
+        <motion.span
+          animate={{
+            display: animate ? (open ? 'inline-block' : 'none') : 'inline-block',
+            opacity: animate ? (open ? 1 : 0) : 1,
+          }}
+          className="text-sm whitespace-pre inline-block !p-0 !m-0"
+          aria-hidden="true"
+        >
+          {link.label}
+          <span
+            className="ms-2 inline-flex h-5 items-center rounded-full bg-violet-100 px-1.5 text-[11px] font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-200"
+            data-testid="nav-soon"
+          >
+            {link.soon}
+          </span>
+        </motion.span>
+      </div>
+    );
+  }
   return (
     <NavLink
       to={link.href}

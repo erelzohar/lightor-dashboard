@@ -25,6 +25,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import StatusBadge from '../../components/admin/StatusBadge';
 import BillingCard from '../../components/admin/BillingCard';
 import UserFormModal from '../../components/admin/UserFormModal';
+import { PlanChip, SiteKindChip } from '../../components/admin/SiteKindChip';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -141,6 +142,12 @@ const AdminUserDetail: React.FC = () => {
   }
 
   const { user, webConfig, plan, limits, usage, counts, recentAppointments } = detail;
+  // LT-647: an inquiries or products site's activity is its inquiries, as a
+  // booking site's is its bookings. An older API has no siteKind: the
+  // conversion decides, as before.
+  const siteKind = detail.siteKind ?? (webConfig ? (isLeadsSite(webConfig) ? 'lead' : 'book') : 'none');
+  const inquiriesSite = siteKind === 'lead' || siteKind === 'products';
+  const recentLeads = detail.recentLeads ?? [];
   const sub = user.subscription ?? { status: 'free' as const };
   const isSelf = auth.user?._id === user._id;
   const canCancel =
@@ -201,6 +208,7 @@ const AdminUserDetail: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">{user.name}</h1>
             <StatusBadge status={user.role} i18nPrefix="admin.role" />
             <StatusBadge status={sub.status} />
+            <PlanChip plan={detail.planStanding} />
             {sub.cancelAtPeriodEnd && <StatusBadge status="canceled" i18nPrefix="admin.flags" />}
           </div>
           <p className="text-sm text-gray-500 truncate" dir="ltr">
@@ -269,14 +277,34 @@ const AdminUserDetail: React.FC = () => {
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.channel')}</dt>
                 <dd className="mt-0.5 text-gray-800 dark:text-gray-200 uppercase">{user.channelType ?? 'email'}</dd>
               </div>
-              <div>
-                <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.lastBooked')}</dt>
-                <dd className="mt-0.5 text-gray-800 dark:text-gray-200">{formatDate(counts.lastBookedAt)}</dd>
-              </div>
+              {/* LT-647: the site's own last activity - an inquiry or a booking. */}
+              {inquiriesSite ? (
+                <div>
+                  <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.lastInquiry')}</dt>
+                  <dd className="mt-0.5 text-gray-800 dark:text-gray-200">{formatDate(counts.lastInquiryAt ?? null)}</dd>
+                </div>
+              ) : (
+                <div>
+                  <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.lastBooked')}</dt>
+                  <dd className="mt-0.5 text-gray-800 dark:text-gray-200">{formatDate(counts.lastBookedAt)}</dd>
+                </div>
+              )}
               <div>
                 <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.leadsTotal')}</dt>
                 <dd className="mt-0.5 text-gray-800 dark:text-gray-200 tabular-nums" data-testid="leads-total">
                   {counts.leadsTotal ?? '-'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.productsTotal')}</dt>
+                <dd className="mt-0.5 text-gray-800 dark:text-gray-200 tabular-nums" data-testid="products-total">
+                  {counts.productsTotal ?? '-'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-400">{t('admin.userDetail.identity.postsPublished')}</dt>
+                <dd className="mt-0.5 text-gray-800 dark:text-gray-200 tabular-nums" data-testid="posts-published">
+                  {counts.postsPublished ?? '-'}
                 </dd>
               </div>
             </dl>
@@ -296,13 +324,11 @@ const AdminUserDetail: React.FC = () => {
                   <p className="text-sm text-gray-400" dir="ltr">
                     {webConfig.subDomain}.lightor.app
                   </p>
-                  {/* What the site converts to (LT-199). */}
+                  {/* What the site converts to (LT-199): bookings, inquiries or products (LT-647). */}
                   <p className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400" data-testid="site-mode">
-                    {isLeadsSite(webConfig) ? <Inbox size={13} /> : <CalendarRange size={13} />}
+                    {inquiriesSite ? <Inbox size={13} /> : <CalendarRange size={13} />}
                     {t('admin.userDetail.site.mode')}:{' '}
-                    <span className="font-medium text-gray-800 dark:text-gray-200">
-                      {isLeadsSite(webConfig) ? t('settings.site.modeLead') : t('settings.site.modeBook')}
-                    </span>
+                    <SiteKindChip kind={siteKind} />
                   </p>
                 </div>
                 {/* Linked only when it is a real lightor.app address (LT-315, L2). */}
@@ -347,6 +373,33 @@ const AdminUserDetail: React.FC = () => {
             </div>
           </Card>
 
+          {inquiriesSite && (
+            <Card animate={false}>
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4 flex items-center gap-2">
+                <Inbox size={16} className="text-primary" />
+                {t('admin.userDetail.leads.title', { count: counts.leadsTotal ?? recentLeads.length })}
+              </h3>
+              {recentLeads.length === 0 ? (
+                <p className="text-sm text-gray-400">{t('admin.userDetail.leads.none')}</p>
+              ) : (
+                <ul className="divide-y divide-gray-50 dark:divide-gray-800/40" data-testid="recent-leads">
+                  {recentLeads.map((lead) => (
+                    <li key={lead._id} className="py-2.5 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{lead.name}</p>
+                        <p className="text-xs text-gray-400" dir="ltr">
+                          {formatDateTime(new Date(lead.createdAt))}
+                        </p>
+                      </div>
+                      <StatusBadge status={lead.status} i18nPrefix="admin.leadStatus" />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
+
+          {(!inquiriesSite || counts.appointmentsTotal > 0) && (
           <Card animate={false}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900 dark:text-dark-text flex items-center gap-2">
@@ -380,6 +433,7 @@ const AdminUserDetail: React.FC = () => {
               </ul>
             )}
           </Card>
+          )}
         </div>
 
         {/* ── Right column: actions ── */}

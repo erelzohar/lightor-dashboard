@@ -18,6 +18,8 @@ export const TILE: Record<string, string> = {
   '/portfolio': 'from-rose-400 to-pink-500',
   '/products': 'from-violet-400 to-purple-500',
   '/blog': 'from-sky-400 to-indigo-500',
+  // LT-646: payments and orders - not built yet, the link says "soon".
+  '/payments': 'from-lime-400 to-emerald-500',
   '/settings': 'from-teal-400 to-emerald-500',
   '/admin': 'from-indigo-400 to-violet-500',
   '/admin/users': 'from-emerald-400 to-teal-500',

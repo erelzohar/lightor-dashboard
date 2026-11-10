@@ -8,6 +8,7 @@ import DataTable, { DataTableColumn } from '../../components/ui/DataTable';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/admin/StatusBadge';
+import { PlanChip, SiteKindChip } from '../../components/admin/SiteKindChip';
 import UserFormModal from '../../components/admin/UserFormModal';
 import { fetchUsers, AdminUserRow, Paginated } from '../../services/adminApi';
 import { siteUrlOf } from '../../utils/siteUrl';
@@ -84,26 +85,43 @@ const AdminUsers: React.FC = () => {
       label: t('admin.users.columns.site'),
       className: 'hidden md:table-cell',
       // Linked only when it is a real lightor.app address (LT-315, L2).
-      render: (row) =>
-        siteUrlOf(row.subDomain) ? (
-          <a
-            href={siteUrlOf(row.subDomain) ?? undefined}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-primary hover:underline"
-            dir="ltr"
-          >
-            {row.subDomain}
-          </a>
-        ) : (
-          <span className="text-gray-300 dark:text-gray-600">-</span>
-        ),
+      // LT-647: and what kind of site it is - bookings, inquiries or products.
+      render: (row) => (
+        <div className="flex flex-col items-start gap-1">
+          {siteUrlOf(row.subDomain) ? (
+            <a
+              href={siteUrlOf(row.subDomain) ?? undefined}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-primary hover:underline"
+              dir="ltr"
+            >
+              {row.subDomain}
+            </a>
+          ) : (
+            row.siteKind !== 'none' && <span className="text-gray-300 dark:text-gray-600">-</span>
+          )}
+          <SiteKindChip kind={row.siteKind} />
+        </div>
+      ),
     },
     {
       key: 'plan',
       label: t('admin.users.columns.plan'),
-      render: (row) => <StatusBadge status={row.subscription?.status ?? 'free'} />,
+      // LT-647: the plan itself (free, the free days, Lightor+, Pro); the
+      // billing status beside it only when it needs a look.
+      render: (row) =>
+        row.plan ? (
+          <div className="flex flex-wrap items-center gap-1">
+            <PlanChip plan={row.plan} />
+            {(row.subscription?.status === 'past_due' || row.subscription?.status === 'canceled') && (
+              <StatusBadge status={row.subscription.status} />
+            )}
+          </div>
+        ) : (
+          <StatusBadge status={row.subscription?.status ?? 'free'} />
+        ),
     },
     {
       key: 'isVerified',

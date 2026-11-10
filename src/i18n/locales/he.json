@@ -63,7 +63,8 @@
     },
     "aiBusy": "רגע, בקשה קודמת עוד בעבודה. נסו שוב בעוד כמה שניות.",
     "products": "מוצרים",
-    "blog": "בלוג"
+    "blog": "בלוג",
+    "paymentsOrders": "תשלומים והזמנות"
   },
   "greetings": {
     "morning": "בוקר טוב",
@@ -79,7 +80,8 @@
     "navigation": "ניווט",
     "main": "ראשי",
     "manage": "ניהול",
-    "admin": "ניהול מערכת"
+    "admin": "ניהול מערכת",
+    "soon": "בקרוב"
   },
   "topbar": {
     "switchToLight": "החלף לתצוגה בהירה",
@@ -1426,8 +1428,8 @@
       "sandboxBadge": "Paddle סנדבוקס",
       "signupsChart": "הרשמות - 30 הימים האחרונים",
       "signups": "הרשמות",
-      "planMix": "התפלגות מסלולים",
-      "topBusinesses": "העסקים המובילים לפי תורים (30 יום)",
+      "planMix": "מסלולים",
+      "topBusinesses": "העסקים הפעילים ביותר (30 יום): תורים ולידים",
       "kpi": {
         "businesses": "עסקים",
         "verifiedOfThem": "{{count}} מאומתים",
@@ -1436,7 +1438,10 @@
         "mrr": "‏MRR (הערכה)",
         "mrrDetail": "{{monthly}} חודשי · {{yearly}} שנתי",
         "appointmentsThisMonth": "תורים שנקבעו החודש",
-        "appointmentsTotal": "{{count}} מאז ומעולם"
+        "appointmentsTotal": "{{count}} מאז ומעולם",
+        "payingSplit": "Lightor+ {{plus}} · Pro {{pro}}",
+        "activityThisMonth": "פעילות החודש",
+        "activitySplit": "{{bookings}} תורים · {{inquiries}} לידים"
       },
       "funnel": {
         "title": "משפך המרה",
@@ -1444,7 +1449,20 @@
         "onboarded": "עברו הקמה",
         "verified": "אימתו מייל",
         "paying": "משלמים"
-      }
+      },
+      "plans": {
+        "stores": "משולמים דרך: האתר {{paddle}} · App Store {{apple}} · Google Play {{google}}",
+        "billing": "בפיגור בתשלום {{pastDue}} · בוטלו {{canceled}}"
+      },
+      "sites": {
+        "title": "אתרים לפי סוג",
+        "book": "אתרי תורים",
+        "lead": "אתרי לידים",
+        "products": "אתרי מוצרים",
+        "none": "נרשמו, עוד בלי אתר",
+        "content": "{{products}} מוצרים · {{posts}} פוסטים שפורסמו"
+      },
+      "topSplit": "{{bookings}} תורים · {{inquiries}} לידים"
     },
     "users": {
       "title": "משתמשים",
@@ -1479,7 +1497,10 @@
         "language": "שפה",
         "channel": "ערוץ",
         "lastBooked": "תור אחרון",
-        "leadsTotal": "סך הלידים"
+        "leadsTotal": "סך הלידים",
+        "lastInquiry": "ליד אחרון",
+        "productsTotal": "מוצרים",
+        "postsPublished": "פוסטים שפורסמו"
       },
       "site": {
         "title": "האתר הציבורי",
@@ -1499,6 +1520,10 @@
         "title": "תורים ({{count}} סה\"כ)",
         "viewAll": "הצג הכול",
         "none": "אין תורים עדיין"
+      },
+      "leads": {
+        "title": "לידים ({{count}} סה\"כ)",
+        "none": "אין לידים עדיין"
       }
     },
     "actions": {
@@ -1521,7 +1546,7 @@
       "deleteAccount": "מחק חשבון",
       "cancelConfirm": "לבטל את המנוי של {{name}} בסוף התקופה ששולמה? המסלול ממשיך לרוץ עד אז. השינוי מאושר על ידי Paddle ועשוי לקחת רגע להתעדכן כאן.",
       "resumeConfirm": "לבטל את הביטול המתוכנן של {{name}}? המנוי ימשיך להתחדש. מאושר על ידי Paddle תוך זמן קצר.",
-      "deleteConfirm": "למחוק לצמיתות את החשבון, האתר וכל התורים של {{name}}? מנוי פעיל מבוטל קודם. אי אפשר לשחזר.",
+      "deleteConfirm": "למחוק לצמיתות את החשבון ואת האתר של {{name}}, עם כל מה שבו (תורים, לידים, מוצרים ופוסטים)? מנוי פעיל מבוטל קודם. אי אפשר לשחזר.",
       "cancelSuccess": "בקשת הביטול נשלחה - Paddle יאשר בקרוב",
       "resumeSuccess": "בקשת החידוש נשלחה - Paddle יאשר בקרוב",
       "deleteSuccess": "החשבון נמחק"
@@ -1809,6 +1834,24 @@
       "installs": "התקנות",
       "latest": "האחרון",
       "mustUpdate": "חייבת עדכון"
+    },
+    "siteKind": {
+      "book": "תורים",
+      "lead": "לידים",
+      "products": "מוצרים",
+      "none": "בלי אתר"
+    },
+    "planStanding": {
+      "free": "חינם",
+      "freeDays": "בימים החינמיים",
+      "plus": "Lightor+",
+      "pro": "Lightor Pro",
+      "sandbox": "רכישת בדיקה"
+    },
+    "leadStatus": {
+      "new": "חדש",
+      "contacted": "נוצר קשר",
+      "closed": "נסגר"
     }
   },
   "customers": {

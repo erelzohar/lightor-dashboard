@@ -63,10 +63,31 @@ export interface AdminOverview {
     appointmentsTotal: number;
     appointmentsThisMonth: number;
   };
+  /** LT-647: the business accounts' sites by kind; absent on an older API. */
+  sites?: Record<SiteKind, number>;
+  /** LT-647: what the sites did - bookings and inquiries, products and posts. */
+  activity?: {
+    bookingsThisMonth: number;
+    bookingsTotal: number;
+    inquiriesThisMonth: number;
+    inquiriesTotal: number;
+    products: number;
+    postsPublished: number;
+  };
+  /** LT-647: the accounts by plan standing. */
+  plans?: Record<PlanStanding, number>;
+  /** LT-647: the paid Lightor+ and Pro subscriptions by where they are billed. */
+  stores?: Record<'paddle' | 'apple' | 'google', number>;
   funnel: { signedUp: number; onboarded: number; verified: number; paying: number };
   mrr: { activeMonthly: number; activeYearly: number; mrrILS: number; estimated: boolean };
   paddleEnv: 'sandbox' | 'production';
 }
+
+/** LT-647: what a business's site is - bookings, inquiries, products (inquiries with a catalog), or none yet. */
+export type SiteKind = 'book' | 'lead' | 'products' | 'none';
+
+/** LT-647: the free plan, the free days (Lightor+ for nothing), a paid Lightor+ or Pro, or a store sandbox purchase. */
+export type PlanStanding = 'free' | 'freeDays' | 'plus' | 'pro' | 'sandbox';
 
 export interface TimeseriesPoint {
   date: string;
@@ -82,6 +103,10 @@ export interface AppointmentSeriesPoint {
 export interface TopBusiness {
   userId: string;
   bookings: number;
+  /** LT-647: inquiries in the same window, and the two together (the ranking). */
+  inquiries?: number;
+  total?: number;
+  siteKind?: SiteKind;
   name?: string;
   email?: string;
   subscriptionStatus?: string;
@@ -115,6 +140,18 @@ export interface AdminUserRow {
   updatedAt: string;
   businessName?: string;
   subDomain?: string;
+  /** LT-647: list rows only - the site's kind and the plan standing. */
+  siteKind?: SiteKind;
+  plan?: PlanStanding;
+}
+
+/** LT-647: an inquiry on the user's detail page. */
+export interface AdminRecentLead {
+  _id: string;
+  name: string;
+  phone: string;
+  status: 'new' | 'contacted' | 'closed';
+  createdAt: string;
 }
 
 export interface AdminRecentAppointment {
@@ -135,8 +172,14 @@ export interface AdminUserDetail {
     createdAt: string;
     /** What the site converts to (LT-199); absent on an older API or config = 'book'. */
     conversion?: 'book' | 'lead';
+    /** LT-541: an inquiries site that shows products. */
+    catalog?: boolean;
   } | null;
+  /** LT-647: the site's kind; absent on an older API. */
+  siteKind?: SiteKind;
   plan: 'free' | 'plus' | 'pro';
+  /** LT-647: free plan, free days, paid Lightor+/Pro, or a store sandbox purchase. */
+  planStanding?: PlanStanding;
   limits: PlanLimits;
   usage: {
     appointmentsThisMonth: number;
@@ -151,8 +194,14 @@ export interface AdminUserDetail {
     lastBookedAt: string | null;
     /** Every lead the account holds (LT-199); absent on an older API. */
     leadsTotal?: number;
+    /** LT-647: the newest inquiry, the products and the published posts. */
+    lastInquiryAt?: string | null;
+    productsTotal?: number;
+    postsPublished?: number;
   };
   recentAppointments: AdminRecentAppointment[];
+  /** LT-647: the newest five inquiries; absent on an older API. */
+  recentLeads?: AdminRecentLead[];
 }
 
 export interface AdminAppointmentRow {

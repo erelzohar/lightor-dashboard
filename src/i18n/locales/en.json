@@ -63,7 +63,8 @@
     },
     "aiBusy": "One moment - another AI request is still running. Try again in a few seconds.",
     "products": "Products",
-    "blog": "Blog"
+    "blog": "Blog",
+    "paymentsOrders": "Payments & orders"
   },
   "greetings": {
     "morning": "Good morning",
@@ -79,7 +80,8 @@
     "navigation": "Navigation",
     "main": "Main",
     "manage": "Manage",
-    "admin": "Admin"
+    "admin": "Admin",
+    "soon": "Soon"
   },
   "topbar": {
     "switchToLight": "Switch to Light Mode",
@@ -1418,8 +1420,8 @@
       "sandboxBadge": "Paddle sandbox",
       "signupsChart": "Signups - last 30 days",
       "signups": "Signups",
-      "planMix": "Plan mix",
-      "topBusinesses": "Top businesses by bookings (30 days)",
+      "planMix": "Plans",
+      "topBusinesses": "Most active businesses (30 days): bookings and inquiries",
       "kpi": {
         "businesses": "Businesses",
         "verifiedOfThem": "{{count}} verified",
@@ -1428,7 +1430,10 @@
         "mrr": "MRR (estimate)",
         "mrrDetail": "{{monthly}} monthly · {{yearly}} yearly",
         "appointmentsThisMonth": "Bookings this month",
-        "appointmentsTotal": "{{count}} all-time"
+        "appointmentsTotal": "{{count}} all-time",
+        "payingSplit": "Lightor+ {{plus}} · Pro {{pro}}",
+        "activityThisMonth": "This month's activity",
+        "activitySplit": "{{bookings}} bookings · {{inquiries}} inquiries"
       },
       "funnel": {
         "title": "Conversion funnel",
@@ -1436,7 +1441,20 @@
         "onboarded": "Onboarded",
         "verified": "Verified email",
         "paying": "Paying"
-      }
+      },
+      "plans": {
+        "stores": "Billed through: the web {{paddle}} · App Store {{apple}} · Google Play {{google}}",
+        "billing": "Past due {{pastDue}} · canceled {{canceled}}"
+      },
+      "sites": {
+        "title": "Sites by type",
+        "book": "Booking sites",
+        "lead": "Inquiry sites",
+        "products": "Product sites",
+        "none": "Signed up, no site yet",
+        "content": "{{products}} products · {{posts}} published posts"
+      },
+      "topSplit": "{{bookings}} bookings · {{inquiries}} inquiries"
     },
     "users": {
       "title": "Users",
@@ -1471,7 +1489,10 @@
         "language": "Language",
         "channel": "Channel",
         "lastBooked": "Last booking",
-        "leadsTotal": "Inquiries (all time)"
+        "leadsTotal": "Inquiries (all time)",
+        "lastInquiry": "Last inquiry",
+        "productsTotal": "Products",
+        "postsPublished": "Published posts"
       },
       "site": {
         "title": "Public site",
@@ -1491,6 +1512,10 @@
         "title": "Appointments ({{count}} total)",
         "viewAll": "View all",
         "none": "No appointments yet"
+      },
+      "leads": {
+        "title": "Inquiries ({{count}} total)",
+        "none": "No inquiries yet"
       }
     },
     "actions": {
@@ -1513,7 +1538,7 @@
       "deleteAccount": "Delete account",
       "cancelConfirm": "Cancel {{name}}'s subscription at the end of the paid period? Their plan keeps running until then. The change is confirmed by Paddle and may take a moment to reflect here.",
       "resumeConfirm": "Undo the scheduled cancellation for {{name}}? The subscription will keep renewing. Confirmed by Paddle shortly after.",
-      "deleteConfirm": "Permanently delete {{name}}'s account, site and all appointments? Any live subscription is cancelled first. This cannot be undone.",
+      "deleteConfirm": "Permanently delete {{name}}'s account and site, with everything in it (bookings, inquiries, products and posts)? Any live subscription is cancelled first. This cannot be undone.",
       "cancelSuccess": "Cancellation requested - Paddle will confirm shortly",
       "resumeSuccess": "Resume requested - Paddle will confirm shortly",
       "deleteSuccess": "Account deleted"
@@ -1801,6 +1826,24 @@
       "installs": "Installs",
       "latest": "latest",
       "mustUpdate": "must update"
+    },
+    "siteKind": {
+      "book": "Bookings",
+      "lead": "Inquiries",
+      "products": "Products",
+      "none": "No site"
+    },
+    "planStanding": {
+      "free": "Free",
+      "freeDays": "Free days",
+      "plus": "Lightor+",
+      "pro": "Lightor Pro",
+      "sandbox": "Test purchase"
+    },
+    "leadStatus": {
+      "new": "New",
+      "contacted": "Contacted",
+      "closed": "Closed"
     }
   },
   "customers": {

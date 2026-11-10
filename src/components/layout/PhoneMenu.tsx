@@ -18,6 +18,8 @@ export interface PhoneMenuItem {
   badge?: number;
   /** LT-610: a page of a higher plan (the lock on its tile, the plan's name in its label). */
   locked?: string;
+  /** LT-646: a page not built yet: its tile, dimmed, with this word ("Soon"), and no link. */
+  soon?: string;
 }
 
 export interface PhoneMenuSection {
@@ -136,7 +138,26 @@ export const PhoneMenu: React.FC<{ sections: PhoneMenuSection[]; onClose: () => 
             )}
             {/* The bar's five columns, so the new pages line up with its own. */}
             <div className="grid grid-cols-5 gap-0.5">
-              {section.items.map(({ path, Icon, name, badge, locked }) => (
+              {section.items.map(({ path, Icon, name, badge, locked, soon }) => soon ? (
+                // LT-646: not a link yet - the tile, dimmed, with its "soon" pill (plain text).
+                <div
+                  key={path}
+                  data-testid="menu-soon-item"
+                  className={cn(TAB_ITEM, 'min-h-[52px] cursor-default opacity-70', TAB_IDLE)}
+                >
+                  <span className="sr-only">{`${name} (${soon})`}</span>
+                  <span className="relative flex shrink-0" aria-hidden="true">
+                    {navTile(path, Icon, '')}
+                    <span
+                      className="absolute -top-2 -end-4 whitespace-nowrap rounded-full bg-violet-500 px-1 text-[9px] font-bold leading-[0.95rem] text-white ring-2 ring-white dark:ring-slate-900"
+                      data-testid="menu-soon"
+                    >
+                      {soon}
+                    </span>
+                  </span>
+                  <span className="line-clamp-2 break-words text-center max-w-full px-0.5" aria-hidden="true">{name}</span>
+                </div>
+              ) : (
                 <NavLink
                   key={path}
                   to={path}

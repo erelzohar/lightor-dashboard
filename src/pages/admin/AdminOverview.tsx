@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import {
   Building2,
   CreditCard,
-  CalendarRange,
+  Activity,
   Banknote,
   ExternalLink,
 } from 'lucide-react';
@@ -17,6 +17,7 @@ import { DonutChart } from '../../components/ui/donut-chart';
 import ErrorBoundaryWithLanguage from '../../components/ui/ErrorBoundary';
 import StatusBadge from '../../components/admin/StatusBadge';
 import AppInstallsCard from '../../components/admin/AppInstallsCard';
+import { SiteKindChip } from '../../components/admin/SiteKindChip';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   fetchOverview,
@@ -30,9 +31,14 @@ import { siteUrlOf } from '../../utils/siteUrl';
 
 /**
  * Admin → Overview (LT-058): the operator's KPI wall — system totals, the
- * signup→paying funnel, MRR, a 30-day signups chart, plan mix, and the
+ * signup→paying funnel, MRR, a 30-day signups chart, the plans, and the
  * busiest tenants. Three requests total; each widget degrades independently
  * behind an error boundary.
+ *
+ * LT-647 (Erel 2026-11-10): it spoke of bookings alone. Lightor builds
+ * booking, inquiry and product sites, so the month's activity is bookings
+ * and inquiries, the sites are counted by kind, the plans by Lightor+ / Pro
+ * and by store, and the busiest businesses are ranked on both.
  */
 const AdminOverview: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -73,6 +79,18 @@ const AdminOverview: React.FC = () => {
   }
 
   const { totals, funnel, mrr, paddleEnv } = overview;
+  // LT-647; an older API has none of these: the bookings-only numbers stand in.
+  const activity = overview.activity ?? {
+    bookingsThisMonth: totals.appointmentsThisMonth,
+    bookingsTotal: totals.appointmentsTotal,
+    inquiriesThisMonth: 0,
+    inquiriesTotal: 0,
+    products: 0,
+    postsPublished: 0,
+  };
+  const plans = overview.plans;
+  const stores = overview.stores;
+  const sites = overview.sites;
 
   // Fill missing days so the chart doesn't skip quiet days.
   const signupsByDate = new Map(signups.map((p) => [p.date, p.count]));
@@ -90,12 +108,38 @@ const AdminOverview: React.FC = () => {
     });
   }
 
-  const planMix = [
-    { label: t('admin.status.active'), value: totals.bySubscriptionStatus.active ?? 0, color: '#10b981' },
-    { label: t('admin.status.free'), value: totals.bySubscriptionStatus.free ?? 0, color: '#94a3b8' },
-    { label: t('admin.status.past_due'), value: totals.bySubscriptionStatus.past_due ?? 0, color: '#f59e0b' },
-    { label: t('admin.status.canceled'), value: totals.bySubscriptionStatus.canceled ?? 0, color: '#ef4444' },
-  ].filter((segment) => segment.value > 0);
+  // LT-647: the plans themselves (Lightor+ / Pro, the free days, the free
+  // plan); an older API only had the billing statuses.
+  const planMix = (
+    plans
+      ? [
+          { label: t('admin.planStanding.pro'), value: plans.pro, color: '#7c3aed' },
+          { label: t('admin.planStanding.plus'), value: plans.plus, color: '#10b981' },
+          { label: t('admin.planStanding.freeDays'), value: plans.freeDays, color: '#3b82f6' },
+          { label: t('admin.planStanding.free'), value: plans.free, color: '#94a3b8' },
+          { label: t('admin.planStanding.sandbox'), value: plans.sandbox, color: '#f59e0b' },
+        ]
+      : [
+          { label: t('admin.status.active'), value: totals.bySubscriptionStatus.active ?? 0, color: '#10b981' },
+          { label: t('admin.status.free'), value: totals.bySubscriptionStatus.free ?? 0, color: '#94a3b8' },
+          { label: t('admin.status.past_due'), value: totals.bySubscriptionStatus.past_due ?? 0, color: '#f59e0b' },
+          { label: t('admin.status.canceled'), value: totals.bySubscriptionStatus.canceled ?? 0, color: '#ef4444' },
+        ]
+  ).filter((segment) => segment.value > 0);
+  const paying = plans ? plans.plus + plans.pro : totals.bySubscriptionStatus.active ?? 0;
+  // Billing that needs a look, under the plans: a card that failed, or a plan ending.
+  const pastDue = totals.bySubscriptionStatus.past_due ?? 0;
+  const canceled = totals.bySubscriptionStatus.canceled ?? 0;
+
+  const siteBars = sites
+    ? [
+        { kind: 'book' as const, value: sites.book, color: 'bg-violet-500' },
+        { kind: 'lead' as const, value: sites.lead, color: 'bg-sky-500' },
+        { kind: 'products' as const, value: sites.products, color: 'bg-amber-500' },
+        { kind: 'none' as const, value: sites.none, color: 'bg-gray-300 dark:bg-gray-600' },
+      ]
+    : [];
+  const siteMax = Math.max(totals.businesses, 1);
 
   const funnelSteps = [
     { label: t('admin.overview.funnel.signedUp'), value: funnel.signedUp, color: 'bg-blue-500' },
@@ -134,8 +178,12 @@ const AdminOverview: React.FC = () => {
         />
         <StatCard
           label={t('admin.overview.kpi.activeSubs')}
-          value={(totals.bySubscriptionStatus.active ?? 0).toLocaleString()}
-          subline={t('admin.overview.kpi.ofBusinesses', { count: totals.businesses })}
+          value={paying.toLocaleString()}
+          subline={
+            plans
+              ? t('admin.overview.kpi.payingSplit', { plus: plans.plus, pro: plans.pro })
+              : t('admin.overview.kpi.ofBusinesses', { count: totals.businesses })
+          }
           icon={<CreditCard size={20} className="text-emerald-500" />}
           iconBg="bg-emerald-100 dark:bg-emerald-900/30"
           accent="bg-emerald-500"
@@ -154,12 +202,13 @@ const AdminOverview: React.FC = () => {
           delay={0.15}
         />
         <StatCard
-          label={t('admin.overview.kpi.appointmentsThisMonth')}
-          value={totals.appointmentsThisMonth.toLocaleString()}
-          subline={t('admin.overview.kpi.appointmentsTotal', {
-            count: totals.appointmentsTotal,
+          label={t('admin.overview.kpi.activityThisMonth')}
+          value={(activity.bookingsThisMonth + activity.inquiriesThisMonth).toLocaleString()}
+          subline={t('admin.overview.kpi.activitySplit', {
+            bookings: activity.bookingsThisMonth,
+            inquiries: activity.inquiriesThisMonth,
           })}
-          icon={<CalendarRange size={20} className="text-amber-500" />}
+          icon={<Activity size={20} className="text-amber-500" />}
           iconBg="bg-amber-100 dark:bg-amber-900/30"
           accent="bg-amber-500"
           delay={0.2}
@@ -250,13 +299,56 @@ const AdminOverview: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+                {/* LT-647: where the paid plans are billed - the web (Paddle) or a store. */}
+                {stores && (
+                  <p className="w-full text-xs text-gray-500 dark:text-gray-400" data-testid="plan-stores">
+                    {t('admin.overview.plans.stores', { paddle: stores.paddle, apple: stores.apple, google: stores.google })}
+                  </p>
+                )}
+                {plans && (pastDue > 0 || canceled > 0) && (
+                  <p className="w-full text-xs text-amber-600 dark:text-amber-400">
+                    {t('admin.overview.plans.billing', { pastDue, canceled })}
+                  </p>
+                )}
               </div>
             )}
           </Card>
         </ErrorBoundaryWithLanguage>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        {/* ── Sites by kind (LT-647) ── */}
+        {sites && (
+          <ErrorBoundaryWithLanguage>
+            <Card animate={false}>
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
+                {t('admin.overview.sites.title')}
+              </h3>
+              <div className="space-y-3" data-testid="sites-by-kind">
+                {siteBars.map((bar) => (
+                  <div key={bar.kind}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600 dark:text-gray-300">{t(`admin.overview.sites.${bar.kind}`)}</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 tabular-nums">{bar.value}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                      <motion.div
+                        className={`h-full rounded-full ${bar.color}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(bar.value / siteMax) * 100}%` }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                {t('admin.overview.sites.content', { products: activity.products, posts: activity.postsPublished })}
+              </p>
+            </Card>
+          </ErrorBoundaryWithLanguage>
+        )}
+
         {/* ── Funnel ── */}
         <ErrorBoundaryWithLanguage>
           <Card animate={false}>
@@ -286,9 +378,16 @@ const AdminOverview: React.FC = () => {
           </Card>
         </ErrorBoundaryWithLanguage>
 
-        {/* ── Top businesses ── */}
+        {/* ── The apps' versions out there (LT-608) ── */}
         <ErrorBoundaryWithLanguage>
-          <Card animate={false} className="lg:col-span-2">
+          <AppInstallsCard />
+        </ErrorBoundaryWithLanguage>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {/* ── The most active businesses: bookings and inquiries (LT-647) ── */}
+        <ErrorBoundaryWithLanguage>
+          <Card animate={false}>
             <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
               {t('admin.overview.topBusinesses')}
             </h3>
@@ -322,22 +421,21 @@ const AdminOverview: React.FC = () => {
                         </a>
                       )}
                     </div>
+                    <SiteKindChip kind={business.siteKind} />
                     {business.subscriptionStatus && (
                       <StatusBadge status={business.subscriptionStatus} />
                     )}
+                    <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+                      {t('admin.overview.topSplit', { bookings: business.bookings, inquiries: business.inquiries ?? 0 })}
+                    </span>
                     <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">
-                      {business.bookings}
+                      {business.total ?? business.bookings}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
           </Card>
-        </ErrorBoundaryWithLanguage>
-
-        {/* ── The apps' versions out there (LT-608) ── */}
-        <ErrorBoundaryWithLanguage>
-          <AppInstallsCard />
         </ErrorBoundaryWithLanguage>
       </div>
     </motion.div>

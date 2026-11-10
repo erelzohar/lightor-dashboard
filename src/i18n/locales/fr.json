@@ -63,7 +63,8 @@
     },
     "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes.",
     "products": "Produits",
-    "blog": "Blog"
+    "blog": "Blog",
+    "paymentsOrders": "Paiements et commandes"
   },
   "greetings": {
     "morning": "Bonjour",
@@ -79,7 +80,8 @@
     "navigation": "Navigation",
     "main": "Principal",
     "manage": "Gérer",
-    "admin": "Administration"
+    "admin": "Administration",
+    "soon": "Bientôt"
   },
   "topbar": {
     "switchToLight": "Passer en mode clair",
@@ -1422,8 +1424,8 @@
       "sandboxBadge": "Bac à sable Paddle",
       "signupsChart": "Inscriptions - 30 derniers jours",
       "signups": "Inscriptions",
-      "planMix": "Répartition des forfaits",
-      "topBusinesses": "Meilleures entreprises par réservations (30 jours)",
+      "planMix": "Formules",
+      "topBusinesses": "Entreprises les plus actives (30 jours) : réservations et demandes",
       "kpi": {
         "businesses": "Entreprises",
         "verifiedOfThem": "{{count}} vérifiées",
@@ -1432,7 +1434,10 @@
         "mrr": "MRR (estimation)",
         "mrrDetail": "{{monthly}} mensuels · {{yearly}} annuels",
         "appointmentsThisMonth": "Réservations ce mois-ci",
-        "appointmentsTotal": "{{count}} au total"
+        "appointmentsTotal": "{{count}} au total",
+        "payingSplit": "Lightor+ {{plus}} · Pro {{pro}}",
+        "activityThisMonth": "Activité du mois",
+        "activitySplit": "{{bookings}} réservations · {{inquiries}} demandes"
       },
       "funnel": {
         "title": "Entonnoir de conversion",
@@ -1440,7 +1445,20 @@
         "onboarded": "Configurés",
         "verified": "E-mail vérifié",
         "paying": "Payants"
-      }
+      },
+      "plans": {
+        "stores": "Facturés via : le web {{paddle}} · App Store {{apple}} · Google Play {{google}}",
+        "billing": "Paiement en retard {{pastDue}} · annulés {{canceled}}"
+      },
+      "sites": {
+        "title": "Sites par type",
+        "book": "Sites de réservation",
+        "lead": "Sites de demandes",
+        "products": "Sites de produits",
+        "none": "Inscrits, pas encore de site",
+        "content": "{{products}} produits · {{posts}} articles publiés"
+      },
+      "topSplit": "{{bookings}} réservations · {{inquiries}} demandes"
     },
     "users": {
       "title": "Utilisateurs",
@@ -1475,7 +1493,10 @@
         "language": "Langue",
         "channel": "Canal",
         "lastBooked": "Dernière réservation",
-        "leadsTotal": "Demandes (total)"
+        "leadsTotal": "Demandes (total)",
+        "lastInquiry": "Dernière demande",
+        "productsTotal": "Produits",
+        "postsPublished": "Articles publiés"
       },
       "site": {
         "title": "Site public",
@@ -1495,6 +1516,10 @@
         "title": "Rendez-vous ({{count}} au total)",
         "viewAll": "Tout voir",
         "none": "Aucun rendez-vous pour l'instant"
+      },
+      "leads": {
+        "title": "Demandes ({{count}} au total)",
+        "none": "Aucune demande pour le moment"
       }
     },
     "actions": {
@@ -1517,7 +1542,7 @@
       "deleteAccount": "Supprimer le compte",
       "cancelConfirm": "Annuler l'abonnement de {{name}} à la fin de la période payée ? Son forfait continue jusque-là. Le changement est confirmé par Paddle et peut prendre un moment à s'afficher ici.",
       "resumeConfirm": "Annuler la résiliation programmée de {{name}} ? L'abonnement continuera de se renouveler. Confirmé par Paddle peu après.",
-      "deleteConfirm": "Supprimer définitivement le compte, le site et tous les rendez-vous de {{name}} ? Tout abonnement actif est d'abord annulé. Cette action est irréversible.",
+      "deleteConfirm": "Supprimer définitivement le compte et le site de {{name}}, avec tout leur contenu (réservations, demandes, produits et articles) ? Tout abonnement actif est d’abord annulé. Action irréversible.",
       "cancelSuccess": "Annulation demandée - Paddle confirmera sous peu",
       "resumeSuccess": "Reprise demandée - Paddle confirmera sous peu",
       "deleteSuccess": "Compte supprimé"
@@ -1805,6 +1830,24 @@
       "installs": "Installations",
       "latest": "la plus récente",
       "mustUpdate": "mise à jour requise"
+    },
+    "siteKind": {
+      "book": "Réservations",
+      "lead": "Demandes",
+      "products": "Produits",
+      "none": "Sans site"
+    },
+    "planStanding": {
+      "free": "Gratuit",
+      "freeDays": "Jours gratuits",
+      "plus": "Lightor+",
+      "pro": "Lightor Pro",
+      "sandbox": "Achat test"
+    },
+    "leadStatus": {
+      "new": "Nouvelle",
+      "contacted": "Contactée",
+      "closed": "Clôturée"
     }
   },
   "customers": {

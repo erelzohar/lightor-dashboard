@@ -60,7 +60,8 @@ describe('Admin user detail: site mode and leads', () => {
     renderPage();
 
     const mode = await screen.findByTestId('site-mode');
-    expect(within(mode).getByText('settings.site.modeLead')).toBeInTheDocument();
+    // LT-647: the site's kind as the panel's own chip.
+    expect(within(mode).getByText('admin.siteKind.lead')).toBeInTheDocument();
     expect(screen.getByTestId('leads-total')).toHaveTextContent('12');
     expect(within(usageRow('admin.userDetail.usage.leads')).getByText('3 / 15')).toBeInTheDocument();
   });
@@ -76,7 +77,29 @@ describe('Admin user detail: site mode and leads', () => {
     renderPage();
 
     const mode = await screen.findByTestId('site-mode');
-    expect(within(mode).getByText('settings.site.modeBook')).toBeInTheDocument();
+    expect(within(mode).getByText('admin.siteKind.book')).toBeInTheDocument();
     expect(within(usageRow('admin.userDetail.usage.leads')).getByText('3 / ∞')).toBeInTheDocument();
+  });
+
+  it('a products site shows its inquiries, products, posts and plan, not an empty bookings list (LT-647)', async () => {
+    vi.mocked(fetchUser).mockResolvedValue({
+      ...detail({ conversion: 'lead' }),
+      siteKind: 'products',
+      planStanding: 'freeDays',
+      counts: { appointmentsTotal: 0, lastBookedAt: null, leadsTotal: 12, lastInquiryAt: '2026-11-09T10:00:00.000Z', productsTotal: 7, postsPublished: 2 },
+      recentLeads: [{ _id: 'l1', name: 'Noa', phone: '+972501234567', status: 'new', createdAt: '2026-11-09T10:00:00.000Z' }],
+    } as Detail);
+    renderPage();
+
+    const mode = await screen.findByTestId('site-mode');
+    expect(within(mode).getByText('admin.siteKind.products')).toBeInTheDocument();
+    expect(screen.getByTestId('plan-freeDays')).toHaveTextContent('admin.planStanding.freeDays');
+    expect(screen.getByTestId('products-total')).toHaveTextContent('7');
+    expect(screen.getByTestId('posts-published')).toHaveTextContent('2');
+    expect(screen.getByText('admin.userDetail.identity.lastInquiry')).toBeInTheDocument();
+    expect(screen.queryByText('admin.userDetail.identity.lastBooked')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('recent-leads')).getByText('Noa')).toBeInTheDocument();
+    // No bookings on a products site: no empty bookings card.
+    expect(screen.queryByText('admin.userDetail.appointments.none')).not.toBeInTheDocument();
   });
 });

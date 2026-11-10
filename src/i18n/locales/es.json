@@ -63,7 +63,8 @@
     },
     "aiBusy": "Un momento: otra solicitud todavía está en curso. Inténtalo de nuevo en unos segundos.",
     "products": "Productos",
-    "blog": "Blog"
+    "blog": "Blog",
+    "paymentsOrders": "Pagos y pedidos"
   },
   "greetings": {
     "morning": "Buenos días",
@@ -79,7 +80,8 @@
     "navigation": "Navegación",
     "main": "Principal",
     "manage": "Gestionar",
-    "admin": "Administración"
+    "admin": "Administración",
+    "soon": "Pronto"
   },
   "topbar": {
     "switchToLight": "Cambiar a modo claro",
@@ -1422,8 +1424,8 @@
       "sandboxBadge": "Entorno de pruebas de Paddle",
       "signupsChart": "Registros - últimos 30 días",
       "signups": "Registros",
-      "planMix": "Distribución de planes",
-      "topBusinesses": "Principales negocios por reservas (30 días)",
+      "planMix": "Planes",
+      "topBusinesses": "Negocios más activos (30 días): reservas y consultas",
       "kpi": {
         "businesses": "Negocios",
         "verifiedOfThem": "{{count}} verificados",
@@ -1432,7 +1434,10 @@
         "mrr": "MRR (estimación)",
         "mrrDetail": "{{monthly}} mensuales · {{yearly}} anuales",
         "appointmentsThisMonth": "Reservas este mes",
-        "appointmentsTotal": "{{count}} en total"
+        "appointmentsTotal": "{{count}} en total",
+        "payingSplit": "Lightor+ {{plus}} · Pro {{pro}}",
+        "activityThisMonth": "Actividad de este mes",
+        "activitySplit": "{{bookings}} reservas · {{inquiries}} consultas"
       },
       "funnel": {
         "title": "Embudo de conversión",
@@ -1440,7 +1445,20 @@
         "onboarded": "Configurados",
         "verified": "Correo verificado",
         "paying": "De pago"
-      }
+      },
+      "plans": {
+        "stores": "Cobrados por: la web {{paddle}} · App Store {{apple}} · Google Play {{google}}",
+        "billing": "Pago atrasado {{pastDue}} · cancelados {{canceled}}"
+      },
+      "sites": {
+        "title": "Sitios por tipo",
+        "book": "Sitios de reservas",
+        "lead": "Sitios de consultas",
+        "products": "Sitios de productos",
+        "none": "Registrados, aún sin sitio",
+        "content": "{{products}} productos · {{posts}} entradas publicadas"
+      },
+      "topSplit": "{{bookings}} reservas · {{inquiries}} consultas"
     },
     "users": {
       "title": "Usuarios",
@@ -1475,7 +1493,10 @@
         "language": "Idioma",
         "channel": "Canal",
         "lastBooked": "Última reserva",
-        "leadsTotal": "Consultas (total)"
+        "leadsTotal": "Consultas (total)",
+        "lastInquiry": "Última consulta",
+        "productsTotal": "Productos",
+        "postsPublished": "Entradas publicadas"
       },
       "site": {
         "title": "Sitio público",
@@ -1495,6 +1516,10 @@
         "title": "Citas ({{count}} en total)",
         "viewAll": "Ver todas",
         "none": "Aún no hay citas"
+      },
+      "leads": {
+        "title": "Consultas ({{count}} en total)",
+        "none": "Aún no hay consultas"
       }
     },
     "actions": {
@@ -1517,7 +1542,7 @@
       "deleteAccount": "Eliminar cuenta",
       "cancelConfirm": "¿Cancelar la suscripción de {{name}} al final del período pagado? Su plan sigue funcionando hasta entonces. El cambio lo confirma Paddle y puede tardar un momento en reflejarse aquí.",
       "resumeConfirm": "¿Deshacer la cancelación programada de {{name}}? La suscripción seguirá renovándose. Confirmado por Paddle poco después.",
-      "deleteConfirm": "¿Eliminar permanentemente la cuenta, el sitio y todas las citas de {{name}}? Cualquier suscripción activa se cancela primero. Esto no se puede deshacer.",
+      "deleteConfirm": "¿Eliminar para siempre la cuenta y el sitio de {{name}}, con todo lo que contiene (reservas, consultas, productos y entradas)? Cualquier suscripción activa se cancela primero. No se puede deshacer.",
       "cancelSuccess": "Cancelación solicitada - Paddle lo confirmará en breve",
       "resumeSuccess": "Reanudación solicitada - Paddle lo confirmará en breve",
       "deleteSuccess": "Cuenta eliminada"
@@ -1805,6 +1830,24 @@
       "installs": "Instalaciones",
       "latest": "la más reciente",
       "mustUpdate": "debe actualizar"
+    },
+    "siteKind": {
+      "book": "Reservas",
+      "lead": "Consultas",
+      "products": "Productos",
+      "none": "Sin sitio"
+    },
+    "planStanding": {
+      "free": "Gratis",
+      "freeDays": "Días gratis",
+      "plus": "Lightor+",
+      "pro": "Lightor Pro",
+      "sandbox": "Compra de prueba"
+    },
+    "leadStatus": {
+      "new": "Nueva",
+      "contacted": "Contactada",
+      "closed": "Cerrada"
     }
   },
   "customers": {

@@ -63,7 +63,8 @@
     },
     "aiBusy": "لحظة - طلب سابق ما زال قيد التنفيذ. حاول مجددًا بعد بضع ثوانٍ.",
     "products": "المنتجات",
-    "blog": "المدونة"
+    "blog": "المدونة",
+    "paymentsOrders": "المدفوعات والطلبات"
   },
   "greetings": {
     "morning": "صباح الخير",
@@ -79,7 +80,8 @@
     "navigation": "التنقل",
     "main": "الرئيسية",
     "manage": "الإدارة",
-    "admin": "إدارة النظام"
+    "admin": "إدارة النظام",
+    "soon": "قريبًا"
   },
   "topbar": {
     "switchToLight": "التبديل إلى الوضع الفاتح",
@@ -1434,8 +1436,8 @@
       "sandboxBadge": "بيئة اختبار Paddle",
       "signupsChart": "التسجيلات - آخر 30 يومًا",
       "signups": "التسجيلات",
-      "planMix": "توزيع الخطط",
-      "topBusinesses": "أفضل الأنشطة التجارية حسب الحجوزات (30 يومًا)",
+      "planMix": "الخطط",
+      "topBusinesses": "الأعمال الأكثر نشاطًا (30 يومًا): الحجوزات والاستفسارات",
       "kpi": {
         "businesses": "الأنشطة التجارية",
         "verifiedOfThem": "{{count}} محقّقة",
@@ -1444,7 +1446,10 @@
         "mrr": "الإيراد الشهري المتكرر (تقديري)",
         "mrrDetail": "{{monthly}} شهري · {{yearly}} سنوي",
         "appointmentsThisMonth": "الحجوزات هذا الشهر",
-        "appointmentsTotal": "{{count}} إجمالًا"
+        "appointmentsTotal": "{{count}} إجمالًا",
+        "payingSplit": "Lightor+ {{plus}} · Pro {{pro}}",
+        "activityThisMonth": "نشاط هذا الشهر",
+        "activitySplit": "{{bookings}} حجوزات · {{inquiries}} استفسارات"
       },
       "funnel": {
         "title": "مسار التحويل",
@@ -1452,7 +1457,20 @@
         "onboarded": "تم إعدادهم",
         "verified": "بريد محقّق",
         "paying": "يدفعون"
-      }
+      },
+      "plans": {
+        "stores": "الدفع عبر: الموقع {{paddle}} · App Store {{apple}} · Google Play {{google}}",
+        "billing": "متأخر في الدفع {{pastDue}} · ملغى {{canceled}}"
+      },
+      "sites": {
+        "title": "المواقع حسب النوع",
+        "book": "مواقع حجوزات",
+        "lead": "مواقع استفسارات",
+        "products": "مواقع منتجات",
+        "none": "سجّلوا، بلا موقع بعد",
+        "content": "{{products}} منتجات · {{posts}} منشورات منشورة"
+      },
+      "topSplit": "{{bookings}} حجوزات · {{inquiries}} استفسارات"
     },
     "users": {
       "title": "المستخدمون",
@@ -1487,7 +1505,10 @@
         "language": "اللغة",
         "channel": "القناة",
         "lastBooked": "آخر حجز",
-        "leadsTotal": "إجمالي الاستفسارات"
+        "leadsTotal": "إجمالي الاستفسارات",
+        "lastInquiry": "آخر استفسار",
+        "productsTotal": "المنتجات",
+        "postsPublished": "المنشورات المنشورة"
       },
       "site": {
         "title": "الموقع العام",
@@ -1507,6 +1528,10 @@
         "title": "المواعيد ({{count}} إجمالًا)",
         "viewAll": "عرض الكل",
         "none": "لا توجد مواعيد بعد"
+      },
+      "leads": {
+        "title": "الاستفسارات ({{count}} إجمالًا)",
+        "none": "لا توجد استفسارات بعد"
       }
     },
     "actions": {
@@ -1529,7 +1554,7 @@
       "deleteAccount": "حذف الحساب",
       "cancelConfirm": "إلغاء اشتراك {{name}} في نهاية الفترة المدفوعة؟ تستمر خطته حتى ذلك الحين. يؤكّد Paddle التغيير وقد يستغرق لحظة ليظهر هنا.",
       "resumeConfirm": "التراجع عن الإلغاء المجدول لـ {{name}}؟ سيستمر الاشتراك في التجديد. يؤكّده Paddle بعد قليل.",
-      "deleteConfirm": "حذف حساب {{name}} وموقعه وجميع مواعيده نهائيًا؟ يُلغى أي اشتراك نشط أولًا. لا يمكن التراجع عن هذا.",
+      "deleteConfirm": "حذف حساب {{name}} وموقعه نهائيًا، مع كل ما فيه (الحجوزات والاستفسارات والمنتجات والمنشورات)؟ يُلغى أي اشتراك نشط أولًا. لا يمكن التراجع عن ذلك.",
       "cancelSuccess": "تم طلب الإلغاء - سيؤكّده Paddle قريبًا",
       "resumeSuccess": "تم طلب الاستئناف - سيؤكّده Paddle قريبًا",
       "deleteSuccess": "تم حذف الحساب"
@@ -1817,6 +1842,24 @@
       "installs": "التثبيتات",
       "latest": "الأحدث",
       "mustUpdate": "يلزم التحديث"
+    },
+    "siteKind": {
+      "book": "حجوزات",
+      "lead": "استفسارات",
+      "products": "منتجات",
+      "none": "بلا موقع"
+    },
+    "planStanding": {
+      "free": "مجاني",
+      "freeDays": "الأيام المجانية",
+      "plus": "Lightor+",
+      "pro": "Lightor Pro",
+      "sandbox": "شراء تجريبي"
+    },
+    "leadStatus": {
+      "new": "جديد",
+      "contacted": "تم التواصل",
+      "closed": "مغلق"
     }
   },
   "customers": {
