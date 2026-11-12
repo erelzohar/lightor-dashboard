@@ -470,7 +470,6 @@
   "login": {
     "title": "Connexion",
     "welcome": "Bienvenue",
-    "welcomeBack": "Bon retour",
     "subtitle": "Connectez-vous pour gérer votre entreprise",
     "invalidCredentials": "Identifiants invalides",
     "tooManyAttempts": "Trop de tentatives. Réessayez dans quelques minutes.",

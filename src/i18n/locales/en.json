@@ -468,7 +468,6 @@
   "login": {
     "title": "Login",
     "welcome": "Welcome",
-    "welcomeBack": "Welcome back",
     "subtitle": "Sign in to manage your business",
     "invalidCredentials": "Invalid credentials",
     "tooManyAttempts": "Too many attempts. Try again in a few minutes.",

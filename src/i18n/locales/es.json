@@ -470,7 +470,6 @@
   "login": {
     "title": "Iniciar sesión",
     "welcome": "Te damos la bienvenida",
-    "welcomeBack": "Qué bueno verte de nuevo",
     "subtitle": "Inicia sesión para gestionar tu negocio",
     "invalidCredentials": "Credenciales no válidas",
     "tooManyAttempts": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
