@@ -65,6 +65,7 @@ beforeEach(() => {
   });
   lock.markOffered.mockReset().mockResolvedValue(undefined);
   logout.mockReset();
+  localStorage.removeItem('lightor.signedIn');
   signedIn();
 });
 afterEach(() => { vi.useRealTimers(); });
@@ -130,6 +131,50 @@ describe('AppLockGate (LT-617)', () => {
     signedIn();
     render(<AppLockGate />);
     expect(screen.queryByTestId('app-lock')).toBeNull();
+  });
+
+  it('LT-649: signed out, the app opens without asking for a face, while it checks and after', async () => {
+    lock.enabled = true;
+    // Launch: still asking the server who is signed in, and signing out
+    // cleared the hint an earlier sign-in left.
+    signedIn({ isAuthenticated: false, isLoading: true, user: null });
+    const { rerender } = render(<AppLockGate />);
+    expect(screen.queryByTestId('app-lock')).toBeNull();
+
+    signedIn({ isAuthenticated: false, isLoading: false, user: null });
+    rerender(<AppLockGate />);
+    await act(async () => {});
+    expect(screen.queryByTestId('app-lock')).toBeNull();
+    expect(lock.authenticate).not.toHaveBeenCalled();
+  });
+
+  it('LT-649: a session kept from an earlier sign-in still locks at once, while the app checks', async () => {
+    lock.enabled = true;
+    localStorage.setItem('lightor.signedIn', '1');
+    signedIn({ isAuthenticated: false, isLoading: true, user: null });
+    render(<AppLockGate />);
+    expect(screen.getByTestId('app-lock')).toBeInTheDocument();
+    await waitFor(() => expect(lock.authenticate).toHaveBeenCalledTimes(1));
+  });
+
+  it('LT-649: after the sign-in screen, the sign-in opens the app, however long it sat there', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    lock.enabled = true;
+    signedIn({ isAuthenticated: false, isLoading: false, user: null });
+    const { rerender } = render(<AppLockGate />);
+    await waitFor(() => expect(lock.stateListener).not.toBeNull());
+    // Away from the sign-in screen for longer than the lock's 5 minutes.
+    act(() => lock.stateListener!({ isActive: false }));
+    vi.advanceTimersByTime(6 * 60 * 1000);
+    act(() => lock.stateListener!({ isActive: true }));
+
+    // The password typed: signed in.
+    signedIn();
+    rerender(<AppLockGate />);
+    await act(async () => {});
+    expect(screen.queryByTestId('app-lock')).toBeNull();
+    expect(screen.queryByTestId('app-lock-cover')).toBeNull();
+    expect(lock.authenticate).not.toHaveBeenCalled();
   });
 
   it('covers the pages in the background, and locks again only after 5 minutes away', async () => {

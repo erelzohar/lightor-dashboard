@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { isNativeApp } from '../../lib/platform';
+import { hasSessionHint } from '../../services/sessionHint';
 import {
   AWAY_LOCK_MS,
   LOCK_CHANGED,
@@ -20,6 +21,12 @@ import {
  * again. While the app is in the background a plain cover hides the pages, so
  * the phone's app switcher does not show them. Signed out, nothing is locked:
  * the password was just typed.
+ *
+ * LT-649 (Erel 2026-11-12: signed out, the app still asked for his face when
+ * it opened): the lock needs a session. At launch the app is still asking the
+ * server who is signed in, so until it knows, only the hint an earlier
+ * sign-in left (signing out clears it) counts as one. Once the sign-in screen
+ * has come up, the next sign-in opens the app without the lock.
  */
 const AppLockGate: React.FC = () => {
   const { t } = useTranslation();
@@ -34,7 +41,14 @@ const AppLockGate: React.FC = () => {
   // those moves are not the owner leaving.
   const prompting = useRef(false);
   const awaySince = useRef(0);
+  // Opened in this run: by the phone's prompt, or by a sign-in after the
+  // sign-in screen came up.
   const opened = useRef(false);
+  // A session to lock: signed in, kept while the server cannot be reached
+  // (LT-614), or at launch, still being checked after an earlier sign-in.
+  const sessionKept = auth.isAuthenticated || !!auth.offline || (auth.isLoading && hasSessionHint());
+  const sessionRef = useRef(sessionKept);
+  sessionRef.current = sessionKept;
 
   useEffect(() => {
     if (!native) return undefined;
@@ -62,15 +76,17 @@ const AppLockGate: React.FC = () => {
     void import('@capacitor/app')
       .then(({ App }) =>
         App.addListener('appStateChange', ({ isActive }) => {
-          if (prompting.current || !lockEnabledNow()) return;
+          if (prompting.current) return;
           if (!isActive) {
+            // Signed out, there is nothing to hide or to lock on coming back.
+            if (!lockEnabledNow() || !sessionRef.current) return;
             awaySince.current = Date.now();
             setCovered(true);
             return;
           }
           const away = awaySince.current ? Date.now() - awaySince.current : 0;
           awaySince.current = 0;
-          if (away >= AWAY_LOCK_MS) setLocked(true);
+          if (away >= AWAY_LOCK_MS && lockEnabledNow() && sessionRef.current) setLocked(true);
           setCovered(false);
         })
       )
@@ -85,10 +101,14 @@ const AppLockGate: React.FC = () => {
     };
   }, [native]);
 
-  // The sign-in screen came up: a password will open the app, not the lock.
+  // The sign-in screen came up: a password will open the app, not the lock,
+  // even if the setting is read from Preferences only after this.
   const signedOut = !auth.isLoading && !auth.isAuthenticated && !auth.offline;
   useEffect(() => {
-    if (signedOut) setLocked(false);
+    if (!signedOut) return;
+    opened.current = true;
+    setLocked(false);
+    setCovered(false);
   }, [signedOut]);
 
   const unlock = useCallback(async () => {
@@ -111,7 +131,7 @@ const AppLockGate: React.FC = () => {
     }
   }, [t]);
 
-  const showLock = native && enabled && locked && !signedOut;
+  const showLock = native && enabled && locked && sessionKept;
   // Ask the phone at once each time the app locks (only then, whatever
   // re-renders meanwhile); after a cancel the button asks again.
   const unlockRef = useRef(unlock);
@@ -158,7 +178,7 @@ const AppLockGate: React.FC = () => {
   }
 
   // In the background: the pages stay out of the app switcher's picture.
-  if (native && enabled && covered && !signedOut) {
+  if (native && enabled && covered && sessionKept) {
     return <div aria-hidden="true" className="fixed inset-0 z-[10300] bg-white dark:bg-slate-900" data-testid="app-lock-cover" />;
   }
   return null;

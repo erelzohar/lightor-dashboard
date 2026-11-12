@@ -100,6 +100,20 @@ describe('the sign-in card', () => {
     expect(onApple).toHaveBeenCalledTimes(1);
   });
 
+  it('LT-650: the same button as Google and Facebook, its logo and title in one colour', () => {
+    renderCard(() => {});
+    const face = (label: string) => (screen.getByText(label).parentElement as HTMLElement).className.split(/\s+/);
+    for (const cls of ['bg-white/5', 'border', 'border-white/10', 'h-10', 'rounded-lg', 'gap-2']) {
+      expect(face('Google')).toContain(cls);
+      expect(face('Facebook')).toContain(cls);
+      expect(face('Apple')).toContain(cls);
+    }
+    // No longer Apple's solid white button.
+    expect(face('Apple')).not.toContain('bg-white');
+    expect(face('Apple')).not.toContain('text-black');
+    expect(screen.getByTestId('apple-sign-in').querySelector('svg')?.getAttribute('fill')).toBe('currentColor');
+  });
+
   it('has no Apple button where Apple sign-in is not offered', () => {
     renderCard(undefined);
     expect(screen.queryByTestId('apple-sign-in')).toBeNull();

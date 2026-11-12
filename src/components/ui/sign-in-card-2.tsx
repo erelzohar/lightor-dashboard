@@ -328,19 +328,23 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                   </div>
                 </motion.button>
 
-                {/* LT-383: Apple's white button for dark backgrounds (Human
-                    Interface Guidelines), as tall as Google's beside it. Its
-                    title is just "Apple", like Google's and Facebook's (Erel,
-                    LT-552). */}
+                {/* LT-383: Sign in with Apple beside Google (App Store
+                    guideline 4.8), its title just "Apple" like Google's and
+                    Facebook's (Erel, LT-552). LT-650 (Erel 2026-11-12: it
+                    "looked different for no reason"): their style too - the
+                    card's dark button, as tall as theirs, with Apple's logo and
+                    title in one colour, white on dark as Apple's guidelines
+                    ask. */}
                 {onAppleLogin && (
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={onAppleLogin}
                   data-testid="apple-sign-in"
-                  className="relative"
+                  className="relative group/apple"
                 >
-                  <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg flex items-center justify-center gap-1.5 px-2">
+                  <div className="absolute inset-0 bg-white/5 rounded-lg blur opacity-0 group-hover/apple:opacity-70 transition-opacity duration-300" />
+                  <div className="relative overflow-hidden bg-white/5 text-white/80 group-hover/apple:text-white font-medium h-10 rounded-lg border border-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center gap-2">
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M16.37 1.43c0 1.14-.42 2.2-1.12 2.98-.84.93-1.98 1.47-3.08 1.38-.13-1.1.42-2.25 1.1-2.99.77-.85 2.07-1.48 3.1-1.37zM20.5 17.24c-.55 1.27-.81 1.84-1.52 2.96-.99 1.56-2.38 3.5-4.11 3.52-1.53.01-1.93-1-4.01-.99-2.08.01-2.52 1-4.05.99-1.73-.02-3.05-1.77-4.04-3.33C.01 16.03-.28 10.97 1.46 8.29c1.24-1.9 3.19-3.01 5.03-3.01 1.87 0 3.05 1.03 4.6 1.03 1.5 0 2.42-1.03 4.58-1.03 1.64 0 3.38.89 4.62 2.43-4.06 2.23-3.4 8.03.21 9.53z" />
                     </svg>
