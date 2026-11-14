@@ -1843,6 +1843,32 @@
       "new": "New",
       "contacted": "Contacted",
       "closed": "Closed"
+    },
+    "domain": {
+      "title": "Domain",
+      "none": "No domain connected",
+      "hostLabel": "The domain to connect",
+      "connect": "Connect",
+      "dnsHint": "The DNS record the owner adds:",
+      "check": "Check now",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect the domain",
+      "disconnectConfirm": "Disconnect {{host}}? The site will stop answering on this address and stay on its lightor.app address.",
+      "connected": "Domain connected",
+      "checked": "Checked again",
+      "disconnected": "Domain disconnected",
+      "notConfigured": "Not set up on the server: the Cloudflare token is missing.",
+      "loadError": "Couldn't load the domain",
+      "retry": "Retry",
+      "connectedAt": "Connected",
+      "checkedAt": "Last check",
+      "activeAt": "Active since",
+      "status": {
+        "pending": "Pending",
+        "active": "Active",
+        "error": "Error",
+        "paused": "Paused"
+      }
     }
   },
   "customers": {

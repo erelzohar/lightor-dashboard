@@ -1851,6 +1851,32 @@
       "new": "חדש",
       "contacted": "נוצר קשר",
       "closed": "נסגר"
+    },
+    "domain": {
+      "title": "דומיין",
+      "none": "לא מחובר דומיין",
+      "hostLabel": "הדומיין לחיבור",
+      "connect": "חבר",
+      "dnsHint": "רשומת ה-DNS שבעל העסק מוסיף:",
+      "check": "בדוק עכשיו",
+      "disconnect": "נתק",
+      "disconnectTitle": "ניתוק הדומיין",
+      "disconnectConfirm": "לנתק את {{host}}? האתר יפסיק לעלות בכתובת הזו ויישאר בכתובת lightor.app שלו.",
+      "connected": "הדומיין חובר",
+      "checked": "נבדק שוב",
+      "disconnected": "הדומיין נותק",
+      "notConfigured": "לא מוגדר בשרת: חסר הטוקן של Cloudflare.",
+      "loadError": "לא ניתן לטעון את הדומיין",
+      "retry": "נסה שוב",
+      "connectedAt": "חובר",
+      "checkedAt": "בדיקה אחרונה",
+      "activeAt": "פעיל מאז",
+      "status": {
+        "pending": "ממתין",
+        "active": "פעיל",
+        "error": "שגיאה",
+        "paused": "מושהה"
+      }
     }
   },
   "customers": {

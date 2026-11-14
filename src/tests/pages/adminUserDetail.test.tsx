@@ -10,6 +10,10 @@ vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() 
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ direction: 'ltr' }) }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'admin1' } } }) }));
 vi.mock('../../components/admin/BillingCard', () => ({ default: (): null => null }));
+// LT-661: the domain card reads its own route; here only who it is asked for.
+vi.mock('../../components/admin/DomainCard', () => ({
+  default: ({ userId }: { userId: string }) => <div data-testid="domain-card">{userId}</div>,
+}));
 vi.mock('../../components/admin/UserFormModal', () => ({ default: (): null => null }));
 vi.mock('../../services/adminApi', () => ({
   fetchUser: vi.fn(),
@@ -101,5 +105,23 @@ describe('Admin user detail: site mode and leads', () => {
     expect(within(screen.getByTestId('recent-leads')).getByText('Noa')).toBeInTheDocument();
     // No bookings on a products site: no empty bookings card.
     expect(screen.queryByText('admin.userDetail.appointments.none')).not.toBeInTheDocument();
+  });
+});
+
+/** LT-661: a business's own domain belongs to its site. */
+describe('Admin user detail: the domain card', () => {
+  beforeEach(() => vi.mocked(fetchUser).mockReset());
+
+  it('a user with a site gets the domain card, asked for by the user id', async () => {
+    vi.mocked(fetchUser).mockResolvedValue(detail({}));
+    renderPage();
+    expect(await screen.findByTestId('domain-card')).toHaveTextContent('u9');
+  });
+
+  it('a user with no site has no domain card', async () => {
+    vi.mocked(fetchUser).mockResolvedValue({ ...detail({}), webConfig: null, siteKind: 'none' } as Detail);
+    renderPage();
+    expect(await screen.findByText('admin.userDetail.site.none')).toBeInTheDocument();
+    expect(screen.queryByTestId('domain-card')).not.toBeInTheDocument();
   });
 });

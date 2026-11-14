@@ -7,6 +7,10 @@ import {
   changeUserRole,
   deleteUser,
   fetchCostsSummary,
+  fetchUserDomain,
+  connectUserDomain,
+  checkUserDomain,
+  disconnectUserDomain,
 } from '../../services/adminApi';
 import globals from '../../services/globals';
 
@@ -115,6 +119,50 @@ describe('adminApi', () => {
         withCredentials: true,
       })
     );
+  });
+
+  it("a site's own domain (LT-661): the four routes, each unwrapped to the same state", async () => {
+    const state = {
+      configured: true,
+      target: 'sites.lightor.app',
+      domain: { host: 'www.dana-studio.co.il', status: 'pending' },
+    };
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ data: { success: true, data: state } } as never);
+    const request = vi
+      .spyOn(apiClient, 'request')
+      .mockResolvedValue({ data: { success: true, data: state } } as never);
+
+    await expect(fetchUserDomain('u9')).resolves.toEqual(state);
+    expect(get).toHaveBeenCalledWith(
+      `${globals.adminUrl}users/u9/domain`,
+      expect.objectContaining({ withCredentials: true })
+    );
+
+    await expect(connectUserDomain('u9', 'www.dana-studio.co.il')).resolves.toEqual(state);
+    expect(request).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        method: 'put',
+        url: `${globals.adminUrl}users/u9/domain`,
+        data: { host: 'www.dana-studio.co.il' },
+        withCredentials: true,
+      })
+    );
+
+    await expect(checkUserDomain('u9')).resolves.toEqual(state);
+    expect(request).toHaveBeenLastCalledWith(
+      expect.objectContaining({ method: 'post', url: `${globals.adminUrl}users/u9/domain/check`, data: undefined })
+    );
+
+    await expect(disconnectUserDomain('u9')).resolves.toEqual(state);
+    expect(request).toHaveBeenLastCalledWith(
+      expect.objectContaining({ method: 'delete', url: `${globals.adminUrl}users/u9/domain`, data: undefined })
+    );
+  });
+
+  it('a refused domain write reaches the page as it is (409 taken, 503 not configured)', async () => {
+    const refusal = { response: { status: 409, data: { success: false, error: 'taken' } } };
+    vi.spyOn(apiClient, 'request').mockRejectedValue(refusal as never);
+    await expect(connectUserDomain('u9', 'www.taken.co.il')).rejects.toBe(refusal);
   });
 
   it('propagates failures instead of swallowing them', async () => {

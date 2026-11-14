@@ -24,6 +24,7 @@ import Select from '../../components/ui/Select';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import StatusBadge from '../../components/admin/StatusBadge';
 import BillingCard from '../../components/admin/BillingCard';
+import DomainCard from '../../components/admin/DomainCard';
 import UserFormModal from '../../components/admin/UserFormModal';
 import { PlanChip, SiteKindChip } from '../../components/admin/SiteKindChip';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -344,6 +345,9 @@ const AdminUserDetail: React.FC = () => {
               <p className="text-sm text-gray-400">{t('admin.userDetail.site.none')}</p>
             )}
           </Card>
+
+          {/* LT-661: the business's own domain - only a site can have one. */}
+          {webConfig && <DomainCard userId={user._id} />}
 
           <Card animate={false}>
             <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">

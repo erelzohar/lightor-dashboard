@@ -1847,6 +1847,32 @@
       "new": "Nueva",
       "contacted": "Contactada",
       "closed": "Cerrada"
+    },
+    "domain": {
+      "title": "Dominio",
+      "none": "Ningún dominio conectado",
+      "hostLabel": "El dominio a conectar",
+      "connect": "Conectar",
+      "dnsHint": "El registro DNS que añade el propietario:",
+      "check": "Comprobar ahora",
+      "disconnect": "Desconectar",
+      "disconnectTitle": "Desconectar el dominio",
+      "disconnectConfirm": "¿Desconectar {{host}}? El sitio dejará de responder en esta dirección y seguirá en su dirección lightor.app.",
+      "connected": "Dominio conectado",
+      "checked": "Comprobado de nuevo",
+      "disconnected": "Dominio desconectado",
+      "notConfigured": "No está configurado en el servidor: falta el token de Cloudflare.",
+      "loadError": "No se pudo cargar el dominio",
+      "retry": "Reintentar",
+      "connectedAt": "Conectado",
+      "checkedAt": "Última comprobación",
+      "activeAt": "Activo desde",
+      "status": {
+        "pending": "Pendiente",
+        "active": "Activo",
+        "error": "Error",
+        "paused": "En pausa"
+      }
     }
   },
   "customers": {

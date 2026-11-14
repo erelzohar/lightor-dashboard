@@ -31,7 +31,7 @@ const get = async <T>(path: string, params?: Record<string, unknown>): Promise<T
 };
 
 const send = async <T>(
-  method: 'post' | 'patch' | 'delete',
+  method: 'post' | 'put' | 'patch' | 'delete',
   path: string,
   body?: Record<string, unknown>
 ): Promise<T> => {
@@ -381,6 +381,44 @@ export const resumeUserSubscription = async (id: string): Promise<void> => {
 export const deleteUser = async (id: string, confirmEmail: string): Promise<void> => {
   await send('delete', `users/${id}`, { confirmEmail });
 };
+
+// ------------------------------------------------- a site's own domain --
+
+/** LT-661: the business's own domain for its site, as the server holds it. */
+export interface AdminDomainState {
+  host: string;
+  status: 'pending' | 'active' | 'error' | 'paused';
+  /** The last reason it is not active - short, English, from the server. */
+  error?: string;
+  connectedAt?: string;
+  checkedAt?: string;
+  activeAt?: string;
+}
+
+/**
+ * LT-661: every domain route answers this. `configured: false` means the
+ * server has no Cloudflare token: it reads, and refuses every write (503).
+ * `target` is what the owner's CNAME record points at.
+ */
+export interface AdminUserDomain {
+  configured: boolean;
+  target: string;
+  domain: AdminDomainState | null;
+}
+
+export const fetchUserDomain = async (id: string): Promise<AdminUserDomain> =>
+  (await get<{ data: AdminUserDomain }>(`users/${id}/domain`)).data;
+
+/** Connects the host (409 another site has it, 400 not a host, 503 not configured). */
+export const connectUserDomain = async (id: string, host: string): Promise<AdminUserDomain> =>
+  (await send<{ data: AdminUserDomain }>('put', `users/${id}/domain`, { host })).data;
+
+/** Asks Cloudflare again: pending or error becomes active, and back. */
+export const checkUserDomain = async (id: string): Promise<AdminUserDomain> =>
+  (await send<{ data: AdminUserDomain }>('post', `users/${id}/domain/check`)).data;
+
+export const disconnectUserDomain = async (id: string): Promise<AdminUserDomain> =>
+  (await send<{ data: AdminUserDomain }>('delete', `users/${id}/domain`)).data;
 
 export const fetchUserBilling = async (id: string): Promise<UserBilling> =>
   (await get<{ data: UserBilling }>(`users/${id}/billing`)).data;

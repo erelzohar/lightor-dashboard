@@ -1859,6 +1859,32 @@
       "new": "جديد",
       "contacted": "تم التواصل",
       "closed": "مغلق"
+    },
+    "domain": {
+      "title": "النطاق",
+      "none": "لا يوجد نطاق مرتبط",
+      "hostLabel": "النطاق المراد ربطه",
+      "connect": "ربط",
+      "dnsHint": "سجل DNS الذي يضيفه صاحب العمل:",
+      "check": "تحقّق الآن",
+      "disconnect": "فصل",
+      "disconnectTitle": "فصل النطاق",
+      "disconnectConfirm": "فصل {{host}}؟ سيتوقف الموقع عن العمل على هذا العنوان ويبقى على عنوان lightor.app الخاص به.",
+      "connected": "تم ربط النطاق",
+      "checked": "تم التحقق مجددًا",
+      "disconnected": "تم فصل النطاق",
+      "notConfigured": "غير مُعدّ على الخادم: رمز Cloudflare مفقود.",
+      "loadError": "تعذّر تحميل النطاق",
+      "retry": "إعادة المحاولة",
+      "connectedAt": "تم الربط",
+      "checkedAt": "آخر تحقق",
+      "activeAt": "نشط منذ",
+      "status": {
+        "pending": "قيد الانتظار",
+        "active": "نشط",
+        "error": "خطأ",
+        "paused": "متوقف مؤقتًا"
+      }
     }
   },
   "customers": {

@@ -1847,6 +1847,32 @@
       "new": "Nouvelle",
       "contacted": "Contactée",
       "closed": "Clôturée"
+    },
+    "domain": {
+      "title": "Domaine",
+      "none": "Aucun domaine connecté",
+      "hostLabel": "Le domaine à connecter",
+      "connect": "Connecter",
+      "dnsHint": "L'enregistrement DNS que le propriétaire ajoute :",
+      "check": "Vérifier maintenant",
+      "disconnect": "Déconnecter",
+      "disconnectTitle": "Déconnecter le domaine",
+      "disconnectConfirm": "Déconnecter {{host}} ? Le site ne répondra plus à cette adresse et restera à son adresse lightor.app.",
+      "connected": "Domaine connecté",
+      "checked": "Vérifié à nouveau",
+      "disconnected": "Domaine déconnecté",
+      "notConfigured": "Non configuré sur le serveur : le jeton Cloudflare est manquant.",
+      "loadError": "Impossible de charger le domaine",
+      "retry": "Réessayer",
+      "connectedAt": "Connecté le",
+      "checkedAt": "Dernière vérification",
+      "activeAt": "Actif depuis",
+      "status": {
+        "pending": "En attente",
+        "active": "Actif",
+        "error": "Erreur",
+        "paused": "En pause"
+      }
     }
   },
   "customers": {
