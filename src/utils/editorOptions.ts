@@ -146,7 +146,7 @@ export const HERO_BACKGROUNDS = ['fog', 'clouds', 'clouds2', 'topology', 'trunk'
 /** LT-531: these two are `design.decor`, which the site draws in place of `bgType`. */
 export const DECOR_BACKGROUNDS: readonly string[] = ['sonar', 'metal'];
 /** LT-531: the heroes that draw their own backdrop; a background chip would do nothing there. */
-export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage', 'slant', 'mesh'];
+export const OWN_BACKDROP_HEROES: readonly string[] = ['parallax', 'expand', 'aero', 'collage', 'slant', 'mesh', 'fan'];
 
 /**
  * LT-570 (Erel 2026-11-03/04): the paid designs, by the section they lay out
@@ -280,6 +280,8 @@ export const LAYOUTS: Named = {
   slant: { he: 'אלכסון', en: 'Slanted' },
   // LT-605: the hero over a live field of the site's colours.
   mesh: { he: 'צבעים חיים', en: 'Living colours' },
+  // LT-667: the words centred over three of the site's pictures fanned like cards.
+  fan: { he: 'מניפת תמונות', en: 'Fanned pictures' },
   quiet: { he: 'שקט', en: 'Quiet' },
   ticket: { he: 'כרטיס', en: 'Ticket' },
   display: { he: 'ענק', en: 'Display' },
@@ -307,7 +309,7 @@ export interface SectionDef {
   outsideBlocks?: boolean;
 }
 
-const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage', 'slant', 'mesh'];
+const HERO_LAYOUTS = ['image-right', 'centered', 'split', 'text-first', 'poster-split', 'poster-statement', 'fullbleed', 'parallax', 'expand', 'aero', 'collage', 'slant', 'mesh', 'fan'];
 const GALLERY_LAYOUTS = ['grid', 'masonry', 'filmstrip', 'polaroid', 'flash', 'bento', 'scroller', 'spotlight', 'carousel', 'clothesline', 'curve', 'cascade'];
 const QUOTE_LAYOUTS = ['cards', 'quote', 'bubbles', 'marquee', 'spotlight', 'editorial'];
 const FAQ_STYLES = ['cards', 'lines', 'numbered', 'pills', 'split'];
