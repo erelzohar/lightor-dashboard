@@ -12,6 +12,7 @@ import { setUnauthorizedHandler } from '../services/authInterceptor';
 import { loadSession, saveSession, clearSession } from '../services/nativeSession';
 import { hasSessionHint, setSessionHint, clearSessionHint } from '../services/sessionHint';
 import { registerForPush, unregisterPush } from '../services/pushClient';
+import { signOutOfStore } from '../lib/storePurchases';
 import { isNativeApp } from '../lib/platform';
 import i18n from '../i18n/config';
 import { weeklyLimitMessage } from '../utils/accountPace';
@@ -364,6 +365,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Bearer. Both are no-ops on the web. Also covers the 401 auto-logout.
     void unregisterPush().finally(() => void clearSession());
     pushRegisteredRef.current = false;
+    // LT-663: and out of the store's SDK (a no-op on the web, and when the plans were never opened).
+    void signOutOfStore();
     localStorage.removeItem('lightor');
     clearSessionHint();
     setAuth({

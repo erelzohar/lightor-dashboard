@@ -4,6 +4,8 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useTranslation } from 'react-i18next';
 import DeleteAccountDialog from './DeleteAccountDialog';
+import { storeOfAccount } from '../../lib/storeLinks';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Account deletion (LT-031): the account page's card. The confirm step, with
@@ -12,7 +14,10 @@ import DeleteAccountDialog from './DeleteAccountDialog';
  */
 const DangerZoneSection: React.FC = () => {
   const { t } = useTranslation();
+  const { auth } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
+  // LT-663: a subscription bought in an app is not cancelled by the delete.
+  const store = storeOfAccount(auth.user);
 
   return (
     <Card className="border border-red-200 dark:border-red-900/50">
@@ -23,7 +28,11 @@ const DangerZoneSection: React.FC = () => {
             {t('danger.title')}
           </h2>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{t('danger.desc')}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          {store
+            ? t('danger.descStore', { store: t(store === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore') })
+            : t('danger.desc')}
+        </p>
         <div>
           <Button variant="danger" size="sm" onClick={() => setModalOpen(true)}>
             <span className="flex items-center gap-2">

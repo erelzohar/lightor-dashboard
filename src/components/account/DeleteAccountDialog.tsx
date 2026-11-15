@@ -1,10 +1,11 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { KeyRound, Mail } from 'lucide-react';
+import { ExternalLink, KeyRound, Mail } from 'lucide-react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
-import { deleteAccount, type AuthRequestError } from '../../services/authApi';
+import { deleteAccount, getDeletionPreview, type AuthRequestError, type DeletionPreview } from '../../services/authApi';
+import { STORE_SUBSCRIPTIONS_URL, storeOfAccount } from '../../lib/storeLinks';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -23,6 +24,14 @@ import toast from 'react-hot-toast';
  * Deletion is billing-safe server-side - a live subscription is cancelled
  * immediately first, and if that fails nothing is deleted, which is why the
  * error path tells the user their account still exists.
+ *
+ * LT-663 (Erel 2026-11-15): that is Paddle's. A subscription bought in an app
+ * is the store's and only its owner can cancel it there, so for one the
+ * dialog says billing goes on (as Apple's account-deletion guidance asks),
+ * links to the store's page, and asks for a tick before the delete. It also
+ * says how many bookings are still ahead: they are deleted and nobody is
+ * texted. Both come from the server; until it answers, the store is read from
+ * the signed-in account.
  */
 const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { auth, logout } = useAuth();
@@ -38,10 +47,28 @@ const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const [password, setPassword] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [preview, setPreview] = useState<DeletionPreview | null>(null);
+  const [storeAck, setStoreAck] = useState(false);
+  const ackId = useId();
 
-  const proofReady = needPassword
+  useEffect(() => {
+    let alive = true;
+    void getDeletionPreview().then((answer) => {
+      if (alive) setPreview(answer);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const store = preview ? preview.storeSubscription : storeOfAccount(auth.user);
+  const storeName = t(store === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore');
+  const futureBookings = preview?.futureBookings ?? 0;
+
+  const proofReady = (needPassword
     ? password.length > 0
-    : confirmEmail.trim().toLowerCase() === (auth.user?.email ?? '').toLowerCase();
+    : confirmEmail.trim().toLowerCase() === (auth.user?.email ?? '').toLowerCase())
+    && (!store || storeAck);
 
   const close = () => {
     if (!deleting) onClose();
@@ -91,9 +118,41 @@ const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1.5 list-disc ps-5">
           <li>{t('danger.consequenceSite')}</li>
           <li>{t('danger.consequenceAppointments')}</li>
-          <li>{t('danger.consequenceSubscription')}</li>
+          {futureBookings > 0 && (
+            <li data-testid="delete-future-bookings">{t('danger.consequenceBookings', { count: futureBookings })}</li>
+          )}
+          {!store && <li>{t('danger.consequenceSubscription')}</li>}
           <li className="font-medium">{t('danger.consequenceFinal')}</li>
         </ul>
+
+        {store && (
+          <div
+            className="rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-2.5 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-100"
+            data-testid="delete-store-warning"
+          >
+            <p className="font-medium">{t('danger.consequenceStore', { store: storeName })}</p>
+            <a
+              href={STORE_SUBSCRIPTIONS_URL[store]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-medium underline underline-offset-2"
+              data-testid="delete-store-manage"
+            >
+              <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
+              {t('billing.store.manage', { store: storeName })}
+            </a>
+            <div className="flex items-start gap-2">
+              <input
+                id={ackId}
+                type="checkbox"
+                checked={storeAck}
+                onChange={(e) => setStoreAck(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-red-600 focus:ring-red-500"
+              />
+              <label htmlFor={ackId}>{t('danger.storeAck', { store: storeName })}</label>
+            </div>
+          </div>
+        )}
 
         {needPassword ? (
           <Input

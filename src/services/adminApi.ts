@@ -688,3 +688,14 @@ export interface AppInstalls {
 
 export const getAppInstalls = async (): Promise<AppInstalls> =>
   (await get<{ success: boolean; data: AppInstalls }>('app-installs')).data;
+
+// ------------------------------------------------ before deleting an account --
+
+/** LT-663: what the delete dialog warns of - the bookings still ahead, and a subscription a store bills. */
+export interface AdminDeletionPreview {
+  futureBookings: number;
+  storeSubscription: 'apple' | 'google' | null;
+}
+
+export const fetchDeletionPreview = async (id: string): Promise<AdminDeletionPreview> =>
+  (await get<{ data: AdminDeletionPreview }>(`users/${id}/deletion-preview`)).data;

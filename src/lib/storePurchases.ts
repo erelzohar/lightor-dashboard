@@ -137,6 +137,24 @@ export const buyStoreProduct = async (userId: string, product: PurchasesStorePro
   return 'done';
 };
 
+/**
+ * LT-663: signing out of the account signs the app out of RevenueCat too.
+ * Without it the store's SDK went on as the account that left - and after an
+ * account is deleted (its RevenueCat customer with it) the SDK would make
+ * that customer again. Only when this launch configured the SDK; never throws.
+ */
+export const signOutOfStore = async (): Promise<void> => {
+  if (!configuredFor) return;
+  // Anonymous from here: the next owner is logged in, not configured again.
+  configuredFor = '';
+  try {
+    const { Purchases } = await plugin();
+    await Purchases.logOut();
+  } catch {
+    // Already anonymous, or the store is unreachable: nothing to undo.
+  }
+};
+
 /** "Restore purchases" (App Store rule 3.1.1): the store's purchases of this Apple ID / Google account back on the account. */
 export const restoreStore = async (userId: string): Promise<void> => {
   const { Purchases } = await ready(userId);

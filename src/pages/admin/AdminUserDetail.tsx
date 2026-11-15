@@ -42,6 +42,8 @@ import {
 import { isLeadsSite } from '../../utils/siteMode';
 import { publicSiteUrlOf } from '../../utils/siteUrl';
 import { formatPhoneForDisplay } from '../../utils/phone';
+import DeleteUserWarning from '../../components/admin/DeleteUserWarning';
+import { storeOfAccount } from '../../lib/storeLinks';
 
 /**
  * Admin → user detail (LT-058): identity, site, usage-vs-limits, recent
@@ -593,7 +595,7 @@ const AdminUserDetail: React.FC = () => {
       <ConfirmDialog
         open={dialog === 'delete'}
         title={t('admin.actions.deleteAccount')}
-        message={t('admin.actions.deleteConfirm', { name: user.name })}
+        message={<DeleteUserWarning userId={user._id} name={user.name} known={storeOfAccount(user)} />}
         confirmLabel={t('admin.actions.deleteAccount')}
         danger
         confirmText={user.email}

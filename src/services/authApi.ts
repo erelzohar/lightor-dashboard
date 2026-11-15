@@ -275,6 +275,28 @@ export const deleteAccount = async (proof: { password?: string; confirmEmail?: s
   if (!response.data?.success) throw new AuthRequestError('Account deletion failed');
 };
 
+/**
+ * LT-663: what the delete dialog says first - the bookings still ahead (they
+ * are deleted, and nobody is texted) and the store that bills a subscription
+ * only its owner can cancel there. Null when the API cannot say (an older
+ * one, or offline): the dialog then goes by what the signed-in account knows.
+ */
+export interface DeletionPreview {
+  futureBookings: number;
+  storeSubscription: 'apple' | 'google' | null;
+}
+
+export const getDeletionPreview = async (): Promise<DeletionPreview | null> => {
+  try {
+    const response = await apiClient.get(`${globals.authUrl}me/deletion-preview`, { withCredentials: true, ...legacyAuthHeader() });
+    const data = response.data?.data as Partial<DeletionPreview> | undefined;
+    if (!data || typeof data.futureBookings !== 'number') return null;
+    return { futureBookings: data.futureBookings, storeSubscription: data.storeSubscription === 'apple' || data.storeSubscription === 'google' ? data.storeSubscription : null };
+  } catch {
+    return null;
+  }
+};
+
 export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; token?: string; message: string }> => {
   try {
     const response = await apiClient.put(
