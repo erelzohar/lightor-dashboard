@@ -336,7 +336,6 @@
         "name": "Nombre",
         "value": "Valor",
         "forwardTo": "Redirigir a",
-        "mail": "El correo de tu dominio no se toca: solo se pide www.",
         "guideTitle": "¿Dónde lo encuentro?",
         "guideGeneral": "En cualquier proveedor: entra en tu cuenta, abre los ajustes DNS del dominio, añade el registro y guarda. Puede tardar de unos minutos a unas horas en verse.",
         "guideRecord": "Añadir el registro:",

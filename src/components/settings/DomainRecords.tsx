@@ -92,7 +92,6 @@ export const DomainRecords: React.FC<DomainRecordsProps> = ({ host, target }) =>
           </li>
         )}
       </ol>
-      <p className="text-xs text-gray-600 dark:text-gray-300">{t(`${P}.records.mail`)}</p>
 
       <div className="border-t border-gray-200/70 dark:border-gray-700/50 pt-3 space-y-2 text-xs text-gray-600 dark:text-gray-300" data-testid="domain-guide">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{t(`${P}.records.guideTitle`)}</p>

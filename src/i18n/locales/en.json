@@ -336,7 +336,6 @@
         "name": "Name",
         "value": "Value",
         "forwardTo": "Forward to",
-        "mail": "Email on your domain is not touched: only www is asked for.",
         "guideTitle": "Where do I find it?",
         "guideGeneral": "At any registrar: sign in, open the domain's DNS settings, add the record and save. It can take from a few minutes to a few hours to be seen.",
         "guideRecord": "Adding the record:",

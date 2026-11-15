@@ -336,7 +336,6 @@
         "name": "Nom",
         "value": "Valeur",
         "forwardTo": "Rediriger vers",
-        "mail": "Les e-mails de votre domaine ne sont pas touchés : seul www est demandé.",
         "guideTitle": "Où trouver cela ?",
         "guideGeneral": "Chez n’importe quel fournisseur : connectez-vous, ouvrez les réglages DNS du domaine, ajoutez l’enregistrement et enregistrez. Il faut de quelques minutes à quelques heures pour qu’il soit pris en compte.",
         "guideRecord": "Ajouter l’enregistrement :",

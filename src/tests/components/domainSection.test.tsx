@@ -340,7 +340,8 @@ describe('the own-domain row: a connected domain', () => {
     expect(screen.getByTestId('domain-value-target')).toHaveTextContent(TARGET);
     expect(within(records).getByText(`2. ${P}.records.step2|domain=dana-studio.co.il`)).toBeInTheDocument();
     expect(screen.getByTestId('domain-value-forward')).toHaveTextContent(`https://${HOST}`);
-    expect(within(records).getByText(`${P}.records.mail`)).toBeInTheDocument();
+    // No line about the domain's mail: Erel took it off the screen (2026-11-15).
+    expect(within(records).queryByText(`${P}.records.mail`)).not.toBeInTheDocument();
     for (const id of ['name', 'target', 'forward']) expect(screen.getByTestId(`domain-value-${id}`)).toHaveAttribute('dir', 'ltr');
 
     // Where the registrars keep it.
