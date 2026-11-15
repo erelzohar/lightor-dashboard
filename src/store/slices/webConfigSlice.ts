@@ -69,12 +69,7 @@ const webConfigSlice = createSlice({
         state.data = action.payload;
       })
       .addCase(updateWebConfig.fulfilled, (state, action) => {
-        // LT-661: a save never changes the owner's own domain (only
-        // /api/domain does), so an answer that does not name it keeps the
-        // one the last read brought; the next read is the truth again.
-        const servedOn = state.data?._id === action.payload?._id ? state.data?.customHost : undefined;
         state.data = action.payload;
-        if (servedOn && state.data && state.data.customHost === undefined) state.data.customHost = servedOn;
       });
   },
 });

@@ -5,8 +5,6 @@ interface Tab {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  /** A page tour's anchor on this tab (`data-tour`, LT-389). */
-  tour?: string;
 }
 
 interface TabsProps {
@@ -40,7 +38,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onChange }) => {
       {/* A phone shares the width out evenly (four tabs fit at 390px, LT-316). */}
       <TabsList size="lg" className="w-full sm:w-auto max-w-full overflow-x-auto scrollbar-hide gap-1">
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.id} value={tab.id} data-tour={tab.tour} className="flex-1 sm:flex-none px-2 sm:px-4 text-sm sm:text-[0.9375rem]">
+          <TabsTrigger key={tab.id} value={tab.id} className="flex-1 sm:flex-none px-2 sm:px-4 text-sm sm:text-[0.9375rem]">
             {tab.icon && <span className="hidden sm:inline-flex opacity-80">{tab.icon}</span>}
             {tab.label}
           </TabsTrigger>

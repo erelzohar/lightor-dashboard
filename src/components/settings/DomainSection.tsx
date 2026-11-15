@@ -378,9 +378,6 @@ const DomainSection: React.FC<DomainSectionProps> = ({ own, lightorHost }) => {
     <div
       role={named ? 'group' : undefined}
       aria-labelledby={named ? titleId : undefined}
-      // Lighty's tour points here only where there is something to connect
-      // (not at a row that still says "coming soon"); on every plan.
-      data-tour={answer?.configured ? 'settings-domain' : undefined}
       data-testid="own-domain"
     >
       {body}

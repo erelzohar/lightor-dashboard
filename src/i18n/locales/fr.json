@@ -2819,12 +2819,6 @@
         "title": "Vos articles",
         "body": "Les brouillons ne se voient qu’ici. Un article publié est sur le blog de votre site et arrive sur Google."
       }
-    },
-    "settings": {
-      "domain": {
-        "title": "Votre propre domaine",
-        "body": "Dans l’onglet « Site », vous connectez un domaine que vous avez acheté, et votre site s’affiche à votre propre adresse, par exemple www.dana-studio.co.il."
-      }
     }
   },
   "phoneInput": {

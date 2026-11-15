@@ -9,9 +9,8 @@
  * a hidden tab, the app's own layout) is left out. A step with no target is
  * a card in the middle of the screen. Texts are `tour.<key>.title|body`.
  *
- * Settings and the account page have no tour of their fields: those carry
- * tooltips, and Erel said that is enough there. Settings has one step all the
- * same (LT-661): the owner's own domain, which nobody finds by a tooltip.
+ * Settings and the account page have none: their fields carry tooltips,
+ * and Erel said that is enough there.
  */
 export interface TourStep {
   key: string;
@@ -132,15 +131,6 @@ export const tourFor = (pathname: string, leadsSite: boolean, productsSite = fal
           { key: 'blog.new', target: at('blog-new') },
           { key: 'blog.list', target: at('blog-posts') },
         ],
-      };
-    // LT-661: the owner's own domain. It lives in the Site tab: with that tab
-    // open the step lights the domain's row, else the tab itself. Both anchors
-    // are there only where the server offers domains (never a "coming soon"),
-    // and on every plan: a plan without it sees the locked row.
-    case '/settings':
-      return {
-        id: 'settings',
-        steps: [{ key: 'settings.domain', target: at('settings-domain', 'settings-site-tab') }],
       };
     case '/portfolio':
       return {

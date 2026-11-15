@@ -2815,12 +2815,6 @@
         "title": "Your posts",
         "body": "Drafts are seen only here. A published post is on your site's blog and reaches Google."
       }
-    },
-    "settings": {
-      "domain": {
-        "title": "Your own domain",
-        "body": "In the \"Site\" tab you connect a domain you bought, and your site shows at your own address, like www.dana-studio.co.il."
-      }
     }
   },
   "phoneInput": {

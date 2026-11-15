@@ -10,9 +10,10 @@ import type { WebConfig } from '../../types';
 /**
  * LT-661 (phase 2): the Settings page with the owner's own domain - the row
  * in the Site tab, the page's own links (copy, open, the accessibility
- * statement) on the domain while the site is served on it, the tour's
- * anchors, and the site's config read again when an action changes the
- * address the site is served on.
+ * statement) on the domain while the site is served on it, and the site's
+ * config read again when an action changes the address the site is served
+ * on. Settings has no page tour (Erel: its fields carry tooltips), so
+ * nothing here is a tour's anchor.
  */
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
@@ -133,22 +134,35 @@ describe('Settings: the own domain in the Site tab', () => {
     expect(fetchDomain).toHaveBeenCalledTimes(1);
   });
 
-  it('a server with no Cloudflare keeps the "coming soon" row, and the tour has nothing to point at', async () => {
+  it('a server with no Cloudflare keeps the "coming soon" row', async () => {
     vi.mocked(fetchDomain).mockResolvedValue(answer(null, { configured: false, allowed: false }));
     mount();
     openSiteTab();
     expect(await screen.findByTestId('coming-soon')).toBeInTheDocument();
-    expect(screen.getByTestId('own-domain')).not.toHaveAttribute('data-tour');
-    expect(siteTab()).not.toHaveAttribute('data-tour');
+    expect(within(screen.getByTestId('own-domain')).queryByRole('textbox')).toBeNull();
   });
 
-  it("where domains are offered, Lighty's tour can point at the Site tab and at the row, on any plan", async () => {
+  it('a plan without it sees the locked row', async () => {
     vi.mocked(fetchDomain).mockResolvedValue(answer(null, { allowed: false }));
     mount();
-    await waitFor(() => expect(siteTab()).toHaveAttribute('data-tour', 'settings-site-tab'));
     openSiteTab();
     expect(await screen.findByTestId('domain-locked')).toBeInTheDocument();
-    expect(screen.getByTestId('own-domain')).toHaveAttribute('data-tour', 'settings-domain');
+  });
+
+  // Settings has no page tour: the domain adds no anchor for one, in any state.
+  it.each([
+    ['coming soon', answer(null, { configured: false, allowed: false })],
+    ['locked', answer(null, { allowed: false })],
+    ['no domain', answer(null)],
+    ['a domain', answer(pending)],
+  ])('puts no tour anchor on the page: %s', async (_name, first) => {
+    vi.mocked(fetchDomain).mockResolvedValue(first);
+    const { container } = mount();
+    openSiteTab();
+    await screen.findByTestId('own-domain');
+    await waitFor(() => expect(screen.queryByTestId('domain-loading')).toBeNull());
+    expect(container.querySelector('[data-tour]')).toBeNull();
+    expect(siteTab()).not.toHaveAttribute('data-tour');
   });
 
   it('shows the domain with the site\'s own Lightor address in its words', async () => {

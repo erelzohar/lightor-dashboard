@@ -2819,12 +2819,6 @@
         "title": "Tus entradas",
         "body": "Los borradores se ven solo aquí. Una entrada publicada está en el blog de tu sitio y llega a Google."
       }
-    },
-    "settings": {
-      "domain": {
-        "title": "Tu propio dominio",
-        "body": "En la pestaña \"Sitio\" conectas un dominio que compraste, y tu sitio se ve en tu propia dirección, por ejemplo www.dana-studio.co.il."
-      }
     }
   },
   "phoneInput": {

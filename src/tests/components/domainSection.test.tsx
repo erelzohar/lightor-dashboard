@@ -111,7 +111,7 @@ afterEach(() => {
 });
 
 describe('the own-domain row: what the server offers', () => {
-  it('a server with no Cloudflare: the "coming soon" row as it was, nothing to type or press, no tour anchor', async () => {
+  it('a server with no Cloudflare: the "coming soon" row as it was, nothing to type or press', async () => {
     await show(answer(null, { configured: false, allowed: false }));
     expect(screen.getByTestId('coming-soon')).toBeInTheDocument();
     expect(screen.getByText(`${P}.title`)).toBeInTheDocument();
@@ -119,7 +119,6 @@ describe('the own-domain row: what the server offers', () => {
     expect(within(box()).queryByRole('textbox')).toBeNull();
     expect(within(box()).queryByRole('button')).toBeNull();
     expect(within(box()).queryByRole('link')).toBeNull();
-    expect(box()).not.toHaveAttribute('data-tour');
     expect(fetchDomain).toHaveBeenCalledTimes(1);
   });
 
@@ -147,8 +146,6 @@ describe('the own-domain row: what the server offers', () => {
     expect(screen.getByText(`${P}.locked.badge`)).toBeInTheDocument();
     expect(screen.getByTestId('domain-upgrade')).toHaveAttribute('href', '/account');
     expect(within(box()).queryByRole('textbox')).toBeNull();
-    // On every plan the tour has its row to point at.
-    expect(box()).toHaveAttribute('data-tour', 'settings-domain');
   });
 
   it('in the apps the locked row states the fact and sells nothing (LT-130)', async () => {
@@ -170,7 +167,6 @@ describe('the own-domain row: connecting', () => {
     expect(button(`${P}.form.connect`)).toBeDisabled();
     fireEvent.change(field(), { target: { value: 'dana-studio.co.il' } });
     expect(button(`${P}.form.connect`)).toBeEnabled();
-    expect(box()).toHaveAttribute('data-tour', 'settings-domain');
   });
 
   it('connects what was typed, shows the name the server stored, and hands the focus to it', async () => {

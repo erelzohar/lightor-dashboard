@@ -128,8 +128,9 @@ const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector(state => state.webConfig.data);
-  // The owner's own domain (LT-661): read once for the page, shown in the
-  // Site tab. When an action there changes the address the site is served
+  // The owner's own domain (LT-661): read once for the page and kept by it,
+  // so the Site tab shows the same state on every visit with no second read.
+  // When an action there changes the address the site is served
   // on, the site's config is read again, so every link in the dashboard
   // (this page's, the home's share card, the products, the blog) follows.
   const siteId = auth.user?.webConfig_id;
@@ -1343,13 +1344,7 @@ const Settings: React.FC = () => {
 
       <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }}>
         <Card>
-          <WebConfigTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            bookings={!leadsSite}
-            // Lighty's tour of the domain (LT-661) points at the Site tab while another tab is open.
-            domainTour={ownDomain.answer?.configured === true}
-          />
+          <WebConfigTabs activeTab={activeTab} onTabChange={setActiveTab} bookings={!leadsSite} />
 
           <div className="my-6">
             {renderTabContent()}
