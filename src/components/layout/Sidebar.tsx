@@ -237,7 +237,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isRestricted = false }) => {
   // signed in earlier in the same tab (Erel 2026-11-08).
   const [blogOn, setBlogOn] = useState<boolean | null>(null);
   const account = auth.user?._id;
-  const plan = `${auth.user?.role ?? ''}:${auth.user?.subscription?.status ?? ''}:${auth.user?.subscription?.planId ?? ''}`;
+  // LT-662: and when a plan set by hand starts, changes or ends.
+  const plan = `${auth.user?.role ?? ''}:${auth.user?.subscription?.status ?? ''}:${auth.user?.subscription?.planId ?? ''}:${auth.user?.planGift?.plan ?? ''}:${auth.user?.planGift?.until ?? ''}`;
   useEffect(() => {
     let live = true;
     setBlogOn(null);

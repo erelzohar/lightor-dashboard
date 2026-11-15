@@ -295,6 +295,8 @@ export interface User {
    * proven. Absent on accounts from before LT-360.
    */
   freePeriod?: { state: 'granted' | 'withheld' | 'pending'; from?: string };
+  /** LT-662: a plan the operator set by hand (the Account page reads it from the entitlements). */
+  planGift?: { plan: 'plus' | 'pro'; from: string; until?: string | null };
   /** When the phone was last proven by a code sent to it (LT-360). */
   phoneVerifiedAt?: string;
   password?: string;

@@ -118,6 +118,8 @@ const AdminOverview: React.FC = () => {
           { label: t('admin.planStanding.freeDays'), value: plans.freeDays, color: '#3b82f6' },
           { label: t('admin.planStanding.free'), value: plans.free, color: '#94a3b8' },
           { label: t('admin.planStanding.sandbox'), value: plans.sandbox, color: '#f59e0b' },
+          // LT-662: a plan set by hand; absent on an older API.
+          { label: t('admin.planStanding.manual'), value: plans.manual ?? 0, color: '#c026d3' },
         ]
       : [
           { label: t('admin.status.active'), value: totals.bySubscriptionStatus.active ?? 0, color: '#10b981' },

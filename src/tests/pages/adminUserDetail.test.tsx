@@ -22,6 +22,8 @@ vi.mock('../../services/adminApi', () => ({
   cancelUserSubscription: vi.fn(),
   resumeUserSubscription: vi.fn(),
   deleteUser: vi.fn(),
+  setUserPlan: vi.fn(),
+  removeUserPlan: vi.fn(),
 }));
 
 const detail = (over: { conversion?: 'book' | 'lead'; monthlyLeads?: number | null } = {}): Detail =>

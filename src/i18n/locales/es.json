@@ -1373,7 +1373,8 @@
       "overBookings": "Este período ya tiene {{n}} reservas o más, así que solo puedes pasar a Lightor+ desde el próximo período.",
       "overLeads": "Este mes ya tiene 200 consultas o más, así que solo puedes pasar a Lightor+ desde el próximo mes.",
       "failed": "No pudimos cambiar tu plan. Inténtalo de nuevo o contacta con soporte."
-    }
+    },
+    "activeUntil": "Tu plan está activo hasta el {{date}}"
   },
   "danger": {
     "title": "Zona de peligro",
@@ -1499,7 +1500,8 @@
     },
     "plan": {
       "free": "Gratis",
-      "plus": "Plus"
+      "plus": "Plus",
+      "pro": "Pro"
     },
     "overview": {
       "title": "Resumen del sistema",
@@ -1925,7 +1927,8 @@
       "freeDays": "Días gratis",
       "plus": "Lightor+",
       "pro": "Lightor Pro",
-      "sandbox": "Compra de prueba"
+      "sandbox": "Compra de prueba",
+      "manual": "Plan manual"
     },
     "leadStatus": {
       "new": "Nueva",
@@ -1957,6 +1960,26 @@
         "error": "Error",
         "paused": "En pausa"
       }
+    },
+    "planGift": {
+      "title": "Plan manual",
+      "intro": "Pasa esta cuenta a Lightor+ o Lightor Pro sin cobrar nada. La cuenta obtiene lo mejor entre su propio plan y este.",
+      "planLabel": "Plan",
+      "durationLabel": "Hasta cuándo",
+      "untilChanged": "Hasta que lo cambie",
+      "untilDate": "Hasta una fecha",
+      "dateLabel": "Fecha de fin",
+      "dateRequired": "Elige una fecha",
+      "save": "Guardar",
+      "saved": "Plan guardado",
+      "current": "Ahora: {{plan}}",
+      "currentUntil": "hasta el {{date}}",
+      "currentUntilChanged": "hasta que lo cambies",
+      "remove": "Quitar",
+      "removeTitle": "¿Quitar el plan manual?",
+      "removeConfirm": "La cuenta de {{name}} vuelve a su propio plan. No se borra nada: lo que supere los límites de su plan queda oculto.",
+      "removed": "Plan manual quitado",
+      "paying": "Esta cuenta paga {{plan}} a través de {{biller}} y se le seguirá cobrando. Obtiene el mejor de los dos planes."
     }
   },
   "customers": {

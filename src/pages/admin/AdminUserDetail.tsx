@@ -25,6 +25,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import StatusBadge from '../../components/admin/StatusBadge';
 import BillingCard from '../../components/admin/BillingCard';
 import DomainCard from '../../components/admin/DomainCard';
+import PlanGiftCard from '../../components/admin/PlanGiftCard';
 import UserFormModal from '../../components/admin/UserFormModal';
 import { PlanChip, SiteKindChip } from '../../components/admin/SiteKindChip';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -543,6 +544,17 @@ const AdminUserDetail: React.FC = () => {
               )}
             </div>
           </Card>
+
+          {/* LT-662: a plan set by hand; the operator's own account is on the top plan already. */}
+          {user.role !== 'admin' && (
+            <PlanGiftCard
+              userId={user._id}
+              userName={user.name}
+              gift={detail.planGift ?? null}
+              subscription={sub}
+              onChanged={load}
+            />
+          )}
 
           {sub.subscriptionId && (
             <BillingCard

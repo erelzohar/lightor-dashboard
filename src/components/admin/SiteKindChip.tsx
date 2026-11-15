@@ -20,6 +20,8 @@ const PLAN_STYLES: Record<PlanStanding, string> = {
   plus: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
   pro: 'bg-primary/10 text-primary',
   sandbox: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  // LT-662: a plan set by hand.
+  manual: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
 };
 
 const PILL = 'inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold';

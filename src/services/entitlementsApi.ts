@@ -77,6 +77,13 @@ export interface MyEntitlements {
    */
   complimentary?: boolean;
   /**
+   * LT-662: a plan the operator set by hand, while it runs (`plan` above
+   * already reflects it): the Account page shows it as the active plan, with
+   * its end when it has one, and nothing to pay, cancel or manage. Null or
+   * absent otherwise (an older API).
+   */
+  manualPlan?: { until: string | null } | null;
+  /**
    * LT-458: the bookings made this period, cancelled ones included - a
    * subscriber's month of 500, or a free-period month of 200 (at 200 the
    * site stops taking bookings until a card is added). Null on the free

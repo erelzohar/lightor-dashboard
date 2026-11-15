@@ -75,7 +75,8 @@ export interface AdminOverview {
     postsPublished: number;
   };
   /** LT-647: the accounts by plan standing. */
-  plans?: Record<PlanStanding, number>;
+  /** LT-662: `manual` is absent on an older API. */
+  plans?: Record<Exclude<PlanStanding, 'manual'>, number> & { manual?: number };
   /** LT-647: the paid Lightor+ and Pro subscriptions by where they are billed. */
   stores?: Record<'paddle' | 'apple' | 'google', number>;
   funnel: { signedUp: number; onboarded: number; verified: number; paying: number };
@@ -87,7 +88,8 @@ export interface AdminOverview {
 export type SiteKind = 'book' | 'lead' | 'products' | 'none';
 
 /** LT-647: the free plan, the free days (Lightor+ for nothing), a paid Lightor+ or Pro, or a store sandbox purchase. */
-export type PlanStanding = 'free' | 'freeDays' | 'plus' | 'pro' | 'sandbox';
+/** LT-662: `manual` - a plan the operator set by hand, nothing paid. */
+export type PlanStanding = 'free' | 'freeDays' | 'plus' | 'pro' | 'sandbox' | 'manual';
 
 export interface TimeseriesPoint {
   date: string;
@@ -123,6 +125,10 @@ export interface AdminSubscription {
   subscriptionId?: string;
   nextBillDate?: string;
   cancelAtPeriodEnd?: boolean;
+  /** LT-504: Lightor+ or Pro; absent = Pro. */
+  plan?: 'plus' | 'pro';
+  /** LT-580: who bills it; absent = Paddle. */
+  provider?: 'paddle' | 'apple' | 'google';
 }
 
 export interface AdminUserRow {
@@ -186,6 +192,8 @@ export interface AdminUserDetail {
   plan: 'free' | 'plus' | 'pro';
   /** LT-647: free plan, free days, paid Lightor+/Pro, or a store sandbox purchase. */
   planStanding?: PlanStanding;
+  /** LT-662: the plan set by hand while it runs; null without one, absent on an older API. */
+  planGift?: AdminPlanGift | null;
   limits: PlanLimits;
   usage: {
     appointmentsThisMonth: number;
@@ -314,6 +322,8 @@ export interface AdminUsersQuery {
   subscriptionStatus?: string;
   boardingStatus?: string;
   verified?: 'true' | 'false';
+  /** LT-662: only the accounts on a plan set by hand. */
+  manual?: 'true';
   sort?: string;
   order?: 'asc' | 'desc';
 }
@@ -386,6 +396,22 @@ export const resumeUserSubscription = async (id: string): Promise<void> => {
 
 export const deleteUser = async (id: string, confirmEmail: string): Promise<void> => {
   await send('delete', `users/${id}`, { confirmEmail });
+};
+
+// --------------------------------------------- a plan set by hand (LT-662) --
+
+/** Lightor+ or Pro, set by the operator, billed by no one; `until` null = until he changes it. */
+export interface AdminPlanGift {
+  plan: 'plus' | 'pro';
+  from: string;
+  until: string | null;
+}
+
+export const setUserPlan = async (id: string, plan: 'plus' | 'pro', until: string | null): Promise<AdminPlanGift | null> =>
+  (await send<{ data: { planGift: AdminPlanGift | null } }>('put', `users/${id}/plan`, { plan, until })).data.planGift;
+
+export const removeUserPlan = async (id: string): Promise<void> => {
+  await send('delete', `users/${id}/plan`);
 };
 
 // ------------------------------------------------- a site's own domain --

@@ -96,6 +96,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const isPaid = status === 'active';
   // LT-310: Plus that is not bought (the server says so; the operator's account).
   const complimentary = entitlements?.complimentary === true;
+  // LT-662: a plan the operator set by hand, on an account that pays nothing:
+  // shown as any active plan (Erel: no "given by Lightor"), with its end when
+  // it has one, and nothing to pay, cancel or manage.
+  const manualPlan = entitlements?.manualPlan ?? null;
+  const onManual = !!manualPlan && !complimentary && !isPaid && status !== 'past_due' && entitlements?.plan !== 'free';
   const cancelScheduled = auth.user?.subscription?.cancelAtPeriodEnd === true;
   const nextBillDate = auth.user?.subscription?.nextBillDate;
   // In the app this card only reports the plan (LT-130, App Store 3.1.1): no
@@ -490,7 +495,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     deleted: t('billing.statusCanceled'),
   };
 
-  const badgeClasses = isPaid
+  const badgeClasses = isPaid || onManual
     ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
     : status === 'past_due'
       ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
@@ -648,7 +653,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             </h2>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${complimentary ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : badgeClasses}`}>
-            {complimentary ? <bdi>Pro</bdi> : (statusLabel[status] ?? status)}
+            {complimentary ? <bdi>Pro</bdi> : onManual ? statusLabel.active : (statusLabel[status] ?? status)}
           </span>
         </div>
 
@@ -658,6 +663,28 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
           <p className="text-sm text-gray-600 dark:text-gray-300" data-testid="billing-complimentary">
             {t('billing.complimentary')}
           </p>
+        ) : onManual ? (
+          // LT-662: the plan set by hand, as any active plan.
+          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3" data-testid="billing-manual">
+            <div className="space-y-1">
+              <p className="flex items-center gap-2">
+                <Check size={16} className="text-green-600 shrink-0" />
+                {t('billing.activeDesc')}
+              </p>
+              {currentPlan && (
+                <p data-testid="billing-plan">
+                  {t('billing.activePlan')} <bdi className="font-medium">{PLAN_NAMES[currentPlan]}</bdi>
+                </p>
+              )}
+              {manualPlan?.until && (
+                <p data-testid="billing-manual-until">
+                  {t('billing.activeUntil', { date: new Date(manualPlan.until).toLocaleDateString(dateLocale) })}
+                </p>
+              )}
+            </div>
+            {meters}
+            {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
+          </div>
         ) : isPaid ? (
           <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3">
             {cancelScheduled ? (
@@ -712,7 +739,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* LT-580: an app subscription is managed in its store, with its booking packs. */}
                 {billedByStore && (storePlans ?? storeNote)}
                 {/* LT-504: to the other plan, on the web only (LT-130). */}
-                {canSell && !billedByStore && currentPlan && (
+                {canSell && !billedByStore && currentPlan && !manualPlan && (
                   <div>
                     <Button
                       variant={currentPlan === 'plus' ? 'primary' : 'outline'}

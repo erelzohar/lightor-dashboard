@@ -1369,7 +1369,8 @@
       "overBookings": "This period already has {{n}} bookings or more, so you can move to Lightor+ only from the next period.",
       "overLeads": "This month already has 200 inquiries or more, so you can move to Lightor+ only from next month.",
       "failed": "We couldn't change your plan. Try again, or contact support."
-    }
+    },
+    "activeUntil": "Your plan runs until {{date}}"
   },
   "danger": {
     "title": "Danger zone",
@@ -1495,7 +1496,8 @@
     },
     "plan": {
       "free": "Free",
-      "plus": "Plus"
+      "plus": "Plus",
+      "pro": "Pro"
     },
     "overview": {
       "title": "System Overview",
@@ -1921,7 +1923,8 @@
       "freeDays": "Free days",
       "plus": "Lightor+",
       "pro": "Lightor Pro",
-      "sandbox": "Test purchase"
+      "sandbox": "Test purchase",
+      "manual": "Manual plan"
     },
     "leadStatus": {
       "new": "New",
@@ -1953,6 +1956,26 @@
         "error": "Error",
         "paused": "Paused"
       }
+    },
+    "planGift": {
+      "title": "Manual plan",
+      "intro": "Move this account to Lightor+ or Lightor Pro with nothing billed. It gets the better of its own plan and this one.",
+      "planLabel": "Plan",
+      "durationLabel": "Until",
+      "untilChanged": "Until I change it",
+      "untilDate": "Until a date",
+      "dateLabel": "End date",
+      "dateRequired": "Choose a date",
+      "save": "Save",
+      "saved": "Plan saved",
+      "current": "Now: {{plan}}",
+      "currentUntil": "until {{date}}",
+      "currentUntilChanged": "until you change it",
+      "remove": "Remove",
+      "removeTitle": "Remove the manual plan?",
+      "removeConfirm": "{{name}}'s account goes back to its own plan. Nothing is deleted: whatever is over its own plan's limits is hidden.",
+      "removed": "Manual plan removed",
+      "paying": "This account pays for {{plan}} through {{biller}} and keeps being charged. It gets the better of the two plans."
     }
   },
   "customers": {

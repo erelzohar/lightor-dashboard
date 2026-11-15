@@ -40,7 +40,9 @@ const AdminUsers: React.FC = () => {
         page,
         limit: 20,
         search: search || undefined,
-        subscriptionStatus: subscriptionStatus || undefined,
+        // LT-662: "manual" is no subscription status: the plan set by hand.
+        subscriptionStatus: subscriptionStatus && subscriptionStatus !== 'manual' ? subscriptionStatus : undefined,
+        manual: subscriptionStatus === 'manual' ? 'true' : undefined,
         verified: (verified || undefined) as 'true' | 'false' | undefined,
         sort,
         order,
@@ -226,6 +228,7 @@ const AdminUsers: React.FC = () => {
                 { value: 'free', label: t('admin.status.free') },
                 { value: 'past_due', label: t('admin.status.past_due') },
                 { value: 'canceled', label: t('admin.status.canceled') },
+                { value: 'manual', label: t('admin.planStanding.manual') },
               ]}
             />
             <Select

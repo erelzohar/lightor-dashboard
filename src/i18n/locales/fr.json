@@ -1373,7 +1373,8 @@
       "overBookings": "Cette période compte déjà {{n}} réservations ou plus : vous pourrez passer à Lightor+ à partir de la prochaine période.",
       "overLeads": "Ce mois compte déjà 200 demandes ou plus : vous pourrez passer à Lightor+ à partir du mois prochain.",
       "failed": "Nous n’avons pas pu changer votre formule. Réessayez ou contactez le support."
-    }
+    },
+    "activeUntil": "Votre forfait est actif jusqu'au {{date}}"
   },
   "danger": {
     "title": "Zone de danger",
@@ -1499,7 +1500,8 @@
     },
     "plan": {
       "free": "Gratuit",
-      "plus": "Plus"
+      "plus": "Plus",
+      "pro": "Pro"
     },
     "overview": {
       "title": "Vue d'ensemble du système",
@@ -1925,7 +1927,8 @@
       "freeDays": "Jours gratuits",
       "plus": "Lightor+",
       "pro": "Lightor Pro",
-      "sandbox": "Achat test"
+      "sandbox": "Achat test",
+      "manual": "Forfait manuel"
     },
     "leadStatus": {
       "new": "Nouvelle",
@@ -1957,6 +1960,26 @@
         "error": "Erreur",
         "paused": "En pause"
       }
+    },
+    "planGift": {
+      "title": "Forfait manuel",
+      "intro": "Passez ce compte à Lightor+ ou Lightor Pro sans rien facturer. Le compte bénéficie du meilleur entre son propre forfait et celui-ci.",
+      "planLabel": "Forfait",
+      "durationLabel": "Jusqu'à quand",
+      "untilChanged": "Jusqu'à ce que je le change",
+      "untilDate": "Jusqu'à une date",
+      "dateLabel": "Date de fin",
+      "dateRequired": "Choisissez une date",
+      "save": "Enregistrer",
+      "saved": "Forfait enregistré",
+      "current": "Actuellement : {{plan}}",
+      "currentUntil": "jusqu'au {{date}}",
+      "currentUntilChanged": "jusqu'à ce que vous le changiez",
+      "remove": "Retirer",
+      "removeTitle": "Retirer le forfait manuel ?",
+      "removeConfirm": "Le compte de {{name}} revient à son propre forfait. Rien n'est supprimé : ce qui dépasse les limites de son forfait est masqué.",
+      "removed": "Forfait manuel retiré",
+      "paying": "Ce compte paie {{plan}} via {{biller}} et continuera à être facturé. Il bénéficie du meilleur des deux forfaits."
     }
   },
   "customers": {
