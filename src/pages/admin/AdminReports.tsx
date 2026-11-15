@@ -11,24 +11,26 @@ import {
   Paginated,
   SiteReportRow,
 } from '../../services/adminApi';
-import { siteUrlOf } from '../../utils/siteUrl';
+import { customHostOf, publicSiteUrlOf } from '../../utils/siteUrl';
 import { resolveImage } from '../../utils/images';
 
 type Filter = 'new' | 'handled' | '';
 
 /**
  * The reported page — the visitor's own words, so linked only when it is a
- * Lightor site; else the site's home, when that is a real lightor.app
- * address (LT-315, L2); else nothing.
+ * Lightor site, or a page on the site's own domain (LT-661: the one the API
+ * names for this very site, never any host the report claims); else the
+ * site's home, when that is a real address (LT-315, L2); else nothing.
  */
-export const reportLink = (row: Pick<SiteReportRow, 'subDomain' | 'pageUrl'>): string | null => {
+export const reportLink = (row: Pick<SiteReportRow, 'subDomain' | 'pageUrl' | 'customHost'>): string | null => {
   try {
     const url = new URL(row.pageUrl ?? '');
-    if (url.protocol === 'https:' && (url.hostname === 'lightor.app' || url.hostname.endsWith('.lightor.app'))) return url.href;
+    const own = customHostOf(row.customHost);
+    if (url.protocol === 'https:' && (url.hostname === 'lightor.app' || url.hostname.endsWith('.lightor.app') || (!!own && url.hostname === own))) return url.href;
   } catch {
     /* not a URL */
   }
-  return siteUrlOf(row.subDomain);
+  return publicSiteUrlOf(row);
 };
 
 /**

@@ -285,7 +285,80 @@
     },
     "customDomain": {
       "title": "Conectar un dominio",
-      "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com."
+      "desc": "Conecta tu propia dirección al sitio, como www.minegocio.com.",
+      "loadError": "No se pudo cargar el dominio. Inténtalo de nuevo.",
+      "retry": "Reintentar",
+      "locked": {
+        "badge": "Lightor+",
+        "body": "Tu propio dominio es parte de Lightor+ y Lightor Pro.",
+        "upgrade": "Ver los planes"
+      },
+      "form": {
+        "label": "El dominio que compraste",
+        "help": "Escríbelo tal como lo compraste, sin www. Tu sitio se verá en la dirección que empieza por www.",
+        "connect": "Conectar"
+      },
+      "badge": {
+        "pending": "Conectando",
+        "active": "Conectado",
+        "error": "Problema",
+        "paused": "En pausa"
+      },
+      "status": {
+        "dns": "Esperando el registro en tu proveedor de dominio.",
+        "certificate": "Se encontró el registro. Se está emitiendo el certificado de seguridad, tarda unos minutos."
+      },
+      "autoCheck": "Volvemos a comprobarlo solos cada pocos segundos. No hace falta actualizar.",
+      "pendingUntil": "Un dominio que no esté conectado antes del {{date}} se libera, y podrás conectarlo de nuevo.",
+      "activeBody": "Tu sitio se ve en esta dirección. {{address}} también lleva a ella.",
+      "errorBody": "El dominio no llega a tu sitio ahora mismo. Comprueba que el registro de abajo sigue en tu proveedor de dominio y luego pulsa \"Comprobar ahora\".",
+      "pausedBody": "Tu plan ya no incluye tu propio dominio, así que el sitio se ve en {{address}}. El dominio se guarda hasta el {{date}}: vuelve a Lightor+ o a Lightor Pro y funcionará de nuevo.",
+      "pausedBodyNoDate": "Tu plan ya no incluye tu propio dominio, así que el sitio se ve en {{address}}. Vuelve a Lightor+ o a Lightor Pro y el dominio funcionará de nuevo.",
+      "check": "Comprobar ahora",
+      "checked": "Comprobado de nuevo. Aún no está conectado.",
+      "disconnect": "Desconectar",
+      "disconnectTitle": "Desconectar el dominio",
+      "disconnectConfirm": "¿Desconectar {{host}}? El sitio dejará de verse en esta dirección y seguirá en {{address}}.",
+      "disconnected": "El dominio se desconectó",
+      "connected": "El dominio está conectado. Tu sitio se ve en tu propia dirección.",
+      "saved": "Guardado. Ahora añade el registro en tu proveedor de dominio.",
+      "copy": "Copiar",
+      "copyOf": "Copiar: {{what}}",
+      "copied": "Copiado",
+      "copyFailed": "No se pudo copiar",
+      "records": {
+        "title": "Qué hacer en tu proveedor de dominio (donde lo compraste)",
+        "summary": "Los registros en tu proveedor de dominio",
+        "step1": "Añade un registro CNAME",
+        "step2": "Redirige {{domain}} al sitio",
+        "step2Body": "Para que la dirección sin www también llegue: en los ajustes de redirección (Forwarding) del proveedor, redirige {{domain}} a esta dirección, de forma permanente (301).",
+        "type": "Tipo",
+        "name": "Nombre",
+        "value": "Valor",
+        "forwardTo": "Redirigir a",
+        "mail": "El correo de tu dominio no se toca: solo se pide www.",
+        "guideTitle": "¿Dónde lo encuentro?",
+        "guideGeneral": "En cualquier proveedor: entra en tu cuenta, abre los ajustes DNS del dominio, añade el registro y guarda. Puede tardar de unos minutos a unas horas en verse.",
+        "guideRecord": "Añadir el registro:",
+        "guideForward": "Redirigir el dominio:"
+      },
+      "proof": {
+        "title": "Este dominio está conectado a otro sitio de Lightor",
+        "body": "Si el dominio es tuyo, añade este registro en tu proveedor de dominio y pulsa \"Conectar\" otra vez. Así se demuestra que el dominio es tuyo, y pasa a este sitio.",
+        "fullName": "El nombre completo del registro, para los proveedores que lo piden:"
+      },
+      "errors": {
+        "INVALID_DOMAIN": "Esto no parece un dominio. Escríbelo así: dana-studio.co.il",
+        "DOMAIN_TAKEN": "Este dominio ya está conectado a otro sitio.",
+        "PLAN_REQUIRED": "Tu propio dominio es parte de Lightor+ y Lightor Pro.",
+        "TOO_MANY": "Demasiados intentos hoy. Inténtalo de nuevo mañana.",
+        "CLOUDFLARE_REFUSED": "No se pudo conectar el dominio. Revisa el nombre e inténtalo de nuevo.",
+        "CLOUDFLARE_UNREACHABLE": "El servicio de dominios no respondió. Inténtalo de nuevo en un momento.",
+        "DOMAINS_NOT_CONFIGURED": "Conectar un dominio aún no está disponible.",
+        "NO_SITE": "Esta cuenta aún no tiene sitio.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      },
+      "onDomain": "Tu sitio ya se ve en tu propia dirección, y el enlace de arriba lleva a ella:"
     },
     "category": {
       "title": "Categoría",
@@ -1112,6 +1185,11 @@
           "plus": "Sin blog en tu sitio",
           "pro": "Un blog en tu sitio, con hasta 10 borradores de Lighty al mes"
         },
+        "domain": {
+          "free": "Sin dominio propio",
+          "plus": "Tu propio dominio para el sitio",
+          "pro": "Tu propio dominio para el sitio"
+        },
         "texts": {
           "free": "Un mensaje de confirmación a los clientes",
           "plus": "Confirmación y recordatorio por la mañana a los clientes",
@@ -1205,6 +1283,12 @@
           "free": "No",
           "plus": "No",
           "pro": "Sí, con 10 borradores de Lighty al mes"
+        },
+        "domain": {
+          "label": "Tu propio dominio",
+          "free": "No",
+          "plus": "Sí",
+          "pro": "Sí"
         },
         "texts": {
           "label": "Mensajes a clientes",
@@ -2734,6 +2818,12 @@
       "list": {
         "title": "Tus entradas",
         "body": "Los borradores se ven solo aquí. Una entrada publicada está en el blog de tu sitio y llega a Google."
+      }
+    },
+    "settings": {
+      "domain": {
+        "title": "Tu propio dominio",
+        "body": "En la pestaña \"Sitio\" conectas un dominio que compraste, y tu sitio se ve en tu propia dirección, por ejemplo www.dana-studio.co.il."
       }
     }
   },

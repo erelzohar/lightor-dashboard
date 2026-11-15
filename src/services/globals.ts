@@ -29,6 +29,8 @@ abstract class Globals {
     public supportUrl:string;
     /** The site categories (LT-453). */
     public categoriesUrl:string;
+    /** The owner's own domain for the site (LT-661); no trailing slash. */
+    public domainUrl:string;
     /** The register app's ORIGIN (no path) — same site as the dashboard. */
     public registerOrigin:string;
 }
@@ -65,6 +67,7 @@ class DevelopmentGlobals extends Globals {
     public appUrl = `${DEV_API_BASE}/api/app/`;
     public supportUrl = `${DEV_API_BASE}/api/support/`;
     public categoriesUrl = `${DEV_API_BASE}/api/categories`;
+    public domainUrl = `${DEV_API_BASE}/api/domain`;
     public registerOrigin = "http://localhost:5173";
 }
 
@@ -114,6 +117,7 @@ class ProductionGlobals extends Globals {
     public appUrl = "https://api.lightor.app/api/app/";
     public supportUrl = "https://api.lightor.app/api/support/";
     public categoriesUrl = "https://api.lightor.app/api/categories";
+    public domainUrl = "https://api.lightor.app/api/domain";
     public registerOrigin = "https://register.lightor.app";
 }
 // class ProductionGlobals extends Globals {

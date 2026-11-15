@@ -74,6 +74,20 @@ describe('Admin site reports', () => {
     expect(reportLink({ subDomain: 'login-lightor.example/x?', pageUrl: 'https://evil.example/' })).toBeNull();
   });
 
+  // LT-661: a page on the site's own domain is the site's page too - the domain the API names
+  // for this site, never one the report itself claims.
+  it("links a page on the site's own domain, and the domain as the site's home", () => {
+    const own = { subDomain: 'dana', customHost: 'www.dana-studio.co.il' };
+    expect(reportLink({ ...own, pageUrl: 'https://www.dana-studio.co.il/products/ring' })).toBe('https://www.dana-studio.co.il/products/ring');
+    expect(reportLink({ ...own, pageUrl: 'https://dana.lightor.app/#faq' })).toBe('https://dana.lightor.app/#faq');
+    expect(reportLink({ ...own, pageUrl: 'https://evil.example/phish' })).toBe('https://www.dana-studio.co.il');
+    expect(reportLink({ ...own, pageUrl: 'http://www.dana-studio.co.il/' })).toBe('https://www.dana-studio.co.il');
+    expect(reportLink({ ...own })).toBe('https://www.dana-studio.co.il');
+    // A "domain" that is no plain host name is no domain: the page is not linked, the home is the Lightor one.
+    expect(reportLink({ subDomain: 'dana', customHost: 'evil.example/x?', pageUrl: 'https://evil.example/x' })).toBe('https://dana.lightor.app');
+    expect(reportLink({ subDomain: 'dana', pageUrl: 'https://www.dana-studio.co.il/' })).toBe('https://dana.lightor.app');
+  });
+
   it('never links a reported page that is not https', async () => {
     vi.mocked(fetchSiteReports).mockResolvedValue(page([report({ pageUrl: 'javascript:alert(1)', status: 'handled' })], 0));
     render(<AdminReports />);

@@ -9,7 +9,7 @@ import { fetchWebConfig, updateWebConfig } from '../store/slices/webConfigSlice'
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useConfirm } from '../hooks/useConfirm';
 import { canOfferPurchases } from '../lib/platform';
-import { siteUrlOf } from '../utils/siteUrl';
+import { publicSiteUrlOf } from '../utils/siteUrl';
 import {
   createPost, deletePost, getPost, listPosts, type BlogLimits, type DraftPictures, type Post, type PostDraft,
 } from '../services/postsApi';
@@ -39,7 +39,12 @@ const Blog: React.FC = () => {
   const [coming, setComing] = useState<DraftPictures | null>(null);
   const [writing, setWriting] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
-  const siteUrl = siteUrlOf(typeof webConfig?.subDomain === 'string' ? webConfig.subDomain : null);
+  // The address people open and share (LT-661: the owner's own domain while the site is served on it);
+  // a post's preview frame builds its own, on the Lightor address (PostPreview).
+  const siteUrl = publicSiteUrlOf({
+    subDomain: typeof webConfig?.subDomain === 'string' ? webConfig.subDomain : null,
+    customHost: typeof webConfig?.customHost === 'string' ? webConfig.customHost : null,
+  });
   const sitePictures = sitePicturesOf(webConfig);
 
   // LT-638 (Erel): the owner's switch, as the gallery and the products have; off, the site shows no

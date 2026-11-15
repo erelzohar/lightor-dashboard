@@ -50,6 +50,7 @@ const PostPreview: React.FC<{ post: PreviewPost; config: Record<string, unknown>
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   useDialogFocus(true, box, onClose);
+  // LT-661: a frame, so always the Lightor address, never the owner's own domain (utils/siteUrl).
   const live = siteUrlOf(typeof config?.subDomain === 'string' ? config.subDomain : null);
   const base = import.meta.env.PROD && live ? live : CLIENT_APP_URL;
   const origin = new URL(base).origin;

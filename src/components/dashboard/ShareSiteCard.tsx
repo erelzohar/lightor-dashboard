@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Copy, Download, Loader2, Megaphone, MessageCircle, QrCode, X } from 'lucide-react';
 import { isNativeApp } from '../../lib/platform';
 import { copyText } from '../../utils/copyText';
+import { customHostOf } from '../../utils/siteUrl';
 import { pop } from '../ui/pop-button';
 
 interface ShareSiteCardProps {
@@ -15,22 +16,28 @@ interface ShareSiteCardProps {
   first?: boolean;
   businessName?: string;
   subDomain: string;
+  /** LT-661: the owner's own domain, while the site is served on it. */
+  customHost?: string | null;
 }
 
-/** The live site's address: every site sits on its own subdomain. */
-const siteHost = (subDomain: string) => `${subDomain}.lightor.app`;
+/**
+ * The live site's address: the owner's own domain while the site is served
+ * on it (LT-661; only a plain host name counts, utils/siteUrl), else the
+ * site's own subdomain.
+ */
+const siteHost = (subDomain: string, customHost?: string | null) => customHostOf(customHost) ?? `${subDomain}.lightor.app`;
 
 /**
  * "How to bring more inquiries / bookings" (LT-274), at the foot of both
  * homes once the site is live: copy the address, send it on WhatsApp, or show
  * it as a QR code. With nothing in yet it is the page's call to action.
  */
-const ShareSiteCard: React.FC<ShareSiteCardProps> = ({ kind, first = false, businessName, subDomain }) => {
+const ShareSiteCard: React.FC<ShareSiteCardProps> = ({ kind, first = false, businessName, subDomain, customHost }) => {
   const { t } = useTranslation();
   const [qrOpen, setQrOpen] = useState(false);
   const closeQr = useCallback(() => setQrOpen(false), []);
 
-  const url = `https://${siteHost(subDomain)}`;
+  const url = `https://${siteHost(subDomain, customHost)}`;
   const name = businessName?.trim();
   const whatsAppShare = `https://wa.me/?text=${encodeURIComponent(name ? `${name} - ${url}` : url)}`;
   const title = first
@@ -83,7 +90,7 @@ const ShareSiteCard: React.FC<ShareSiteCardProps> = ({ kind, first = false, busi
           </button>
         </div>
       </motion.section>
-      <SiteQrModal open={qrOpen} subDomain={subDomain} onClose={closeQr} />
+      <SiteQrModal open={qrOpen} subDomain={subDomain} customHost={customHost} onClose={closeQr} />
     </>
   );
 };
@@ -91,6 +98,7 @@ const ShareSiteCard: React.FC<ShareSiteCardProps> = ({ kind, first = false, busi
 interface SiteQrModalProps {
   open: boolean;
   subDomain: string;
+  customHost?: string | null;
   onClose: () => void;
 }
 
@@ -101,9 +109,9 @@ interface SiteQrModalProps {
  * opens, so the main bundle does not carry it. In the app a download link
  * does nothing, so it says how to keep the code instead.
  */
-const SiteQrModal: React.FC<SiteQrModalProps> = ({ open, subDomain, onClose }) => {
+const SiteQrModal: React.FC<SiteQrModalProps> = ({ open, subDomain, customHost, onClose }) => {
   const { t } = useTranslation();
-  const host = siteHost(subDomain);
+  const host = siteHost(subDomain, customHost);
   const url = `https://${host}`;
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);

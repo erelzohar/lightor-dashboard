@@ -285,7 +285,80 @@
     },
     "customDomain": {
       "title": "Connecter un domaine",
-      "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr."
+      "desc": "Reliez votre propre adresse au site, comme www.monentreprise.fr.",
+      "loadError": "Impossible de charger le domaine. Réessayez.",
+      "retry": "Réessayer",
+      "locked": {
+        "badge": "Lightor+",
+        "body": "Votre propre domaine fait partie de Lightor+ et de Lightor Pro.",
+        "upgrade": "Voir les formules"
+      },
+      "form": {
+        "label": "Le domaine que vous avez acheté",
+        "help": "Écrivez-le tel que vous l’avez acheté, sans www. Votre site s’affichera à l’adresse qui commence par www.",
+        "connect": "Connecter"
+      },
+      "badge": {
+        "pending": "Connexion en cours",
+        "active": "Connecté",
+        "error": "Problème",
+        "paused": "En pause"
+      },
+      "status": {
+        "dns": "En attente de l’enregistrement chez votre fournisseur de domaine.",
+        "certificate": "L’enregistrement a été trouvé. Le certificat de sécurité est en cours d’émission, cela prend quelques minutes."
+      },
+      "autoCheck": "Nous revérifions tout seuls toutes les quelques secondes. Inutile d’actualiser.",
+      "pendingUntil": "Un domaine qui n’est pas connecté d’ici le {{date}} est libéré, et vous pourrez le connecter à nouveau.",
+      "activeBody": "Votre site s’affiche à cette adresse. {{address}} y mène aussi.",
+      "errorBody": "Le domaine n’arrive pas à votre site pour le moment. Vérifiez que l’enregistrement ci-dessous est toujours chez votre fournisseur de domaine, puis appuyez sur « Vérifier maintenant ».",
+      "pausedBody": "Votre formule n’inclut plus votre propre domaine, le site s’affiche donc sur {{address}}. Le domaine est conservé jusqu’au {{date}} : revenez à Lightor+ ou à Lightor Pro et il fonctionnera de nouveau.",
+      "pausedBodyNoDate": "Votre formule n’inclut plus votre propre domaine, le site s’affiche donc sur {{address}}. Revenez à Lightor+ ou à Lightor Pro et le domaine fonctionnera de nouveau.",
+      "check": "Vérifier maintenant",
+      "checked": "Vérifié à nouveau. Pas encore connecté.",
+      "disconnect": "Déconnecter",
+      "disconnectTitle": "Déconnecter le domaine",
+      "disconnectConfirm": "Déconnecter {{host}} ? Le site ne s’affichera plus à cette adresse et restera sur {{address}}.",
+      "disconnected": "Le domaine a été déconnecté",
+      "connected": "Le domaine est connecté. Votre site s’affiche à votre propre adresse.",
+      "saved": "Enregistré. Ajoutez maintenant l’enregistrement chez votre fournisseur de domaine.",
+      "copy": "Copier",
+      "copyOf": "Copier : {{what}}",
+      "copied": "Copié",
+      "copyFailed": "Impossible de copier",
+      "records": {
+        "title": "À faire chez votre fournisseur de domaine (là où vous l’avez acheté)",
+        "summary": "Les enregistrements chez votre fournisseur de domaine",
+        "step1": "Ajoutez un enregistrement CNAME",
+        "step2": "Redirigez {{domain}} vers le site",
+        "step2Body": "Pour que l’adresse sans www y arrive aussi : dans les réglages de redirection (Forwarding) du fournisseur, redirigez {{domain}} vers cette adresse, de façon permanente (301).",
+        "type": "Type",
+        "name": "Nom",
+        "value": "Valeur",
+        "forwardTo": "Rediriger vers",
+        "mail": "Les e-mails de votre domaine ne sont pas touchés : seul www est demandé.",
+        "guideTitle": "Où trouver cela ?",
+        "guideGeneral": "Chez n’importe quel fournisseur : connectez-vous, ouvrez les réglages DNS du domaine, ajoutez l’enregistrement et enregistrez. Il faut de quelques minutes à quelques heures pour qu’il soit pris en compte.",
+        "guideRecord": "Ajouter l’enregistrement :",
+        "guideForward": "Rediriger le domaine :"
+      },
+      "proof": {
+        "title": "Ce domaine est connecté à un autre site Lightor",
+        "body": "Si le domaine est à vous, ajoutez cet enregistrement chez votre fournisseur de domaine et appuyez de nouveau sur « Connecter ». Cela prouve que le domaine est à vous, et il passe sur ce site.",
+        "fullName": "Le nom complet de l’enregistrement, pour les fournisseurs qui le demandent :"
+      },
+      "errors": {
+        "INVALID_DOMAIN": "Cela ne ressemble pas à un domaine. Écrivez-le ainsi : dana-studio.co.il",
+        "DOMAIN_TAKEN": "Ce domaine est déjà connecté à un autre site.",
+        "PLAN_REQUIRED": "Votre propre domaine fait partie de Lightor+ et de Lightor Pro.",
+        "TOO_MANY": "Trop d’essais aujourd’hui. Réessayez demain.",
+        "CLOUDFLARE_REFUSED": "Le domaine n’a pas pu être connecté. Vérifiez le nom et réessayez.",
+        "CLOUDFLARE_UNREACHABLE": "Le service de domaines n’a pas répondu. Réessayez dans un instant.",
+        "DOMAINS_NOT_CONFIGURED": "La connexion d’un domaine n’est pas encore disponible.",
+        "NO_SITE": "Ce compte n’a pas encore de site.",
+        "generic": "Une erreur s’est produite. Réessayez."
+      },
+      "onDomain": "Votre site s’affiche désormais à votre propre adresse, et le lien ci-dessus y mène :"
     },
     "category": {
       "title": "Catégorie",
@@ -1112,6 +1185,11 @@
           "plus": "Pas de blog sur votre site",
           "pro": "Un blog sur votre site, avec jusqu’à 10 brouillons de Lighty par mois"
         },
+        "domain": {
+          "free": "Pas de domaine à vous",
+          "plus": "Votre propre domaine pour le site",
+          "pro": "Votre propre domaine pour le site"
+        },
         "texts": {
           "free": "Un message de confirmation aux clients",
           "plus": "Une confirmation et un rappel le matin aux clients",
@@ -1205,6 +1283,12 @@
           "free": "Non",
           "plus": "Non",
           "pro": "Oui, avec 10 brouillons de Lighty par mois"
+        },
+        "domain": {
+          "label": "Votre propre domaine",
+          "free": "Non",
+          "plus": "Oui",
+          "pro": "Oui"
         },
         "texts": {
           "label": "Messages aux clients",
@@ -2734,6 +2818,12 @@
       "list": {
         "title": "Vos articles",
         "body": "Les brouillons ne se voient qu’ici. Un article publié est sur le blog de votre site et arrive sur Google."
+      }
+    },
+    "settings": {
+      "domain": {
+        "title": "Votre propre domaine",
+        "body": "Dans l’onglet « Site », vous connectez un domaine que vous avez acheté, et votre site s’affiche à votre propre adresse, par exemple www.dana-studio.co.il."
       }
     }
   },

@@ -64,8 +64,9 @@ const PAID_PLANS: PaidPlan[] = ['plus', 'pro'];
 // LT-511: a leads site takes no bookings, and sends no booking's texts.
 // LT-565: its cards name the products (a products site is a leads site).
 // LT-615: the blog on every card, beside the site's Lighty (Pro's, with Lighty's drafts).
-const BOOKING_ROWS: Row[] = ['bookings', 'texts', 'siteLighty', 'blog', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
-const LEAD_ROWS: Row[] = ['inquiries', 'services', 'products', 'siteLighty', 'blog', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
+// LT-661: the owner's own domain after it (Lightor+ and Pro).
+const BOOKING_ROWS: Row[] = ['bookings', 'texts', 'siteLighty', 'blog', 'domain', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
+const LEAD_ROWS: Row[] = ['inquiries', 'services', 'products', 'siteLighty', 'blog', 'domain', 'pictures', 'editing', 'aiModel', 'history', 'badge'];
 
 const reveal = {
   hidden: { opacity: 0, y: -16 },
@@ -210,7 +211,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
             <ul className="space-y-2">
               {rows.map((row) => {
                 // A row the free plan does not have reads as such at a glance.
-                const missing = column === 'free' && (row === 'siteLighty' || row === 'badge');
+                const missing = column === 'free' && (row === 'siteLighty' || row === 'domain' || row === 'badge');
                 const Icon = missing ? Minus : CheckCheck;
                 return (
                   <li key={row} className="flex items-start gap-2 text-sm">

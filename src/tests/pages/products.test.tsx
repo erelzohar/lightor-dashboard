@@ -72,6 +72,30 @@ describe('the Products page (LT-540)', () => {
     expect(screen.getByTestId('products-count').textContent).toContain('"max":10');
   });
 
+  // LT-661: "see on the site" opens the owner's own domain while the site is served on it.
+  it("opens the site on its Lightor address, or on the owner's own domain while it is served there", async () => {
+    const before = site.current;
+    try {
+      const { unmount } = render(<Products />);
+      await screen.findByText('Ring');
+      expect(screen.getByText('products.seeOnSite').closest('a')).toHaveAttribute('href', 'https://shop.lightor.app');
+      unmount();
+
+      site.current = { ...before, customHost: 'www.dana-shop.co.il' };
+      const second = render(<Products />);
+      await screen.findByText('Ring');
+      expect(screen.getByText('products.seeOnSite').closest('a')).toHaveAttribute('href', 'https://www.dana-shop.co.il');
+      second.unmount();
+
+      site.current = { ...before, customHost: 'https://evil.example' };
+      render(<Products />);
+      await screen.findByText('Ring');
+      expect(screen.getByText('products.seeOnSite').closest('a')).toHaveAttribute('href', 'https://shop.lightor.app');
+    } finally {
+      site.current = before;
+    }
+  });
+
   it('says so on a plan whose product has no page of its own, and stops at the cap', async () => {
     vi.mocked(listProducts).mockResolvedValue({ products: [product()], limits: plan(1, false) });
     render(<Products />);

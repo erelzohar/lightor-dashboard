@@ -617,6 +617,38 @@ describe('the site editor (LT-249)', () => {
       expect(parts[0].contains(screen.getByTestId('live-site-link'))).toBe(true);
     });
 
+    // LT-661: the link a person opens goes to the owner's own domain; the frame never does (the
+    // edge leaves a framed request on the Lightor address, and the domain cannot be framed here).
+    it("opens the live page on the owner's own domain while the site is served on it, and keeps the preview off it", async () => {
+      withProducts();
+      state.webConfig.data = { ...state.webConfig.data, customHost: 'www.nails-studio.co.il' } as unknown as WebConfig;
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      expect(screen.getByTestId('live-site-link')).toHaveAttribute('href', 'https://www.nails-studio.co.il');
+      expect(screen.getByTestId('live-site-link')).toHaveTextContent('www.nails-studio.co.il');
+      expect(screen.getByTestId('live-site-link-short')).toHaveAttribute('href', 'https://www.nails-studio.co.il');
+      await fromSite({ type: 'LT_PAGE', path: '/products' });
+      await waitFor(() => expect(screen.getByTestId('live-site-link')).toHaveAttribute('href', 'https://www.nails-studio.co.il/products'));
+      expect(new URL(iframe().src).hostname).not.toBe('www.nails-studio.co.il');
+      expect(siteOrigin()).not.toContain('nails-studio.co.il');
+    });
+
+    it('in production the preview frame is the Lightor address, with or without a domain (LT-661)', async () => {
+      vi.stubEnv('PROD', true);
+      try {
+        state.webConfig.data = { ...state.webConfig.data, customHost: 'www.nails-studio.co.il' } as unknown as WebConfig;
+        renderEditor();
+        expect(siteOrigin()).toBe('https://nails.lightor.app');
+        await fromSite({ type: 'LT_READY' });
+        // The bridge trusts that origin alone, and the link still goes to the domain.
+        expect(toSite.mock.calls.length).toBeGreaterThan(0);
+        for (const [, origin] of toSite.mock.calls) expect(origin).toBe('https://nails.lightor.app');
+        expect(screen.getByTestId('live-site-link')).toHaveAttribute('href', 'https://www.nails-studio.co.il');
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it("moves the preview to the products page, offers its layout and the card, and the link follows", async () => {
       withProducts();
       renderEditor();

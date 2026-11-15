@@ -33,7 +33,9 @@ import { useTranslation } from 'react-i18next';
 import { isLeadsSite, MAX_CTA_LENGTH } from '../utils/siteMode';
 import { Toggle } from '../components/ui/liquid-toggle';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
-import { ComingSoonRow } from '../components/ui/ComingSoon';
+import DomainSection from '../components/settings/DomainSection';
+import { useOwnDomain } from '../hooks/useOwnDomain';
+import { customHostOf } from '../utils/siteUrl';
 import { pop } from '../components/ui/pop-button';
 
 // The public booking site's default language (WebConfig.defaultLanguage) —
@@ -126,6 +128,16 @@ const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const webConfig = useAppSelector(state => state.webConfig.data);
+  // The owner's own domain (LT-661): read once for the page, shown in the
+  // Site tab. When an action there changes the address the site is served
+  // on, the site's config is read again, so every link in the dashboard
+  // (this page's, the home's share card, the products, the blog) follows.
+  const siteId = auth.user?.webConfig_id;
+  const ownDomain = useOwnDomain({
+    onServedChange: () => {
+      if (siteId) void dispatch(fetchWebConfig(siteId));
+    },
+  });
   // The booking-questions editor scopes questions per service (LT-178).
   const appointmentTypes = useAppSelector(state => state.appointments.appointmentTypes);
   // The business phone (LT-404). A mobile that is neither the owner's nor
@@ -537,16 +549,22 @@ const Settings: React.FC = () => {
     await handleSave(token);
   };
 
+  // LT-661: while the site is served on the owner's own domain, that is the
+  // address people get - what is copied, opened and linked from this page.
+  // Only a plain host name counts (utils/siteUrl); else the Lightor address.
+  const servedHost = customHostOf(webConfig?.customHost);
+  const servedUrl = servedHost ? `https://${servedHost}` : null;
+
   // One copy action for the link row's button and its phone twin (LT-435).
   const copySiteLink = async () => {
-    if (await copyText(`https://${localWebConfig?.subDomain || ''}.lightor.app`)) toast.success(t('settings.linkCopied'));
+    if (await copyText(servedUrl ?? `https://${localWebConfig?.subDomain || ''}.lightor.app`)) toast.success(t('settings.linkCopied'));
     else toast.error(t('settings.calendar.copyFailed'));
   };
 
   // Opens the saved link, not one still being typed (LT-478). A `_blank`
   // link leaves the app for the phone's browser: Capacitor hands it to
   // Safari / the default browser, and tenant sites are no App Links.
-  const savedSiteUrl = webConfig?.subDomain ? `https://${webConfig.subDomain}.lightor.app` : null;
+  const savedSiteUrl = servedUrl ?? (webConfig?.subDomain ? `https://${webConfig.subDomain}.lightor.app` : null);
 
   const handleChange = (section: string, field: string, value: any) => {
     if (!localWebConfig) return;
@@ -733,6 +751,15 @@ const Settings: React.FC = () => {
                     </a>
                   )}
                 </div>
+                {/* LT-661: the site is on the owner's own domain; this address leads there. */}
+                {servedHost && (
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 text-start" data-testid="settings-on-domain">
+                    {t('settings.customDomain.onDomain')}{' '}
+                    <a href={servedUrl ?? undefined} target="_blank" rel="noopener noreferrer" dir="ltr" className="inline-block font-medium text-primary hover:underline break-all">
+                      {servedHost}
+                    </a>
+                  </p>
+                )}
                 <AnimatePresence mode="popLayout">
                   {subdomainError && (
                     <motion.p
@@ -1060,14 +1087,10 @@ const Settings: React.FC = () => {
                   onChange={(e) => handleChange('root', 'defaultLanguage', e.target.value)}
                 />
               </div>
-              {/* Coming soon (LT-331): the site at the owner's own address — a
-                  quiet row in the list, not a box of its own (LT-334). */}
-              <ComingSoonRow
-                icon={Globe}
-                title={t('settings.customDomain.title')}
-                description={t('settings.customDomain.desc')}
-                className="p-0 rounded-none border-0 border-solid bg-transparent dark:bg-transparent"
-              />
+              {/* The site at the owner's own address (LT-661; "coming soon"
+                  since LT-331 and still so where the server has no Cloudflare):
+                  a row in the list, not a box of its own (LT-334). */}
+              <DomainSection own={ownDomain} lightorHost={`${webConfig.subDomain}.lightor.app`} />
               </div>
             </SettingsSection>
 
@@ -1210,7 +1233,7 @@ const Settings: React.FC = () => {
             >
               {localWebConfig.subDomain && (
                 <a
-                  href={`https://${localWebConfig.subDomain}.lightor.app/#accessibility`}
+                  href={`${servedUrl ?? `https://${localWebConfig.subDomain}.lightor.app`}/#accessibility`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
@@ -1320,7 +1343,13 @@ const Settings: React.FC = () => {
 
       <motion.div layout transition={{ duration: 0.3, ease: "easeOut" }}>
         <Card>
-          <WebConfigTabs activeTab={activeTab} onTabChange={setActiveTab} bookings={!leadsSite} />
+          <WebConfigTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            bookings={!leadsSite}
+            // Lighty's tour of the domain (LT-661) points at the Site tab while another tab is open.
+            domainTour={ownDomain.answer?.configured === true}
+          />
 
           <div className="my-6">
             {renderTabContent()}

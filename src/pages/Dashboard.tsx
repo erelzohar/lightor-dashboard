@@ -716,6 +716,7 @@ const Dashboard: React.FC = () => {
           first={isEmpty}
           businessName={webConfig?.businessName}
           subDomain={shareSubDomain}
+          customHost={webConfig?.customHost}
         />
       )}
 

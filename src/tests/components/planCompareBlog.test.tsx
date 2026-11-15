@@ -14,6 +14,23 @@ describe("the blog's row", () => {
     expect(screen.getByText('billing.pricing.rows.blog.pro')).toBeInTheDocument();
   });
 
+  // LT-661: the owner's own domain - Lightor+ and Pro - right after the blog.
+  it("the own domain's row follows it: in the comparison, and in what Lightor+ and Pro include", () => {
+    const { unmount } = render(<PlanCompare mode="compare" price="₪0.35" />);
+    const labels = screen.getAllByRole('rowheader').map((cell) => cell.textContent);
+    expect(labels.indexOf('billing.compare.rows.domain.label')).toBe(labels.indexOf('billing.compare.rows.blog.label') + 1);
+    for (const column of ['free', 'plus', 'pro']) expect(screen.getByText(`billing.compare.rows.domain.${column}`)).toBeInTheDocument();
+    unmount();
+
+    for (const plan of ['plus', 'pro'] as const) {
+      for (const leadsSite of [false, true]) {
+        const view = render(<PlanCompare mode="includes" plan={plan} price="₪0.35" leadsSite={leadsSite} />);
+        expect(screen.getByText(`billing.pricing.rows.domain.${plan}`)).toBeInTheDocument();
+        view.unmount();
+      }
+    }
+  });
+
   it('is in the comparison, after the products', () => {
     render(<PlanCompare mode="compare" price="₪0.35" />);
     const labels = screen.getAllByRole('rowheader').map((cell) => cell.textContent);

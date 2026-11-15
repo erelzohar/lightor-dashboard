@@ -66,6 +66,26 @@ describe('the Blog page on Pro (LT-610)', () => {
     expect(screen.queryByTestId('blog-locked')).toBeNull();
   });
 
+  // LT-661: the blog's link is on the owner's own domain while the site is served on it.
+  it("links the blog on the owner's own domain while the site is served on it, and never on a host that is no plain name", async () => {
+    const before = site.current;
+    vi.mocked(listPosts).mockResolvedValue({ posts: [post({ status: 'published', publishedAt: '2026-11-03T09:00:00Z' })], limits: PRO });
+    try {
+      site.current = { ...before, customHost: 'www.studio-dana.co.il' };
+      const { unmount } = renderPage();
+      await screen.findAllByTestId('blog-post-row');
+      expect(screen.getByRole('link', { name: /blog.seeOnSite/ }).getAttribute('href')).toBe('https://www.studio-dana.co.il/blog');
+      unmount();
+
+      site.current = { ...before, customHost: 'evil.example/x?' };
+      renderPage();
+      await screen.findAllByTestId('blog-post-row');
+      expect(screen.getByRole('link', { name: /blog.seeOnSite/ }).getAttribute('href')).toBe('https://studio.lightor.app/blog');
+    } finally {
+      site.current = before;
+    }
+  });
+
   it("writes a post with Lighty: a topic, the owner's words, a draft saved at once and opened", async () => {
     vi.mocked(listPosts).mockResolvedValue({ posts: [], limits: PRO });
     vi.mocked(postIdeas).mockResolvedValue([{ title: 'איך שומרים על הלק', angle: 'טיפים לבית' }]);

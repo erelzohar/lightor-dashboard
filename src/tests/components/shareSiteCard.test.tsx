@@ -110,6 +110,40 @@ describe('ShareSiteCard', () => {
     expect(screen.queryByTestId('share-qr-image')).not.toBeInTheDocument();
   });
 
+  // LT-661: while the site is served on the owner's own domain, that is the address people get.
+  it("copies, shares and draws the owner's own domain while the site is served on it", async () => {
+    const OWN = 'https://www.dana-studio.co.il';
+    render(<ShareSiteCard kind="leads" businessName="Dana Renovations" subDomain="dana" customHost="www.dana-studio.co.il" />);
+
+    fireEvent.click(screen.getByText('dashboard.share.copy'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(OWN));
+    expect(screen.getByText('leads.whatsapp').closest('a')).toHaveAttribute(
+      'href',
+      `https://wa.me/?text=${encodeURIComponent(`Dana Renovations - ${OWN}`)}`
+    );
+
+    fireEvent.click(screen.getByText('dashboard.share.qr'));
+    const modal = await screen.findByTestId('share-qr-modal');
+    await within(modal).findByTestId('share-qr-image');
+    expect(qr.toDataURL).toHaveBeenCalledWith(OWN, expect.anything());
+    const shown = within(modal).getByText('www.dana-studio.co.il');
+    expect(shown).toHaveAttribute('dir', 'ltr');
+    expect(shown.className).toContain('break-all');
+    expect(within(modal).queryByText('dana.lightor.app')).toBeNull();
+    // The file keeps the site's short name.
+    expect(within(modal).getByText('dashboard.share.download').closest('a')).toHaveAttribute('download', 'dana-qr.png');
+  });
+
+  it.each(['evil.example/x?', 'https://evil.example', 'a@evil.example', 'dana.lightor.app', '', null, undefined])(
+    'keeps the Lightor address for a domain that is no plain host name: %s',
+    async (customHost) => {
+      render(<ShareSiteCard kind="leads" subDomain="dana" customHost={customHost} />);
+      fireEvent.click(screen.getByText('dashboard.share.copy'));
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith(SITE));
+      expect(screen.getByText('leads.whatsapp').closest('a')).toHaveAttribute('href', `https://wa.me/?text=${encodeURIComponent(SITE)}`);
+    }
+  );
+
   it.each([
     ['leads', false, 'dashboard.share.titleLeads'],
     ['bookings', false, 'dashboard.share.titleBookings'],

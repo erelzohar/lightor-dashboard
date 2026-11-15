@@ -285,7 +285,80 @@
     },
     "customDomain": {
       "title": "Connect a domain",
-      "desc": "Connect your own address to the site, like www.mybusiness.com."
+      "desc": "Connect your own address to the site, like www.mybusiness.com.",
+      "loadError": "Couldn't load the domain. Try again.",
+      "retry": "Try again",
+      "locked": {
+        "badge": "Lightor+",
+        "body": "Your own domain is part of Lightor+ and Lightor Pro.",
+        "upgrade": "See the plans"
+      },
+      "form": {
+        "label": "The domain you bought",
+        "help": "Type it the way you bought it, without www. Your site will show at the address that starts with www.",
+        "connect": "Connect"
+      },
+      "badge": {
+        "pending": "Connecting",
+        "active": "Connected",
+        "error": "Problem",
+        "paused": "Paused"
+      },
+      "status": {
+        "dns": "Waiting for the record at your domain registrar.",
+        "certificate": "The record was found. The security certificate is being issued, which takes a few minutes."
+      },
+      "autoCheck": "We check again by ourselves every few seconds. No need to refresh.",
+      "pendingUntil": "A domain that is not connected by {{date}} is released, and you can connect it again.",
+      "activeBody": "Your site shows at this address. {{address}} leads to it too.",
+      "errorBody": "The domain is not reaching your site right now. Make sure the record below is still at your domain registrar, then press \"Check now\".",
+      "pausedBody": "Your plan no longer includes your own domain, so the site shows at {{address}}. The domain is kept until {{date}}: go back to Lightor+ or Lightor Pro and it works again.",
+      "pausedBodyNoDate": "Your plan no longer includes your own domain, so the site shows at {{address}}. Go back to Lightor+ or Lightor Pro and the domain works again.",
+      "check": "Check now",
+      "checked": "Checked again. Not connected yet.",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect the domain",
+      "disconnectConfirm": "Disconnect {{host}}? The site will stop showing at this address and stay at {{address}}.",
+      "disconnected": "The domain was disconnected",
+      "connected": "The domain is connected. Your site shows at your own address.",
+      "saved": "Saved. Now add the record at your domain registrar.",
+      "copy": "Copy",
+      "copyOf": "Copy: {{what}}",
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy",
+      "records": {
+        "title": "What to do at your domain registrar (where you bought the domain)",
+        "summary": "The records at your domain registrar",
+        "step1": "Add a CNAME record",
+        "step2": "Forward {{domain}} to the site",
+        "step2Body": "So the address without www gets there too: in the registrar's forwarding (redirect) settings, forward {{domain}} to this address, permanently (301).",
+        "type": "Type",
+        "name": "Name",
+        "value": "Value",
+        "forwardTo": "Forward to",
+        "mail": "Email on your domain is not touched: only www is asked for.",
+        "guideTitle": "Where do I find it?",
+        "guideGeneral": "At any registrar: sign in, open the domain's DNS settings, add the record and save. It can take from a few minutes to a few hours to be seen.",
+        "guideRecord": "Adding the record:",
+        "guideForward": "Forwarding the domain:"
+      },
+      "proof": {
+        "title": "This domain is connected to another Lightor site",
+        "body": "If the domain is yours, add this record at your domain registrar and press \"Connect\" again. It proves the domain is yours, and it moves to this site.",
+        "fullName": "The record's full name, for registrars that ask for it:"
+      },
+      "errors": {
+        "INVALID_DOMAIN": "This doesn't look like a domain. Type it like this: dana-studio.co.il",
+        "DOMAIN_TAKEN": "This domain is already connected to another site.",
+        "PLAN_REQUIRED": "Your own domain is part of Lightor+ and Lightor Pro.",
+        "TOO_MANY": "Too many tries today. Try again tomorrow.",
+        "CLOUDFLARE_REFUSED": "The domain could not be connected. Check the name and try again.",
+        "CLOUDFLARE_UNREACHABLE": "The domain service did not answer. Try again in a moment.",
+        "DOMAINS_NOT_CONFIGURED": "Connecting a domain is not available yet.",
+        "NO_SITE": "This account has no site yet.",
+        "generic": "Something went wrong. Try again."
+      },
+      "onDomain": "Your site now shows at your own address, and the link above leads to it:"
     },
     "category": {
       "title": "Category",
@@ -1108,6 +1181,11 @@
           "plus": "No blog on your site",
           "pro": "A blog on your site, with up to 10 Lighty drafts a month"
         },
+        "domain": {
+          "free": "No domain of your own",
+          "plus": "Your own domain for the site",
+          "pro": "Your own domain for the site"
+        },
         "texts": {
           "free": "A confirmation text to customers",
           "plus": "A confirmation and a morning reminder to customers",
@@ -1201,6 +1279,12 @@
           "free": "No",
           "plus": "No",
           "pro": "Yes, with 10 Lighty drafts a month"
+        },
+        "domain": {
+          "label": "Your own domain",
+          "free": "No",
+          "plus": "Yes",
+          "pro": "Yes"
         },
         "texts": {
           "label": "Customer texts",
@@ -2730,6 +2814,12 @@
       "list": {
         "title": "Your posts",
         "body": "Drafts are seen only here. A published post is on your site's blog and reaches Google."
+      }
+    },
+    "settings": {
+      "domain": {
+        "title": "Your own domain",
+        "body": "In the \"Site\" tab you connect a domain you bought, and your site shows at your own address, like www.dana-studio.co.il."
       }
     }
   },

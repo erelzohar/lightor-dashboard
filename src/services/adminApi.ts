@@ -112,6 +112,8 @@ export interface TopBusiness {
   subscriptionStatus?: string;
   businessName?: string;
   subDomain?: string;
+  /** LT-661: the owner's own domain, sent while the site is served on it; the links go there. */
+  customHost?: string;
 }
 
 export interface AdminSubscription {
@@ -140,6 +142,8 @@ export interface AdminUserRow {
   updatedAt: string;
   businessName?: string;
   subDomain?: string;
+  /** LT-661: the owner's own domain, sent while the site is served on it; the links go there. */
+  customHost?: string;
   /** LT-647: list rows only - the site's kind and the plan standing. */
   siteKind?: SiteKind;
   plan?: PlanStanding;
@@ -169,6 +173,8 @@ export interface AdminUserDetail {
   webConfig: {
     businessName: string;
     subDomain: string;
+    /** LT-661: the owner's own domain, sent while the site is served on it. */
+    customHost?: string;
     createdAt: string;
     /** What the site converts to (LT-199); absent on an older API or config = 'book'. */
     conversion?: 'book' | 'lead';
@@ -536,6 +542,8 @@ export interface SiteReportRow {
   source?: 'visitor' | 'owner';
   /** An owner with no site yet has none. */
   subDomain?: string;
+  /** LT-661: the owner's own domain, sent while the site is served on it; the links go there. */
+  customHost?: string;
   /** An owner's report: their email, to answer them. */
   email?: string;
   /** An owner's report: the screenshot's image name. */

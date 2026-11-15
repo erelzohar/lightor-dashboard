@@ -30,7 +30,7 @@ import CategoriesPanel from '../components/products/CategoriesPanel';
 import { sortableA11y } from '../utils/sortableA11y';
 import MostViewed from '../components/products/MostViewed';
 import { currencySymbol } from '../utils/currency';
-import { siteUrlOf } from '../utils/siteUrl';
+import { publicSiteUrlOf } from '../utils/siteUrl';
 import { isAiBusy } from '../lib/aiErrors';
 import { canOfferPurchases } from '../lib/platform';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
@@ -799,7 +799,8 @@ const Products: React.FC = () => {
     }
   };
 
-  const siteUrl = siteUrlOf(webConfig?.subDomain);
+  // LT-661: the owner's own domain while the site is served on it.
+  const siteUrl = publicSiteUrlOf(webConfig);
   const categories = [...new Set((products ?? []).map((p) => p.category).filter((c): c is string => !!c))];
   const full = limits !== null && room === 0;
   // LT-546: the site shows the first published products, as many as the plan

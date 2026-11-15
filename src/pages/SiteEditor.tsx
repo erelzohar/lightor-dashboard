@@ -42,7 +42,7 @@ import { fieldLabel, sectionLabel, vocabLang } from '../components/siteEditor/la
 import SiteBuilder from './SiteBuilder';
 import type { WebConfig } from '../types';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
-import { siteUrlOf } from '../utils/siteUrl';
+import { publicSiteUrlOf, siteUrlOf } from '../utils/siteUrl';
 import { isLeadsSite } from '../utils/siteMode';
 import { pop } from '../components/ui/pop-button';
 import { usePhoneBar } from '../contexts/PhoneBarContext';
@@ -146,8 +146,12 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   }, [initialMessage]);
 
   // Built safely (LT-315, L2): the preview's origin is also the only origin
-  // the editor's bridge trusts.
+  // the editor's bridge trusts. LT-661: the frame stays on the Lightor
+  // address whatever domain the owner connected (the edge leaves a framed
+  // request there, and the domain cannot be framed by the dashboard); only
+  // the link a person opens goes to the domain (`publicSite`).
   const liveSite = siteUrlOf(saved.subDomain);
+  const publicSite = publicSiteUrlOf(saved);
   const previewUrl = import.meta.env.PROD && liveSite ? liveSite : CLIENT_APP_URL;
   const siteOrigin = useMemo(() => new URL(previewUrl).origin, [previewUrl]);
 
@@ -625,7 +629,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   ];
 
   // LT-545 (Erel: the site's own link, elegantly): the live page the preview shows, as saved.
-  const livePage = liveSite ? `${liveSite}${framePath === '/' ? '' : framePath}` : null;
+  const livePage = publicSite ? `${publicSite}${framePath === '/' ? '' : framePath}` : null;
   const liveLabel = livePage ? livePage.replace(/^https:\/\//, '') : '';
   const pageCount = 1 + (hasPages ? 2 : 0) + (hasBlog ? 2 : 0);
   const pageSwitcher = (short: boolean) => (

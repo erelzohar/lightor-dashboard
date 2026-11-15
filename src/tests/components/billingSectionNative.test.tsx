@@ -757,6 +757,19 @@ describe('BillingSection with two plans', () => {
       expect(screen.getByTestId('plan-compare')).toHaveTextContent('billing.compare.rows.products.label');
     });
 
+    // LT-661: the owner's own domain on every card - a booking site's and a leads site's.
+    it('names the own domain on each card: not on the free plan, on Lightor+ and Pro', async () => {
+      for (const leadsSite of [false, true]) {
+        fourPrices();
+        const { unmount } = render(<BillingSection leadsSite={leadsSite} />);
+        expect(await screen.findByTestId('pricing-card-free')).toHaveTextContent('billing.pricing.rows.domain.free');
+        expect(screen.getByTestId('pricing-card-plus')).toHaveTextContent('billing.pricing.rows.domain.plus');
+        expect(screen.getByTestId('pricing-card-pro')).toHaveTextContent('billing.pricing.rows.domain.pro');
+        expect(screen.getByTestId('plan-compare')).toHaveTextContent('billing.compare.rows.domain.label');
+        unmount();
+      }
+    });
+
     it('says the badge in one sentence on each card', async () => {
       fourPrices();
       render(<BillingSection />);

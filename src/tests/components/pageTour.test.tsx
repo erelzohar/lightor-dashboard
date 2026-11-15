@@ -170,9 +170,45 @@ describe('Lighty page tours (LT-389)', () => {
     expect(await screen.findByRole('dialog', { name: 'tour.home.topProducts.title' })).toBeInTheDocument();
   });
 
-  it('leaves settings and the account page to their tooltips', () => {
-    expect(tourFor('/settings', false)).toBeNull();
+  it('leaves the account page to its tooltips, and settings all but the own domain (LT-661)', () => {
     expect(tourFor('/account', true)).toBeNull();
+    // Settings' fields carry tooltips; the one step is the owner's own domain.
+    for (const leads of [false, true]) {
+      expect(tourFor('/settings', leads)).toEqual({
+        id: 'settings',
+        steps: [{ key: 'settings.domain', target: ['[data-tour="settings-domain"]', '[data-tour="settings-site-tab"]'] }],
+      });
+    }
+  });
+
+  // LT-661: the domain lives in the Site tab. With the tab open the step lights the domain's row;
+  // from another tab it lights the Site tab itself. Both anchors exist only where the server offers
+  // domains (never at a "coming soon" row), and on every plan.
+  it("the settings tour lights the domain's row when the Site tab is open", async () => {
+    renderAt(
+      '/settings',
+      <div>
+        <button role="tab" data-tour="settings-site-tab">site</button>
+        <div data-tour="settings-domain">the domain row</div>
+      </div>
+    );
+    const card = await screen.findByRole('dialog', { name: 'tour.settings.domain.title' });
+    expect(card).toHaveTextContent('tour.settings.domain.body');
+    expect(card).toHaveTextContent('tour.step:1/1');
+    fireEvent.click(screen.getByText('tour.done'));
+    await waitFor(() => expect(markTourSeen).toHaveBeenCalledWith('settings'));
+  });
+
+  it('the settings tour lights the Site tab from another tab', async () => {
+    renderAt('/settings', <div><button role="tab" data-tour="settings-site-tab">site</button></div>);
+    expect(await screen.findByRole('dialog', { name: 'tour.settings.domain.title' })).toHaveTextContent('tour.step:1/1');
+  });
+
+  it('the settings tour stays away where domains are still "coming soon" (no anchor on the page)', async () => {
+    renderAt('/settings', <div><button role="tab">site</button><div data-testid="own-domain">coming soon</div></div>);
+    await act(() => new Promise((r) => setTimeout(r, 400)));
+    expect(screen.queryByTestId('page-tour')).toBeNull();
+    expect(markTourSeen).not.toHaveBeenCalledWith('settings');
   });
 
   it('has its words in all five languages', () => {

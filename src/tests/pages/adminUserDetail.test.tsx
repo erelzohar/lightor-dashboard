@@ -118,6 +118,26 @@ describe('Admin user detail: the domain card', () => {
     expect(await screen.findByTestId('domain-card')).toHaveTextContent('u9');
   });
 
+  // LT-661: "open the site" follows the address the site is served on, when the API names it.
+  it("opens the site on its Lightor address, or on the owner's own domain when the API names one", async () => {
+    vi.mocked(fetchUser).mockResolvedValue(detail({}));
+    const first = renderPage();
+    expect((await screen.findByText('admin.userDetail.site.open')).closest('a')).toHaveAttribute('href', 'https://dana.lightor.app');
+    first.unmount();
+
+    const own = detail({});
+    vi.mocked(fetchUser).mockResolvedValue({ ...own, webConfig: { ...own.webConfig!, customHost: 'www.dana-studio.co.il' } } as Detail);
+    const second = renderPage();
+    expect((await screen.findByText('admin.userDetail.site.open')).closest('a')).toHaveAttribute('href', 'https://www.dana-studio.co.il');
+    // The site keeps its Lightor name on the card; the domain is the card below.
+    expect(screen.getByText('dana.lightor.app')).toBeInTheDocument();
+    second.unmount();
+
+    vi.mocked(fetchUser).mockResolvedValue({ ...own, webConfig: { ...own.webConfig!, customHost: 'evil.example/x?' } } as Detail);
+    renderPage();
+    expect((await screen.findByText('admin.userDetail.site.open')).closest('a')).toHaveAttribute('href', 'https://dana.lightor.app');
+  });
+
   it('a user with no site has no domain card', async () => {
     vi.mocked(fetchUser).mockResolvedValue({ ...detail({}), webConfig: null, siteKind: 'none' } as Detail);
     renderPage();

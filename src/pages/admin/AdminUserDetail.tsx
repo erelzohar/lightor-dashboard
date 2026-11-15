@@ -39,7 +39,7 @@ import {
   AdminUserDetail as AdminUserDetailData,
 } from '../../services/adminApi';
 import { isLeadsSite } from '../../utils/siteMode';
-import { siteUrlOf } from '../../utils/siteUrl';
+import { publicSiteUrlOf } from '../../utils/siteUrl';
 import { formatPhoneForDisplay } from '../../utils/phone';
 
 /**
@@ -332,9 +332,10 @@ const AdminUserDetail: React.FC = () => {
                     <SiteKindChip kind={siteKind} />
                   </p>
                 </div>
-                {/* Linked only when it is a real lightor.app address (LT-315, L2). */}
-                {siteUrlOf(webConfig.subDomain) && (
-                  <a href={siteUrlOf(webConfig.subDomain) ?? undefined} target="_blank" rel="noreferrer">
+                {/* Linked only when it is a real lightor.app address (LT-315, L2),
+                    or the owner's own domain while the site is on it (LT-661). */}
+                {publicSiteUrlOf(webConfig) && (
+                  <a href={publicSiteUrlOf(webConfig) ?? undefined} target="_blank" rel="noreferrer">
                     <Button variant="outline" size="sm" rightIcon={<ExternalLink size={14} />}>
                       {t('admin.userDetail.site.open')}
                     </Button>

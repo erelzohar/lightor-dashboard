@@ -27,7 +27,7 @@ import {
   TimeseriesPoint,
   TopBusiness,
 } from '../../services/adminApi';
-import { siteUrlOf } from '../../utils/siteUrl';
+import { publicSiteHostOf, publicSiteUrlOf } from '../../utils/siteUrl';
 
 /**
  * Admin → Overview (LT-058): the operator's KPI wall — system totals, the
@@ -407,16 +407,17 @@ const AdminOverview: React.FC = () => {
                       >
                         {business.businessName || business.name || business.email}
                       </Link>
-                      {/* Linked only when it is a real lightor.app address (LT-315, L2). */}
-                      {siteUrlOf(business.subDomain) && (
+                      {/* Linked only when it is a real lightor.app address (LT-315, L2),
+                          or the owner's own domain while the site is on it (LT-661). */}
+                      {publicSiteUrlOf(business) && (
                         <a
-                          href={siteUrlOf(business.subDomain) ?? undefined}
+                          href={publicSiteUrlOf(business) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="text-xs text-gray-400 hover:text-primary inline-flex items-center gap-1"
                           dir="ltr"
                         >
-                          {business.subDomain}.lightor.app
+                          {publicSiteHostOf(business)}
                           <ExternalLink size={10} />
                         </a>
                       )}

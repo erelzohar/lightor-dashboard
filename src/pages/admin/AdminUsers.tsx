@@ -11,7 +11,7 @@ import StatusBadge from '../../components/admin/StatusBadge';
 import { PlanChip, SiteKindChip } from '../../components/admin/SiteKindChip';
 import UserFormModal from '../../components/admin/UserFormModal';
 import { fetchUsers, AdminUserRow, Paginated } from '../../services/adminApi';
-import { siteUrlOf } from '../../utils/siteUrl';
+import { publicSiteUrlOf } from '../../utils/siteUrl';
 
 /**
  * Admin → Users (LT-058): every business account, server-paginated and
@@ -84,13 +84,14 @@ const AdminUsers: React.FC = () => {
       key: 'subDomain',
       label: t('admin.users.columns.site'),
       className: 'hidden md:table-cell',
-      // Linked only when it is a real lightor.app address (LT-315, L2).
+      // Linked only when it is a real lightor.app address (LT-315, L2), or
+      // the owner's own domain while the site is on it (LT-661).
       // LT-647: and what kind of site it is - bookings, inquiries or products.
       render: (row) => (
         <div className="flex flex-col items-start gap-1">
-          {siteUrlOf(row.subDomain) ? (
+          {publicSiteUrlOf(row) ? (
             <a
-              href={siteUrlOf(row.subDomain) ?? undefined}
+              href={publicSiteUrlOf(row) ?? undefined}
               target="_blank"
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}

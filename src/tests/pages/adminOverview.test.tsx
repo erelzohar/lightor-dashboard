@@ -100,6 +100,23 @@ describe('Admin overview for every kind of site (LT-647)', () => {
     expect(within(shop).getByText('6')).toBeInTheDocument();
   });
 
+  // LT-661: a business's link is its own domain while the API names one for it.
+  it("links a business to its own domain when the API names one, else to its Lightor address", async () => {
+    vi.mocked(fetchOverview).mockResolvedValue(overview());
+    vi.mocked(fetchTopBusinesses).mockResolvedValue([
+      { userId: 'u1', bookings: 0, inquiries: 6, total: 6, siteKind: 'products', businessName: 'Ring Shop', subDomain: 'ring-shop', customHost: 'www.ring-shop.co.il' },
+      { userId: 'u2', bookings: 4, inquiries: 1, total: 5, siteKind: 'book', businessName: 'Glow Nails', subDomain: 'glow' },
+      { userId: 'u3', bookings: 1, inquiries: 0, total: 1, siteKind: 'book', businessName: 'Odd', subDomain: 'odd', customHost: 'https://evil.example' },
+    ]);
+    renderPage();
+    const shop = (await screen.findByRole('link', { name: 'Ring Shop' })).closest('li') as HTMLElement;
+    expect(within(shop).getByText('www.ring-shop.co.il').closest('a')).toHaveAttribute('href', 'https://www.ring-shop.co.il');
+    const glow = screen.getByRole('link', { name: 'Glow Nails' }).closest('li') as HTMLElement;
+    expect(within(glow).getByText('glow.lightor.app').closest('a')).toHaveAttribute('href', 'https://glow.lightor.app');
+    const odd = screen.getByRole('link', { name: 'Odd' }).closest('li') as HTMLElement;
+    expect(within(odd).getByText('odd.lightor.app').closest('a')).toHaveAttribute('href', 'https://odd.lightor.app');
+  });
+
   it('an older API without the new numbers still shows the bookings', async () => {
     vi.mocked(fetchOverview).mockResolvedValue(overview({ sites: undefined, activity: undefined, plans: undefined, stores: undefined }));
     renderPage();

@@ -279,6 +279,12 @@ export interface WebConfig {
   design?: Record<string, string | undefined>;
   /** A composed page's sections, in order (absent = the legacy fixed order). */
   blocks?: SiteBlock[];
+  /**
+   * LT-661: the owner's own domain ("www.dana-studio.co.il"), there exactly
+   * while the site is served on it (connected, live, and on a plan that has
+   * it). Read it through `publicSiteUrlOf` (utils/siteUrl), never inline.
+   */
+  customHost?: string;
 }
 
 export interface User {

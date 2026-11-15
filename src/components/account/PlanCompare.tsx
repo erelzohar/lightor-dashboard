@@ -18,6 +18,8 @@ export const PLAN_ROWS = [
   'products',
   // LT-615 (the LT-495 plan's announcement): the blog is Pro's, with Lighty's 10 drafts a month.
   'blog',
+  // LT-661: the site on the owner's own domain - Lightor+ and Pro.
+  'domain',
   'texts',
   'siteLighty',
   'rebuilds',

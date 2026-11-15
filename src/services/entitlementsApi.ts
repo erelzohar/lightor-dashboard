@@ -43,6 +43,12 @@ export interface PlanLimits {
   /** LT-610: the blog (Pro). Absent on an older API: no blog. */
   blog?: boolean;
   blogDraftsPerMonth?: number;
+  /**
+   * LT-661: the site on the owner's own domain - Lightor+ and Pro, the free
+   * days too. Absent on an older API. The Settings row itself reads `allowed`
+   * from `GET /api/domain`, which is this same entitlement.
+   */
+  customDomain?: boolean;
 }
 
 export interface MyEntitlements {
