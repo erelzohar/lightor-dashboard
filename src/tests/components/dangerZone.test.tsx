@@ -138,7 +138,6 @@ describe('DeleteAccountDialog: store subscriptions and upcoming bookings (LT-663
 
   it.each([
     ['apple', 'https://apps.apple.com/account/subscriptions'],
-    ['google', 'https://play.google.com/store/account/subscriptions'],
   ] as const)('%s: says billing continues, links to the store, and waits for the tick', async (store, url) => {
     authState.user = { email: 'jane@biz.com', hasPassword: true, subscription: { status: 'active', provider: store } } as Partial<User>;
     vi.mocked(getDeletionPreview).mockResolvedValue({ futureBookings: 0, storeSubscription: store });
@@ -164,6 +163,21 @@ describe('DeleteAccountDialog: store subscriptions and upcoming bookings (LT-663
     await waitFor(() => expect(deleteAccount).toHaveBeenCalledWith({ password: 'right1' }));
   });
 
+  // LT-668: the deletion stops a Google Play subscription's renewal itself.
+  it('google: says the subscription is cancelled, like Paddle, with no warning and no tick', async () => {
+    authState.user = { email: 'jane@biz.com', hasPassword: true, subscription: { status: 'active', provider: 'google' } } as Partial<User>;
+    vi.mocked(getDeletionPreview).mockResolvedValue({ futureBookings: 0, storeSubscription: 'google' });
+    openDialog();
+    await waitFor(() => expect(getDeletionPreview).toHaveBeenCalled());
+    expect(screen.getByText('danger.desc')).toBeInTheDocument();
+    expect(screen.getByText('danger.consequenceSubscription')).toBeInTheDocument();
+    expect(screen.queryByTestId('delete-store-warning')).not.toBeInTheDocument();
+    typePassword();
+    expect(confirmButton()).not.toBeDisabled();
+    fireEvent.click(confirmButton());
+    await waitFor(() => expect(deleteAccount).toHaveBeenCalledWith({ password: 'right1' }));
+  });
+
   it("takes the server's word over a stale account: a store the account did not know of", async () => {
     authState.user = { email: 'jane@biz.com', hasPassword: true, subscription: { status: 'free' } } as Partial<User>;
     vi.mocked(getDeletionPreview).mockResolvedValue({ futureBookings: 0, storeSubscription: 'apple' });
@@ -174,7 +188,7 @@ describe('DeleteAccountDialog: store subscriptions and upcoming bookings (LT-663
   });
 
   it('warns from the signed-in account when the server cannot say', async () => {
-    authState.user = { email: 'jane@biz.com', hasPassword: true, subscription: { status: 'past_due', provider: 'google' } } as Partial<User>;
+    authState.user = { email: 'jane@biz.com', hasPassword: true, subscription: { status: 'past_due', provider: 'apple' } } as Partial<User>;
     openDialog();
     expect(screen.getByTestId('delete-store-warning')).toBeInTheDocument();
     typePassword();

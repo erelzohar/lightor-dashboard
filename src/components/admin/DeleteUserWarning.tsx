@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchDeletionPreview, type AdminDeletionPreview } from '../../services/adminApi';
+import { billsOnAfterDeletion } from '../../lib/storeLinks';
 
 /**
  * LT-663 (Erel 2026-11-15): what the operator reads before deleting an
@@ -37,8 +38,9 @@ const DeleteUserWarning: React.FC<Props> = ({ userId, name, known }) => {
     };
   }, [userId]);
 
-  const store = preview ? preview.storeSubscription : known;
-  const storeName = t(store === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore');
+  // LT-668: a Google Play subscription's renewal is stopped by the deletion, as Paddle's is cancelled.
+  const store = billsOnAfterDeletion(preview ? preview.storeSubscription : known);
+  const storeName = t('billing.store.appStore');
   const futureBookings = preview?.futureBookings ?? 0;
 
   return (

@@ -4,7 +4,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useTranslation } from 'react-i18next';
 import DeleteAccountDialog from './DeleteAccountDialog';
-import { storeOfAccount } from '../../lib/storeLinks';
+import { billsOnAfterDeletion, storeOfAccount } from '../../lib/storeLinks';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
@@ -17,7 +17,8 @@ const DangerZoneSection: React.FC = () => {
   const { auth } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   // LT-663: a subscription bought in an app is not cancelled by the delete.
-  const store = storeOfAccount(auth.user);
+  // LT-668: a Google Play subscription is cancelled with the account; the App Store's bills on.
+  const store = billsOnAfterDeletion(storeOfAccount(auth.user));
 
   return (
     <Card className="border border-red-200 dark:border-red-900/50">
@@ -30,7 +31,7 @@ const DangerZoneSection: React.FC = () => {
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           {store
-            ? t('danger.descStore', { store: t(store === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore') })
+            ? t('danger.descStore', { store: t('billing.store.appStore') })
             : t('danger.desc')}
         </p>
         <div>

@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
 import { deleteAccount, getDeletionPreview, type AuthRequestError, type DeletionPreview } from '../../services/authApi';
-import { STORE_SUBSCRIPTIONS_URL, storeOfAccount } from '../../lib/storeLinks';
+import { STORE_SUBSCRIPTIONS_URL, billsOnAfterDeletion, storeOfAccount } from '../../lib/storeLinks';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -32,6 +32,10 @@ import toast from 'react-hot-toast';
  * says how many bookings are still ahead: they are deleted and nobody is
  * texted. Both come from the server; until it answers, the store is read from
  * the signed-in account.
+ *
+ * LT-668 (Erel 2026-11-16): the deletion stops a Google Play subscription's
+ * renewal itself, so only an App Store one gets the warning and the tick; a
+ * Google Play one reads "cancelled", like Paddle's.
  */
 const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { auth, logout } = useAuth();
@@ -61,8 +65,8 @@ const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     };
   }, []);
 
-  const store = preview ? preview.storeSubscription : storeOfAccount(auth.user);
-  const storeName = t(store === 'google' ? 'billing.store.googlePlay' : 'billing.store.appStore');
+  const store = billsOnAfterDeletion(preview ? preview.storeSubscription : storeOfAccount(auth.user));
+  const storeName = t('billing.store.appStore');
   const futureBookings = preview?.futureBookings ?? 0;
 
   const proofReady = (needPassword

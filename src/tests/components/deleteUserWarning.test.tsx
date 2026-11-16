@@ -31,7 +31,6 @@ describe('DeleteUserWarning (LT-663)', () => {
 
   it.each([
     ['apple', 'billing.store.appStore'],
-    ['google', 'billing.store.googlePlay'],
   ] as const)('%s: warns that the store goes on billing, and no longer says a live subscription is cancelled', async (store, name) => {
     vi.mocked(fetchDeletionPreview).mockResolvedValue({ futureBookings: 3, storeSubscription: store });
     render(<DeleteUserWarning userId="u9" name="Dana" known={null} />);
@@ -44,9 +43,18 @@ describe('DeleteUserWarning (LT-663)', () => {
     expect(screen.getByTestId('admin-delete-bookings-warning')).toHaveTextContent('admin.actions.deleteBookingsWarning {"count":3}');
   });
 
+  // LT-668: the deletion stops a Google Play subscription's renewal itself.
+  it('google: the subscription is cancelled with the account, as Paddle\'s is: no store warning', async () => {
+    vi.mocked(fetchDeletionPreview).mockResolvedValue({ futureBookings: 1, storeSubscription: 'google' });
+    render(<DeleteUserWarning userId="u9" name="Dana" known="google" />);
+    await waitFor(() => expect(screen.getByTestId('admin-delete-bookings-warning')).toBeInTheDocument());
+    expect(screen.getByText('admin.actions.deleteConfirm {"name":"Dana"}')).toBeInTheDocument();
+    expect(screen.queryByTestId('admin-delete-store-warning')).not.toBeInTheDocument();
+  });
+
   it('warns from what the page knows until the server answers, and when it cannot', async () => {
     vi.mocked(fetchDeletionPreview).mockRejectedValue(new Error('offline'));
-    render(<DeleteUserWarning userId="u9" name="Dana" known="google" />);
+    render(<DeleteUserWarning userId="u9" name="Dana" known="apple" />);
     expect(screen.getByTestId('admin-delete-store-warning')).toBeInTheDocument();
     // Past the refusal: the warning has not moved.
     await act(async () => {
