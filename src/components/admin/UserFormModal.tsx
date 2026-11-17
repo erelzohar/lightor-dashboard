@@ -7,7 +7,8 @@ import toast from 'react-hot-toast';
 import { UserPlus, UserCog, Dices } from 'lucide-react';
 import Input from '../ui/Input';
 import PhoneInput from '../ui/PhoneInput';
-import { israeliPhoneKind, toE164 } from '../../utils/phone';
+import { checkPhone, toE164 } from '../../utils/phone';
+import { usePhoneCountries } from '../../hooks/usePhoneCountries';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import ToggleSwitch from '../ui/ToggleSwitch';
@@ -47,6 +48,7 @@ const generatePassword = (): string => {
 
 const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose, onSaved }) => {
   const { t } = useTranslation();
+  const { abroad } = usePhoneCountries();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -77,8 +79,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ open, mode, user, onClose
   const [phoneTried, setPhoneTried] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // An owner's phone is an Israeli mobile (LT-407: alerts and codes go to it); it may stay empty.
-    if (form.phone.trim() && israeliPhoneKind(form.phone) !== 'mobile') {
+    // An owner's phone is an Israeli mobile (LT-407: alerts and codes go to it), or a number of a
+    // country opened abroad (LT-677); it may stay empty. The operator's word needs no code.
+    if (form.phone.trim() && !checkPhone(form.phone, 'mobile', abroad).valid) {
       setPhoneTried(true);
       return;
     }

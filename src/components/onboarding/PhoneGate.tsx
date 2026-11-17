@@ -7,7 +7,8 @@ import PhoneInput from '../ui/PhoneInput';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../../services/phoneCodeApi';
-import { checkPhone, formatPhoneForDisplay, toE164 } from '../../utils/phone';
+import { usePhoneCountries } from '../../hooks/usePhoneCountries';
+import { checkPhone, deviceCountry, formatPhoneForDisplay, isAbroadPhone, toE164 } from '../../utils/phone';
 import DeleteAccountDialog from '../account/DeleteAccountDialog';
 import { weeklyLimitMessage } from '../../utils/accountPace';
 
@@ -34,11 +35,18 @@ const gateErrorKey = (error: unknown): string => {
  * "later" held for one launch since LT-502. Apple wants an account made in
  * the app deletable in the app, so the account can be deleted from here
  * (a reviewer with no Israeli mobile gets no further).
+ *
+ * LT-677: once the server opens a country abroad, a number there is taken
+ * too. Its code is always an SMS (no WhatsApp choice), sent only by a tap
+ * here, with the same 30 seconds before another. The field starts on the
+ * device's own country when that one is offered: this owner has no phone
+ * yet to go by.
  */
 const PhoneGate: React.FC = () => {
   const { t } = useTranslation();
   const { logout, updateUser } = useAuth();
   const { language } = useTheme();
+  const { abroad } = usePhoneCountries();
   const titleId = useId();
   const [phone, setPhone] = useState('');
   const [codeFor, setCodeFor] = useState<string | null>(null);
@@ -50,6 +58,8 @@ const PhoneGate: React.FC = () => {
   const [wait, setWait] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
+  // One resend at a time: a second tap while the first is on its way asks for nothing.
+  const resending = useRef(false);
 
   useEffect(() => {
     if (wait <= 0) return;
@@ -64,7 +74,7 @@ const PhoneGate: React.FC = () => {
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     setTried(true);
-    if (busy || !checkPhone(phone, 'mobile').valid) return;
+    if (busy || !checkPhone(phone, 'mobile', abroad).valid) return;
     setBusy(true);
     setError(null);
     try {
@@ -81,7 +91,8 @@ const PhoneGate: React.FC = () => {
   };
 
   const resend = async (channel: 'sms' | 'whatsapp') => {
-    if (!codeFor || busy || wait > 0) return;
+    if (!codeFor || busy || wait > 0 || resending.current) return;
+    resending.current = true;
     setError(null);
     setNote(null);
     try {
@@ -92,6 +103,8 @@ const PhoneGate: React.FC = () => {
       codeRef.current?.focus();
     } catch (err) {
       setError(t(gateErrorKey(err)));
+    } finally {
+      resending.current = false;
     }
   };
 
@@ -191,9 +204,12 @@ const PhoneGate: React.FC = () => {
                   <button type="button" onClick={() => void resend('sms')} disabled={busy} className="py-1 font-semibold text-primary dark:text-violet-300 disabled:opacity-50">
                     {t('onboarding.phoneGate.resend')}
                   </button>
-                  <button type="button" onClick={() => void resend('whatsapp')} disabled={busy} className="py-1 font-semibold text-primary dark:text-violet-300 disabled:opacity-50">
-                    {t('onboarding.phoneGate.whatsapp')}
-                  </button>
+                  {/* A code abroad is an SMS only (LT-677). */}
+                  {!isAbroadPhone(codeFor) && (
+                    <button type="button" onClick={() => void resend('whatsapp')} disabled={busy} className="py-1 font-semibold text-primary dark:text-violet-300 disabled:opacity-50">
+                      {t('onboarding.phoneGate.whatsapp')}
+                    </button>
+                  )}
                 </span>
               )}
             </div>
@@ -204,6 +220,7 @@ const PhoneGate: React.FC = () => {
               label={t('onboarding.phoneGate.label')}
               name="phone"
               accept="mobile"
+              defaultCountry={deviceCountry()}
               value={phone}
               showError={tried}
               onChange={(value) => {

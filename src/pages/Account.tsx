@@ -21,6 +21,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
 import { phoneCodeErrorKey, samePhone, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 import { checkPhone, formatPhoneForDisplay, toE164 } from '../utils/phone';
+import { usePhoneCountries } from '../hooks/usePhoneCountries';
 import AppVersionLine from '../components/app/AppVersionLine';
 
 // Native names — a language selector should read in the language it selects.
@@ -36,6 +37,8 @@ const Account: React.FC = () => {
   const { auth, updateUser, updatePassword } = useAuth();
   const { changeLanguage } = useTheme();
   const { t } = useTranslation();
+  // LT-677: the countries opened abroad, whose numbers an owner's phone may also be.
+  const { abroad } = usePhoneCountries();
   // A leads site (LT-199) takes no bookings: its billing card counts leads
   // only, and its owner is notified of new leads only.
   const webConfig = useAppSelector((state) => state.webConfig.data);
@@ -161,10 +164,11 @@ const Account: React.FC = () => {
     setCodeError(null);
     setTriedSave(true);
     // A new number first gets a code (LT-360); the same one saves at once.
-    // A new one must be an Israeli mobile (LT-404): the only kind a code
-    // reaches. The stored number, however it is written, saves as it is.
+    // A new one must be an Israeli mobile (LT-404), or a number of a country
+    // opened abroad (LT-677): the kinds a code reaches. The stored number,
+    // however it is written, saves as it is.
     if (!samePhone(formData.phone, auth.user?.phone)) {
-      if (!checkPhone(formData.phone, 'mobile').valid) return;
+      if (!checkPhone(formData.phone, 'mobile', abroad).valid) return;
       setCodeBusy(true);
       try {
         await sendPhoneCode(formData.phone, 'sms', language);

@@ -9,7 +9,8 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import PhoneInput from '../components/ui/PhoneInput';
 import Button from '../components/ui/Button';
-import { formatPhoneForDisplay, israeliPhoneKind, samePhone, toE164 } from '../utils/phone';
+import { checkPhone, formatPhoneForDisplay, isAbroadPhone, israeliPhoneKind, openAbroadE164, samePhone, toE164 } from '../utils/phone';
+import { usePhoneCountries } from '../hooks/usePhoneCountries';
 import { copyText } from '../utils/copyText';
 import { phoneCodeErrorKey, sendPhoneCode, verifyPhoneCode } from '../services/phoneCodeApi';
 import WebConfigTabs from '../components/settings/WebConfigTabs';
@@ -74,8 +75,13 @@ const contactForForm = (contact: WebConfig['contact']): WebConfig['contact'] => 
 
 // What the server says about the business phone (LT-404), in the owner's words.
 const CONTACT_PHONE_CODES = new Set(['CONTACT_PHONE_INVALID', 'PHONE_NOT_VERIFIED', 'PHONE_MISMATCH']);
-const contactPhoneErrorKey = (code: string): string =>
-  code === 'PHONE_NOT_VERIFIED' ? 'phoneInput.notVerified' : code === 'PHONE_MISMATCH' ? 'phoneInput.mismatch' : 'phoneInput.invalidAny';
+// LT-677: with a country open abroad, "not a valid number" is no longer Israel's alone.
+const contactPhoneErrorKey = (code: string, abroadOpen: boolean): string =>
+  code === 'PHONE_NOT_VERIFIED'
+    ? 'phoneInput.notVerified'
+    : code === 'PHONE_MISMATCH'
+      ? 'phoneInput.mismatch'
+      : abroadOpen ? 'phoneInput.invalidOffered' : 'phoneInput.invalidAny';
 
 /**
  * One topic of the settings page (LT-316): an icon, a title, a line on what
@@ -145,6 +151,10 @@ const Settings: React.FC = () => {
   // the one stored is proven by a code sent to it, as the account's phone
   // is: the save waits here, the code field shows under the number, and
   // the save goes out again with the proof (`contactPhoneToken`).
+  // LT-677: a number of a country opened abroad is taken too. Nothing tells
+  // a mobile from a landline there, so any such number that is neither the
+  // owner's nor the one stored is proven by its code.
+  const { abroad } = usePhoneCountries();
   const [triedSave, setTriedSave] = useState(false);
   const [phoneCodeFor, setPhoneCodeFor] = useState<string | null>(null);
   const [phoneCode, setPhoneCode] = useState('');
@@ -332,7 +342,9 @@ const Settings: React.FC = () => {
     // Any valid Israeli number, mobile or landline (LT-404). The field shows
     // its own message; this entry keeps the save shut meanwhile.
     // Empty is allowed since LT-518: the site then shows the owner's own.
-    phone: (value) => (!value?.trim() || israeliPhoneKind(value) ? null : t('phoneInput.invalidAny')),
+    // LT-677: or a valid number of a country opened abroad.
+    phone: (value) =>
+      !value?.trim() || checkPhone(value, 'any', abroad).valid ? null : t(abroad.length ? 'phoneInput.invalidOffered' : 'phoneInput.invalidAny'),
 
     mail: (value) =>
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? t('validation.emailInvalid') : null,
@@ -389,11 +401,12 @@ const Settings: React.FC = () => {
 
     // A new mobile that is not the owner's own first gets a code (LT-404).
     // A landline cannot take one and needs none; the stored number and the
-    // owner's (proven when it was set) need none either.
+    // owner's (proven when it was set) need none either. Abroad every
+    // number does (LT-677): there is no landline to exempt.
     const typedPhone = localWebConfig.contact?.phone;
     const needsCode =
       !contactPhoneToken &&
-      israeliPhoneKind(typedPhone) === 'mobile' &&
+      (israeliPhoneKind(typedPhone) === 'mobile' || !!openAbroadE164(typedPhone, abroad)) &&
       !samePhone(typedPhone, webConfig?.contact?.phone) &&
       !samePhone(typedPhone, auth.user?.phone);
     if (needsCode) {
@@ -479,7 +492,7 @@ const Settings: React.FC = () => {
       if (updateWebConfig.rejected.match(res)) {
         const code = res.error?.code;
         if (code && CONTACT_PHONE_CODES.has(code)) {
-          const message = t(contactPhoneErrorKey(code));
+          const message = t(contactPhoneErrorKey(code, abroad.length > 0));
           setContactPhoneError(message);
           clearPhoneCode();
           setActiveTab('contact');
@@ -948,7 +961,7 @@ const Settings: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Phone} title={t('settings.contactTitle')} description={t('settings.sections.contactDesc')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Mobile or landline, Israeli (LT-404); empty is the owner's own (LT-518). */}
+                {/* Mobile or landline, Israeli (LT-404), or a number of a country opened abroad (LT-677); empty is the owner's own (LT-518). */}
                 <div className="space-y-1">
                   <PhoneInput
                     label={t('settings.phone')}
@@ -984,7 +997,7 @@ const Settings: React.FC = () => {
               {phoneCodeFor && (
                 <div className="space-y-3 max-w-md" data-testid="contact-phone-code">
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {t('phoneInput.businessCodeHint')} {t('account.phoneCode.sent', { phone: formatPhoneForDisplay(phoneCodeFor) })}
+                    {t(isAbroadPhone(phoneCodeFor) ? 'phoneInput.businessCodeHintAbroad' : 'phoneInput.businessCodeHint')} {t('account.phoneCode.sent', { phone: formatPhoneForDisplay(phoneCodeFor) })}
                   </p>
                   <Input
                     id="contact-phone-code"

@@ -7,24 +7,85 @@
  * (lightor-back utils/phoneHelper.ts), so the dashboard and the API agree on
  * what is one number.
  */
-import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
+import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js/min';
 
 export type PhoneKind = 'mobile' | 'landline';
+
+/** Home: the country a number written locally is read in unless a field says otherwise. */
+export const HOME_COUNTRY = 'IL';
+
+/**
+ * LT-677: the countries a phone field can offer, Israel and the ones the
+ * app knows abroad: the calling code, and how a local number is written
+ * there (the field's placeholder). Which of them are open is the server's
+ * word (services/phoneCountries).
+ */
+export const PHONE_COUNTRY_DATA: Readonly<Record<string, { dialCode: string; placeholder: string }>> = {
+  IL: { dialCode: '972', placeholder: '050-123-4567' },
+  US: { dialCode: '1', placeholder: '(212) 555-0123' },
+};
 
 /**
  * The one stored form, E.164, read as Israeli when written locally. Takes
  * "050-123 4567", "00972…", "+972 050…" (the trunk 0 kept after the country
  * code) and "972…" without a plus. Null when it is no valid number.
+ *
+ * LT-677: `country` is the country a local number is read in when it is not
+ * Israel (a field's chip): "(212) 555-0123" read in the US is "+12125550123".
+ * A number written with "+" or "00" is its own country's whatever is passed.
  */
-export const toE164 = (phone: string | null | undefined): string | null => {
+export const toE164 = (phone: string | null | undefined, country: string = HOME_COUNTRY): string | null => {
   let raw = String(phone ?? '').trim();
   if (!raw) return null;
   raw = raw.replace(/[^\d+]/g, '');
   if (raw.startsWith('00')) raw = `+${raw.slice(2)}`;
-  if (/^\+?9720\d/.test(raw)) raw = `+972${raw.replace(/^\+?9720/, '')}`;
-  else if (/^972\d{8,9}$/.test(raw)) raw = `+${raw}`;
-  const parsed = parsePhoneNumberFromString(raw, 'IL');
+  if (country === HOME_COUNTRY) {
+    if (/^\+?9720\d/.test(raw)) raw = `+972${raw.replace(/^\+?9720/, '')}`;
+    else if (/^972\d{8,9}$/.test(raw)) raw = `+${raw}`;
+  } else if (/^\+9720\d/.test(raw)) {
+    // Without a plus, "972…" is a local number there (972 is a Texas area code).
+    raw = `+972${raw.slice(5)}`;
+  }
+  const parsed = parsePhoneNumberFromString(raw, country as CountryCode);
   return parsed?.isValid() ? parsed.format('E.164') : null;
+};
+
+/**
+ * The country of a valid number ("IL", "US", "CA": what libphonenumber says,
+ * so +1 is not always the US), read as `toE164` reads it. Null when it is no
+ * valid number.
+ */
+export const phoneCountryOf = (phone: string | null | undefined): string | null => {
+  const e164 = toE164(phone);
+  return (e164 && parsePhoneNumberFromString(e164)?.country) || null;
+};
+
+/** A valid number outside Israel. */
+export const isAbroadPhone = (phone: string | null | undefined): boolean => {
+  const country = phoneCountryOf(phone);
+  return !!country && country !== HOME_COUNTRY;
+};
+
+/**
+ * LT-677: a number of one of the countries opened abroad, in E.164 (the only
+ * form the API takes a number abroad in); null for anything else, an Israeli
+ * number included.
+ */
+export const openAbroadE164 = (phone: string | null | undefined, abroad: readonly string[]): string | null => {
+  if (!abroad.length) return null;
+  const e164 = toE164(phone);
+  const country = e164 && parsePhoneNumberFromString(e164)?.country;
+  return e164 && country && country !== HOME_COUNTRY && abroad.includes(country) ? e164 : null;
+};
+
+/**
+ * The device's region ("en-US" is "US"): the first guess at the country of
+ * a new owner who has no phone yet (LT-677). Null when the language names none.
+ */
+export const deviceCountry = (): string | null => {
+  const language = typeof navigator === 'undefined' ? '' : navigator.language ?? '';
+  const region = /[-_]([A-Za-z]{2})(?:[-_]|$)/.exec(language)?.[1];
+  return region ? region.toUpperCase() : null;
 };
 
 /**
@@ -44,19 +105,34 @@ export const israeliPhoneKind = (phone: string | null | undefined): PhoneKind | 
  * Which numbers a field takes: an Israeli mobile only, any Israeli number
  * (mobile or landline), or any valid number in the world (LT-407: a
  * customer of a business abroad; written locally it is read as Israeli).
+ * LT-677: `mobile` (an owner's phone) and `any` (a business's) also take a
+ * valid number of a country opened abroad, where nothing tells a mobile
+ * from a landline.
  */
 export type PhoneAccept = 'mobile' | 'any' | 'world';
 
 export interface PhoneChangeInfo {
   valid: boolean;
+  /** An Israeli number's kind; null for a number abroad. */
   kind: PhoneKind | null;
 }
 
-/** Whether a value is a number a field taking `accept` takes, and its kind. */
-export const checkPhone = (value: string | null | undefined, accept: PhoneAccept): PhoneChangeInfo => {
-  const kind = israeliPhoneKind(value);
-  if (accept === 'world') return { valid: !!toE164(value), kind };
-  return { valid: !!kind && (accept === 'any' || kind === 'mobile'), kind };
+/**
+ * Whether a value is a number a field taking `accept` takes, and its kind.
+ * `abroad` is the countries opened abroad (none: Israel only, as before
+ * LT-677); `country` is the one a local number is read in (a field's chip).
+ */
+export const checkPhone = (
+  value: string | null | undefined,
+  accept: PhoneAccept,
+  abroad: readonly string[] = [],
+  country: string = HOME_COUNTRY
+): PhoneChangeInfo => {
+  const e164 = toE164(value, country);
+  const kind = israeliPhoneKind(e164);
+  if (accept === 'world') return { valid: !!e164, kind };
+  if (kind) return { valid: accept === 'any' || kind === 'mobile', kind };
+  return { valid: !!openAbroadE164(e164, abroad), kind: null };
 };
 
 /** Two writings of one number ("050-1234567", "+972501234567") are one number. */

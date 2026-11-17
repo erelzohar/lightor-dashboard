@@ -8,6 +8,7 @@ import { UserPlus } from 'lucide-react';
 import Input from '../ui/Input';
 import PhoneInput from '../ui/PhoneInput';
 import { toE164 } from '../../utils/phone';
+import { usePhoneCountries } from '../../hooks/usePhoneCountries';
 import Button from '../ui/Button';
 import ToggleSwitch from '../ui/ToggleSwitch';
 import { createCustomer, isApiErrorCode } from '../../services/customersApi';
@@ -29,6 +30,8 @@ interface AddCustomerModalProps {
 
 const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSaved, onExists, leadsSite = false }) => {
   const { t } = useTranslation();
+  // LT-677: with a country open abroad the field's chip says where a local number is read.
+  const { abroad } = usePhoneCountries();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', blockNow: false, notes: '' });
   // The phone field's own error shows once a save was tried (LT-407).
@@ -128,7 +131,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({ open, onClose, onSa
                 onChange={(phone) => set('phone', phone)}
                 showError={tried}
                 required
-                helperText={t('customers.add.phoneHint')}
+                helperText={t(abroad.length ? 'customers.add.phoneHintCountries' : 'customers.add.phoneHint')}
               />
               <div>
                 <label htmlFor={notesId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">

@@ -844,6 +844,8 @@
       "label": "Code de vérification",
       "confirm": "Confirmer et enregistrer",
       "israelOnly": "Un numéro de mobile israélien (05X) uniquement",
+      "offeredOnly": "Un code ne peut être envoyé qu’à un mobile israélien, ou à un numéro de l’un des pays de la liste.",
+      "sendFailed": "Impossible d’envoyer un code. Réessayez dans un petit moment.",
       "dailyCap": "Trop de codes ont été envoyés à ce numéro aujourd’hui. Réessayez demain.",
       "wait": "Vous pouvez demander un nouveau code toutes les 30 secondes.",
       "tooManyTries": "Trop d’essais. Enregistrez à nouveau pour un nouveau code.",
@@ -2090,6 +2092,7 @@
       "name": "Nom",
       "phone": "Téléphone",
       "phoneHint": "Numéros israéliens au format 05X… ; ajoutez l’indicatif pour les autres",
+      "phoneHintCountries": "Un numéro sans indicatif est lu dans le pays choisi ; ajoutez l’indicatif pour les autres",
       "notes": "Notes (facultatif)",
       "blockNow": "Bloquer immédiatement",
       "blockNowHint": "Refuser les réservations en ligne de ce numéro",
@@ -2858,7 +2861,19 @@
     "accountLimit": "Ce numéro a déjà 3 comptes. Connectez-vous à l’un d’eux, ou supprimez celui dont vous n’avez plus besoin.",
     "mismatch": "Le code a été confirmé pour un autre numéro. Enregistrez à nouveau pour recevoir un nouveau code.",
     "businessCodeHint": "Pour afficher sur votre site un mobile qui n'est pas le vôtre, confirmez-le avec un code.",
-    "invalidWorld": "Saisissez un numéro valide : israélien, ou avec son indicatif pays (ex. +1)"
+    "invalidWorld": "Saisissez un numéro valide : israélien, ou avec son indicatif pays (ex. +1)",
+    "countryUS": "États-Unis (+1)",
+    "names": {
+      "IL": "Israël",
+      "US": "États-Unis"
+    },
+    "chooseCountry": "Pays",
+    "invalidAbroad": "Saisissez un numéro de téléphone valide pour le pays choisi",
+    "invalidWorldAbroad": "Saisissez un numéro valide : du pays choisi, ou avec son indicatif pays (ex. +44)",
+    "invalidOffered": "Saisissez un numéro de téléphone valide de l’un des pays de la liste",
+    "businessCodeHintAbroad": "Pour afficher sur votre site un numéro qui n'est pas le vôtre, confirmez-le avec un code.",
+    "checkTitle": "Une courte vérification avant l’envoi du code",
+    "checkClose": "Fermer"
   },
   "support": {
     "report": {

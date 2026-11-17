@@ -21,6 +21,7 @@ import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
 import { businessTimeZone, zonedDateOf, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { classDayStatus, dayStatus, freeSlots, sessionsOnDay, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { formatPhoneForDisplay, toE164 } from '../../utils/phone';
+import { usePhoneCountries } from '../../hooks/usePhoneCountries';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ChoiceSummary, DayTimes, MonthDays, ServicePicker } from './BookingSteps';
 import { ANSWER_MAX_LENGTH, CONFIRM_YES, answerText, fieldsForService, isAddressAnswer, type AddressAnswer } from '../../utils/bookingFields';
@@ -112,6 +113,8 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
   const { t } = useTranslation();
   const { direction } = useTheme();
   const { auth } = useAuth();
+  // LT-677: with a country open abroad the walk-in field's chip says where a local number is read.
+  const { abroad } = usePhoneCountries();
   const dispatch = useAppDispatch();
   const allTypes = useAppSelector((s) => s.appointments.appointmentTypes);
   // A service saved on a leads site has no duration (LT-199): the server
@@ -569,7 +572,7 @@ const OwnerBookingModal: React.FC<OwnerBookingModalProps> = ({ open, customer, p
                     onChange={(value) => setPhone(value)}
                     required
                     autoComplete="off"
-                    helperText={t('customers.add.phoneHint')}
+                    helperText={t(abroad.length ? 'customers.add.phoneHintCountries' : 'customers.add.phoneHint')}
                   />
                 </>
               )}

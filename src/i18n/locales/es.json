@@ -844,6 +844,8 @@
       "label": "Código de verificación",
       "confirm": "Confirmar y guardar",
       "israelOnly": "Solo un número de móvil israelí (05X)",
+      "offeredOnly": "Solo se puede enviar un código a un móvil israelí, o a un número de uno de los países de la lista.",
+      "sendFailed": "No pudimos enviar un código. Inténtalo de nuevo en un rato.",
       "dailyCap": "Se enviaron demasiados códigos a este número hoy. Inténtalo mañana.",
       "wait": "Puedes pedir un código nuevo cada 30 segundos.",
       "tooManyTries": "Demasiados intentos. Guarda de nuevo para recibir otro código.",
@@ -2090,6 +2092,7 @@
       "name": "Nombre",
       "phone": "Teléfono",
       "phoneHint": "Números israelíes como 05X…; añade el prefijo de país para otros",
+      "phoneHintCountries": "Un número sin prefijo de país se lee en el país elegido; añade el prefijo de país para otros",
       "notes": "Notas (opcional)",
       "blockNow": "Bloquear de inmediato",
       "blockNowHint": "Rechazar reservas en línea desde este número",
@@ -2858,7 +2861,19 @@
     "accountLimit": "Este número ya tiene 3 cuentas. Inicia sesión en una de ellas o elimina la que ya no necesites.",
     "mismatch": "El código se confirmó para otro número. Vuelve a guardar para recibir un código nuevo.",
     "businessCodeHint": "Para mostrar en tu sitio un móvil que no es el tuyo, confírmalo con un código.",
-    "invalidWorld": "Introduce un número válido: israelí, o con el prefijo del país (p. ej. +1)"
+    "invalidWorld": "Introduce un número válido: israelí, o con el prefijo del país (p. ej. +1)",
+    "countryUS": "Estados Unidos (+1)",
+    "names": {
+      "IL": "Israel",
+      "US": "Estados Unidos"
+    },
+    "chooseCountry": "País",
+    "invalidAbroad": "Introduce un número de teléfono válido del país elegido",
+    "invalidWorldAbroad": "Introduce un número válido: del país elegido, o con el prefijo del país (p. ej. +44)",
+    "invalidOffered": "Introduce un número de teléfono válido de uno de los países de la lista",
+    "businessCodeHintAbroad": "Para mostrar en tu sitio un número que no es el tuyo, confírmalo con un código.",
+    "checkTitle": "Una comprobación rápida antes de enviar el código",
+    "checkClose": "Cerrar"
   },
   "support": {
     "report": {

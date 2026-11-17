@@ -50,6 +50,7 @@ import AppUrlOpenListener from './components/routing/AppUrlOpenListener';
 import LiveUpdateGate from './components/app/LiveUpdateGate';
 import AppLockGate from './components/app/AppLockGate';
 import AppLockOffer from './components/app/AppLockOffer';
+import PhonesAbroad from './components/app/PhonesAbroad';
 import InstagramCallback from './pages/InstagramCallback';
 import ErrorBoundaryWithLanguage from './components/ui/ErrorBoundary';
 
@@ -82,6 +83,8 @@ function App() {
             {/* LT-617: the apps' Face ID / fingerprint lock, and its one-time offer. */}
             <AppLockGate />
             <AppLockOffer />
+            {/* LT-677: the countries a phone may be from, beyond Israel. */}
+            <PhonesAbroad />
             <AnimatePresence mode="wait">
               <ErrorBoundaryWithLanguage>
                 <Routes>
