@@ -102,18 +102,27 @@ describe('phone helpers abroad (LT-677)', () => {
     expect(formatPhoneForDisplay('+12125550123')).toBe('+1 212 555 0123');
   });
 
-  describe("the device's region", () => {
-    afterEach(() => vi.unstubAllGlobals());
+  describe("the device's country, by its clock", () => {
+    afterEach(() => vi.restoreAllMocks());
     it.each([
-      ['en-US', 'US'],
-      ['he-IL', 'IL'],
-      ['zh-Hant-TW', 'TW'],
-      ['es_mx', 'MX'],
-      ['he', null],
+      ['Asia/Jerusalem', 'IL'],
+      ['America/New_York', 'US'],
+      ['America/Los_Angeles', 'US'],
+      ['America/Indiana/Indianapolis', 'US'],
+      ['Pacific/Honolulu', 'US'],
+      ['America/Toronto', null],
+      ['Europe/London', null],
       ['', null],
-    ])('reads %j as %j', (language, region) => {
-      vi.stubGlobal('navigator', { language });
-      expect(deviceCountry()).toBe(region);
+    ])('reads %j as %j', (timeZone, country) => {
+      vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({ resolvedOptions: () => ({ timeZone }) } as unknown as Intl.DateTimeFormat);
+      expect(deviceCountry()).toBe(country);
+    });
+
+    it('does not go by the language: an English phone in Israel is in Israel', () => {
+      vi.stubGlobal('navigator', { language: 'en-US' });
+      vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({ resolvedOptions: () => ({ timeZone: 'Asia/Jerusalem' }) } as unknown as Intl.DateTimeFormat);
+      expect(deviceCountry()).toBe('IL');
+      vi.unstubAllGlobals();
     });
   });
 });

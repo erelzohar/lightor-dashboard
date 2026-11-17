@@ -70,7 +70,8 @@ beforeEach(() => {
   vi.spyOn(Date, 'now').mockImplementation(() => now);
   post = vi.spyOn(apiClient, 'post').mockResolvedValue({ data: { success: true, phone: US, phoneToken: 'us-proof' } } as never);
   updateUser.mockResolvedValue(undefined);
-  vi.stubGlobal('navigator', { ...navigator, language: 'en-US' });
+  // The device is in the United States, by its clock (deviceCountry reads the time zone).
+  vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({ resolvedOptions: () => ({ timeZone: 'America/New_York' }) } as unknown as Intl.DateTimeFormat);
   setOpenAbroad(['US']);
 });
 
@@ -95,7 +96,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
   });
 
   it('starts on Israel on a device from elsewhere', () => {
-    vi.stubGlobal('navigator', { ...navigator, language: 'he-IL' });
+    vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({ resolvedOptions: () => ({ timeZone: 'Asia/Jerusalem' }) } as unknown as Intl.DateTimeFormat);
     render(<PhoneGate />);
     expect(screen.getByTestId('phone-country')).toHaveAttribute('data-country', 'IL');
   });

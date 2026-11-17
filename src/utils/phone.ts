@@ -78,14 +78,29 @@ export const openAbroadE164 = (phone: string | null | undefined, abroad: readonl
   return e164 && country && country !== HOME_COUNTRY && abroad.includes(country) ? e164 : null;
 };
 
+/** The United States' time zones (IANA names), beside the `America/Indiana/...` style families below. */
+const US_ZONES: ReadonlySet<string> = new Set([
+  'America/New_York', 'America/Detroit', 'America/Chicago', 'America/Menominee', 'America/Denver', 'America/Boise',
+  'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'America/Juneau', 'America/Sitka', 'America/Metlakatla',
+  'America/Yakutat', 'America/Nome', 'America/Adak', 'Pacific/Honolulu',
+]);
+
 /**
- * The device's region ("en-US" is "US"): the first guess at the country of
- * a new owner who has no phone yet (LT-677). Null when the language names none.
+ * Where the device is, by its clock: the first guess at the country of a
+ * new owner who has no phone yet (LT-677). The time zone, not the language:
+ * many phones in Israel are set to English ("en-US"), and their owners are
+ * not in the United States. Null when the zone names no country we know.
  */
 export const deviceCountry = (): string | null => {
-  const language = typeof navigator === 'undefined' ? '' : navigator.language ?? '';
-  const region = /[-_]([A-Za-z]{2})(?:[-_]|$)/.exec(language)?.[1];
-  return region ? region.toUpperCase() : null;
+  let zone = '';
+  try {
+    zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+  } catch {
+    return null;
+  }
+  if (zone === 'Asia/Jerusalem' || zone === 'Asia/Tel_Aviv') return 'IL';
+  if (US_ZONES.has(zone) || /^America\/(Indiana|Kentucky|North_Dakota)\//.test(zone) || /^US\//.test(zone)) return 'US';
+  return null;
 };
 
 /**
