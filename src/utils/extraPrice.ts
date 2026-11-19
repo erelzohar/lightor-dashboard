@@ -48,10 +48,10 @@ export const offerExtraPrice = (
 };
 
 /**
- * LT-695: the country the plans' prices and the checkout are asked for: the
- * business's own when it is outside Israel. An Israeli business, or one with
- * no business phone yet, names none, and Paddle goes by where the browser
- * is, exactly as before.
+ * LT-695: the country the plans' prices are asked for: the business's own
+ * when it is outside Israel (the server sells that business the same
+ * country's price). An Israeli business, or one with no business phone yet,
+ * names none, and Paddle goes by where the browser is, exactly as before.
  */
 export const checkoutCountry = (billingCountry: string | null | undefined): string | null =>
   billingCountry && billingCountry !== 'IL' ? billingCountry : null;

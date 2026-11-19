@@ -82,9 +82,12 @@ export interface UpgradePlan {
  * server's to say, per checkout — see `createCheckout`.
  *
  * LT-695: `country` is the business's country when it is outside Israel
- * (`checkoutCountry` in utils/extraPrice): Paddle then answers with that country's price (a
- * dollar one for the United States) wherever the owner happens to be. With
- * none, Paddle goes by where the browser is, as it always did.
+ * (`checkoutCountry` in utils/extraPrice): Paddle then answers with that
+ * country's price (a dollar one for the United States) wherever the owner
+ * happens to be, which is the price the server sells that business (its
+ * checkout transaction carries the country's price itself, so the checkout
+ * needs no country from here). With none, Paddle goes by where the browser
+ * is, as it always did.
  */
 export async function fetchUpgradePlans(country?: string | null): Promise<UpgradePlan[]> {
   const planOf = new Map<string, PaidPlan>();
@@ -177,12 +180,6 @@ const CHECKOUT_LOCALES = ['en', 'ar', 'fr', 'es'];
 export async function openInlineCheckout(opts: {
   transactionId: string;
   email?: string;
-  /**
-   * LT-695: the business's country outside Israel (`checkoutCountry`): the
-   * checkout opens on it, so it charges the price the plans showed. Paddle
-   * takes a country only together with an email.
-   */
-  country?: string | null;
   /** The dashboard's language — the checkout's too, when Paddle speaks it. */
   language?: string;
   frameTarget: string;
@@ -200,9 +197,7 @@ export async function openInlineCheckout(opts: {
   pendingCompletedCallback = opts.onCompleted ?? null;
   paddle.Checkout.open({
     transactionId: opts.transactionId,
-    ...(opts.email
-      ? { customer: { email: opts.email, ...(opts.country ? { address: { countryCode: opts.country } } : {}) } }
-      : {}),
+    ...(opts.email ? { customer: { email: opts.email } } : {}),
     settings: {
       displayMode: 'inline',
       variant: 'express',

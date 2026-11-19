@@ -127,11 +127,10 @@ describe('fetchPortalLinks', () => {
 });
 
 /**
- * LT-695: a business outside Israel is shown, and sold, its own country's
- * price: Paddle is asked for that country, wherever the owner's browser is.
+ * LT-695: a business outside Israel is shown its own country's price:
+ * Paddle is asked for that country, wherever the owner's browser is.
  */
-describe('prices and the checkout for a country (LT-695)', () => {
-  const frame = { frameTarget: 'paddle-checkout-frame', theme: 'light' as const };
+describe('prices for a country (LT-695)', () => {
   const preview = (currencyCode: string, total: string, formatted: string) => ({
     data: {
       currencyCode,
@@ -160,17 +159,5 @@ describe('prices and the checkout for a country (LT-695)', () => {
     await fetchUpgradePlans();
     await fetchUpgradePlans(null);
     for (const [request] of paddle.PricePreview.mock.calls) expect(request).not.toHaveProperty('address');
-  });
-
-  it('opens the checkout on the country, beside the owner`s email', async () => {
-    await openInlineCheckout({ transactionId: 'txn_01', email: 'owner@biz.co', country: 'US', ...frame });
-    expect(paddle.Checkout.open.mock.calls[0][0].customer).toEqual({ email: 'owner@biz.co', address: { countryCode: 'US' } });
-  });
-
-  it('leaves the customer as it was with no country, and sends no country without an email', async () => {
-    await openInlineCheckout({ transactionId: 'txn_01', email: 'owner@biz.co', country: null, ...frame });
-    expect(paddle.Checkout.open.mock.calls[0][0].customer).toEqual({ email: 'owner@biz.co' });
-    await openInlineCheckout({ transactionId: 'txn_01', country: 'US', ...frame });
-    expect(paddle.Checkout.open.mock.calls[1][0]).not.toHaveProperty('customer');
   });
 });

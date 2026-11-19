@@ -889,7 +889,7 @@ describe('BillingSection with two plans', () => {
 /**
  * LT-695 (the US plan's phase 2): a business in the United States sees and
  * pays dollars. The plans' prices are asked of Paddle for the business's
- * country, the checkout opens on it, and an extra booking is priced in the
+ * country (the server sells that country's price), and an extra booking is priced in the
  * currency the plans are shown in (or, for a subscriber, the subscription's).
  */
 describe('BillingSection for a business in the United States (LT-695)', () => {
@@ -921,16 +921,6 @@ describe('BillingSection for a business in the United States (LT-695)', () => {
     expect(t).not.toHaveBeenCalledWith('billing.planBookingTerms', expect.objectContaining({ price: expect.stringContaining('₪') }));
   });
 
-  it('opens the checkout on the United States', async () => {
-    entitlementsState.data = american();
-    dollars();
-    vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_us', trialDays: 0, firstChargeAt: null });
-    render(<BillingSection />);
-    fireEvent.click((await screen.findAllByRole('button', { name: 'billing.upgrade' }))[0]);
-    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalledTimes(1));
-    expect(openInlineCheckout).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'txn_us', country: 'US' }));
-  });
-
   it('names no price where no extra booking is sold in dollars, and never a shekel one', async () => {
     entitlementsState.data = american({ extraPrices: { ILS: 35 } });
     dollars();
@@ -943,14 +933,10 @@ describe('BillingSection for a business in the United States (LT-695)', () => {
 
   it('an Israeli business names no country: Paddle is asked as it always was, and the price is in shekels', async () => {
     entitlementsState.data = { ...american(), billingCountry: 'IL' };
-    vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_il', trialDays: 0, firstChargeAt: null });
     render(<BillingSection />);
     expect(await screen.findByTestId('plan-booking-terms')).toBeInTheDocument();
     expect(fetchUpgradePlans).toHaveBeenCalledWith(null);
     expect(t).toHaveBeenCalledWith('billing.planBookingTerms', { included: 500, price: '₪0.35' });
-    fireEvent.click(screen.getByRole('button', { name: 'billing.upgrade' }));
-    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalledTimes(1));
-    expect(openInlineCheckout).toHaveBeenCalledWith(expect.objectContaining({ country: null }));
   });
 
   it('a dollar subscriber reads the dollar price and the dollar floor beside the switch', async () => {

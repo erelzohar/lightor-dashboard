@@ -416,8 +416,6 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     void openInlineCheckout({
       transactionId: checkoutTransactionId,
       email: auth.user?.email,
-      // LT-695: the country the plans' prices were asked for.
-      country: checkoutCountry(entitlements?.billingCountry),
       language: i18n.language,
       frameTarget: CHECKOUT_FRAME,
       theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
