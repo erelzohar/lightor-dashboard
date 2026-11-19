@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { initializePaddle } from '@paddle/paddle-js';
 import apiClient from '../../services/apiClient';
 import globals from '../../services/globals';
-import { closeCheckout, createCheckout, fetchPortalLinks, onCheckoutEvent, openInlineCheckout } from '../../services/paddleApi';
+import { closeCheckout, createCheckout, fetchPortalLinks, fetchUpgradePlans, onCheckoutEvent, openInlineCheckout } from '../../services/paddleApi';
 
 const paddle = vi.hoisted(() => ({ Checkout: { open: vi.fn(), close: vi.fn() }, PricePreview: vi.fn() }));
 vi.mock('@paddle/paddle-js', () => ({ initializePaddle: vi.fn(async () => paddle) }));
@@ -123,5 +123,54 @@ describe('fetchPortalLinks', () => {
     vi.spyOn(apiClient, 'post').mockRejectedValue(Object.assign(new Error('Bad Request'), { response: { status: 400 } }));
 
     await expect(fetchPortalLinks()).rejects.toMatchObject({ response: { status: 400 } });
+  });
+});
+
+/**
+ * LT-695: a business outside Israel is shown, and sold, its own country's
+ * price: Paddle is asked for that country, wherever the owner's browser is.
+ */
+describe('prices and the checkout for a country (LT-695)', () => {
+  const frame = { frameTarget: 'paddle-checkout-frame', theme: 'light' as const };
+  const preview = (currencyCode: string, total: string, formatted: string) => ({
+    data: {
+      currencyCode,
+      details: {
+        lineItems: [
+          { price: { id: 'pri_pro_m', billingCycle: { interval: 'month' } }, product: { name: 'Pro' }, unitTotals: { total }, formattedUnitTotals: { total: formatted } },
+        ],
+      },
+    },
+  });
+
+  beforeEach(() => {
+    vi.stubEnv('VITE_PADDLE_PRICE_ID_BASIC', 'pri_pro_m');
+    paddle.PricePreview.mockReset();
+  });
+
+  it('asks for the United States price, and reports it in dollars', async () => {
+    paddle.PricePreview.mockResolvedValue(preview('USD', '4900', '$49.00'));
+    const plans = await fetchUpgradePlans('US');
+    expect(paddle.PricePreview).toHaveBeenCalledWith(expect.objectContaining({ address: { countryCode: 'US' } }));
+    expect(plans).toEqual([expect.objectContaining({ plan: 'pro', priceId: 'pri_pro_m', formatted: '$49.00', amount: 49, currency: 'USD', interval: 'month' })]);
+  });
+
+  it('names no country when none is given: Paddle goes by the browser, as before', async () => {
+    paddle.PricePreview.mockResolvedValue(preview('ILS', '11900', '₪119.00'));
+    await fetchUpgradePlans();
+    await fetchUpgradePlans(null);
+    for (const [request] of paddle.PricePreview.mock.calls) expect(request).not.toHaveProperty('address');
+  });
+
+  it('opens the checkout on the country, beside the owner`s email', async () => {
+    await openInlineCheckout({ transactionId: 'txn_01', email: 'owner@biz.co', country: 'US', ...frame });
+    expect(paddle.Checkout.open.mock.calls[0][0].customer).toEqual({ email: 'owner@biz.co', address: { countryCode: 'US' } });
+  });
+
+  it('leaves the customer as it was with no country, and sends no country without an email', async () => {
+    await openInlineCheckout({ transactionId: 'txn_01', email: 'owner@biz.co', country: null, ...frame });
+    expect(paddle.Checkout.open.mock.calls[0][0].customer).toEqual({ email: 'owner@biz.co' });
+    await openInlineCheckout({ transactionId: 'txn_01', country: 'US', ...frame });
+    expect(paddle.Checkout.open.mock.calls[1][0]).not.toHaveProperty('customer');
   });
 });

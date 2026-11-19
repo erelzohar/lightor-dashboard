@@ -151,7 +151,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
     <NumberFlow
       value={amount}
       locales={locale}
-      format={{ style: 'currency', currency, maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 }}
+      format={{ style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 }}
       className="text-4xl font-semibold"
     />
   );
@@ -224,7 +224,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                       <Icon className="h-3 w-3" aria-hidden="true" />
                     </span>
                     <span className={highlighted ? 'text-white' : 'text-gray-700 dark:text-gray-200'}>
-                      {t(`billing.pricing.rows.${row}.${store && row === 'bookings' && column !== 'free' ? `${column}Store` : column}`, { price: extraPrice })}
+                      {t(`billing.pricing.rows.${row}.${
+                        store && row === 'bookings' && column !== 'free'
+                          ? `${column}Store`
+                          // LT-695: no extra booking is sold in the currency the prices are in.
+                          : !extraPrice && row === 'bookings' && column === 'pro'
+                            ? 'proNoPrice'
+                            : column
+                      }`, { price: extraPrice })}
                     </span>
                   </li>
                 );

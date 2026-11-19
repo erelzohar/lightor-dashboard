@@ -48,7 +48,10 @@ interface PlanCompareProps {
 const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price, leadsSite = false }) => {
   const { t } = useTranslation();
   const rows = leadsSite ? PLAN_ROWS.filter((row) => row !== 'bookings' && row !== 'texts') : PLAN_ROWS;
-  const cell = (row: (typeof PLAN_ROWS)[number], column: PlanColumn) => t(`billing.compare.rows.${row}.${column}`, { price });
+  // LT-695: with no price (no extra booking is sold in the owner's currency) Pro's bookings row names none.
+  const priced = (row: (typeof PLAN_ROWS)[number], column: string) =>
+    !price && row === 'bookings' && column === 'pro' ? 'proNoPrice' : column;
+  const cell = (row: (typeof PLAN_ROWS)[number], column: PlanColumn) => t(`billing.compare.rows.${row}.${priced(row, column)}`, { price });
 
   if (mode === 'includes') {
     return (
@@ -57,7 +60,7 @@ const PlanCompare: React.FC<PlanCompareProps> = ({ mode, plan = 'pro', price, le
         <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 list-disc ps-5">
           {rows.map((row) => (
             // Plain sentences, as on the plan cards (Erel 2026-11-01).
-            <li key={row}>{t(`billing.pricing.rows.${row}.${plan}`, { price })}</li>
+            <li key={row}>{t(`billing.pricing.rows.${row}.${priced(row, plan)}`, { price })}</li>
           ))}
         </ul>
       </div>

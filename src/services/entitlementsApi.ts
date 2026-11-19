@@ -97,7 +97,22 @@ export interface MyEntitlements {
    * `included` bookings a month, then `extraAgorot` each (null while nothing
    * is charged for them). Optional so an older API still parses.
    */
-  bookingTerms?: { included: number; plusIncluded?: number; extraAgorot: number | null };
+  bookingTerms?: {
+    included: number;
+    plusIncluded?: number;
+    extraAgorot: number | null;
+    /**
+     * LT-695: the same price in every currency it is sold in, in minor units
+     * ({ ILS: 35, USD: 17 }); null while nothing is charged. Absent on an older API.
+     */
+    extraPrices?: Record<string, number> | null;
+  };
+  /**
+   * LT-695: the country the business is in (its business phone's: "IL",
+   * "US"); the plans' prices and the checkout are asked for it. Null with no
+   * business phone; absent on an older API.
+   */
+  billingCountry?: string | null;
   /**
    * LT-580: the apps' store - who bills the subscription now ('apple' /
    * 'google', null for the web's card or none), which store products sell
@@ -117,6 +132,12 @@ export interface BookingsMeter {
   periodStart: string;
   periodEnd: string;
   extraAgorot: number | null;
+  /**
+   * LT-695: the price in the subscription's own currency (minor units) and
+   * the smallest total charged; null where `extraAgorot` is, and on a
+   * subscription in a currency with no price. Absent on an older API.
+   */
+  extraPrice?: { amount: number; currency: string; floor: number } | null;
   /** LT-465, a subscriber's period only; absent on an older API. */
   extras?: ExtrasSwitch;
   /** LT-580: the booking packs' bookings left past the included ones, a pack's size, and whether booking is closed now. */

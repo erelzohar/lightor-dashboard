@@ -1117,6 +1117,7 @@
     "bookingsFreeFullDesc": "Tu sitio no acepta nuevas reservas. Pasar a Lightor Pro las reabre ahora: no se cobrará nada antes del {{date}}.",
     "bookingsFreeFullNative": "Tu sitio no recibe reservas nuevas hasta el {{date}}.",
     "planBookingTerms": "Incluye {{included}} reservas al mes. Pasadas esas, si activas las reservas extra, {{price}} cada una, con cobro automático. Si no, al llegar a {{included}} tu sitio deja de recibir reservas hasta el mes siguiente.",
+    "planBookingTermsNoPrice": "Incluye {{included}} reservas al mes. Al llegar a {{included}} tu sitio deja de recibir reservas hasta el mes siguiente.",
     "extras": {
       "label": "Cobro automático de reservas extra",
       "offShort": "Desactivado",
@@ -1132,7 +1133,7 @@
       "onSince": "Activado el {{date}}",
       "offSince": "Desactivado el {{date}}",
       "confirmOnTitle": "¿Activar las reservas extra?",
-      "confirmOnBody": "Pasadas {{included}} reservas por periodo, cada reserva extra costará {{price}}, cobrada al terminar el mes (menos de 10 ₪ pasa al mes siguiente). Puedes desactivarlo cuando quieras.",
+      "confirmOnBody": "Pasadas {{included}} reservas por periodo, cada reserva extra costará {{price}}, cobrada al terminar el mes (menos de {{floor}} pasa al mes siguiente). Puedes desactivarlo cuando quieras.",
       "confirmOn": "Activar",
       "confirmOffTitle": "¿Desactivar las reservas extra?",
       "confirmOffBody": "Tu sitio deja de recibir reservas ahora mismo, hasta el {{date}}.",
@@ -1163,6 +1164,7 @@
           "free": "Hasta 15 reservas al mes",
           "plus": "Hasta 200 reservas al mes",
           "pro": "500 reservas al mes, luego {{price}} cada una si activas las reservas extra",
+          "proNoPrice": "500 reservas al mes",
           "plusStore": "Hasta 200 reservas al mes, y más en paquetes de 100",
           "proStore": "500 reservas al mes, y más en paquetes de 100"
         },
@@ -1259,7 +1261,8 @@
           "label": "Reservas",
           "free": "15 al mes",
           "plus": "Hasta 200 por período",
-          "pro": "500 por periodo, y luego {{price}} cada una si activas las reservas extra"
+          "pro": "500 por periodo, y luego {{price}} cada una si activas las reservas extra",
+          "proNoPrice": "500 por periodo"
         },
         "inquiries": {
           "label": "Consultas desde el sitio",

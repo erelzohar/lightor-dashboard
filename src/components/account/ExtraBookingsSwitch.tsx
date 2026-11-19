@@ -10,6 +10,8 @@ interface ExtraBookingsSwitchProps {
   bookings: BookingsMeter;
   /** What one extra booking costs, written in the page's language. */
   price: string;
+  /** LT-695: the smallest total charged, as text ("₪10"); a smaller one moves on to the next month. */
+  floor: string;
   /** The day the next period starts, written in the page's language. */
   periodEnd: string | null;
   dateLocale: string;
@@ -27,6 +29,7 @@ interface ExtraBookingsSwitchProps {
 const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
   bookings,
   price,
+  floor,
   periodEnd,
   dateLocale,
   canSell,
@@ -99,7 +102,7 @@ const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
           : extras.chosen
             // Chosen but held (the free days with a card, a cancel, an unpaid
             // charge): what was chosen, and the line below says why not yet.
-            ? t('billing.extras.confirmOnBody', { included, price })
+            ? t('billing.extras.confirmOnBody', { included, price, floor })
             : canTurnOn
               ? t('billing.extras.offDesc', { included, price })
               : t('billing.extras.offDescNative', { included })}
@@ -134,7 +137,7 @@ const ExtraBookingsSwitch: React.FC<ExtraBookingsSwitchProps> = ({
         title={t(asking ? 'billing.extras.confirmOnTitle' : 'billing.extras.confirmOffTitle')}
         message={
           asking
-            ? t('billing.extras.confirmOnBody', { included, price })
+            ? t('billing.extras.confirmOnBody', { included, price, floor })
             : extra > 0
               ? t('billing.extras.confirmOffBodyExtra', { date: periodEnd, n: extra })
               : t('billing.extras.confirmOffBody', { date: periodEnd })

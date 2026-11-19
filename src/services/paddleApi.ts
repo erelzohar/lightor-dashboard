@@ -80,8 +80,13 @@ export interface UpgradePlan {
  * Live prices for the configured plans; empty when Paddle is unreachable.
  * No trial is read off the price (LT-265): when the first charge comes is the
  * server's to say, per checkout — see `createCheckout`.
+ *
+ * LT-695: `country` is the business's country when it is outside Israel
+ * (`checkoutCountry` in utils/extraPrice): Paddle then answers with that country's price (a
+ * dollar one for the United States) wherever the owner happens to be. With
+ * none, Paddle goes by where the browser is, as it always did.
  */
-export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
+export async function fetchUpgradePlans(country?: string | null): Promise<UpgradePlan[]> {
   const planOf = new Map<string, PaidPlan>();
   for (const id of [import.meta.env.VITE_PADDLE_PRICE_ID_PLUS_MONTHLY, import.meta.env.VITE_PADDLE_PRICE_ID_PLUS_YEARLY]) {
     if (id) planOf.set(id as string, 'plus');
@@ -97,6 +102,7 @@ export async function fetchUpgradePlans(): Promise<UpgradePlan[]> {
   try {
     const response = await paddle.PricePreview({
       items: priceIds.map((priceId) => ({ priceId, quantity: 1 })),
+      ...(country ? { address: { countryCode: country } } : {}),
     });
 
     return response.data.details.lineItems.map((li) => ({
@@ -171,6 +177,12 @@ const CHECKOUT_LOCALES = ['en', 'ar', 'fr', 'es'];
 export async function openInlineCheckout(opts: {
   transactionId: string;
   email?: string;
+  /**
+   * LT-695: the business's country outside Israel (`checkoutCountry`): the
+   * checkout opens on it, so it charges the price the plans showed. Paddle
+   * takes a country only together with an email.
+   */
+  country?: string | null;
   /** The dashboard's language — the checkout's too, when Paddle speaks it. */
   language?: string;
   frameTarget: string;
@@ -188,7 +200,9 @@ export async function openInlineCheckout(opts: {
   pendingCompletedCallback = opts.onCompleted ?? null;
   paddle.Checkout.open({
     transactionId: opts.transactionId,
-    ...(opts.email ? { customer: { email: opts.email } } : {}),
+    ...(opts.email
+      ? { customer: { email: opts.email, ...(opts.country ? { address: { countryCode: opts.country } } : {}) } }
+      : {}),
     settings: {
       displayMode: 'inline',
       variant: 'express',

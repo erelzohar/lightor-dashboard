@@ -25,6 +25,7 @@ import {
 } from '../../services/paddleApi';
 import { fetchMyEntitlements, MyEntitlements, BookingsMeter } from '../../services/entitlementsApi';
 import ExtraBookingsSwitch from './ExtraBookingsSwitch';
+import { ExtraPrice, checkoutCountry, meterExtraPrice, offerExtraPrice } from '../../utils/extraPrice';
 import PlanChangeModal from './PlanChangeModal';
 import PlanCompare from './PlanCompare';
 import PlainPlans from './PlainPlans';
@@ -128,7 +129,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
       // (LT-310), nor when the account's plan could not be read (LT-315):
       // unknown is not "open", so nothing is offered.
       if (data && !data.complimentary && canOfferPurchases()) {
-        fetchUpgradePlans()
+        // LT-695: a business outside Israel is shown its own country's prices.
+        fetchUpgradePlans(checkoutCountry(data.billingCountry))
           // A failure to load Paddle reads as no plans: "unavailable", never
           // a spinner that turns forever (LT-315).
           .catch((): UpgradePlan[] => [])
@@ -414,6 +416,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     void openInlineCheckout({
       transactionId: checkoutTransactionId,
       email: auth.user?.email,
+      // LT-695: the country the plans' prices were asked for.
+      country: checkoutCountry(entitlements?.billingCountry),
       language: i18n.language,
       frameTarget: CHECKOUT_FRAME,
       theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
@@ -440,22 +444,59 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   // Paddle's numbers in the page's language; the currency is the checkout's.
   const money = (amount: number, currency: string) => {
     try {
-      return new Intl.NumberFormat(dateLocale, { style: 'currency', currency }).format(amount);
+      // The narrow sign: "$" for dollars in every language (never "US$"); "₪" is the same either way.
+      return new Intl.NumberFormat(dateLocale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).format(amount);
     } catch {
       return `${amount} ${currency}`;
     }
   };
-  const termsLine = (included: number, agorot: number) =>
-    t('billing.planBookingTerms', { included, price: money(agorot / 100, 'ILS') });
-  // What one extra booking costs (LT-465), for the switch and the plans.
-  const extraPrice = money((bookings?.extraAgorot ?? bookingTerms?.extraAgorot ?? 35) / 100, 'ILS');
+  // What one extra booking costs (LT-465), in the currency it is charged in
+  // (LT-695). A subscriber's own price is the subscription's (`meterPrice`);
+  // beside the plans on offer it is the one in the currency their prices are
+  // shown in (`offerPrice`), so a business in the United States reads dollars
+  // in both, and the two can never disagree. Null where no extra booking is
+  // sold in that currency: the texts then name no price.
+  const plansCurrency = plans.find((plan) => plan.currency)?.currency ?? null;
+  const meterPrice = meterExtraPrice(bookings);
+  // Until Paddle's prices arrive a business outside Israel has no currency to
+  // go by, and none is guessed: a shekel price must not flash before dollars.
+  const offerCurrency =
+    plansCurrency ?? meterPrice?.currency ?? (checkoutCountry(entitlements?.billingCountry) ? null : 'ILS');
+  const offerPrice: ExtraPrice | null = offerCurrency
+    ? offerExtraPrice(bookingTerms, offerCurrency) ??
+      // As before LT-695: in shekels the price is said even while the server names none.
+      (offerCurrency === 'ILS' ? { amount: 35, currency: 'ILS' } : null)
+    : null;
+  const priceText = (price: ExtraPrice | null) => (price ? money(price.amount / 100, price.currency) : '');
+  const termsLine = (included: number) =>
+    offerPrice
+      ? t('billing.planBookingTerms', { included, price: priceText(offerPrice) })
+      : t('billing.planBookingTermsNoPrice', { included });
+  // For the plans on offer, and for the subscriber's own plan and switch.
+  const extraPrice = priceText(offerPrice);
+  const ownExtraPrice = priceText(meterPrice ?? offerPrice);
+  // The smallest total charged (₪10, or the dollar one); a whole amount drops its ".00".
+  const extraFloor = (() => {
+    const floor = meterPrice?.floor ?? (meterPrice?.currency === 'ILS' ? 1000 : null);
+    if (!meterPrice || !floor) return '';
+    try {
+      return new Intl.NumberFormat(dateLocale, {
+        style: 'currency',
+        currency: meterPrice.currency,
+        currencyDisplay: 'narrowSymbol',
+        minimumFractionDigits: floor % 100 === 0 ? 0 : 2,
+      }).format(floor / 100);
+    } catch {
+      return `${floor / 100} ${meterPrice.currency}`;
+    }
+  })();
   // LT-511: what a plan includes, in what this site does: bookings or inquiries.
   const plusTermsLine = leadsSite
     ? t('billing.planLeadTermsPlus')
     : t('billing.planBookingTermsPlus', { included: bookingTerms?.plusIncluded ?? 200 });
   const proTermsLine = leadsSite
     ? t('billing.planLeadTermsPro')
-    : bookingTerms?.extraAgorot != null ? termsLine(bookingTerms.included, bookingTerms.extraAgorot) : null;
+    : bookingTerms?.extraAgorot != null ? termsLine(bookingTerms.included) : null;
   const currentPlan = entitlements && entitlements.plan !== 'free' ? entitlements.plan : null;
   const otherPlan: PaidPlan = currentPlan === 'plus' ? 'pro' : 'plus';
   const meterChanged = (next: BookingsMeter) =>
@@ -607,10 +648,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
             <>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {/* With the switch (LT-465) the price is said beside it. */}
-                {bookings.extraAgorot !== null && !extras &&
+                {meterPrice && !extras &&
                   `${t('billing.bookingsExtraPrice', {
                     included: bookings.included,
-                    price: money(bookings.extraAgorot / 100, 'ILS'),
+                    price: priceText(meterPrice),
                   })} `}
                 {t('billing.bookingsResets', { date: bookingsPeriodEnd })}
               </p>
@@ -622,7 +663,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               )}
               <ExtraBookingsSwitch
                 bookings={bookings}
-                price={extraPrice}
+                price={ownExtraPrice}
+                floor={extraFloor}
                 periodEnd={bookingsPeriodEnd}
                 dateLocale={dateLocale}
                 canSell={canSell}
@@ -683,7 +725,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               )}
             </div>
             {meters}
-            {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
+            {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={ownExtraPrice} leadsSite={leadsSite} />}
           </div>
         ) : isPaid ? (
           <div className="text-sm text-gray-600 dark:text-gray-300 space-y-3">
@@ -735,7 +777,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* LT-458: the bookings beside the subscription (Erel: only here). */}
                 {meters}
                 {/* What the plan includes (LT-465), in place of "no monthly limits". */}
-                {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={extraPrice} leadsSite={leadsSite} />}
+                {currentPlan && <PlanCompare mode="includes" plan={currentPlan} price={ownExtraPrice} leadsSite={leadsSite} />}
                 {/* LT-580: an app subscription is managed in its store, with its booking packs. */}
                 {billedByStore && (storePlans ?? storeNote)}
                 {/* LT-504: to the other plan, on the web only (LT-130). */}

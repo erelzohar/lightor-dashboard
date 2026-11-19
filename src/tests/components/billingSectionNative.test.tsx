@@ -885,3 +885,110 @@ describe('BillingSection with two plans', () => {
     expect(screen.queryByTestId('plan-change')).toBeNull();
   });
 });
+
+/**
+ * LT-695 (the US plan's phase 2): a business in the United States sees and
+ * pays dollars. The plans' prices are asked of Paddle for the business's
+ * country, the checkout opens on it, and an extra booking is priced in the
+ * currency the plans are shown in (or, for a subscriber, the subscription's).
+ */
+describe('BillingSection for a business in the United States (LT-695)', () => {
+  const dollars = () =>
+    vi.mocked(fetchUpgradePlans).mockResolvedValueOnce([
+      { plan: 'plus', priceId: 'plus_m', productName: 'Plus', formatted: '$29.00', amount: 29, currency: 'USD', interval: 'month' },
+      { plan: 'pro', priceId: 'pro_m', productName: 'Pro', formatted: '$49.00', amount: 49, currency: 'USD', interval: 'month' },
+    ]);
+  const american = (terms: Record<string, unknown> = {}): Record<string, unknown> => ({
+    ...freeEntitlements(),
+    billingCountry: 'US',
+    bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35, extraPrices: { ILS: 35, USD: 17 }, ...terms },
+  });
+
+  beforeEach(() => {
+    authState.subscription = { status: 'free' };
+    vi.mocked(fetchUpgradePlans).mockClear();
+    vi.mocked(openInlineCheckout).mockClear();
+    t.mockClear();
+  });
+
+  it('asks Paddle for the United States prices, and prices an extra booking in dollars', async () => {
+    entitlementsState.data = american();
+    dollars();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plan-booking-terms')).toBeInTheDocument();
+    expect(fetchUpgradePlans).toHaveBeenCalledWith('US');
+    expect(t).toHaveBeenCalledWith('billing.planBookingTerms', { included: 500, price: '$0.17' });
+    expect(t).not.toHaveBeenCalledWith('billing.planBookingTerms', expect.objectContaining({ price: expect.stringContaining('₪') }));
+  });
+
+  it('opens the checkout on the United States', async () => {
+    entitlementsState.data = american();
+    dollars();
+    vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_us', trialDays: 0, firstChargeAt: null });
+    render(<BillingSection />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'billing.upgrade' }))[0]);
+    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalledTimes(1));
+    expect(openInlineCheckout).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'txn_us', country: 'US' }));
+  });
+
+  it('names no price where no extra booking is sold in dollars, and never a shekel one', async () => {
+    entitlementsState.data = american({ extraPrices: { ILS: 35 } });
+    dollars();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plan-booking-terms')).toBeInTheDocument();
+    expect(t).toHaveBeenCalledWith('billing.planBookingTermsNoPrice', { included: 500 });
+    expect(t).not.toHaveBeenCalledWith('billing.planBookingTerms', expect.anything());
+    expect(t).toHaveBeenCalledWith('billing.compare.rows.bookings.proNoPrice', { price: '' });
+  });
+
+  it('an Israeli business names no country: Paddle is asked as it always was, and the price is in shekels', async () => {
+    entitlementsState.data = { ...american(), billingCountry: 'IL' };
+    vi.mocked(createCheckout).mockResolvedValue({ transactionId: 'txn_il', trialDays: 0, firstChargeAt: null });
+    render(<BillingSection />);
+    expect(await screen.findByTestId('plan-booking-terms')).toBeInTheDocument();
+    expect(fetchUpgradePlans).toHaveBeenCalledWith(null);
+    expect(t).toHaveBeenCalledWith('billing.planBookingTerms', { included: 500, price: '₪0.35' });
+    fireEvent.click(screen.getByRole('button', { name: 'billing.upgrade' }));
+    await waitFor(() => expect(openInlineCheckout).toHaveBeenCalledTimes(1));
+    expect(openInlineCheckout).toHaveBeenCalledWith(expect.objectContaining({ country: null }));
+  });
+
+  it('a dollar subscriber reads the dollar price and the dollar floor beside the switch', async () => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1', nextBillDate: '2026-11-05' };
+    entitlementsState.data = {
+      plan: 'pro', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 }, pilot: null, billingCountry: 'US',
+      bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35, extraPrices: { ILS: 35, USD: 17 } },
+      bookings: {
+        kind: 'plus', used: 120, included: 500,
+        periodStart: '2026-10-05T10:00:00.000Z', periodEnd: '2026-11-05T10:00:00.000Z',
+        extraAgorot: null, extraPrice: { amount: 17, currency: 'USD', floor: 300 },
+        extras: { chosen: true, on: false, blockedBy: 'trialing', changedAt: null, closed: false },
+      },
+    };
+    dollars();
+    render(<BillingSection />);
+    expect(await screen.findByTestId('bookings-meter')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(t).toHaveBeenCalledWith('billing.extras.confirmOnBody', { included: 500, price: '$0.17', floor: '$3' })
+    );
+  });
+
+  it('a shekel subscriber reads ₪0.35 and ₪10, from a server of before too', async () => {
+    authState.subscription = { status: 'active', customerId: 'ctm_1', nextBillDate: '2026-11-05' };
+    entitlementsState.data = {
+      plan: 'pro', limits: { monthlyAppointments: null }, usage: { appointmentsThisMonth: 0 }, pilot: null,
+      bookingTerms: { included: 500, plusIncluded: 200, extraAgorot: 35 },
+      bookings: {
+        kind: 'plus', used: 120, included: 500,
+        periodStart: '2026-10-05T10:00:00.000Z', periodEnd: '2026-11-05T10:00:00.000Z',
+        extraAgorot: 35,
+        extras: { chosen: true, on: false, blockedBy: 'trialing', changedAt: null, closed: false },
+      },
+    };
+    render(<BillingSection />);
+    expect(await screen.findByTestId('bookings-meter')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(t).toHaveBeenCalledWith('billing.extras.confirmOnBody', { included: 500, price: '₪0.35', floor: '₪10' })
+    );
+  });
+});

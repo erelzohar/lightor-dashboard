@@ -1113,6 +1113,7 @@
     "bookingsFreeFullDesc": "Your site isn't taking new bookings. Moving to Lightor Pro reopens them now - nothing is charged before {{date}}.",
     "bookingsFreeFullNative": "Your site isn't taking new bookings until {{date}}.",
     "planBookingTerms": "Includes {{included}} bookings a month. Past them, if you switch on extra bookings, {{price}} each, charged automatically. Without it, at {{included}} your site stops taking bookings until the next month.",
+    "planBookingTermsNoPrice": "Includes {{included}} bookings a month. At {{included}} your site stops taking bookings until the next month.",
     "extras": {
       "label": "Automatic charge for extra bookings",
       "offShort": "Off",
@@ -1128,7 +1129,7 @@
       "onSince": "Switched on {{date}}",
       "offSince": "Switched off {{date}}",
       "confirmOnTitle": "Switch on extra bookings?",
-      "confirmOnBody": "Past {{included}} bookings a period, each extra booking will cost {{price}}, charged when the month ends (under ₪10 moves on to the next month). You can switch it off any time.",
+      "confirmOnBody": "Past {{included}} bookings a period, each extra booking will cost {{price}}, charged when the month ends (under {{floor}} moves on to the next month). You can switch it off any time.",
       "confirmOn": "Switch on",
       "confirmOffTitle": "Switch off extra bookings?",
       "confirmOffBody": "Your site stops taking bookings right away, until {{date}}.",
@@ -1159,6 +1160,7 @@
           "free": "Up to 15 bookings a month",
           "plus": "Up to 200 bookings a month",
           "pro": "500 bookings a month, then {{price}} each if you switch on extra bookings",
+          "proNoPrice": "500 bookings a month",
           "plusStore": "Up to 200 bookings a month, and more in packs of 100",
           "proStore": "500 bookings a month, and more in packs of 100"
         },
@@ -1255,7 +1257,8 @@
           "label": "Bookings",
           "free": "15 a month",
           "plus": "Up to 200 a period",
-          "pro": "500 a period, then {{price}} each if you switch on extra bookings"
+          "pro": "500 a period, then {{price}} each if you switch on extra bookings",
+          "proNoPrice": "500 a period"
         },
         "inquiries": {
           "label": "Inquiries from the site",
