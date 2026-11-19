@@ -9,10 +9,12 @@ interface TextPanelProps {
   value: string;
   onChange: (value: string) => void;
   onApplyAi: (values: Record<string, string>) => void;
+  /** What else this text's panel offers, under the field (LT-693: the main button's design). */
+  children?: React.ReactNode;
 }
 
 /** LT-249: one text — typed by hand (the preview follows), or rewritten by the AI. */
-const TextPanel: React.FC<TextPanelProps> = ({ path, value, onChange, onApplyAi }) => {
+const TextPanel: React.FC<TextPanelProps> = ({ path, value, onChange, onApplyAi, children }) => {
   const { t } = useTranslation();
   const info = fieldInfo(path);
   const label = fieldLabel(t, path);
@@ -38,6 +40,7 @@ const TextPanel: React.FC<TextPanelProps> = ({ path, value, onChange, onApplyAi 
           </p>
         )}
       </div>
+      {children}
     </div>
   );
 };

@@ -2259,7 +2259,8 @@
       "text": "Text"
     },
     "text": {
-      "count": "{{count}}/{{max}}"
+      "count": "{{count}}/{{max}}",
+      "buttonDesign": "Button design"
     },
     "ai": {
       "send": "Apply",

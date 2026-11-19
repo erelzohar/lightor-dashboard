@@ -5,12 +5,13 @@ import ColorPicker from '../ui/ColorPicker';
 import Select from '../ui/Select';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { getAt, setAt } from '../../utils/editorPaths';
-import { BUTTON_STYLES, CARD_STYLES, FONTS, PRESETS, RADII, THEMES, optionLabel } from '../../utils/editorOptions';
+import { CARD_STYLES, FONTS, PRESETS, RADII, THEMES, optionLabel } from '../../utils/editorOptions';
 import SiteChat from './SiteChat';
 import { aiService } from '../../services/aiApi';
 import { STYLES, stylePicture, withLook } from '../../lib/styles';
 import { vocabLang } from './labels';
-import { ButtonSample, CardSample, CornerSample, FontSample, ThemeSample, useSampleFonts } from './ThemeSamples';
+import { CardSample, CornerSample, FontSample, ThemeSample, useSampleFonts } from './ThemeSamples';
+import ButtonStyleSelect from './ButtonStyleSelect';
 
 interface PagePanelProps<T> {
   config: T;
@@ -162,7 +163,7 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
       <div className="grid grid-cols-2 gap-3">
         {select('headingFont', FONTS, t('siteEditor.theme.headingFont'), (v) => <FontSample font={v} rtl={siteRtl} />)}
         {select('bodyFont', FONTS, t('siteEditor.theme.bodyFont'), (v) => <FontSample font={v} rtl={siteRtl} body />)}
-        {select('buttonStyle', BUTTON_STYLES, t('siteEditor.theme.buttons'), (v) => <ButtonSample style={v} color={primary} />)}
+        <ButtonStyleSelect id="site-theme-buttonStyle" label={t('siteEditor.theme.buttons')} value={design.buttonStyle ?? ''} color={primary} onChange={(v) => setToken('buttonStyle', v)} />
         {select('borderRadius', RADII, t('siteEditor.theme.corners'), (v) => <CornerSample radius={v} />)}
         {select('cardStyle', CARD_STYLES, t('siteEditor.theme.cards'), (v) => <CardSample card={v} />)}
         {select('defaultTheme', THEMES, t('siteEditor.theme.mode'), (v) => <ThemeSample mode={v} />)}

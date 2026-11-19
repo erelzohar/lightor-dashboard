@@ -2263,7 +2263,8 @@
       "text": "Texto"
     },
     "text": {
-      "count": "{{count}}/{{max}}"
+      "count": "{{count}}/{{max}}",
+      "buttonDesign": "Diseño del botón"
     },
     "ai": {
       "send": "Aplicar",

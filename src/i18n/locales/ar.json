@@ -2275,7 +2275,8 @@
       "text": "نص"
     },
     "text": {
-      "count": "{{count}}/{{max}}"
+      "count": "{{count}}/{{max}}",
+      "buttonDesign": "تصميم الزر"
     },
     "ai": {
       "send": "تطبيق",

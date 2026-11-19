@@ -212,6 +212,44 @@ describe('the site editor (LT-249)', () => {
     expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toHaveValue('Old title');
   });
 
+  // LT-693 (Erel 2026-11-19): "תוסיף בחירת עיצוב בעמוד הכפתור".
+  describe("the main button's design in its own panel (LT-693)", () => {
+    const withCta = { ...saved, components: { ...saved.components, hero: { ...saved.components.hero, cta: 'Book' } } } as unknown as WebConfig;
+    const designOf = () => (lastPosted('PREVIEW_DATA')?.[0] as { config: WebConfig }).config.design as Record<string, unknown>;
+
+    it("is offered under the opening's button words, and is the design tab's own choice", async () => {
+      state.webConfig.data = withCta;
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.cta', section: 'b1', sectionType: 'hero', count: 1 });
+      expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.heroCta' })).toHaveValue('Book');
+      const choice = screen.getByLabelText('siteEditor.text.buttonDesign');
+      expect(choice).toHaveTextContent('siteEditor.theme.byStyle');
+      choose(choice, 'outline');
+      await waitFor(() => expect(designOf().buttonStyle).toBe('outline'));
+      expect(screen.getByLabelText('siteEditor.text.buttonDesign')).toHaveTextContent('מסגרת');
+      // The words are untouched, and the design tab shows the same choice.
+      expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroCta' })).toHaveValue('Book');
+      fireEvent.click(screen.getByLabelText('siteEditor.close'));
+      await waitFor(() => expect(screen.getByLabelText('siteEditor.theme.buttons')).toHaveTextContent('מסגרת'));
+      // Back to the style's own: the token is gone again.
+      choose(screen.getByLabelText('siteEditor.theme.buttons'), '');
+      await waitFor(() => expect(designOf().buttonStyle).toBeUndefined());
+    });
+
+    it("is not offered for the menu's button (its look is its own) nor for another text", async () => {
+      state.webConfig.data = withCta;
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.cta', section: 'navbar', sectionType: 'navbar', count: 1 });
+      expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.heroCta' })).toBeInTheDocument();
+      expect(screen.queryByLabelText('siteEditor.text.buttonDesign')).toBeNull();
+      await fromSite({ type: 'LT_SELECT', kind: 'text', path: 'components.hero.title', section: 'b1', sectionType: 'hero', count: 1 });
+      expect(await screen.findByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toBeInTheDocument();
+      expect(screen.queryByLabelText('siteEditor.text.buttonDesign')).toBeNull();
+    });
+  });
+
   it('Save sends only what the editor edits, and the draft starts over from the stored config', async () => {
     renderEditor();
     await fromSite({ type: 'LT_READY' });

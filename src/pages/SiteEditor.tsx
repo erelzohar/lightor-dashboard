@@ -30,6 +30,7 @@ import { isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import TextPanel from '../components/siteEditor/TextPanel';
+import ButtonStyleSelect from '../components/siteEditor/ButtonStyleSelect';
 import ImagePanel from '../components/siteEditor/ImagePanel';
 import SectionPanel from '../components/siteEditor/SectionPanel';
 import PagePanel from '../components/siteEditor/PagePanel';
@@ -539,7 +540,18 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
           for (const [p, v] of Object.entries(values)) next = setAt(next, p, v);
           return next;
         })}
-      />
+      >
+        {/* LT-693 (Erel): the opening's main button offers its design beside its words. The menu's button keeps its own look. */}
+        {path === 'components.hero.cta' && selection.sectionType === 'hero' && (
+          <ButtonStyleSelect
+            id="site-editor-button-style"
+            label={t('siteEditor.text.buttonDesign')}
+            value={String(getAt(draft.value, 'design.buttonStyle') ?? '')}
+            color={String(getAt(draft.value, 'pallete.colorPrimary') ?? '#7c3aed')}
+            onChange={(v) => setField('design.buttonStyle', v || undefined)}
+          />
+        )}
+      </TextPanel>
     );
   };
 

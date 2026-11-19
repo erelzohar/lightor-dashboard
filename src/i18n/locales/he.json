@@ -2267,7 +2267,8 @@
       "text": "טקסט"
     },
     "text": {
-      "count": "{{count}}/{{max}}"
+      "count": "{{count}}/{{max}}",
+      "buttonDesign": "עיצוב הכפתור"
     },
     "ai": {
       "send": "החלה",
