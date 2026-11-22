@@ -1,11 +1,11 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { hasPrice } from '../../utils/currency';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Phone, Clock, Calendar, ChevronRight, ChevronLeft, Users } from 'lucide-react';
 import Card from '../ui/Card';
 import { Appointment } from '../../types';
-import { formatTime } from '../../utils/dateUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { isToday, isTomorrow, format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
@@ -71,11 +71,13 @@ const DashboardAppointmentsList: React.FC<DashboardAppointmentsListProps> = ({
   const { t } = useTranslation();
   const currency = useCurrencySymbol();
   const locale = language === 'he' ? he : enUS;
+  // LT-702: the business's clock, "3:00 PM" for an American one.
+  const fmt = useBusinessFormats(language);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const getDateDisplay = (timestamp: string) => {
     const date = new Date(parseInt(timestamp));
-    const time = formatTime(date);
+    const time = fmt.time(date);
     if (isToday(date)) return `${t('appointments.today')}, ${time}`;
     if (isTomorrow(date)) return `${t('appointments.tomorrow')}, ${time}`;
     return `${format(date, 'PP', { locale })}, ${time}`;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appVersion, type AppVersion } from '../../lib/liveUpdate';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 /**
  * LT-608: which Lightor this is, for support: in the apps the store version
@@ -9,6 +10,7 @@ import { appVersion, type AppVersion } from '../../lib/liveUpdate';
  */
 const AppVersionLine: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const fmt = useBusinessFormats(i18n?.language);
   const [version, setVersion] = useState<AppVersion | null>(null);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const AppVersionLine: React.FC = () => {
   const date = version.builtAt ? new Date(version.builtAt) : null;
   const bundle = t('app.version.bundle', {
     id: version.bundle.slice(0, 7),
-    date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString(i18n.language) : '',
+    date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString(fmt.american ? fmt.dateLocale : i18n.language) : '',
   });
   return (
     <p className="text-center text-xs text-gray-500 dark:text-gray-400" dir="auto" data-testid="app-version">

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { canOfferPurchases } from '../../lib/platform';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 /**
  * What stops the site taking bookings, over the owner's pages (LT-458). The
@@ -37,8 +38,9 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
   }, [userId, status]);
 
   const canSell = canOfferPurchases();
-  const dateLocale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const dateLocale = fmt.dateLocale;
   const day = (iso: string | undefined) => (iso ? new Date(iso).toLocaleDateString(dateLocale) : '');
 
   // The server's word when it answered; the subscription's status otherwise.

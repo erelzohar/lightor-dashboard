@@ -7,6 +7,7 @@ import {
 import { israeliPhoneKind, toE164, whatsAppHref } from '../../utils/phone';
 import { assistantService, type LightyAction, type LightyActionItem, type LightyActionKind } from '../../services/assistantApi';
 import { resolveImage } from '../../utils/images';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 /**
  * LT-629 (Erel: "sometimes the pictures in the chat show empty"): a picture Lighty made is a
@@ -103,6 +104,9 @@ const Chip: React.FC<{ tone: Tone; ltr?: boolean; children: React.ReactNode }> =
 export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next: LightyAction) => void }> = ({ action, onChange }) => {
   const { t, i18n } = useTranslation();
   const lang = (i18n.language || 'he').split('-')[0];
+  // LT-702: an American business's dates in its US locale and its 12-hour clock; the values stay "HH:MM".
+  const fmt = useBusinessFormats(lang);
+  const dateLang = fmt.american ? fmt.dateLocale : lang;
   // "now → after" in the line's own direction.
   const arrow = ['he', 'ar'].includes(lang) ? '←' : '→';
   const [busy, setBusy] = useState(false);
@@ -144,7 +148,11 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
   /** A day's hours as chips, one per range; closed is one chip. */
   const hours = (h: string | null | undefined, tone: 'old' | 'new') =>
     h
-      ? h.split(',').map((range) => <Chip key={range} tone={tone} ltr>{range.replace('-', '–')}</Chip>)
+      ? h.split(',').map((range) => (
+          <Chip key={range} tone={tone} ltr>
+            {fmt.hour12 ? range.split('-').map((part) => fmt.clock(part.trim())).join(' – ') : range.replace('-', '–')}
+          </Chip>
+        ))
       : <Chip tone={tone === 'old' ? 'old' : 'closed'}>{t('lighty.action.closed')}</Chip>;
 
   /** What it is now, an arrow, what it becomes. */
@@ -159,8 +167,8 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
   /** A booking's day, time and service. */
   const slot = (date: string | undefined, time: string | undefined, service: string | undefined, tone: Tone = 'plain') => (
     <span className="flex flex-wrap gap-1">
-      {date && <Chip tone={tone}>{dateLabel(date, lang)}</Chip>}
-      {time && <Chip tone={tone} ltr>{time}</Chip>}
+      {date && <Chip tone={tone}>{dateLabel(date, dateLang)}</Chip>}
+      {time && <Chip tone={tone} ltr>{fmt.clock(time)}</Chip>}
       {service && <Chip tone={tone === 'old' ? 'old' : 'plain'}>{service}</Chip>}
     </span>
   );
@@ -215,12 +223,12 @@ export const LightyActionCard: React.FC<{ action: LightyAction; onChange: (next:
         };
       case 'vacation_add':
       case 'vacation_remove': {
-        const range = <>{item.from && dateLabel(item.from, lang)}{item.to && item.to !== item.from ? <> – {dateLabel(item.to, lang)}</> : null}</>;
+        const range = <>{item.from && dateLabel(item.from, dateLang)}{item.to && item.to !== item.from ? <> – {dateLabel(item.to, dateLang)}</> : null}</>;
         return { head: item.title, body: <Chip tone={action.kind === 'vacation_remove' ? 'old' : 'new'}>{range}</Chip> };
       }
       case 'hours':
         return {
-          head: item.date ? dateLabel(item.date, lang) : weekdayLabel(item.weekday ?? 0, lang),
+          head: item.date ? dateLabel(item.date, dateLang) : weekdayLabel(item.weekday ?? 0, lang),
           body: (
             <>
               {change(hours(item.before, 'old'), hours(item.after, 'new'))}

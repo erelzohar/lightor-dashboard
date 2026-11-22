@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import type { LeadStats } from '../../services/leadsApi';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 interface LeadsChartProps {
   /** 30 days, oldest first, today last. */
@@ -25,8 +26,9 @@ const LeadsChart: React.FC<LeadsChartProps> = ({ perDay }) => {
   const { t, i18n } = useTranslation();
   const [active, setActive] = useState<number | null>(null);
 
-  const locale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const locale = fmt.dateLocale;
   const last = perDay.length - 1;
   const max = Math.max(1, ...perDay.map((d) => d.count));
   const dayLabel = (i: number) =>

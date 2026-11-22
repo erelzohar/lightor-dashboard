@@ -22,6 +22,7 @@ import { Tabs, TabsList, TabsTrigger } from '../components/ui/segmented-tabs';
 import { pop } from '../components/ui/pop-button';
 import { LEAD_STATUS_TINT as STATUS_TINT } from '../utils/leadStatus';
 import LightyIcon from '../components/lighty/LightyIcon';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 const PAGE_SIZE = 20;
 
@@ -96,10 +97,10 @@ const Leads: React.FC = () => {
     load();
   }, [load]);
 
-  const locale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
   const formatWhen = (iso: string) =>
-    new Date(iso).toLocaleString(locale, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    fmt.dateTime(iso, { day: '2-digit', month: 'short' });
   const navigate = useNavigate();
   // LT-572 (Erel): a lead not yet closed can be answered with Lighty - his page
   // opens with the request sent, and he drafts the answer on a card the owner

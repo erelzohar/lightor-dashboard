@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import Button from '../ui/Button';
 import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 import type { TimeRange } from './AppointmentsGraph';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 interface GraphRangeControlsProps {
   timeRange: TimeRange;
@@ -28,6 +29,8 @@ const GraphRangeControls: React.FC<GraphRangeControlsProps> = ({
   const { language, direction } = useTheme();
   const { t } = useTranslation();
   const dateLocale = language === 'he' ? he : undefined;
+  // LT-702: an American business reads the month first ("Nov 29 - Dec 5, 2026").
+  const fmt = useBusinessFormats(language);
 
   const timeRangeOptions: { value: TimeRange; label: string }[] = [
     { value: 'week', label: t('appointmentsGraph.week') },
@@ -63,6 +66,9 @@ const GraphRangeControls: React.FC<GraphRangeControlsProps> = ({
   const getCurrentPeriodLabel = () => {
     switch (timeRange) {
       case 'week':
+        if (fmt.monthFirst) {
+          return `${format(startOfWeek(currentDate), 'MMM d', { locale: dateLocale })} - ${format(endOfWeek(currentDate), 'MMM d, yyyy', { locale: dateLocale })}`;
+        }
         return `${format(startOfWeek(currentDate), 'd')} - ${format(endOfWeek(currentDate), 'd MMM yyyy', { locale: dateLocale })}`;
       case 'month':
         return format(currentDate, 'MMMM yyyy', { locale: dateLocale });

@@ -12,6 +12,7 @@ import { useConfirm } from '../../hooks/useConfirm';
 import type { OwnDomain } from '../../hooks/useOwnDomain';
 import { canOfferPurchases } from '../../lib/platform';
 import { domainErrorCode, domainErrorKey, domainProofOf, type DomainProof } from '../../services/domainApi';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 /**
  * LT-661 (phase 2): the owner's own domain, in Settings > Site, where the
@@ -30,9 +31,6 @@ const P = 'settings.customDomain';
 /** How often a waiting domain is checked while the card is on screen. */
 export const AUTO_CHECK_MS = 15_000;
 
-const dateLocale = (lang: string): string =>
-  lang === 'he' ? 'he-IL' : lang === 'ar' ? 'ar-u-nu-latn' : lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-GB';
-
 type View = 'pending' | 'active' | 'error' | 'paused';
 
 interface DomainSectionProps {
@@ -45,6 +43,8 @@ const DomainSection: React.FC<DomainSectionProps> = ({ own, lightorHost }) => {
   const { t, i18n } = useTranslation();
   const { confirm, dialog } = useConfirm();
   const { answer, busy, check } = own;
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
   const [typed, setTyped] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [proof, setProof] = useState<DomainProof | null>(null);
@@ -109,7 +109,7 @@ const DomainSection: React.FC<DomainSectionProps> = ({ own, lightorHost }) => {
   const date = (iso?: string): string | null => {
     const at = iso ? new Date(iso) : null;
     return at && !Number.isNaN(at.getTime())
-      ? at.toLocaleDateString(dateLocale(i18n.language), { day: 'numeric', month: 'long', year: 'numeric' })
+      ? at.toLocaleDateString(fmt.writtenDateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
       : null;
   };
 

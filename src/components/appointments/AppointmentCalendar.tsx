@@ -40,6 +40,7 @@ import { Tabs, TabsList, TabsTrigger } from '../ui/segmented-tabs';
 import { pop } from '../ui/pop-button';
 import { staggerDelay, staggered } from '../../lib/stagger';
 import { useIsWide } from '../../hooks/useIsWide';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 interface AppointmentCalendarProps {
   appointments: Appointment[];
@@ -107,8 +108,6 @@ const TIME_GUTTER = 80;
 const EDGE_PX = 44;
 const PAGE_FIRST_MS = 600;
 const PAGE_AGAIN_MS = 900;
-
-const fmtHour = (h: number) => `${h.toString().padStart(2, '0')}:00`;
 
 type FilterKey = 'all' | 'scheduled' | 'completed' | 'ongoing' | 'cancelled';
 type ViewMode  = 'week' | 'day';
@@ -230,6 +229,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const edgeRef = useRef<{ side: -1 | 0 | 1; timer?: ReturnType<typeof setTimeout> }>({ side: 0 });
   useEffect(() => () => clearTimeout(edgeRef.current.timer), []);
   const locale   = language === 'he' ? he : undefined;
+  // The business's clock (LT-702): "15:00", or "3:00 PM" for an American one.
+  const fmt = useBusinessFormats(language);
 
   // ── Resize handler ────────────────────────────────────────────────────
   useEffect(() => {
@@ -398,8 +399,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     const start = new Date(nextSession.startMs);
     if (isToday(start)) return language === 'he' ? 'היום' : 'Today';
     if (isTomorrow(start)) return language === 'he' ? 'מחר' : 'Tomorrow';
-    return format(start, language === 'he' ? 'EEEE d/M' : 'EEE d MMM', { locale });
-  }, [nextSession, language, locale, nowMinutes]);
+    return format(start, language === 'he' ? 'EEEE d/M' : fmt.monthFirst ? 'EEE MMM d' : 'EEE d MMM', { locale });
+  }, [nextSession, language, locale, nowMinutes, fmt]);
 
   const getSessionPos = (session: Session) => {
     const start = minutesOfDay(session.startMs);
@@ -722,9 +723,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 <span className="font-medium" style={{ color: '#c7d2fe' }}>{nextDay}</span>
                 {' · '}
                 <span dir="ltr">
-                  {format(new Date(nextSession.startMs), 'HH:mm')}
+                  {fmt.time(new Date(nextSession.startMs))}
                   {' – '}
-                  {format(new Date(nextEndMs), 'HH:mm')}
+                  {fmt.time(new Date(nextEndMs))}
                 </span>
               </span>
               {minutesUntilNext && (
@@ -1002,7 +1003,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {language === 'he' ? 'התור הבא' : 'Next'}
               </span>
               <span className="text-xs text-gray-700 dark:text-gray-200 truncate">
-                {nextDay} <span dir="ltr">{format(new Date(nextSession.startMs), 'HH:mm')}</span>
+                {nextDay} <span dir="ltr">{fmt.time(new Date(nextSession.startMs))}</span>
                 {' · '}{nextSession.type.name}{' · '}{nextWho}
               </span>
               {minutesUntilNext && (
@@ -1123,7 +1124,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 {scale.rows.map(row => (
                   <div key={`${rangeStart}-${row.hour}`} className="absolute w-full" style={{ top: row.top, transition: glide }}>
                     <span className="absolute end-3 text-[11px] text-gray-400 dark:text-gray-500 -translate-y-[9px] select-none whitespace-nowrap bg-white dark:bg-gray-900 px-1">
-                      {fmtHour(row.hour)}
+                      {fmt.hour(row.hour)}
                     </span>
                   </div>
                 ))}
@@ -1272,7 +1273,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                             </div>
                             {height > 42 && (
                               <p className={`text-[10px] mt-0.5 ${pal.sub} ${empty ? pal.emptyDarkSub : ''}`}>
-                                <span dir="ltr">{`${format(ts, 'HH:mm')} – ${format(endTs, 'HH:mm')}`}</span>
+                                <span dir="ltr">{`${fmt.time(ts)} – ${fmt.time(endTs)}`}</span>
                               </p>
                             )}
                             {height > 62 && (
@@ -1330,7 +1331,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                           style={{ top: landingTop, height, insetInlineStart: 4, insetInlineEnd: 4, zIndex: 40, transition: glide }}>
                           <p dir="auto" className={`font-semibold text-[11px] leading-tight truncate text-start ${pal.text}`}>{held.type.name}</p>
                           <p className={`text-[10px] mt-0.5 font-semibold ${pal.sub}`}>
-                            <span dir="ltr">{`${format(new Date(dropPreview.startMs), 'HH:mm')} – ${format(new Date(dropPreview.startMs + durationMS), 'HH:mm')}`}</span>
+                            <span dir="ltr">{`${fmt.time(new Date(dropPreview.startMs))} – ${fmt.time(new Date(dropPreview.startMs + durationMS))}`}</span>
                           </p>
                           {height > 62 && (
                             <div className="flex items-center gap-1.5 mt-1.5">

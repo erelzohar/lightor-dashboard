@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { X, CalendarDays, Clock, Users, Phone, Check, XCircle, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { useTranslation } from 'react-i18next';
 import { useConfirm, type ConfirmOptions } from '../../hooks/useConfirm';
 import { cancelBookingQuestion } from './cancelQuestion';
@@ -80,6 +81,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
   const dispatch = useAppDispatch();
   const { confirm, dialog } = useConfirm();
   const locale = language === 'he' ? he : undefined;
+  const fmt = useBusinessFormats(language);
   const [adding, setAdding] = React.useState(false);
   // The row whose cancel/complete is on its way (LT-315): its buttons wait.
   const [pending, setPending] = React.useState<string | null>(null);
@@ -175,7 +177,7 @@ const SessionParticipants: React.FC<SessionParticipantsProps> = ({ session, onCl
           <span className="inline-flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg text-xs text-gray-700 dark:text-gray-200 tabular-nums">
             <Clock size={13} className="text-gray-400 shrink-0" />
             {/* Left to right in Hebrew too (LT-211): "19:00 – 19:30". */}
-            <span dir="ltr">{format(start, 'HH:mm')} – {format(end, 'HH:mm')}</span>
+            <span dir="ltr">{fmt.time(start)} – {fmt.time(end)}</span>
           </span>
           <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-medium">
             <Users size={13} className="shrink-0" />

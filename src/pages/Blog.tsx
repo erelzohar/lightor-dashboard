@@ -16,9 +16,7 @@ import {
 import PostEditor from '../components/blog/PostEditor';
 import LightyWrites from '../components/blog/LightyWrites';
 import { pictureSrc, sitePicturesOf } from '../components/blog/blogPictures';
-
-const dateLocale = (lang: string): string =>
-  lang === 'he' ? 'he-IL' : lang === 'ar' ? 'ar-u-nu-latn' : lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-GB';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 /**
  * LT-610 (the LT-495 plan, Erel 2026-11-07): the blog's page. On Pro: the
@@ -30,6 +28,8 @@ const dateLocale = (lang: string): string =>
 const Blog: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { confirm, dialog } = useConfirm();
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
   const webConfig = useAppSelector((state) => state.webConfig.data) as unknown as Record<string, unknown> | null;
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [limits, setLimits] = useState<BlogLimits | null>(null);
@@ -144,7 +144,7 @@ const Blog: React.FC = () => {
     }
   };
 
-  const format = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString(dateLocale(i18n.language), { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+  const format = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString(fmt.writtenDateLocale, { day: 'numeric', month: 'long', year: 'numeric' }) : '');
   const locked = limits !== null && !limits.blog;
   const published = (posts ?? []).filter((p) => p.status === 'published' && !p.hiddenByAdmin).length;
 

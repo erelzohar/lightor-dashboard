@@ -17,6 +17,7 @@ import {
   type StoreOffers,
 } from '../../lib/storePurchases';
 import type { CardExtra } from '../ui/pricing-section-3';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 // LT-602: the web's plan cards, with the stores' prices; their own chunk, as on the web.
 const PricingSection = lazy(() => import('../ui/pricing-section-3'));
@@ -64,8 +65,9 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
   const freeDaysEnd = pilot ? new Date(pilot.until) : null;
   const inFreeDays = !!freeDaysEnd && freeDaysEnd.getTime() > Date.now();
   const storeName = t(nativePlatform() === 'android' ? 'billing.store.googlePlay' : 'billing.store.appStore');
-  const dateLocale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const dateLocale = fmt.dateLocale;
 
   useEffect(() => {
     if (!store || !userId) return;
@@ -227,7 +229,7 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
           <PricingSection
             plans={cards}
             leadsSite={leadsSite}
-            locale={dateLocale}
+            locale={fmt.numberLocale}
             extraPrice=""
             opening={busy}
             actionLabel={t(inFreeDays ? 'billing.subscribe' : 'billing.upgrade')}

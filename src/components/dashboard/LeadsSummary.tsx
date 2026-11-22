@@ -7,6 +7,7 @@ import type { LeadsPage, LeadStatus } from '../../services/leadsApi';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
 import { resolveImage } from '../../utils/images';
 import { pop } from '../ui/pop-button';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 const STATUS_TINT: Record<LeadStatus, string> = {
   new: 'bg-primary/10 text-primary border-primary/30',
@@ -35,10 +36,10 @@ const LeadsSummary: React.FC<LeadsSummaryProps> = ({ page, direction, title, vie
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
-  const locale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
   const formatWhen = (iso: string) =>
-    new Date(iso).toLocaleString(locale, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    fmt.dateTime(iso, { day: '2-digit', month: 'short' });
   const Arrow = direction === 'rtl' ? ArrowLeft : ArrowRight;
 
   return (

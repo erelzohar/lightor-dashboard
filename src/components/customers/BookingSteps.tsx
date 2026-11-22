@@ -1,4 +1,5 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { ClassSessionAvailability } from '../../services/appointmentsApi';
 import type { AppointmentType } from '../../types';
 import { localDateKey } from '../../utils/bookingSlots';
-import { zonedDateOf, zonedTimeLabel, zonedToday } from '../../utils/businessTime';
+import { zonedDateOf, zonedToday } from '../../utils/businessTime';
 import { resolveImage } from '../../utils/images';
 import { isPastDay, type DayStatus } from '../../utils/ownerSchedule';
 import { pop } from '../ui/pop-button';
@@ -47,7 +48,16 @@ const hint = (text: string) => <p className="text-sm text-gray-500 dark:text-gra
 /** A carrier day as the site names it: "Sunday, 25 October". */
 const useLongDate = () => {
   const { language } = useTheme();
-  return (day: Date) => new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
+  // LT-702: an American business's day in its US locale ("Wednesday, December 2").
+  const fmt = useBusinessFormats(language);
+  const locale = fmt.american ? fmt.dateLocale : language;
+  return (day: Date) => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
+};
+
+/** LT-702: the business's clock as drawn ("15:00", or "3:00 PM" for an American business). */
+const useClock = () => {
+  const { language } = useTheme();
+  return useBusinessFormats(language);
 };
 
 /** "30 min · ₪80 · Group class" — a service as the site describes it. */
@@ -296,6 +306,7 @@ export const DayTimes: React.FC<DayTimesProps> = ({
 }) => {
   const { t } = useTranslation();
   const longDate = useLongDate();
+  const fmt = useClock();
   // A chosen time that is not on the grid is the "other time" one.
   const offGrid = !!time && !slots.includes(time);
   const [otherOpen, setOtherOpen] = useState(offGrid);
@@ -351,7 +362,7 @@ export const DayTimes: React.FC<DayTimesProps> = ({
             {sessions.map((session) => {
               // Display only: the time is read off the server's timestamp on
               // the business's clock; the booking sends the timestamp.
-              const at = zonedTimeLabel(Number(session.timestamp), timeZone);
+              const at = fmt.zonedTime(Number(session.timestamp), timeZone);
               const seats = `${session.booked}/${session.capacity}`;
               return (
                 <button
@@ -375,10 +386,11 @@ export const DayTimes: React.FC<DayTimesProps> = ({
       ) : loading ? (
         hint(t('customers.booking.loadingTimes'))
       ) : slots.length ? (
-        <div role="group" aria-label={t('customers.booking.pickTime')} className="grid grid-cols-4 gap-2">
+        // The slot stays the "HH:MM" it is (what is picked and sent); only its label follows the business's clock.
+        <div role="group" aria-label={t('customers.booking.pickTime')} className={`grid ${fmt.hour12 ? 'grid-cols-3' : 'grid-cols-4'} gap-2`}>
           {slots.map((slot) => (
             <button key={slot} type="button" onClick={() => onPickTime(slot)} aria-pressed={slot === time} className={chip(slot === time)}>
-              <span className="tabular-nums" dir="ltr">{slot}</span>
+              <span className="tabular-nums" dir="ltr">{fmt.clock(slot)}</span>
             </button>
           ))}
         </div>
@@ -403,6 +415,7 @@ export interface ChoiceSummaryProps {
 /** What was chosen so far — the service, and its day and time once picked. */
 export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, day, timeZone }) => {
   const longDate = useLongDate();
+  const fmt = useClock();
   const metaOf = useServiceMeta();
   const durationMS = Number(service.durationMS) || 0;
   const when = startMs !== undefined ? zonedDateOf(startMs, timeZone) : day;
@@ -422,7 +435,7 @@ export const ChoiceSummary: React.FC<ChoiceSummaryProps> = ({ service, startMs, 
               <>
                 {' · '}
                 <span dir="ltr">
-                  {zonedTimeLabel(startMs, timeZone)} – {zonedTimeLabel(startMs + durationMS, timeZone)}
+                  {fmt.zonedTime(startMs, timeZone)} – {fmt.zonedTime(startMs + durationMS, timeZone)}
                 </span>
               </>
             )}

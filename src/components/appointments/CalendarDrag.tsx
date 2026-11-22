@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { useDraggable, type CollisionDetection, type DraggableAttributes, type DraggableSyntheticListeners } from '@dnd-kit/core';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -84,10 +85,13 @@ export const DropConfirm: React.FC<{
   const { t } = useTranslation();
   const { language } = useTheme();
   const locale = language === 'he' ? he : undefined;
-  const day = (ms: number) => format(new Date(ms), 'EEEE d/M', { locale });
+  // LT-702: an American business reads the month first and the 12-hour clock.
+  const fmt = useBusinessFormats(language);
+  const day = (ms: number) => format(new Date(ms), fmt.monthFirst ? 'EEEE M/d' : 'EEEE d/M', { locale });
   // The range keeps its own direction (an RTL page reversed it).
+  const dash = fmt.hour12 ? ' – ' : '–';
   const hours = (start: number, length: number) => (
-    <span dir="ltr">{`${format(new Date(start), 'HH:mm')}–${format(new Date(start + length), 'HH:mm')}`}</span>
+    <span dir="ltr">{`${fmt.time(new Date(start))}${dash}${fmt.time(new Date(start + length))}`}</span>
   );
   const card = (appointment: Appointment, from: number, to: number) => {
     const length = Number(appointment.type?.durationMS) || 0;

@@ -27,6 +27,7 @@ import {
 } from '../../services/customersApi';
 import { formatPhoneForDisplay, telHref, whatsAppHref } from '../../utils/phone';
 import { firstVisitOf, historyStatus, pastVisits } from '../../utils/customerVisits';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 /**
  * One customer, in full (LT-122): who they are, how to reach them, what they
@@ -92,12 +93,14 @@ const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({ customerId,
     }
   }, [open, load]);
 
-  const locale = i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const locale = fmt.dateLocale;
   const formatDate = (value?: string | null) =>
     value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
   const formatDateTime = (value?: string | null) =>
     value
-      ? new Date(value).toLocaleString(locale, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      ? fmt.dateTime(value, { day: '2-digit', month: 'short', year: 'numeric' })
       : '-';
 
   const saveNotes = async () => {

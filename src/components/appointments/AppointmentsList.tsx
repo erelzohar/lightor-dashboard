@@ -1,11 +1,11 @@
 import { useCurrencySymbol } from '../../hooks/useCurrencySymbol';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { hasPrice } from '../../utils/currency';
 import React, { useMemo, useState } from 'react';
 import { Calendar, Clock, User, Phone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Card from '../ui/Card';
 import { Appointment } from '../../types';
-import { formatTime } from '../../utils/dateUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { isToday, isTomorrow, format, startOfDay } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
@@ -41,6 +41,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const { t } = useTranslation();
   const currency = useCurrencySymbol();
   const locale = language === 'he' ? he : enUS;
+  // LT-702: the business's clock, "3:00 PM" for an American one.
+  const fmt = useBusinessFormats(language);
 
   const getStatusTag = (status: string) => {
     switch (status) {
@@ -99,7 +101,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   const getDateDisplay = (timestamp: string) => {
     const date = new Date(parseInt(timestamp));
-    const time = formatTime(date);
+    const time = fmt.time(date);
 
     if (isToday(date)) {
       return `${t('appointments.today')}, ${time}`;

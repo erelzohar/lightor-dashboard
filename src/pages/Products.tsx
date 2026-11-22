@@ -35,6 +35,7 @@ import { isAiBusy } from '../lib/aiErrors';
 import { canOfferPurchases } from '../lib/platform';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { pop } from '../components/ui/pop-button';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 const MAX_PICTURES = 6;
 const MAX_DETAILS = 6;
@@ -814,8 +815,9 @@ const Products: React.FC = () => {
   };
   const siteStateOf = (p: Product): SiteState | undefined =>
     overPlan && p.status === 'published' ? (hiddenOnSite(p._id) ? 'hidden' : 'shown') : undefined;
-  const dateLocale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const dateLocale = fmt.dateLocale;
   const freeDaysEnd = limits?.freeDaysUntil ? new Date(limits.freeDaysUntil).toLocaleDateString(dateLocale) : null;
   const used = products?.length ?? 0;
 

@@ -9,11 +9,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { fetchAppointments } from '../../store/slices/appointmentsSlice';
 import { getAvailability, moveAppointment, type Availability, type BusySlot } from '../../services/appointmentsApi';
 import { apiErrorStatus, isApiErrorCode } from '../../services/customersApi';
 import { localDateKey, slotTimestamp } from '../../utils/bookingSlots';
-import { businessTimeZone, zonedDateOf, zonedTimeLabel, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
+import { businessTimeZone, zonedDateOf, zonedTimeToMs, zonedToday } from '../../utils/businessTime';
 import { dayStatus, freeSlots, type DayStatus, type ScheduleFacts } from '../../utils/ownerSchedule';
 import { ChoiceSummary, DayTimes, MonthDays } from '../customers/BookingSteps';
 import type { Appointment } from '../../types';
@@ -60,6 +61,8 @@ const withoutOwn = (busy: BusySlot[], appointment: Appointment): BusySlot[] => {
 const MoveAppointmentModal: React.FC<MoveAppointmentModalProps> = ({ appointment, onClose, onMoved }) => {
   const { t } = useTranslation();
   const { direction, language } = useTheme();
+  // LT-702: the business's clock, "3:00 PM" for an American one.
+  const fmt = useBusinessFormats(language);
   const { auth } = useAuth();
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector((s) => s.webConfig.data);
@@ -196,7 +199,7 @@ const MoveAppointmentModal: React.FC<MoveAppointmentModalProps> = ({ appointment
   };
 
   // Where it is now, on the business's clock.
-  const currentDay = new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long', timeZone }).format(currentStart);
+  const currentDay = new Intl.DateTimeFormat(fmt.american ? fmt.dateLocale : language, { weekday: 'long', day: 'numeric', month: 'long', timeZone }).format(currentStart);
 
   return createPortal(
     <AnimatePresence>
@@ -236,7 +239,7 @@ const MoveAppointmentModal: React.FC<MoveAppointmentModalProps> = ({ appointment
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               {appointment.name} · {t('appointments.move.current')}: {currentDay},{' '}
-              <span dir="ltr">{zonedTimeLabel(currentStart, timeZone)}</span>
+              <span dir="ltr">{fmt.zonedTime(currentStart, timeZone)}</span>
             </p>
 
             <form onSubmit={submit} className="space-y-4">

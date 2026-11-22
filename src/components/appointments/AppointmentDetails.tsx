@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { X, CalendarDays, CalendarClock, Clock, User, Phone, Check, Contact } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 import { Appointment } from '../../types';
 import { getDisplayStatus } from '../../utils/appointmentUtils';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -50,6 +51,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
   const dispatch = useAppDispatch();
   const { confirm, dialog } = useConfirm();
   const locale = language === 'he' ? he : undefined;
+  const fmt = useBusinessFormats(language);
 
   if (!appointment) return null;
 
@@ -147,7 +149,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
             <CalendarDays size={14} className="text-gray-400 shrink-0" />
             <span className="text-sm text-gray-600 dark:text-gray-300">
-              {format(new Date(parseInt(appointment.timestamp)), 'EEEE, d MMMM', { locale })}
+              {format(new Date(parseInt(appointment.timestamp)), fmt.monthFirst ? 'EEEE, MMMM d' : 'EEEE, d MMMM', { locale })}
             </span>
           </div>
 
@@ -156,7 +158,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({ appointment, on
           <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
             <Clock size={14} className="text-gray-400 shrink-0" />
             <span dir="ltr" className="text-sm text-gray-600 dark:text-gray-300">
-              {format(new Date(parseInt(appointment.timestamp)), 'HH:mm')} – {format(new Date(parseInt(appointment.timestamp) + Number(appointment.type.durationMS)), 'HH:mm')}
+              {fmt.time(new Date(parseInt(appointment.timestamp)))} – {fmt.time(new Date(parseInt(appointment.timestamp) + Number(appointment.type.durationMS)))}
             </span>
             {canMove && (
               <button

@@ -36,6 +36,7 @@ import { storeSalesOn } from '../../lib/storePurchases';
 import { STORE_SUBSCRIPTIONS_URL } from '../../lib/storeLinks';
 import StorePlans from './StorePlans';
 import { lazyOr } from '../../lib/lazyOr';
+import { useBusinessFormats } from '../../hooks/useBusinessFormats';
 
 // Activation is webhook-driven, so after a completed checkout the server is
 // re-read on this cadence until the subscription flips. Sandbox webhooks
@@ -203,8 +204,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   // date although the subscription still reads 'free'. Dated in the UI's
   // language, as the Customers page formats its dates.
   const pilot = entitlements?.pilot ?? null;
-  const dateLocale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const dateLocale = fmt.dateLocale;
   const pilotDate = pilot ? new Date(pilot.until).toLocaleDateString(dateLocale) : null;
   // LT-458: the bookings this period - a subscriber's 500 (past them the
   // owner's switch decides, LT-465: extras billed, or booking closed until
@@ -443,7 +445,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
   const money = (amount: number, currency: string) => {
     try {
       // The narrow sign: "$" for dollars in every language (never "US$"); "₪" is the same either way.
-      return new Intl.NumberFormat(dateLocale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).format(amount);
+      return new Intl.NumberFormat(fmt.numberLocale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).format(amount);
     } catch {
       return `${amount} ${currency}`;
     }
@@ -478,7 +480,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
     const floor = meterPrice?.floor ?? (meterPrice?.currency === 'ILS' ? 1000 : null);
     if (!meterPrice || !floor) return '';
     try {
-      return new Intl.NumberFormat(dateLocale, {
+      return new Intl.NumberFormat(fmt.numberLocale, {
         style: 'currency',
         currency: meterPrice.currency,
         currencyDisplay: 'narrowSymbol',
@@ -974,7 +976,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                   <PricingSection
                     plans={plans}
                     leadsSite={leadsSite}
-                    locale={dateLocale}
+                    locale={fmt.numberLocale}
                     extraPrice={extraPrice}
                     opening={opening}
                     actionLabel={pilotDate ? t('billing.subscribe') : t('billing.upgrade')}

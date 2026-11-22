@@ -34,6 +34,7 @@ import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { fetchLeads, fetchLeadStats, LeadsPage, LeadStats } from '../services/leadsApi';
 import { fetchProductViews, listProducts, type Product, type ProductViews } from '../services/productsApi';
 import { isLeadsSite, isProductsSite } from '../utils/siteMode';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -68,11 +69,9 @@ const Dashboard: React.FC = () => {
   const trialEnding = entitlements?.pilot && upgradeIsOpen(entitlements.pilot) ? entitlements.pilot : null;
   // The free period waits for a proven phone (LT-360).
   const freePeriodPending = auth.user?.freePeriod?.state === 'pending';
-  const trialEndDate = trialEnding
-    ? new Date(trialEnding.until).toLocaleDateString(
-        i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB'
-      )
-    : null;
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const trialEndDate = trialEnding ? new Date(trialEnding.until).toLocaleDateString(fmt.dateLocale) : null;
 
   const webConfig = useAppSelector(state => state.webConfig.data);
   // A leads site (LT-199) has no calendar: its home is the leads summary, not

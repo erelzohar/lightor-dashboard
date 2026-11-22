@@ -6,6 +6,7 @@ import { Bell, CalendarClock, CalendarPlus, CalendarX, Inbox, Loader2, Megaphone
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { fetchNotifications, markNotificationsRead, OwnerNotification } from '../services/notificationsApi';
 import { setUnreadNotifications } from '../hooks/useUnreadNotifications';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 const EVENT_ICONS: Record<string, typeof Bell> = {
   newBooking: CalendarPlus,
@@ -21,12 +22,12 @@ const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** "5 minutes ago" for the last week, the date after it. */
-export const whenText = (createdAt: string, language: string, justNow: string, now = Date.now()): string => {
+/** "5 minutes ago" for the last week, the date after it (in `dateLocale`: an American business's, LT-702). */
+export const whenText = (createdAt: string, language: string, justNow: string, now = Date.now(), dateLocale = language): string => {
   const then = new Date(createdAt).getTime();
   const ago = now - then;
   if (ago < MINUTE) return justNow;
-  if (ago >= 7 * DAY) return new Date(then).toLocaleDateString(language, { day: 'numeric', month: 'short' });
+  if (ago >= 7 * DAY) return new Date(then).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' });
   const relative = new Intl.RelativeTimeFormat(language, { numeric: 'auto' });
   if (ago < HOUR) return relative.format(-Math.floor(ago / MINUTE), 'minute');
   if (ago < DAY) return relative.format(-Math.floor(ago / HOUR), 'hour');
@@ -40,6 +41,7 @@ export const whenText = (createdAt: string, language: string, justNow: string, n
  */
 const Notifications: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const fmt = useBusinessFormats(i18n?.language);
   const navigate = useNavigate();
   const [items, setItems] = useState<OwnerNotification[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -126,7 +128,7 @@ const Notifications: React.FC = () => {
                       <span className="flex items-baseline justify-between gap-3">
                         <span className="font-semibold text-sm text-gray-900 dark:text-dark-text break-words min-w-0">{item.title}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
-                          {whenText(item.createdAt, i18n.language, t('notifications.justNow'))}
+                          {whenText(item.createdAt, i18n.language, t('notifications.justNow'), undefined, fmt.american ? fmt.dateLocale : i18n.language)}
                         </span>
                       </span>
                       {item.body && (

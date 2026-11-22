@@ -30,6 +30,7 @@ import { formatPhoneForDisplay } from '../utils/phone';
 import { pastVisits } from '../utils/customerVisits';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { isLeadsSite } from '../utils/siteMode';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 /**
  * Customers (LT-122): every person who has booked with this business, and
@@ -100,8 +101,9 @@ const Customers: React.FC = () => {
     loadOverview();
   }, [load, loadOverview]);
 
-  const locale =
-    i18n.language === 'he' ? 'he-IL' : i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : i18n.language === 'es' ? 'es' : 'en-GB';
+  // LT-702: dates as the business writes them (an American one: month first).
+  const fmt = useBusinessFormats(i18n?.language);
+  const locale = fmt.dateLocale;
   const formatDate = (value?: string | null) =>
     value ? new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 

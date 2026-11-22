@@ -11,6 +11,7 @@ import Input from '../components/ui/Input';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import toast from 'react-hot-toast';
 import { useTheme } from '../contexts/ThemeContext';
+import { useBusinessFormats } from '../hooks/useBusinessFormats';
 import { format } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -156,6 +157,7 @@ const ScheduleVacations: React.FC = () => {
 
   const { language, direction, darkMode } = useTheme();
   const locale = language === 'he' ? he : enUS;
+  const fmt = useBusinessFormats(language);
   const dispatch = useAppDispatch();
   const webConfig = useAppSelector(state => state.webConfig);
   const isLoading = useAppSelector(state => state.webConfig.loading);
@@ -402,7 +404,9 @@ const ScheduleVacations: React.FC = () => {
   // On the business's clock (LT-318).
   const formatVacationDateTime = (dateTimeString: string): string => {
     try {
-      return format(zonedWallDate(vacationMs(dateTimeString, timeZone), timeZone), 'PPP - p', { locale });
+      const wall = zonedWallDate(vacationMs(dateTimeString, timeZone), timeZone);
+      // LT-702: an American business's clock in any language ("3:00 PM").
+      return fmt.hour12 ? `${format(wall, 'PPP', { locale })} - ${fmt.time(wall)}` : format(wall, 'PPP - p', { locale });
     } catch (err) {
       console.log(err);
       return '';
