@@ -3,8 +3,9 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { SignInCard } from '../../components/ui/sign-in-card-2';
 
+const ui = vi.hoisted(() => ({ language: 'he' }));
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key, i18n: { dir: () => 'ltr' } }),
+  useTranslation: () => ({ t: (key: string) => key, i18n: { dir: () => 'ltr', language: ui.language } }),
 }));
 
 const renderCard = () =>
@@ -23,11 +24,18 @@ const renderCard = () =>
 describe('sign-in card "Register here"', () => {
   afterEach(() => {
     delete (window as unknown as { Capacitor?: unknown }).Capacitor;
+    ui.language = 'he';
   });
 
-  it('links to the register site on the web', () => {
+  it.each(['en', 'fr'])('carries ?lang=%s for a card in that language (LT-710)', (lang) => {
+    ui.language = lang;
     renderCard();
-    expect(screen.getByText('login.registerHere').closest('a')).toHaveAttribute('href', 'https://register.lightor.app');
+    expect(screen.getByText('login.registerHere').closest('a')).toHaveAttribute('href', `https://register.lightor.app/?lang=${lang}`);
+  });
+
+  it('links to the register site on the web, in the language the card is in (LT-710)', () => {
+    renderCard();
+    expect(screen.getByText('login.registerHere').closest('a')).toHaveAttribute('href', 'https://register.lightor.app/?lang=he');
   });
 
   // LT-486: inside the app it is the app's own signup page, which frames the

@@ -70,7 +70,8 @@ describe('authApi', () => {
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}google`,
-        { token: 'g-credential' },
+        // LT-710: the UI language rides along (the instance is not set up here: Hebrew).
+        { token: 'g-credential', defaultLanguage: expect.any(String) },
         { withCredentials: true }
       );
     });
@@ -82,7 +83,7 @@ describe('authApi', () => {
 
       expect(post).toHaveBeenCalledWith(
         `${authUrl}facebook`,
-        { accessToken: 'fb-access-token' },
+        { accessToken: 'fb-access-token', defaultLanguage: expect.any(String) },
         { withCredentials: true }
       );
     });

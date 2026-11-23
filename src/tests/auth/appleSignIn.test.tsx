@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 import globals from '../../services/globals';
+import i18next from 'i18next';
 import { appleLogin } from '../../services/authApi';
 import { appleSignInAvailable, isAppleCancel, signInWithApple } from '../../lib/appleSignIn';
 import { SignInCard } from '../../components/ui/sign-in-card-2';
@@ -74,11 +75,15 @@ describe('the iPhone app', () => {
 });
 
 describe('the API call', () => {
-  it('posts to /auth/apple with the session cookie', async () => {
+  it('posts to /auth/apple with the session cookie and the UI language (LT-710)', async () => {
+    // react-i18next is mocked here, so the instance is not set up: its language is set by hand.
+    const before = i18next.language;
+    i18next.language = 'fr';
     const post = vi.spyOn(apiClient, 'post').mockResolvedValue({ data: { success: true, token: 'jwt', data: { _id: 'u1' } } } as never);
     const payload = { idToken: 'apple.jwt', nonce: 'raw', authorizationCode: 'c', name: 'Noa' };
     expect(await appleLogin(payload)).toEqual({ token: 'jwt', user: { _id: 'u1' } });
-    expect(post).toHaveBeenCalledWith(`${globals.authUrl}apple`, payload, { withCredentials: true });
+    expect(post).toHaveBeenCalledWith(`${globals.authUrl}apple`, { ...payload, defaultLanguage: 'fr' }, { withCredentials: true });
+    i18next.language = before;
   });
 });
 

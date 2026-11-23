@@ -9,6 +9,7 @@ import { isNativeApp } from '../lib/platform';
 import { appleSignInAvailable, isAppleCancel, signInWithApple } from '../lib/appleSignIn';
 import { FACEBOOK_APP_ID, facebookSignInAvailable, isFacebookCancel, nativeFacebookSignIn } from '../lib/facebookSignIn';
 import OfflineScreen from '../components/auth/OfflineScreen';
+import { lightorPageUrl } from '../i18n/language';
 
 // CJS/ESM interop: Vite may expose the whole module object as the default
 const NATIVE_GOOGLE_ENABLED = true;
@@ -218,7 +219,7 @@ const Login: React.FC = () => {
               />
               <div className="flex gap-6">
                 <a
-                  href="https://lightor.app/terms.html"
+                  href={lightorPageUrl('terms', i18n?.language)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"
@@ -226,7 +227,7 @@ const Login: React.FC = () => {
                   {t('legal.terms')}
                 </a>
                 <a
-                  href="https://lightor.app/privacy.html"
+                  href={lightorPageUrl('privacy', i18n?.language)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary transition-colors"

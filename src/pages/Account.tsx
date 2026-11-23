@@ -9,7 +9,8 @@ import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
 import { requestPasswordReset, type AuthRequestError } from '../services/authApi';
 import { useTheme } from '../contexts/ThemeContext';
-import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
+import i18n, { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n/config';
+import { lightorPageUrl, rememberLanguage } from '../i18n/language';
 import BillingSection from '../components/account/BillingSection';
 import DangerZoneSection from '../components/account/DangerZoneSection';
 import NotificationsCard from '../components/account/NotificationsCard';
@@ -131,6 +132,8 @@ const Account: React.FC = () => {
     setIsSavingLanguage(true);
     try {
       await updateUser({ defaultLanguage: value });
+      // LT-710: the person's own pick, kept for lightor.app and the wizard too.
+      rememberLanguage(value);
       toast.success(t('account.languageUpdateSuccess'));
     } catch {
       // Roll back both the persisted intent and the live UI on failure.
@@ -522,9 +525,10 @@ const Account: React.FC = () => {
           gray-400/500 read about 2.5:1. */}
       <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 pb-6">
         {[
-          { href: 'https://lightor.app/terms.html', label: t('legal.terms') },
-          { href: 'https://lightor.app/privacy.html', label: t('legal.privacy') },
-          { href: 'https://lightor.app/accessibility.html', label: t('legal.accessibility') },
+          // LT-710: a UI in another language opens the page's English part.
+          { href: lightorPageUrl('terms', i18n?.language), label: t('legal.terms') },
+          { href: lightorPageUrl('privacy', i18n?.language), label: t('legal.privacy') },
+          { href: lightorPageUrl('accessibility', i18n?.language), label: t('legal.accessibility') },
         ].map(({ href, label }) => (
           <a
             key={href}

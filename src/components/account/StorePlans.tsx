@@ -18,15 +18,14 @@ import {
 } from '../../lib/storePurchases';
 import type { CardExtra } from '../ui/pricing-section-3';
 import { useBusinessFormats } from '../../hooks/useBusinessFormats';
+import { lightorPageUrl } from '../../i18n/language';
 
 // LT-602: the web's plan cards, with the stores' prices; their own chunk, as on the web.
 const PricingSection = lazy(() => import('../ui/pricing-section-3'));
 
-const TERMS_URL = 'https://lightor.app/terms.html';
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** iPhone: Lightor+ opens in the free days' last 3 days (Erel 2026-11-05, LT-589). */
 export const APPLE_PLUS_OPEN_DAYS = 3;
-const PRIVACY_URL = 'https://lightor.app/privacy.html';
 /** How long the store may take to name its products before the plans read as unavailable. */
 const STORE_TIMEOUT_MS = 30_000;
 
@@ -246,9 +245,9 @@ const StorePlans: React.FC<{ entitlements: MyEntitlements; leadsSite?: boolean; 
       {/* App Store 3.1.2: what the subscription is, that it renews, how to cancel, and the terms. */}
       <p className="text-xs leading-5 text-gray-500 dark:text-gray-400" data-testid="store-terms">
         {t('billing.store.renewal', { store: storeName })}{' '}
-        <a href={TERMS_URL} target="_blank" rel="noreferrer" className="underline">{t('billing.store.terms')}</a>
+        <a href={lightorPageUrl('terms', i18n?.language)} target="_blank" rel="noreferrer" className="underline">{t('billing.store.terms')}</a>
         {' · '}
-        <a href={PRIVACY_URL} target="_blank" rel="noreferrer" className="underline">{t('billing.store.privacy')}</a>
+        <a href={lightorPageUrl('privacy', i18n?.language)} target="_blank" rel="noreferrer" className="underline">{t('billing.store.privacy')}</a>
       </p>
       {restore}
     </div>

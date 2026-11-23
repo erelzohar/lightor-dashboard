@@ -3,6 +3,9 @@ import type { FacebookCredential } from '../lib/facebookSignIn';
 import { User } from '../types';
 import globals from './globals';
 import { SERVER_UNREACHABLE } from './serverUnreachable';
+// The i18next instance itself, not '../i18n/config': this module must not set it up.
+import i18n from 'i18next';
+import { currentLanguageOf } from '../i18n/language';
 
 /**
  * LT-009: the session lives in an HttpOnly cookie set by the API, invisible
@@ -138,11 +141,19 @@ const loginFailure = (error: unknown): 'INVALID_CREDENTIALS' | 'TOO_MANY_ATTEMPT
   return 'INVALID_CREDENTIALS';
 };
 
+/**
+ * LT-710: the UI language rides along with every Google, Apple and Facebook
+ * sign-in (web and the apps' native sheets all come through here). The
+ * server keeps it only when the sign-in opens a new account; an existing
+ * account's language is never changed by signing in.
+ */
+const signInLanguage = (): string => currentLanguageOf(i18n.language);
+
 export const googleLogin = async (token: string): Promise<{ token: string; user: User }> => {
   try {
     const response = await apiClient.post(
       globals.authUrl + 'google',
-      { token },
+      { token, defaultLanguage: signInLanguage() },
       { withCredentials: true },
     );
     if (response.data?.success) {
@@ -168,7 +179,7 @@ export const googleLoginWithIdToken = async (idToken: string): Promise<{ token: 
   // trip on the first real device attempt (LT-128).
   const response = await apiClient.post(
     globals.authUrl + 'google',
-    { idToken },
+    { idToken, defaultLanguage: signInLanguage() },
     { withCredentials: true },
   );
   if (!response.data?.success) throw new Error('Google login failed');
@@ -183,7 +194,11 @@ export const googleLoginWithIdToken = async (idToken: string): Promise<{ token: 
 export const appleLogin = async (payload: {
   idToken: string; nonce: string; authorizationCode?: string; name?: string;
 }): Promise<{ token: string; user: User }> => {
-  const response = await apiClient.post(globals.authUrl + 'apple', payload, { withCredentials: true });
+  const response = await apiClient.post(
+    globals.authUrl + 'apple',
+    { ...payload, defaultLanguage: signInLanguage() },
+    { withCredentials: true },
+  );
   if (!response.data?.success) throw new Error('Apple login failed');
   return { token: response.data?.token, user: response.data.data };
 };
@@ -205,7 +220,7 @@ export const facebookLogin = async (credential: FacebookCredential): Promise<{ t
   try {
     const response = await apiClient.post(
       globals.authUrl + 'facebook',
-      credential,
+      { ...credential, defaultLanguage: signInLanguage() },
       { withCredentials: true },
     );
     if (response.data?.success) {

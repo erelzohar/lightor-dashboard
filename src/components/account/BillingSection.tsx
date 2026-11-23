@@ -38,6 +38,7 @@ import { STORE_SUBSCRIPTIONS_URL } from '../../lib/storeLinks';
 import StorePlans from './StorePlans';
 import { lazyOr } from '../../lib/lazyOr';
 import { useBusinessFormats } from '../../hooks/useBusinessFormats';
+import { lightorPageUrl } from '../../i18n/language';
 
 // Activation is webhook-driven, so after a completed checkout the server is
 // re-read on this cadence until the subscription flips. Sandbox webhooks
@@ -954,7 +955,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                       </div>
                     )}
                     <a
-                      href="https://lightor.app/refund.html"
+                      href={lightorPageUrl('refund', i18n?.language)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-xs text-gray-500 dark:text-gray-400 underline hover:text-primary"
@@ -999,7 +1000,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
                 {/* Paddle asks for the seller's own refund terms beside the plans (LT-265). */}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   <a
-                    href="https://lightor.app/refund.html"
+                    href={lightorPageUrl('refund', i18n?.language)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:text-primary"

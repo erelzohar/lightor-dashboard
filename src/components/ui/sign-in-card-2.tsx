@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { canOfferPurchases } from '../../lib/platform';
+import { registerUrl } from '../../i18n/language';
 
 function LocalInput({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -390,7 +391,7 @@ export function SignInCard({ onSubmit, onGoogleLogin, onFacebookLogin, onAppleLo
                 {t('login.noAccount')}{' '}
                 {canOfferPurchases() ? (
                   <a
-                    href="https://register.lightor.app"
+                    href={registerUrl(i18n?.language)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="relative inline-block group/signup"

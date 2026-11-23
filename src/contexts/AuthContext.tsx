@@ -15,6 +15,7 @@ import { registerForPush, unregisterPush } from '../services/pushClient';
 import { signOutOfStore } from '../lib/storePurchases';
 import { isNativeApp } from '../lib/platform';
 import i18n from '../i18n/config';
+import { linkLanguageAtBoot } from '../i18n/language';
 import { weeklyLimitMessage } from '../utils/accountPace';
 interface AuthContextType {
   auth: AuthState;
@@ -111,7 +112,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading: false,
         error: null,
       });
-      if (user.defaultLanguage) i18n.changeLanguage(user.defaultLanguage);
+      // LT-710: a `?lang=` link outranks the account on the start it opened.
+      if (user.defaultLanguage && !linkLanguageAtBoot()) i18n.changeLanguage(user.defaultLanguage);
     } catch (error) {
       if (isServerUnreachable(error)) {
         setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false, error: null, offline: true });
