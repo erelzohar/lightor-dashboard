@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CreditCard, Check, Loader2, CalendarX, AlertTriangle, Receipt, ExternalLink } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import type { CheckoutEventsData } from '@paddle/paddle-js';
@@ -1031,10 +1032,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
         />
       )}
 
-      {cancelModalOpen && (
+      {/* LT-708: on <body>. In this card (glass-card: its backdrop-filter makes
+          it the containing block of a fixed child) "fixed inset-0" filled only the card. */}
+      {cancelModalOpen && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overlay-safe"
           onClick={() => !cancelling && setCancelModalOpen(false)}
+          data-testid="cancel-modal"
         >
           <div
             className="w-full max-w-md rounded-2xl glass-modal p-6 space-y-4"
@@ -1067,7 +1071,8 @@ const BillingSection: React.FC<BillingSectionProps> = ({ leadsSite = false }) =>
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </Card>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ExternalLink, KeyRound, Mail } from 'lucide-react';
 import Button from '../ui/Button';
@@ -36,6 +37,12 @@ import toast from 'react-hot-toast';
  * LT-668 (Erel 2026-11-16): the deletion stops a Google Play subscription's
  * renewal itself, so only an App Store one gets the warning and the tick; a
  * Google Play one reads "cancelled", like Paddle's.
+ *
+ * LT-708 (Erel 2026-11-23): drawn on <body>, like ConfirmDialog. Inside the
+ * account page's danger-zone card its "fixed inset-0" filled only the card:
+ * the card's backdrop-filter (glass-card) makes it the containing block of
+ * any fixed child, so the dim was a band the card's height and the dialog
+ * spilled out of it.
  */
 const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { auth, logout } = useAuth();
@@ -104,7 +111,7 @@ const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     }
   };
 
-  return (
+  return createPortal(
     // Above the phone step (z-60), which can open it.
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 overlay-safe" onClick={close}>
       <div
@@ -200,7 +207,8 @@ const DeleteAccountDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

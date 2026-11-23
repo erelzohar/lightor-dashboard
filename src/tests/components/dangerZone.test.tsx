@@ -106,6 +106,23 @@ describe('DangerZoneSection (LT-315)', () => {
     expect(await screen.findByText('danger.emailMismatch')).toBeInTheDocument();
     expect(logout).not.toHaveBeenCalled();
   });
+
+  // LT-708: the card is glass (a backdrop-filter), which makes it the
+  // containing block of a fixed child: inside it the overlay filled only the card.
+  it('draws the dialog on <body>, outside the card, and still closes on a click outside', () => {
+    authState.user = { email: 'jane@biz.com', hasPassword: true };
+    const { container } = render(<DangerZoneSection />);
+    fireEvent.click(screen.getByText('danger.deleteCta'));
+    const overlay = screen.getByTestId('delete-account-dialog').parentElement!;
+    expect(overlay.parentElement).toBe(document.body);
+    expect(container.contains(overlay)).toBe(false);
+    expect(screen.getByLabelText('danger.passwordLabel')).toHaveFocus();
+
+    fireEvent.click(screen.getByTestId('delete-account-dialog'));
+    expect(screen.getByTestId('delete-account-dialog')).toBeInTheDocument();
+    fireEvent.click(overlay);
+    expect(screen.queryByTestId('delete-account-dialog')).not.toBeInTheDocument();
+  });
 });
 
 /**

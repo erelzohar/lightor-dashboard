@@ -831,6 +831,28 @@ describe('BillingSection with two plans', () => {
     await waitFor(() => expect(changePlan).toHaveBeenCalledWith('pro'));
   });
 
+  // LT-708: the billing card is glass (a backdrop-filter), which makes it the
+  // containing block of a fixed child: inside it both overlays filled only the card.
+  it('draws the plan-move and cancel dialogs on <body>, outside the card', async () => {
+    entitlementsState.data = paid('plus');
+    vi.mocked(previewPlanChange).mockResolvedValue(change);
+    const { container } = render(<BillingSection />);
+    fireEvent.click(await screen.findByTestId('plan-change'));
+    const move = (await screen.findByTestId('plan-change-modal')).parentElement!;
+    expect(move.parentElement).toBe(document.body);
+    expect(container.contains(move)).toBe(false);
+    fireEvent.click(move);
+    expect(screen.queryByTestId('plan-change-modal')).toBeNull();
+
+    fireEvent.click(screen.getByText('billing.cancelCta'));
+    const cancel = screen.getByTestId('cancel-modal');
+    expect(cancel.parentElement).toBe(document.body);
+    expect(container.contains(cancel)).toBe(false);
+    expect(cancel).toHaveTextContent('billing.cancelModalTitle');
+    fireEvent.click(cancel);
+    expect(screen.queryByTestId('cancel-modal')).toBeNull();
+  });
+
   it('tells the owner when a move down must wait for the next period', async () => {
     entitlementsState.data = paid('pro', { used: 240 });
     vi.mocked(previewPlanChange).mockRejectedValue({ response: { status: 409, data: { code: 'OVER_PLUS_BOOKINGS' } } });

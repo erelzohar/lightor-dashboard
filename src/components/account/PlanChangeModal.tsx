@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Button from '../ui/Button';
 import { PLAN_NAMES, type PaidPlan, type PlanChange } from '../../services/paddleApi';
@@ -18,6 +19,10 @@ interface PlanChangeModalProps {
  * the owner confirms. Up is charged today; down changes now and the rest of the
  * period is credited on the next charge; in the free days with a card nothing
  * is charged, the first charge is simply the new plan's.
+ *
+ * LT-708: drawn on <body>. Inside the billing card (glass-card, whose
+ * backdrop-filter makes it the containing block of a fixed child) its
+ * "fixed inset-0" filled only the card.
  */
 const PlanChangeModal: React.FC<PlanChangeModalProps> = ({ plan, change, money, dateLocale, moving, onConfirm, onClose }) => {
   const { t } = useTranslation();
@@ -25,7 +30,7 @@ const PlanChangeModal: React.FC<PlanChangeModalProps> = ({ plan, change, money, 
   const nextDate = change.nextBilledAt ? new Date(change.nextBilledAt).toLocaleDateString(dateLocale) : null;
   const note = plan === 'plus' ? 'billing.change.noteDown' : change.chargedNow > 0 ? 'billing.change.noteUp' : 'billing.change.noteFree';
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overlay-safe"
       onClick={() => !moving && onClose()}
@@ -71,7 +76,8 @@ const PlanChangeModal: React.FC<PlanChangeModalProps> = ({ plan, change, money, 
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
