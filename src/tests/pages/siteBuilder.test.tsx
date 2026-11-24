@@ -48,6 +48,16 @@ describe('SiteBuilder', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  // LT-713: the page, the frame and the loading cover are the wizard's own
+  // black, so no other colour shows before the wizard paints.
+  it("paints the page, the frame and the loading cover in the wizard's black", () => {
+    render(<SiteBuilder />);
+    for (const el of [screen.getByTestId('site-builder'), frame(), screen.getByRole('status')]) {
+      expect(el.className).toContain('bg-black');
+      expect(el.className).not.toContain('1e293b');
+    }
+  });
+
   it("hands the frame a pass and the owner's phone and email, on the register's origin only", async () => {
     vi.mocked(builderPass).mockResolvedValue('pass-1');
     render(<SiteBuilder />);

@@ -18,9 +18,10 @@ import LightyIcon from '../components/lighty/LightyIcon';
  * so it asks here for a builder pass (with the owner's phone and email, the
  * fallbacks signup takes from its form) and builds and saves the site with it.
  * Once saved, the account is reloaded and the site editor takes this page's
- * place (SiteEditor). Framed like this, the wizard wears the dashboard's dark
- * look: this page and it share one colour, so nothing shows where they meet
- * (LT-513; `html[data-embed='app']` in the register's index.css).
+ * place (SiteEditor). Framed like this, the wizard keeps its regular black
+ * background (LT-713, in place of the dashboard's colour since LT-513), and
+ * this page, the frame and the loading cover are black too, so no other
+ * colour flashes before the wizard paints.
  *
  * Messages are taken only from the frame itself, on the register's origin,
  * and sent only there.
@@ -86,18 +87,18 @@ const SiteBuilder: React.FC = () => {
     // Edge to edge like the editor it hands over to; on a phone it stops above
     // the tab bar, which floats over the bottom and would cover the wizard's box.
     <div
-      className={`relative flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-[#1e293b] ${keyboardOpen ? 'pb-0' : noTabBar ? 'pb-[env(safe-area-inset-bottom)]' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0`}
+      className={`relative flex flex-col h-[calc(100%+2rem)] md:h-[calc(100%+3rem)] -m-4 md:-m-6 overflow-hidden bg-black ${keyboardOpen ? 'pb-0' : noTabBar ? 'pb-[env(safe-area-inset-bottom)]' : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]'} md:pb-0`}
       data-testid="site-builder"
     >
       <iframe
         ref={frameRef}
         src={src}
         title={t('siteBuilder.frameTitle')}
-        className="flex-1 w-full border-0 bg-[#1e293b]"
+        className="flex-1 w-full border-0 bg-black"
         onLoad={() => setLoaded(true)}
       />
       {!loaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#1e293b]" role="status">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black" role="status">
           <LightyIcon className="w-16 h-16" />
           <span className="text-sm text-slate-300">{t('siteBuilder.loading')}</span>
         </div>
