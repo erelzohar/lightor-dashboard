@@ -7,7 +7,7 @@ import imageCompression from 'browser-image-compression';
 import { assistantService, type LightyAction, type LightyTurn } from '../services/assistantApi';
 import { uploadImage } from '../services/imagesApi';
 import globals from '../services/globals';
-import { isAiBusy } from '../lib/aiErrors';
+import { isAccountNotVerified, isAiBusy } from '../lib/aiErrors';
 import { fetchMyEntitlements } from '../services/entitlementsApi';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -174,7 +174,7 @@ const LightyPage: React.FC = () => {
       setCheer((n) => n + 1);
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
-      setError(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'lighty.budget' : 'lighty.failed'));
+      setError(t(isAccountNotVerified(err) ? 'common.aiNotVerified' : isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'lighty.budget' : 'lighty.failed'));
       // The pictures wait for the next try.
       if (images.length) setPictures(images);
     } finally {

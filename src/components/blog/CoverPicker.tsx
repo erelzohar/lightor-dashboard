@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
 import toast from 'react-hot-toast';
 import { uploadImage } from '../../services/imagesApi';
 import { aiService } from '../../services/aiApi';
-import { isAiBusy } from '../../lib/aiErrors';
+import { isAccountNotVerified, isAiBusy } from '../../lib/aiErrors';
 import { pictureSrc } from './blogPictures';
 
 interface Props {
@@ -54,7 +54,7 @@ const CoverPicker: React.FC<Props> = ({ value, onChange, sitePictures, subject, 
       setOpen(null);
     } catch (error) {
       const status = (error as { response?: { status?: number } })?.response?.status;
-      toast.error(status === 429 && !isAiBusy(error) ? t('blog.editor.coverLimit') : t('blog.editor.coverFailed'));
+      toast.error(isAccountNotVerified(error) ? t('common.aiNotVerified') : status === 429 && !isAiBusy(error) ? t('blog.editor.coverLimit') : t('blog.editor.coverFailed'));
     } finally {
       setBusy(false);
     }

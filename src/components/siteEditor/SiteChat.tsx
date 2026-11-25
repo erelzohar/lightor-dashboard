@@ -6,6 +6,7 @@ import { aiService, trimHistory, type AiSiteConfig, type ChatTurn } from '../../
 import { applyAiAnswer, changedLabels } from '../../utils/editorDiff';
 import { fieldLabel } from './labels';
 import { lightTick } from '../../lib/haptics';
+import { isAccountNotVerified } from '../../lib/aiErrors';
 import { LightyTyped } from '../lighty/LightyTyped';
 import { LightySendIcon, lightySendButton } from '../lighty/LightySendIcon';
 import { addImages, IMAGE_TYPES, MAX_IMAGES } from '../../lib/ownerImages';
@@ -118,8 +119,8 @@ function SiteChat<T>({ config, onApply, initialMessage, onInitialMessageSent }: 
       setMessages((m) => [...m, answer]);
       setFresh(answer);
       lightTick();
-    } catch {
-      const answer: ChatTurn = { role: 'assistant', content: t('siteEditor.ai.failed') };
+    } catch (err) {
+      const answer: ChatTurn = { role: 'assistant', content: t(isAccountNotVerified(err) ? 'common.aiNotVerified' : 'siteEditor.ai.failed') };
       setMessages((m) => [...m, answer]);
       setFresh(answer);
     } finally {

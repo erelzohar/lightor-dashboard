@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
-import PhoneGate from '../../components/onboarding/PhoneGate';
+import PhoneCodeForm from '../../components/onboarding/PhoneCodeForm';
 import apiClient from '../../services/apiClient';
 import globals from '../../services/globals';
 import { closeCodeFrame } from '../../services/codeFrame';
@@ -8,20 +8,20 @@ import { resetPhoneCountries, setOpenAbroad } from '../../services/phoneCountrie
 import { FRAME_ORIGIN, frameRoot, frameSays, settle, watchFrame } from '../helpers/codeFrame';
 
 /**
- * LT-677: the phone step for an owner abroad, on the real code routes with
+ * LT-677: the phone step for an owner abroad (since LT-724 the body of the
+ * two-free-months offer), on the real code routes with
  * the frame faked: the number goes to the frame only on a tap, its code is
  * an SMS only (no WhatsApp choice), another one waits 30 seconds, and the
  * save carries the proof the API gave for Firebase's token.
  */
-const { t, updateUser, logout } = vi.hoisted(() => ({
+const { t, updateUser } = vi.hoisted(() => ({
   t: (key: string) => key,
   updateUser: vi.fn(),
-  logout: vi.fn(),
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'en' }) }));
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({ updateUser, logout, auth: { user: { email: 'owner@example.com', googleId: 'g-1' } } }),
+  useAuth: () => ({ updateUser, auth: { user: { email: 'owner@example.com', googleId: 'g-1' } } }),
 }));
 
 const US = '+12125550123';
@@ -83,9 +83,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('PhoneGate for a number abroad (LT-677)', () => {
+describe('PhoneCodeForm for a number abroad (LT-677)', () => {
   it("starts on the device's country when it is offered, and asks nothing of anyone by itself", async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     expect(screen.getByTestId('phone-country')).toHaveAttribute('data-country', 'US');
     expect(phoneField()).toHaveAttribute('placeholder', '(212) 555-0123');
     typePhone('2125550123');
@@ -97,12 +97,12 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
 
   it('starts on Israel on a device from elsewhere', () => {
     vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({ resolvedOptions: () => ({ timeZone: 'Asia/Jerusalem' }) } as unknown as Intl.DateTimeFormat);
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     expect(screen.getByTestId('phone-country')).toHaveAttribute('data-country', 'IL');
   });
 
   it('sends the code through the frame on the tap, once, and saves the phone with its proof', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     const posted = await toCodeStep();
     expect(posted).toHaveBeenCalledWith({ type: 'lt-code-send', phone: US, lang: 'en' }, FRAME_ORIGIN);
     // Israel's own route was never asked.
@@ -126,7 +126,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
 
   it('offers no WhatsApp code abroad, and another SMS only after 30 seconds', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     const posted = await toCodeStep();
     expect(screen.getByText('onboarding.phoneGate.resendIn')).toBeInTheDocument();
     expect(screen.queryByText('onboarding.phoneGate.resend')).toBeNull();
@@ -156,7 +156,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
   it('keeps the WhatsApp choice for an Israeli number', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     post.mockResolvedValue({ data: { success: true } } as never);
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     typePhone('+972541234567');
     expect(screen.getByTestId('phone-country')).toHaveAttribute('data-country', 'IL');
     tapSend();
@@ -170,7 +170,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
   });
 
   it("says the frame's refusal in the owner's words, and does not try again", async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     typePhone('2125550123');
     tapSend();
     const posted = watchFrame();
@@ -192,7 +192,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
   });
 
   it('says a wrong code is wrong, and lets it be typed again', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     const posted = await toCodeStep();
     const input = screen.getByLabelText('account.phoneCode.label') as HTMLInputElement;
     fireEvent.change(input, { target: { value: '000000' } });
@@ -209,7 +209,7 @@ describe('PhoneGate for a number abroad (LT-677)', () => {
   });
 
   it('refuses a Canadian number before anything is sent', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     typePhone('4165550123');
     tapSend();
     await waitFor(() => expect(phoneField().getAttribute('aria-invalid')).toBe('true'));

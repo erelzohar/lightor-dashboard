@@ -1,27 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import PhoneGate from '../../components/onboarding/PhoneGate';
+import PhoneCodeForm from '../../components/onboarding/PhoneCodeForm';
 import { sendPhoneCode, verifyPhoneCode } from '../../services/phoneCodeApi';
-import { deleteAccount } from '../../services/authApi';
 
 /**
- * LT-500: an Apple or Google signup proves its phone before the site is
- * built: the number, a code, and the save that carries the proof.
+ * The phone and its code (LT-360), the body of the two-free-months offer
+ * since LT-724 (it was the PhoneGate's, LT-500): the number, a code, and the
+ * save that carries the proof.
  */
-const { t, updateUser, logout } = vi.hoisted(() => ({
+const { t, updateUser } = vi.hoisted(() => ({
   t: (key: string) => key,
   updateUser: vi.fn(),
-  logout: vi.fn(),
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ language: 'he' }) }));
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({ updateUser, logout, auth: { user: { email: 'owner@example.com', googleId: 'g-1' } } }),
-}));
-vi.mock('../../services/authApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../services/authApi')>()),
-  deleteAccount: vi.fn(),
+  useAuth: () => ({ updateUser, auth: { user: { email: 'owner@example.com', googleId: 'g-1' } } }),
 }));
 vi.mock('../../services/phoneCodeApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../services/phoneCodeApi')>()),
@@ -38,7 +32,7 @@ const toCodeStep = async () => {
   await screen.findByLabelText('account.phoneCode.label');
 };
 
-describe('PhoneGate', () => {
+describe('PhoneCodeForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(sendPhoneCode).mockResolvedValue(undefined);
@@ -46,18 +40,21 @@ describe('PhoneGate', () => {
     updateUser.mockResolvedValue(undefined);
   });
 
-  it('sends a code to a mobile, and saves the phone with its proof', async () => {
-    render(<PhoneGate />);
+  it('sends a code to a mobile, saves the phone with its proof, and says it is saved', async () => {
+    const onSaved = vi.fn();
+    render(<PhoneCodeForm onSaved={onSaved} />);
     await toCodeStep();
     expect(sendPhoneCode).toHaveBeenCalledWith('+972541234567', 'sms', 'he');
+    expect(screen.getByText('account.phoneCode.sent')).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('account.phoneCode.label'), { target: { value: '123456' } });
     await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ phone: '+972541234567', phoneToken: 'proof' }));
     expect(verifyPhoneCode).toHaveBeenCalledWith('+972541234567', '123456');
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
   });
 
   it('sends nothing to a number a code cannot reach', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     typePhone('031234567');
     fireEvent.click(screen.getByText('onboarding.phoneGate.send'));
     await waitFor(() => expect(screen.getByLabelText(/onboarding\.phoneGate\.label/).getAttribute('aria-invalid')).toBe('true'));
@@ -66,68 +63,47 @@ describe('PhoneGate', () => {
 
   it('a wrong code stays on the step, saves nothing, and can be typed again', async () => {
     vi.mocked(verifyPhoneCode).mockRejectedValue(new Error('no'));
-    render(<PhoneGate />);
+    const onSaved = vi.fn();
+    render(<PhoneCodeForm onSaved={onSaved} />);
     await toCodeStep();
 
     const input = screen.getByLabelText('account.phoneCode.label') as HTMLInputElement;
     fireEvent.change(input, { target: { value: '000000' } });
     await screen.findByText('account.phoneCode.failed');
     expect(updateUser).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
     expect(input.value).toBe('');
     expect(input.disabled).toBe(false);
   });
 
+  it("says the server's refusal of the save and stays on the step", async () => {
+    updateUser.mockRejectedValue({ response: { status: 400, data: { code: 'PHONE_NOT_VERIFIED' } } });
+    const onSaved = vi.fn();
+    render(<PhoneCodeForm onSaved={onSaved} />);
+    await toCodeStep();
+    fireEvent.change(screen.getByLabelText('account.phoneCode.label'), { target: { value: '123456' } });
+    await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+    expect(onSaved).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('account.phoneCode.label')).toBeTruthy();
+  });
+
   it('goes back to change the number', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     await toCodeStep();
     fireEvent.click(screen.getByText('onboarding.phoneGate.changePhone'));
     expect(screen.getByLabelText(/onboarding\.phoneGate\.label/)).toBeTruthy();
   });
 
   it('holds the new code for 30 seconds', async () => {
-    render(<PhoneGate />);
+    render(<PhoneCodeForm />);
     await toCodeStep();
     expect(screen.queryByText('onboarding.phoneGate.whatsapp')).toBeNull();
     expect(screen.getByText('onboarding.phoneGate.resendIn')).toBeTruthy();
   });
 
-  it('has no way on but the code, only out', () => {
-    render(<PhoneGate />);
-    expect(screen.queryByText(/later|skip/i)).toBeNull();
-    fireEvent.click(screen.getByText('onboarding.phoneGate.logout'));
-    expect(logout).toHaveBeenCalled();
-  });
-
-  // LT-634: Apple wants an account made in the app deletable in the app, and
-  // a reviewer with no Israeli mobile gets no further than this step.
-  it('deletes the account from here, with the proof the account page asks for', async () => {
-    vi.mocked(deleteAccount).mockResolvedValue(undefined as never);
-    render(
-      <MemoryRouter>
-        <PhoneGate />
-      </MemoryRouter>,
-    );
-    fireEvent.click(screen.getByText('danger.deleteCta'));
-    const dialog = screen.getByRole('dialog', { name: 'danger.modalTitle' });
-    const confirm = screen.getByText('danger.modalConfirm');
-    expect(confirm.closest('button')).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/danger\.confirmEmailLabel/), { target: { value: 'owner@example.com' } });
-    fireEvent.click(confirm);
-    await waitFor(() => expect(deleteAccount).toHaveBeenCalledWith({ confirmEmail: 'owner@example.com' }));
-    await waitFor(() => expect(logout).toHaveBeenCalled());
-    expect(dialog).toBeTruthy();
-  });
-
-  it('closes the deletion step without deleting', () => {
-    render(
-      <MemoryRouter>
-        <PhoneGate />
-      </MemoryRouter>,
-    );
-    fireEvent.click(screen.getByText('danger.deleteCta'));
-    fireEvent.click(screen.getByText('common.cancel'));
-    expect(screen.queryByRole('dialog', { name: 'danger.modalTitle' })).toBeNull();
-    expect(deleteAccount).not.toHaveBeenCalled();
-    expect(screen.getByTestId('phone-gate')).toBeTruthy();
+  it('has no way out of the account in it: the offer around it has its own "later"', () => {
+    render(<PhoneCodeForm />);
+    expect(screen.queryByText('onboarding.phoneGate.logout')).toBeNull();
+    expect(screen.queryByText('danger.deleteCta')).toBeNull();
   });
 });

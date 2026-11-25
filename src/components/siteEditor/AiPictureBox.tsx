@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { aiService } from '../../services/aiApi';
 import { fetchMyEntitlements } from '../../services/entitlementsApi';
 import { canOfferPurchases } from '../../lib/platform';
+import { isAccountNotVerified } from '../../lib/aiErrors';
 import { resolveImage } from '../../utils/images';
 import { Diff, DiffItem1, DiffItem2, DiffResizer } from '../ui/diff';
 
@@ -40,7 +41,7 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiBusy, setAiBusy] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
-  const [aiError, setAiError] = useState<'failed' | 'limit' | 'tooBig' | null>(null);
+  const [aiError, setAiError] = useState<'failed' | 'limit' | 'tooBig' | 'notVerified' | null>(null);
   // LT-519: the same box changes the picture that is there, by the owner's words.
   const [aiEditing, setAiEditing] = useState(editOnly);
   // LT-489: on the free plan the month's AI pictures are the build's; the editor makes none.
@@ -69,6 +70,7 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
       const response = (err as { response?: { status?: number; data?: { code?: string } } })?.response;
       if (response?.data?.code === 'AI_IMAGES_PLUS') setAiLocked(true);
       else if (response?.data?.code === 'IMAGE_TOO_LARGE') setAiError('tooBig');
+      else if (isAccountNotVerified(err)) setAiError('notVerified');
       else setAiError(response?.status === 429 ? 'limit' : 'failed');
     } finally {
       setAiBusy(false);
@@ -186,7 +188,9 @@ const AiPictureBox: React.FC<AiPictureBoxProps> = ({ value, aspect, onUse, editO
           {aiError && (
             <p role="alert" className="text-xs text-red-600 dark:text-red-400">
               {t(
-                aiError === 'limit'
+                aiError === 'notVerified'
+                  ? 'common.aiNotVerified'
+                  : aiError === 'limit'
                   ? 'siteEditor.image.aiLimit'
                   : aiError === 'tooBig'
                     ? 'siteEditor.image.aiEditTooBig'

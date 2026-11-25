@@ -5,6 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fetchMyEntitlements, MyEntitlements } from '../../services/entitlementsApi';
 import { canOfferPurchases } from '../../lib/platform';
 import { useBusinessFormats } from '../../hooks/useBusinessFormats';
+import FreeMonthsBanner from '../onboarding/FreeMonthsBanner';
+import { useFreeMonthsOffer } from '../onboarding/freeMonthsMemory';
 
 /**
  * What stops the site taking bookings, over the owner's pages (LT-458). The
@@ -17,6 +19,9 @@ import { useBusinessFormats } from '../../hooks/useBusinessFormats';
  *  - A subscriber's 500 with the extra bookings switched off (amber, LT-465):
  *    no bookings until the next period, or until the owner switches them on.
  * The way to pay is a call to buy, so the app states the fact only (LT-130).
+ *
+ * Last, below those (LT-724): two free months of Lightor+ waiting for a proven
+ * phone, until the phone is proven; its button opens the offer on its phone step.
  */
 const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
   const { auth } = useAuth();
@@ -24,6 +29,7 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
   const userId = auth.user?._id;
   const status = auth.user?.subscription?.status;
   const [entitlements, setEntitlements] = useState<MyEntitlements | null>(null);
+  const freeMonths = useFreeMonthsOffer();
 
   // Read again when the subscription changes: a card added, a payment through.
   useEffect(() => {
@@ -166,6 +172,8 @@ const AccountBanners: React.FC<{ go: (to: string) => void }> = ({ go }) => {
       </div>
     );
   }
+
+  if (freeMonths.bannerShown) return <FreeMonthsBanner onVerify={freeMonths.openPhone} />;
 
   return null;
 };

@@ -72,6 +72,26 @@ describe('SiteBuilder', () => {
     );
   });
 
+  // LT-724: an account may have no phone at all; the wizard gets none and builds on.
+  it('hands the frame a pass with no phone for an owner who has none', async () => {
+    const withPhone = auth.user;
+    auth.user = { _id: 'u1', name: 'Dana', email: 'owner@example.com' };
+    try {
+      vi.mocked(builderPass).mockResolvedValue('pass-2');
+      render(<SiteBuilder />);
+      const post = vi.spyOn(frame().contentWindow!, 'postMessage');
+      await fromFrame({ type: 'LT_BUILDER_NEED_PASS' });
+      await waitFor(() =>
+        expect(post).toHaveBeenCalledWith(
+          { type: 'LT_BUILDER_PASS', token: 'pass-2', phone: undefined, email: 'owner@example.com', name: 'Dana' },
+          globals.registerOrigin,
+        ),
+      );
+    } finally {
+      auth.user = withPhone;
+    }
+  });
+
   it('ignores another origin, and any window but the frame', async () => {
     vi.mocked(builderPass).mockResolvedValue('pass-1');
     render(<SiteBuilder />);

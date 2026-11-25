@@ -95,6 +95,10 @@ describe('ImagePanel - editing a picture with AI (LT-519)', () => {
     refuse(500);
     fireEvent.click(screen.getByText('siteEditor.image.aiEditRun'));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('siteEditor.image.aiEditFailed'));
+    // LT-724: an account with neither a verified email nor a proven phone.
+    refuse(403, 'ACCOUNT_NOT_VERIFIED');
+    fireEvent.click(screen.getByText('siteEditor.image.aiEditRun'));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('common.aiNotVerified'));
   });
 
   it('is gone with the locked AI on the free plan', async () => {

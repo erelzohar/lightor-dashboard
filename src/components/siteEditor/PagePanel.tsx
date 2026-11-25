@@ -9,6 +9,7 @@ import { CARD_STYLES, FONTS, PRESETS, RADII, THEMES, optionLabel } from '../../u
 import SiteChat from './SiteChat';
 import { aiService } from '../../services/aiApi';
 import { STYLES, stylePicture, withLook } from '../../lib/styles';
+import { isAccountNotVerified } from '../../lib/aiErrors';
 import { vocabLang } from './labels';
 import { CardSample, CornerSample, FontSample, ThemeSample, useSampleFonts } from './ThemeSamples';
 import ButtonStyleSelect from './ButtonStyleSelect';
@@ -49,7 +50,8 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
 
   // LT-426: the style being fetched, and whether the last try failed.
   const [restyling, setRestyling] = useState<string | null>(null);
-  const [styleFailed, setStyleFailed] = useState(false);
+  // The words for a style that did not come (LT-724: an account not verified is told why).
+  const [styleFailed, setStyleFailed] = useState<string | null>(null);
   // One site keeps one look per style, try after try.
   const seed = String(getAt(config, '_id') ?? getAt(config, 'subDomain') ?? getAt(config, 'businessName') ?? 'site');
 
@@ -58,13 +60,13 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
   const tryStyle = async (style: string) => {
     if (restyling || style === design.stylePreset) return;
     setRestyling(style);
-    setStyleFailed(false);
+    setStyleFailed(null);
     try {
       const look = await aiService.restyle(getAt(config, 'pallete') ?? {}, style, seed, (config as { blocks?: unknown }).blocks);
       // On the draft as it is by now: the owner may have gone on editing.
       onUpdate((prev) => withLook(prev, look));
-    } catch {
-      setStyleFailed(true);
+    } catch (err) {
+      setStyleFailed(isAccountNotVerified(err) ? 'common.aiNotVerified' : 'siteEditor.theme.styleFailed');
     } finally {
       setRestyling(null);
     }
@@ -156,7 +158,7 @@ function PagePanel<T>({ config, onUpdate, initialMessage, onInitialMessageSent }
           {extra && styleCard(extra, false)}
           {STYLES.map((style) => styleCard(style, true))}
         </div>
-        {styleFailed && <p className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{t('siteEditor.theme.styleFailed')}</p>}
+        {styleFailed && <p className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{t(styleFailed)}</p>}
         <p className="mt-1 text-sm text-light-gray">{t('siteEditor.theme.presetHint')}</p>
       </div>
 

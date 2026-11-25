@@ -62,6 +62,7 @@
       "cancelled": "The move was cancelled."
     },
     "aiBusy": "One moment - another AI request is still running. Try again in a few seconds.",
+    "aiNotVerified": "To use Lighty, verify your email (we sent you a link) or a phone number.",
     "products": "Products",
     "blog": "Blog",
     "paymentsOrders": "Payments & orders"
@@ -178,6 +179,7 @@
     "contactTitle": "Contact Information",
     "phone": "Phone",
     "phoneEmptyHint": "If left empty, we use your phone, and it shows on your site.",
+    "phoneNoOwnerHint": "Without a number, your site shows no call or WhatsApp buttons.",
     "email": "Email",
     "socialMedia": "Social Media",
     "selectTab": "Select a tab above",
@@ -583,8 +585,6 @@
     "hideDetails": "Hide details",
     "allDoneBtn": "All set! Close panel",
     "phoneGate": {
-      "title": "Verify your mobile",
-      "body": "Before we build your site, let's verify your mobile number with a code.",
       "label": "Mobile number",
       "send": "Send a code",
       "confirm": "Confirm and continue",
@@ -594,13 +594,22 @@
       "whatsapp": "Send on WhatsApp",
       "sentAgain": "A new code is on its way",
       "expired": "The code has expired. Ask for a new one.",
-      "tooManyTries": "Too many tries. Ask for a new code.",
-      "logout": "Log out"
+      "tooManyTries": "Too many tries. Ask for a new code."
     },
     "buildingBar": {
       "account": "My account",
       "back": "Build my site",
       "logout": "Log out"
+    },
+    "freeMonths": {
+      "title": "Two free months of Lightor+",
+      "body": "Verify a phone number with a code, and the offer starts.",
+      "note": "Without a phone number, your site shows no call or WhatsApp buttons, and booking alerts come by email only.",
+      "verifyNow": "Verify now",
+      "later": "Later",
+      "close": "Close",
+      "started": "Your offer has started: two free months of Lightor+.",
+      "banner": "Two free months of Lightor+ are waiting for you. Verify a phone number to start."
     }
   },
   "aiBuilder": {
@@ -972,11 +981,6 @@
       "qrNativeHint": "To keep it, take a screenshot or long-press the code.",
       "qrFailed": "Could not create the code",
       "close": "Close"
-    },
-    "freePeriodPending": {
-      "title": "60 days of Lightor+ are waiting for you",
-      "body": "Verify your mobile number to start them.",
-      "cta": "Verify phone"
     },
     "graph": {
       "reset": "Back to the current period"

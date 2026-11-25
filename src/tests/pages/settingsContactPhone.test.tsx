@@ -10,7 +10,7 @@ import type { WebConfig } from '../../types';
  * number, stored in E.164. A landline, the owner's own mobile and the stored
  * number save at once; another mobile is proven by a code first, and the
  * save carries the proof as `contactPhoneToken`. The server's refusals read
- * in the owner's words.
+ * in the owner's words. LT-724: an owner with no phone saves it empty.
  */
 const { t } = vi.hoisted(() => ({ t: (key: string) => key }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }));
@@ -19,8 +19,10 @@ vi.mock('../../i18n/config', () => ({
   SUPPORTED_LANGUAGES: ['en', 'he'],
   default: { language: 'en', changeLanguage: vi.fn() },
 }));
+// LT-724: an owner may have no phone at all.
+const owner = vi.hoisted(() => ({ phone: '+972501234567' as string | undefined }));
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({ auth: { user: { _id: 'u1', webConfig_id: 'wc1', phone: '+972501234567', defaultLanguage: 'he' } } }),
+  useAuth: () => ({ auth: { user: { _id: 'u1', webConfig_id: 'wc1', phone: owner.phone, defaultLanguage: 'he' } } }),
 }));
 vi.mock('../../services/webConfigApi', () => ({ checkSubdomainAvailability: vi.fn() }));
 vi.mock('../../services/imagesApi', () => ({ uploadImage: vi.fn() }));
@@ -83,6 +85,7 @@ const typePhone = (value: string) => fireEvent.change(phoneField(), { target: { 
 const save = async () => fireEvent.click(await screen.findByText('common.save'));
 
 beforeEach(() => {
+  owner.phone = '+972501234567';
   state.webConfig.data = baseConfig();
   refuseWith = null;
   vi.mocked(updateWebConfig).mockClear();
@@ -132,6 +135,22 @@ describe('Settings: a business phone left empty (LT-518)', () => {
     await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
     expect(sentPayload().contact?.phone).toBe('');
     expect(sendPhoneCode).not.toHaveBeenCalled();
+  });
+
+  // LT-724: an owner who never proved a phone has none for the site to fall back on.
+  it('an owner with no phone saves the field empty, with no code, and is told the site shows no call buttons', async () => {
+    owner.phone = undefined;
+    render(<Settings />);
+    openContactTab();
+    typePhone('');
+    expect(screen.getByTestId('contact-phone-empty')).toHaveTextContent('settings.phoneNoOwnerHint');
+    expect(screen.queryByText('settings.phoneEmptyHint')).toBeNull();
+    await save();
+
+    await waitFor(() => expect(updateWebConfig).toHaveBeenCalledTimes(1));
+    expect(sentPayload().contact?.phone).toBe('');
+    expect(sendPhoneCode).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('saves a number typed into the empty field, and the note goes', async () => {

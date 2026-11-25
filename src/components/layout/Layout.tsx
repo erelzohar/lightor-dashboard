@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import Sidebar from './Sidebar';
 import { PhoneBarProvider } from '../../contexts/PhoneBarContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -10,7 +9,7 @@ import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { fetchWebConfig } from '../../store/slices/webConfigSlice';
 import OnboardingWelcome from '../onboarding/OnboardingWelcome';
-import PhoneGate from '../onboarding/PhoneGate';
+import { FreeMonthsOfferProvider } from '../onboarding/FreeMonthsOffer';
 import BuildingBar from '../onboarding/BuildingBar';
 import { FloatingAiAssistant } from '../ui/glowing-ai-chat-assistant';
 import PageTour from '../tour/PageTour';
@@ -103,10 +102,9 @@ const Layout: React.FC = () => {
   const isRestricted =
     boardingStatus === 'new' && webConfigChecked && !webConfigData?.businessName;
 
-  // LT-500: an account made by Apple or Google sign-in proves its phone before
-  // anything else. Only before a site exists: older accounts keep their card.
-  // LT-634: the iOS app too (its "later" is gone).
-  const needsPhone = isRestricted && auth.user?.freePeriod?.state === 'pending';
+  // LT-724: the phone is offered, not demanded (it was a gate here since
+  // LT-500): an account with no proven phone builds its site like any other,
+  // and the two free months are offered once it has one (FreeMonthsOffer).
 
   // LT-502: with no site there is one thing to do: build it. The builder opens
   // at once, with no card and no navbar until a site is saved; the only other
@@ -120,17 +118,6 @@ const Layout: React.FC = () => {
     if (isRestricted) setWelcomeDismissed(true);
   }, [isRestricted]);
 
-  // The card used to say this: the phone just proven had its free period already.
-  const askedPhone = useRef(false);
-  const freePeriodState = auth.user?.freePeriod?.state;
-  useEffect(() => {
-    if (needsPhone) askedPhone.current = true;
-    else if (askedPhone.current && freePeriodState === 'withheld') {
-      askedPhone.current = false;
-      toast(t('billing.freePeriodUsed'));
-    }
-  }, [needsPhone, freePeriodState, t]);
-
   // No webConfig-less account reaches this card (LT-502). Advance the status and
   // go to the dashboard. LT-454: the card goes at once and the status is saved
   // behind it; it waited for the server with a spinner first. If the save
@@ -143,6 +130,8 @@ const Layout: React.FC = () => {
 
   return (
     <PhoneBarProvider>
+    {/* LT-724: the two free months, offered once there is a site; not under the welcome card. */}
+    <FreeMonthsOfferProvider enabled={!!auth.user && !(boardingStatus === 'new' && !welcomeDismissed)}>
     <div
       // pt: the status bar. The app draws under it (LT-210), and on phones
       // there is no top bar any more to hold that space; zero in a browser.
@@ -171,11 +160,9 @@ const Layout: React.FC = () => {
         }}
       />
 
-      {/* LT-454: it fades out (0.15s) as it goes. LT-500: the phone comes first. */}
+      {/* LT-454: it fades out (0.15s) as it goes. */}
       <AnimatePresence mode="wait">
-        {needsPhone ? (
-          <PhoneGate key="phone" />
-        ) : boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && !isRestricted ? (
+        {boardingStatus === 'new' && !welcomeDismissed && webConfigChecked && !isRestricted ? (
           <OnboardingWelcome
             key="welcome"
             userName={auth.user?.name || ''}
@@ -216,7 +203,7 @@ const Layout: React.FC = () => {
       <PageTour enabled={!!auth.user && !isRestricted && !(boardingStatus === 'new' && !welcomeDismissed)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {isRestricted && !needsPhone && <BuildingBar />}
+        {isRestricted && <BuildingBar />}
         <motion.main
           // data-scroll-root: PullToRefresh listens on this scroller. The
           // phone bottom padding clears the fixed BottomTabBar (h≈3.5rem) plus
@@ -252,12 +239,12 @@ const Layout: React.FC = () => {
                 Not on the Account page, which says it beside the subscription,
                 nor over the pages that size themselves off this box. */}
             {!fullBleed && pathname !== '/account' && <AccountBanners go={leaveTo} />}
-            {/* Behind the phone step nothing runs: the builder takes the proven phone when it opens. */}
-            {needsPhone ? null : offBuilder ? <Navigate to="/design" replace /> : <Outlet />}
+            {offBuilder ? <Navigate to="/design" replace /> : <Outlet />}
           </div>
         </motion.main>
       </div>
     </div>
+    </FreeMonthsOfferProvider>
     </PhoneBarProvider>
   );
 };

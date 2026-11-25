@@ -115,6 +115,14 @@ describe("Lighty's page (LT-253)", () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('common.aiBusy');
   });
 
+  // LT-724: an owner with neither a verified email nor a proven phone is told how to get Lighty.
+  it('tells an account not verified to verify the email or a phone', async () => {
+    vi.mocked(assistantService.thread).mockResolvedValue([]);
+    vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 403, data: { code: 'ACCOUNT_NOT_VERIFIED' } } });
+    renderPage({ lightyMessage: 'When am I free tomorrow?' });
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.aiNotVerified');
+  });
+
   it("sends the floating Lighty's question at once; says when the budget is spent; starts over", async () => {
     vi.mocked(assistantService.thread).mockResolvedValue([{ role: 'assistant', content: 'Earlier answer' }]);
     vi.mocked(assistantService.chat).mockRejectedValue({ response: { status: 429 } });

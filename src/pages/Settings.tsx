@@ -961,7 +961,7 @@ const Settings: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <SettingsSection icon={Phone} title={t('settings.contactTitle')} description={t('settings.sections.contactDesc')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Mobile or landline, Israeli (LT-404), or a number of a country opened abroad (LT-677); empty is the owner's own (LT-518). */}
+                {/* Mobile or landline, Israeli (LT-404), or a number of a country opened abroad (LT-677); empty is the owner's own (LT-518), or none for an owner with no phone (LT-724). */}
                 <div className="space-y-1">
                   <PhoneInput
                     label={t('settings.phone')}
@@ -978,7 +978,8 @@ const Settings: React.FC = () => {
                   />
                   {!localWebConfig.contact.phone?.trim() && (
                     <p className="text-xs text-gray-500 dark:text-gray-400" data-testid="contact-phone-empty">
-                      {t('settings.phoneEmptyHint')}
+                      {/* LT-724: an owner with no phone has none to fall back on. */}
+                      {t(auth.user?.phone ? 'settings.phoneEmptyHint' : 'settings.phoneNoOwnerHint')}
                     </p>
                   )}
                 </div>

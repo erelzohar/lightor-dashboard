@@ -7,8 +7,8 @@ import type { User } from '../../types';
 
 /**
  * LT-502: an account with no site goes straight to the builder, with no card
- * and no navbar until a site is saved. LT-500: the phone comes first where
- * the sign-in left it unproven, with a "later" on iOS only.
+ * and no navbar until a site is saved. LT-724: an account with no proven
+ * phone too (LT-500 had a phone step first).
  */
 const { state, t, toastFn } = vi.hoisted(() => ({
   state: {
@@ -118,16 +118,17 @@ describe('Layout, an account with no site', () => {
     expect(screen.getByTestId('navbar')).toBeTruthy();
   });
 
-  // LT-634: the iOS app too, where a "later" held for one launch (LT-502).
-  it('asks for the phone first on every platform, with nothing behind it and no "later"', () => {
+  // LT-724: the phone is offered, not demanded: no gate (it was one since
+  // LT-500), on any platform, and no offer before there is a site.
+  it('lets an account with no proven phone build its site, with no phone step and no offer', () => {
     state.user.freePeriod = { state: 'pending' } as User['freePeriod'];
     for (const platform of ['web', 'android', 'ios'] as const) {
       vi.mocked(nativePlatform).mockReturnValue(platform);
       const { unmount } = open('/');
-      expect(screen.getByTestId('phone-gate')).toBeTruthy();
-      expect(screen.queryByText('onboarding.phoneGate.later')).toBeNull();
-      expect(screen.queryByTestId('page')).toBeNull();
-      expect(screen.queryByTestId('building-bar')).toBeNull();
+      expect(screen.getByTestId('page').textContent).toBe('/design');
+      expect(screen.getByTestId('building-bar')).toBeTruthy();
+      expect(screen.queryByTestId('free-months-offer')).toBeNull();
+      expect(screen.queryByRole('dialog')).toBeNull();
       unmount();
     }
   });

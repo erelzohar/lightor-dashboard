@@ -5,6 +5,8 @@ import axe from 'axe-core';
 import Sidebar from '../../components/layout/Sidebar';
 import AddCustomerModal from '../../components/customers/AddCustomerModal';
 import UserFormModal from '../../components/admin/UserFormModal';
+import { FreeMonthsOfferDialog } from '../../components/onboarding/FreeMonthsOffer';
+import FreeMonthsBanner from '../../components/onboarding/FreeMonthsBanner';
 
 /**
  * LT-362 - the automatic accessibility check, as on the customer sites
@@ -88,5 +90,17 @@ describe.each(['ltr', 'rtl'] as const)('no WCAG A/AA violation axe can see (%s)'
     );
     expect(screen.getByRole('dialog')).toHaveAccessibleName();
     expect(await violationsIn(document.body)).toEqual([]);
+  });
+
+  // LT-724: the two free months offer, on both its steps, and its banner.
+  it.each(['intro', 'phone'] as const)('the free months offer (%s)', async (step) => {
+    render(<FreeMonthsOfferDialog step={step} onVerify={vi.fn()} onLater={vi.fn()} onSaved={vi.fn()} />);
+    expect(screen.getByRole('dialog', { name: 'onboarding.freeMonths.title' })).toBeInTheDocument();
+    expect(await violationsIn(document.body)).toEqual([]);
+  });
+
+  it('the free months banner', async () => {
+    const { container } = render(<FreeMonthsBanner onVerify={vi.fn()} />);
+    expect(await violationsIn(container)).toEqual([]);
   });
 });

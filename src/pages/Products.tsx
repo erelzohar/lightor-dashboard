@@ -31,7 +31,7 @@ import { sortableA11y } from '../utils/sortableA11y';
 import MostViewed from '../components/products/MostViewed';
 import { currencySymbol } from '../utils/currency';
 import { publicSiteUrlOf } from '../utils/siteUrl';
-import { isAiBusy } from '../lib/aiErrors';
+import { isAccountNotVerified, isAiBusy } from '../lib/aiErrors';
 import { canOfferPurchases } from '../lib/platform';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { pop } from '../components/ui/pop-button';
@@ -215,7 +215,7 @@ const ProductEditor: React.FC<{
       }));
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
-      toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
+      toast.error(t(isAccountNotVerified(err) ? 'common.aiNotVerified' : isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
     } finally {
       setDrafting(false);
     }
@@ -253,7 +253,7 @@ const ProductEditor: React.FC<{
       }
     } catch (err) {
       const status = (err as AxiosError)?.response?.status;
-      toast.error(t(isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
+      toast.error(t(isAccountNotVerified(err) ? 'common.aiNotVerified' : isAiBusy(err) ? 'common.aiBusy' : status === 429 ? 'products.draftBudget' : 'products.draftFailed'));
     } finally {
       setCreating(false);
     }

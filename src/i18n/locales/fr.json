@@ -62,6 +62,7 @@
       "cancelled": "Déplacement annulé."
     },
     "aiBusy": "Un instant - une autre demande est encore en cours. Réessayez dans quelques secondes.",
+    "aiNotVerified": "Pour utiliser Lighty, vérifiez votre e-mail (nous vous avons envoyé un lien) ou un numéro de téléphone.",
     "products": "Produits",
     "blog": "Blog",
     "paymentsOrders": "Paiements et commandes"
@@ -178,6 +179,7 @@
     "contactTitle": "Coordonnées",
     "phone": "Téléphone",
     "phoneEmptyHint": "Si le champ reste vide, nous utilisons votre téléphone, et il s’affiche sur votre site.",
+    "phoneNoOwnerHint": "Sans numéro, votre site n’affiche pas de boutons d’appel ni WhatsApp.",
     "email": "E-mail",
     "socialMedia": "Réseaux sociaux",
     "selectTab": "Sélectionnez un onglet ci-dessus",
@@ -585,8 +587,6 @@
     "hideDetails": "Masquer les détails",
     "allDoneBtn": "Tout est prêt ! Fermer le panneau",
     "phoneGate": {
-      "title": "Vérifiez votre mobile",
-      "body": "Avant de créer votre site, vérifions votre numéro de mobile avec un code.",
       "label": "Numéro de mobile",
       "send": "Envoyer un code",
       "confirm": "Confirmer et continuer",
@@ -596,13 +596,22 @@
       "whatsapp": "Envoyer sur WhatsApp",
       "sentAgain": "Un nouveau code arrive",
       "expired": "Le code a expiré. Demandez-en un nouveau.",
-      "tooManyTries": "Trop de tentatives. Demandez un nouveau code.",
-      "logout": "Se déconnecter"
+      "tooManyTries": "Trop de tentatives. Demandez un nouveau code."
     },
     "buildingBar": {
       "account": "Mon compte",
       "back": "Créer mon site",
       "logout": "Se déconnecter"
+    },
+    "freeMonths": {
+      "title": "Deux mois de Lightor+ offerts",
+      "body": "Vérifiez un numéro de téléphone avec un code, et l’offre commence.",
+      "note": "Sans numéro de téléphone, votre site n’affiche pas de boutons d’appel ni WhatsApp, et les alertes de rendez-vous arrivent uniquement par e-mail.",
+      "verifyNow": "Vérifier maintenant",
+      "later": "Plus tard",
+      "close": "Fermer",
+      "started": "L’offre a commencé : deux mois de Lightor+ offerts.",
+      "banner": "Deux mois de Lightor+ offerts vous attendent. Vérifiez un numéro de téléphone pour commencer."
     }
   },
   "aiBuilder": {
@@ -976,11 +985,6 @@
       "qrNativeHint": "Pour le garder, faites une capture d'écran ou un appui long sur le code.",
       "qrFailed": "Impossible de créer le code",
       "close": "Fermer"
-    },
-    "freePeriodPending": {
-      "title": "60 jours de Lightor+ vous attendent",
-      "body": "Vérifiez votre numéro de mobile pour les commencer.",
-      "cta": "Vérifier le numéro"
     },
     "graph": {
       "reset": "Revenir à la période actuelle"
