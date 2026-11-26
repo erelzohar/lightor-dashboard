@@ -112,8 +112,9 @@ const PhoneCodeForm: React.FC<PhoneCodeFormProps> = ({ onSaved }) => {
       onSaved?.();
     } catch (err) {
       setCode('');
-      // LT-633: a phone that opened or deleted another account this week waits.
-      setError(weeklyLimitMessage(err, t, language) ?? t(gateErrorKey(err)));
+      // LT-633: a phone that opened or deleted another account this week waits
+      // (LT-724: said as a phone to verify, not an account to open).
+      setError(weeklyLimitMessage(err, t, language, 'onboarding.phoneGate.weeklyLimit') ?? t(gateErrorKey(err)));
       setBusy(false);
     }
   };

@@ -596,7 +596,8 @@
       "whatsapp": "Envoyer sur WhatsApp",
       "sentAgain": "Un nouveau code arrive",
       "expired": "Le code a expiré. Demandez-en un nouveau.",
-      "tooManyTries": "Trop de tentatives. Demandez un nouveau code."
+      "tooManyTries": "Trop de tentatives. Demandez un nouveau code.",
+      "weeklyLimit": "Ce numéro a déjà servi à ouvrir un compte cette semaine. Vous pourrez le vérifier à partir du {{when}}."
     },
     "buildingBar": {
       "account": "Mon compte",
@@ -2445,6 +2446,7 @@
       "contentHint": "Les photos, le prix et la description de chaque produit se modifient sur la page Produits."
     },
     "liveSiteHint": "Votre site en ligne, tel qu'enregistré. S'ouvre dans un nouvel onglet.",
+    "notLiveYet": "Le site n’est pas encore en ligne - en attente de la vérification de l’e-mail",
     "paidDesign": {
       "note": "Ce design fait partie des forfaits Lightor+ et Lightor Pro.",
       "upgrade": "Changer de forfait"

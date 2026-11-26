@@ -30,3 +30,15 @@ describe('weeklyLimitMessage, as the account update passes the refusal on', () =
     expect(weeklyLimitMessage(Object.assign(new Error('x'), { code: 'PHONE_ACCOUNT_LIMIT' }), i18n.t.bind(i18n), 'en')).toBeNull();
   });
 });
+
+// LT-724: in the phone step the owner is verifying a phone, not opening an account.
+describe('weeklyLimitMessage, in the phone step', () => {
+  it("says the number opened an account this week, with the same date, in the phone step's words", async () => {
+    await i18n.changeLanguage('he');
+    const err = { response: { status: 429, data: { code: 'ACCOUNT_WEEKLY_LIMIT', details: { retryAt: '2026-11-16T16:30:00.000Z' } } } };
+    const text = weeklyLimitMessage(err, i18n.t.bind(i18n), 'he', 'onboarding.phoneGate.weeklyLimit');
+    const when = new Date('2026-11-16T16:30:00.000Z').toLocaleString('he', { timeZone: 'Asia/Jerusalem', dateStyle: 'short', timeStyle: 'short' });
+    expect(text).toBe(`המספר הזה כבר שימש לפתיחת חשבון השבוע. אפשר יהיה לאמת אותו החל מ-${when}.`);
+    await i18n.changeLanguage('en');
+  });
+});

@@ -7,7 +7,12 @@
 type Refusal = { code?: string; details?: { retryAt?: string } };
 type T = (key: string, options?: Record<string, unknown>) => string;
 
-export const weeklyLimitMessage = (err: unknown, t: T, language: string): string | null => {
+/**
+ * `key` picks the words: the sign-in's ("a new account once a week") by
+ * default, or the phone step's (LT-724: a phone another account opened with
+ * this week, proven by an owner who is not opening an account).
+ */
+export const weeklyLimitMessage = (err: unknown, t: T, language: string, key = 'login.weeklyLimit'): string | null => {
   // The API's answer as axios has it, or as userApi passes it on (code and details).
   const e = err as ({ response?: { data?: Refusal } } & Refusal) | null | undefined;
   const data: Refusal | undefined = e?.response?.data ?? (e?.code ? e : undefined);
@@ -16,8 +21,8 @@ export const weeklyLimitMessage = (err: unknown, t: T, language: string): string
   const when = at && !Number.isNaN(at.getTime())
     ? at.toLocaleString(language || 'he', { timeZone: 'Asia/Jerusalem', dateStyle: 'short', timeStyle: 'short' })
     : '';
-  return t('login.weeklyLimit', {
+  return t(key, {
     when,
-    defaultValue: 'A new account can be opened once a week. You can open one again from {{when}}.',
+    ...(key === 'login.weeklyLimit' ? { defaultValue: 'A new account can be opened once a week. You can open one again from {{when}}.' } : {}),
   });
 };

@@ -41,7 +41,13 @@ vi.mock('../../components/layout/Sidebar', () => ({ default: () => <div data-tes
 vi.mock('../../components/layout/AccountBanners', () => ({ default: (): null => null }));
 vi.mock('../../components/tour/PageTour', () => ({ default: (): null => null }));
 vi.mock('../../components/support/ReportProblem', () => ({ ReportProblemHost: (): null => null }));
-vi.mock('../../components/ui/glowing-ai-chat-assistant', () => ({ FloatingAiAssistant: (): null => null }));
+const lighty = vi.hoisted(() => ({ props: null as null | { greeting?: string; note?: string } }));
+vi.mock('../../components/ui/glowing-ai-chat-assistant', () => ({
+  FloatingAiAssistant: (props: { greeting?: string; note?: string }): null => {
+    lighty.props = props;
+    return null;
+  },
+}));
 vi.mock('../../components/onboarding/OnboardingWelcome', () => ({ default: () => <div data-testid="welcome-card" /> }));
 
 const Page: React.FC = () => <div data-testid="page">{useLocation().pathname}</div>;
@@ -133,4 +139,30 @@ describe('Layout, an account with no site', () => {
     }
   });
 
+});
+
+// LT-724: every email signup starts unverified; the home page's red card then holds the resend
+// button where his greeting bubble opens on a wide screen, so he says nothing by himself there.
+describe('Layout, Lighty over the home page of an account not verified', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lighty.props = null;
+    vi.mocked(nativePlatform).mockReturnValue('web');
+    state.user = { _id: 'u1', name: 'Dana', boardingStatus: 'onboarded', webConfig_id: 'w1', freePeriod: { state: 'granted' } } as unknown as Partial<User>;
+    state.webConfig.data = { _id: 'w1', businessName: 'Studio' };
+  });
+
+  it('has no greeting bubble while the email waits for its link', () => {
+    state.user.isVerified = false;
+    open('/');
+    expect(lighty.props).not.toBeNull();
+    expect(lighty.props?.greeting).toBeUndefined();
+    expect(lighty.props?.note).toBeUndefined();
+  });
+
+  it('greets as before once the email is verified', () => {
+    state.user.isVerified = true;
+    open('/');
+    expect(lighty.props?.greeting).toContain('common.greetingWithName');
+  });
 });

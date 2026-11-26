@@ -18,6 +18,7 @@ import { updateAppointmentType } from '../services/appointmentsApi';
 import { deleteImage } from '../services/imagesApi';
 import globals from '../services/globals';
 import { removedStoredImages, unreferencedImages } from '../utils/aiReconcile';
+import { isSiteLive } from '../utils/siteLive';
 import { useDraft, type DraftUpdate } from '../hooks/useDraft';
 import { usePreviewBridge, type SiteField, type SiteSelection } from '../hooks/usePreviewBridge';
 import { switchFade, useDeviceSwitch } from '../hooks/useDeviceSwitch';
@@ -100,6 +101,7 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   const { t, i18n } = useTranslation();
   const lang = vocabLang(i18n.language);
   const { direction } = useTheme();
+  const { auth } = useAuth();
   const location = useLocation();
   const dispatch = useAppDispatch();
   const draft = useDraft<WebConfig>(saved);
@@ -643,6 +645,11 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
   // LT-545 (Erel: the site's own link, elegantly): the live page the preview shows, as saved.
   const livePage = publicSite ? `${publicSite}${framePath === '/' ? '' : framePath}` : null;
   const liveLabel = livePage ? livePage.replace(/^https:\/\//, '') : '';
+  // LT-724: the address is there before the site answers (an email not yet verified, no phone):
+  // the dot goes grey and says so; the link stays as it is.
+  const siteLive = isSiteLive(auth.user);
+  const liveHint = t(siteLive ? 'siteEditor.liveSiteHint' : 'siteEditor.notLiveYet');
+  const liveDot = `h-1.5 w-1.5 rounded-full shrink-0 ${siteLive ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-slate-500'}`;
   const pageCount = 1 + (hasPages ? 2 : 0) + (hasBlog ? 2 : 0);
   const pageSwitcher = (short: boolean) => (
     <Tabs value={pageKind} onValueChange={goPage}>
@@ -712,8 +719,9 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
             <h1 className="font-semibold text-gray-800 dark:text-white text-[15px] truncate max-[359px]:sr-only">{t('siteEditor.title')}</h1>
             {/* Under the title where the bar is narrow; a pill beside it on a wide screen. */}
             {livePage && (
-              <a href={livePage} target="_blank" rel="noopener noreferrer" title={t('siteEditor.liveSiteHint')} data-testid="live-site-link-short" className="xl:hidden flex items-center gap-1 text-[11px] leading-tight text-gray-500 dark:text-slate-400 hover:text-primary transition-colors">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+              <a href={livePage} target="_blank" rel="noopener noreferrer" title={liveHint} data-testid="live-site-link-short" data-live={siteLive} className="xl:hidden flex items-center gap-1 text-[11px] leading-tight text-gray-500 dark:text-slate-400 hover:text-primary transition-colors">
+                <span className={liveDot} aria-hidden="true" />
+                {!siteLive && <span className="sr-only">{liveHint}</span>}
                 <span dir="ltr" className="truncate">{liveLabel}</span>
                 <ExternalLink className="w-3 h-3 shrink-0" aria-hidden="true" />
               </a>
@@ -725,11 +733,13 @@ const Editor: React.FC<{ saved: WebConfig }> = ({ saved }) => {
               href={livePage}
               target="_blank"
               rel="noopener noreferrer"
-              title={t('siteEditor.liveSiteHint')}
+              title={liveHint}
               data-testid="live-site-link"
+              data-live={siteLive}
               className="hidden xl:inline-flex items-center gap-2 min-w-0 max-w-[22rem] rounded-full border border-gray-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-3 py-1.5 text-xs text-gray-600 dark:text-slate-300 hover:text-primary hover:border-primary/40 transition-colors"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+              <span className={liveDot} aria-hidden="true" />
+              {!siteLive && <span className="sr-only">{liveHint}</span>}
               <span dir="ltr" className="truncate">{liveLabel}</span>
               <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             </a>

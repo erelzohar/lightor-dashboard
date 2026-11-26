@@ -26,7 +26,9 @@ const { t } = vi.hoisted(() => ({
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'he' } }) }));
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
-vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: { _id: 'u1', webConfig_id: 'wc1' } } }) }));
+// LT-724: whether the public site answers follows the owner's proof (email or phone).
+const owner = vi.hoisted(() => ({ user: { _id: 'u1', webConfig_id: 'wc1' } as Record<string, unknown> }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ auth: { user: owner.user } }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ direction: 'rtl' }) }));
 vi.mock('../../pages/SiteBuilder', () => ({ default: (): null => null }));
 vi.mock('../../services/entitlementsApi', () => ({ fetchMyEntitlements: vi.fn(async () => null) }));
@@ -942,6 +944,43 @@ describe('the site editor (LT-249)', () => {
 
       await waitFor(() => expect(screen.getByText('siteEditor.save').closest('button')).toBeEnabled());
       expect(screen.getByRole('textbox', { name: 'siteEditor.fields.heroTitle' })).toHaveValue('First, then more');
+    });
+  });
+
+  // LT-724: an email signup not yet verified, with no proven phone, has an address the public
+  // site does not answer yet: the dot beside it is grey and says so; the link is the same.
+  describe("the site address's dot", () => {
+    afterEach(() => { owner.user = { _id: 'u1', webConfig_id: 'wc1' }; });
+
+    const dots = () => ['live-site-link', 'live-site-link-short'].map((id) => screen.getByTestId(id));
+
+    it('is grey and says the site is not live yet while neither the email nor a phone is proven', async () => {
+      owner.user = { _id: 'u1', webConfig_id: 'wc1', isVerified: false };
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      for (const link of dots()) {
+        expect(link).toHaveAttribute('data-live', 'false');
+        expect(link).toHaveAttribute('href', 'https://nails.lightor.app');
+        expect(link).toHaveAttribute('title', 'siteEditor.notLiveYet');
+        expect(link).toHaveAccessibleName(expect.stringContaining('siteEditor.notLiveYet'));
+        expect(link.querySelector('.bg-emerald-500')).toBeNull();
+        expect(link.querySelector('.bg-gray-400')).not.toBeNull();
+      }
+    });
+
+    it.each([
+      ['a verified email', { isVerified: true }],
+      ['a proven phone', { isVerified: false, phoneVerifiedAt: '2026-11-25T10:00:00.000Z' }],
+    ])('is green once the site is live, by %s', async (_name, proof) => {
+      owner.user = { _id: 'u1', webConfig_id: 'wc1', ...proof };
+      renderEditor();
+      await fromSite({ type: 'LT_READY' });
+      for (const link of dots()) {
+        expect(link).toHaveAttribute('data-live', 'true');
+        expect(link).toHaveAttribute('title', 'siteEditor.liveSiteHint');
+        expect(link.querySelector('.bg-emerald-500')).not.toBeNull();
+        expect(link).not.toHaveAccessibleName(expect.stringContaining('siteEditor.notLiveYet'));
+      }
     });
   });
 });

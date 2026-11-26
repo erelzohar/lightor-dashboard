@@ -594,7 +594,8 @@
       "whatsapp": "Send on WhatsApp",
       "sentAgain": "A new code is on its way",
       "expired": "The code has expired. Ask for a new one.",
-      "tooManyTries": "Too many tries. Ask for a new code."
+      "tooManyTries": "Too many tries. Ask for a new code.",
+      "weeklyLimit": "This number was already used to open an account this week. You can verify it from {{when}}."
     },
     "buildingBar": {
       "account": "My account",
@@ -2441,6 +2442,7 @@
       "contentHint": "Each product's pictures, price and description are edited on the Products page."
     },
     "liveSiteHint": "Your live site, as last saved. Opens in a new tab.",
+    "notLiveYet": "The site is not live yet - waiting for your email to be verified",
     "paidDesign": {
       "note": "This design is part of the Lightor+ and Lightor Pro plans.",
       "upgrade": "Upgrade"

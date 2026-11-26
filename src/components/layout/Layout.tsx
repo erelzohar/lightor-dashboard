@@ -128,6 +128,11 @@ const Layout: React.FC = () => {
     void updateUser({ boardingStatus: 'onboarded' }).catch(() => {});
   };
 
+  // LT-724: every email signup now starts unverified, and the home page's red
+  // "verify your email" card then carries the resend button, where his greeting
+  // bubble opens on a wide screen. While that card is up he says nothing by himself.
+  const verifyCardUp = pathname === '/' && !!auth.user && !auth.user.isVerified;
+
   return (
     <PhoneBarProvider>
     {/* LT-724: the two free months, offered once there is a site; not under the welcome card. */}
@@ -183,9 +188,9 @@ const Layout: React.FC = () => {
       ) && (
         <FloatingAiAssistant
           direction={direction}
-          greeting={pathname === '/' ? `${t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name })} ${greetingEmoji()}` : undefined}
+          greeting={pathname === '/' && !verifyCardUp ? `${t('common.greetingWithName', { greeting: greetingFor(t), name: auth.user.name })} ${greetingEmoji()}` : undefined}
           mood={momentum.mood}
-          note={momentumNote}
+          note={verifyCardUp ? undefined : momentumNote}
           onSend={(msg) => leaveTo('/lighty', { lightyMessage: msg })}
           onOpenPage={() => leaveTo('/lighty')}
           suggestions={floatingSuggestions}

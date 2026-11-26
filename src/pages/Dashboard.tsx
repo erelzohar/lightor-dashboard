@@ -34,6 +34,7 @@ import { useNewLeadsCount, setNewLeadsCount } from '../hooks/useNewLeadsCount';
 import { fetchLeads, fetchLeadStats, LeadsPage, LeadStats } from '../services/leadsApi';
 import { fetchProductViews, listProducts, type Product, type ProductViews } from '../services/productsApi';
 import { isLeadsSite, isProductsSite } from '../utils/siteMode';
+import { isSiteLive } from '../utils/siteLive';
 import { useBusinessFormats } from '../hooks/useBusinessFormats';
 
 const Dashboard: React.FC = () => {
@@ -157,7 +158,7 @@ const Dashboard: React.FC = () => {
 
   // LT-410: the site is live once the owner proved the email or the phone
   // (the phone code at signup); the email can still be waiting.
-  const siteLive = !!auth.user?.isVerified || !!auth.user?.phoneVerifiedAt;
+  const siteLive = isSiteLive(auth.user);
   // The share card (LT-274) once the site is live and has its address.
   const shareSubDomain = siteLive ? webConfig?.subDomain?.trim() : undefined;
 

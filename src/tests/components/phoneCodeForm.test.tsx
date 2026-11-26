@@ -87,6 +87,16 @@ describe('PhoneCodeForm', () => {
     expect(screen.getByLabelText('account.phoneCode.label')).toBeTruthy();
   });
 
+  // LT-724: a phone another account opened with this week, proven by an owner who opens no account.
+  it("says a phone used for an account this week in the phone step's words", async () => {
+    updateUser.mockRejectedValue({ response: { status: 429, data: { code: 'ACCOUNT_WEEKLY_LIMIT', details: { retryAt: '2026-11-30T10:00:00.000Z' } } } });
+    render(<PhoneCodeForm />);
+    await toCodeStep();
+    fireEvent.change(screen.getByLabelText('account.phoneCode.label'), { target: { value: '123456' } });
+    expect(await screen.findByRole('alert')).toHaveTextContent('onboarding.phoneGate.weeklyLimit');
+    expect(screen.queryByText('login.weeklyLimit')).toBeNull();
+  });
+
   it('goes back to change the number', async () => {
     render(<PhoneCodeForm />);
     await toCodeStep();
